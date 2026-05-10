@@ -1,0 +1,39 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build outputs
+dist/
+build/
+.wrangler/
+.vercel/
+
+# bundled SteelCompendium data — rebuilt by CI, not committed
+apps/web/public/data/
+
+# local reference clones (e.g. SteelCompendium/data-md) — used during dev, never committed
+.reference/
+
+# env
+.env
+.env.local
+.env.*.local
+.dev.vars
+
+# editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# test coverage
+coverage/
+.nyc_output/
+
+# OS
+Thumbs.db
