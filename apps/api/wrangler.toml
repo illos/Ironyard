@@ -6,12 +6,14 @@ compatibility_flags = ["nodejs_compat"]
 [dev]
 port = 8787
 
-# D1 binding — added in Phase 0 item 5 once schema/migrations land.
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "ironyard"
-# database_id = "<from `wrangler d1 create ironyard`>"
-# migrations_dir = "drizzle"
+# D1 binding. `database_id` is a placeholder — replace with the value printed
+# by `wrangler d1 create ironyard` before deploying. Local `wrangler dev` uses
+# a Miniflare-backed SQLite file in .wrangler/state and ignores the id.
+[[d1_databases]]
+binding = "DB"
+database_name = "ironyard"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "drizzle"
 
 # Durable Object — added in Phase 0 item 7 once SessionDO class is implemented.
 # [[durable_objects.bindings]]
