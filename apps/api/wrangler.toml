@@ -1,0 +1,23 @@
+name = "ironyard-api"
+main = "src/index.ts"
+compatibility_date = "2026-05-01"
+compatibility_flags = ["nodejs_compat"]
+
+[dev]
+port = 8787
+
+# D1 binding — added in Phase 0 item 5 once schema/migrations land.
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "ironyard"
+# database_id = "<from `wrangler d1 create ironyard`>"
+# migrations_dir = "drizzle"
+
+# Durable Object — added in Phase 0 item 7 once SessionDO class is implemented.
+# [[durable_objects.bindings]]
+# name = "SESSION_DO"
+# class_name = "SessionDO"
+#
+# [[migrations]]
+# tag = "v1"
+# new_classes = ["SessionDO"]

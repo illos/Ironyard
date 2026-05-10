@@ -26,6 +26,9 @@ apps/web/public/data/
 *.swp
 .DS_Store
 
+# local agent settings (user-specific)
+.claude/settings.local.json
+
 # logs
 *.log
 npm-debug.log*

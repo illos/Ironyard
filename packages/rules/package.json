@@ -1,0 +1,27 @@
+{
+  "name": "@ironyard/rules",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "echo 'no build step'",
+    "canon:gen": "tsx scripts/gen-canon-status.ts",
+    "canon:report": "tsx scripts/canon-report.ts"
+  },
+  "dependencies": {
+    "@ironyard/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
