@@ -1,8 +1,9 @@
-import type { D1Database } from '@cloudflare/workers-types';
+import type { D1Database, DurableObjectNamespace } from '@cloudflare/workers-types';
 import type { CurrentUser } from '@ironyard/shared';
 
 export type Bindings = {
   DB: D1Database;
+  SESSION_DO: DurableObjectNamespace;
   RESEND_API_KEY?: string;
   RESEND_FROM?: string;
   MAGIC_LINK_BASE_URL?: string;

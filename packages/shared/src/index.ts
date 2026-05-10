@@ -15,7 +15,7 @@ export {
 export type { Intent, IntentSource, IntentType } from './intent';
 
 export { ClientMsgSchema, ServerMsgSchema } from './wire';
-export type { ClientMsg, ServerMsg } from './wire';
+export type { ClientMsg, Member, ServerMsg } from './wire';
 
 export { ulid } from './ulid';
 
@@ -25,3 +25,10 @@ export {
   MagicLinkRequestSchema,
 } from './auth';
 export type { CurrentUser, DevLoginRequest, MagicLinkRequest } from './auth';
+
+export {
+  CreateSessionRequestSchema,
+  JoinSessionRequestSchema,
+  generateInviteCode,
+} from './session';
+export type { CreateSessionRequest, JoinSessionRequest } from './session';
