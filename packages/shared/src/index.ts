@@ -1,6 +1,18 @@
-// Zod schemas for everything that crosses a boundary land here.
-// Phase 0 item 4 fills in: Intent envelope, ClientMsg / ServerMsg, Actor.
-// Phase 0 item 5 adds: D1 row DTOs (Drizzle types are derived separately in apps/api).
-// For Phase 1: per-intent payload schemas wired into packages/rules.
+// Zod schemas for everything that crosses a boundary live here.
+// Phase 0 lands the envelope shapes; Phase 1 narrows Intent.payload per type
+// and replaces the unknown() state slots with a real SessionStateSchema.
 
 export const PACKAGE = '@ironyard/shared' as const;
+
+export { ActorSchema, RoleSchema } from './actor';
+export type { Actor, Role } from './actor';
+
+export {
+  IntentSchema,
+  IntentSourceSchema,
+  IntentTypeSchema,
+} from './intent';
+export type { Intent, IntentSource, IntentType } from './intent';
+
+export { ClientMsgSchema, ServerMsgSchema } from './wire';
+export type { ClientMsg, ServerMsg } from './wire';
