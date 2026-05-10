@@ -1,0 +1,16 @@
+# Copy to .dev.vars (gitignored) and fill in.
+# wrangler dev reads .dev.vars and exposes these as `c.env.*`.
+
+# Resend — leave empty to skip emails and surface the magic link in the
+# /api/auth/request response (useful for local dev without an account).
+RESEND_API_KEY=
+RESEND_FROM=
+
+# Where the magic-link URL points. Worker public origin.
+MAGIC_LINK_BASE_URL=http://localhost:8787
+
+# Where /api/auth/verify redirects after setting the cookie.
+WEB_BASE_URL=http://localhost:5173
+
+# Set to "1" to enable POST /api/auth/dev-login (skips the email loop).
+IRONYARD_DEV_SKIP_AUTH=1

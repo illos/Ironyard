@@ -18,3 +18,10 @@ export { ClientMsgSchema, ServerMsgSchema } from './wire';
 export type { ClientMsg, ServerMsg } from './wire';
 
 export { ulid } from './ulid';
+
+export {
+  CurrentUserSchema,
+  DevLoginRequestSchema,
+  MagicLinkRequestSchema,
+} from './auth';
+export type { CurrentUser, DevLoginRequest, MagicLinkRequest } from './auth';
