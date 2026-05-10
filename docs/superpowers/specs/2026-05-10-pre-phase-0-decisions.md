@@ -70,3 +70,49 @@ Two clients can dispatch intents in the same network window. Each applies locall
 The DO is the single writer per session, so merge conflicts in the database sense are impossible by construction. Display flicker inside the optimistic window is acceptable.
 
 Patches: `ARCHITECTURE.md` (Error handling and recovery — extend), `intent-protocol.md` (Optimistic UI — extend).
+
+## Rules-canon pipeline
+
+### 14. Canon status drives the engine via a generated registry
+The two-gate workflow in `rules-canon.md` is enforced mechanically, not by trust. A build-time script parses the canon doc and emits a typed registry; the engine reads it; CI fails if the registry is stale.
+
+**Pipeline:**
+
+```
+.reference/data-md/   →  docs/rules-canon.md   →  packages/rules/src/canon-status.generated.ts   →   reducer
+       (source)              (drafted + status table)         (typed registry)                       (gates auto-apply)
+```
+
+**Components:**
+
+- **Generator.** `packages/rules/scripts/gen-canon-status.ts` parses `docs/rules-canon.md`. It reads the top-level status table and the per-section status markers (`## 1. Power rolls (resolution) 🚧`, `### 5.3 Talent — Clarity ✅`), and emits a TypeScript module:
+
+  ```ts
+  // generated — do not edit by hand
+  export const canonStatus = {
+    'power-rolls': 'drafted',
+    'power-rolls.edges-and-banes': 'drafted',
+    'heroic-resources': 'drafted',
+    'heroic-resources.talent-clarity': 'verified',
+    'damage-application': 'tbd',
+    // ...
+  } as const satisfies Record<string, CanonStatus>;
+  ```
+
+- **Section IDs are stable slugs.** Numbers in the doc (§ 1, § 5.3) can be reordered; the slug after the heading text becomes the canonical id (`power-rolls`, `heroic-resources.talent-clarity`). Reordering sections never breaks engine code.
+
+- **Granularity matches the engine's gates.** Sub-sections override their parent. § 5 may be 🚧 overall while § 5.3 (Talent Clarity) is ✅; the engine may auto-apply Talent's clarity rules but not other classes' until each is verified.
+
+- **Engine consumption.** The reducer wraps any auto-application path in a `requireCanon('heroic-resources.talent-clarity')` check. If the slug's status is not `'verified'`, the reducer emits a `manual_override_required` log entry and surfaces the question to the UI instead of guessing.
+
+- **CI gate.** `pnpm canon:gen && git diff --exit-code packages/rules/src/canon-status.generated.ts` runs in CI. Drift between the doc and the registry fails the build.
+
+- **Visibility.** `pnpm canon:report` prints a table of all rule ids and their statuses. Cheap operator tool for "where are we on rules verification."
+
+**Open questions (resolve at first implementation, not now):**
+
+1. Slug derivation algorithm (kebab-case the heading? strip leading punctuation? handle emojis in headings).
+2. Where to declare the rule slugs the engine *expects* — a constants file consumed by both the generator (to error on missing slugs) and the reducer.
+3. How to handle a rule whose canon status is verified but whose engine implementation isn't yet wired up — a separate `'implemented'` flag, or just a TODO check in the reducer.
+
+Patches: `rules-engine.md` (Registry-driven gating — new section), `phases.md` (Phase 0 scope — add generator and CI check).

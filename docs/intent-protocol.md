@@ -40,8 +40,9 @@ The full list lives in `packages/shared/src/intents.ts`. This is the conceptual 
 
 - `RollPower { abilityId, attackerId, targetIds[], edges, banes, rolls: { d10: [number, number] } }`
   - The dispatcher generates the 2d10 values and writes them into `rolls`. The reducer reads `rolls`, applies edges/banes (capped at ±2), evaluates the t1/t2/t3/crit ladder, and emits derived intents (one or more `ApplyDamage`, `SetCondition`, `Push`, etc.) per the ability's effect text.
-- `RollTest { characterId, characteristic, edges, banes, rolls: { d10: [number, number] } }` (skill / save tests)
-- `RollResistance { characterId, type, rolls: { d10: [number, number] } }` (saves on Draw Steel's "10+" mechanic)
+- `RollTest { characterId, characteristic, difficulty: 'easy' | 'medium' | 'hard', skillId?, edges, banes, rolls: { d10: [number, number] } }` — non-ability power rolls (climb, sneak, recall lore, etc.). The reducer follows the test outcome ladder in [rules-canon § 7.2](rules-canon.md#72-test-difficulty).
+- `RollResistance { characterId, effectId, rolls: { d10: number } }` — the **saving throw** to end a `save_ends` effect. Mechanic: a **single d10**, **≥ 6 ends the effect**, per [rules-canon § 3.3](rules-canon.md#33-saving-throws). Note: this is **not** a power roll (no characteristic, no edges/banes) — only one d10 in the payload.
+- `RollOpposedTest { aId, bId, aCharacteristic, bCharacteristic, aEdges, aBanes, bEdges, bBanes, aRolls: { d10: [number, number] }, bRolls: { d10: [number, number] } }` — both sides roll simultaneously, dispatcher pre-rolls both, reducer compares totals and emits the winner. Per [Q13](rule-questions.md#q13-opposed-power-rolls--simultaneous-or-sequential-).
 - `RollFreeStrike { attackerId, targetId, rolls: { d10: [number, number] } }`
 
 Why the dice live in the payload: the reducer is pure (see below), so randomness must enter as data, not be sampled inside the reducer. Today the rolling client generates the values; when we move to server-side rolling, the DO generates them before logging the intent. The intent shape doesn't change.

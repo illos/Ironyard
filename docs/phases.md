@@ -14,9 +14,10 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 - WebSocket handshake working — client can connect to a session DO and exchange a `ping`/`pong`
 - Intent envelope schemas in `packages/shared`, validated end-to-end with Zod
 - `packages/data` build script pulls SteelCompendium SDK and emits `monsters.json` (the rest follow in Phase 1+)
+- **Rules-canon registry pipeline:** `scripts/gen-canon-status.ts` parses `docs/rules-canon.md` and emits `packages/rules/src/canon-status.generated.ts`. The reducer ships with a `requireCanon(slug)` helper that gates auto-application on `'verified'` status. CI runs `pnpm canon:gen` and fails on diff. `pnpm canon:report` prints rule status. Mechanism is in place even though Phase 0 doesn't ship reducer behavior yet — when Phase 1 lights up the engine, the gating already works.
 - "Hello session" page at `/sessions/:id` lists members in realtime
 
-**Acceptance:** two browsers logged in as different users, both connected to the same session id, both see each other's connect/disconnect events live.
+**Acceptance:** two browsers logged in as different users, both connected to the same session id, both see each other's connect/disconnect events live. Plus: `pnpm canon:gen` and `pnpm canon:report` run cleanly, and CI fails when the canon doc is edited without regenerating the registry.
 
 ## Phase 1 — Multi-user combat tracker (authoritative engine)
 
