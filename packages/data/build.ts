@@ -37,6 +37,14 @@ const CAREERS_OUT = join(REPO_ROOT, 'apps/web/public/data/careers.json');
 const COMPLICATIONS_OUT = join(REPO_ROOT, 'apps/web/public/data/complications.json');
 const CLASSES_OUT = join(REPO_ROOT, 'apps/web/public/data/classes.json');
 
+// API Worker data — flat arrays (no wrapper) so getStaticDataBundle() can
+// iterate and parse them with their individual schemas. Mirroring the
+// monsters.json pattern where the API file is a subset / alternate shape.
+const API_ANCESTRIES_OUT = join(REPO_ROOT, 'apps/api/src/data/ancestries.json');
+const API_CAREERS_OUT = join(REPO_ROOT, 'apps/api/src/data/careers.json');
+const API_CLASSES_OUT = join(REPO_ROOT, 'apps/api/src/data/classes.json');
+// kits.json: Phase 2 Epic 2 adds kit ingestion; until then the placeholder [] stays.
+
 function* walkStatblockFiles(root: string): Generator<string> {
   let entries: string[];
   try {
@@ -262,9 +270,13 @@ function buildAncestries(version: string): void {
   };
   mkdirSync(dirname(ANCESTRIES_OUT), { recursive: true });
   writeFileSync(ANCESTRIES_OUT, `${JSON.stringify(out, null, 2)}\n`);
+  // Mirror flat array to API Worker data directory.
+  mkdirSync(dirname(API_ANCESTRIES_OUT), { recursive: true });
+  writeFileSync(API_ANCESTRIES_OUT, `${JSON.stringify(ancestries, null, 2)}\n`);
   console.log(
     `build:data — wrote ${ancestries.length} ancestries to apps/web/public/data/ancestries.json`,
   );
+  console.log('             mirrored to apps/api/src/data/ancestries.json');
   if (errors.length > 0) {
     for (const e of errors) console.warn(`  skipped ${e.file}: ${e.reason}`);
   }
@@ -301,7 +313,11 @@ function buildCareers(version: string): void {
   const out: CareerFile = { version, generatedAt: Date.now(), count: careers.length, careers };
   mkdirSync(dirname(CAREERS_OUT), { recursive: true });
   writeFileSync(CAREERS_OUT, `${JSON.stringify(out, null, 2)}\n`);
+  // Mirror flat array to API Worker data directory.
+  mkdirSync(dirname(API_CAREERS_OUT), { recursive: true });
+  writeFileSync(API_CAREERS_OUT, `${JSON.stringify(careers, null, 2)}\n`);
   console.log(`build:data — wrote ${careers.length} careers to apps/web/public/data/careers.json`);
+  console.log('             mirrored to apps/api/src/data/careers.json');
   if (errors.length > 0) {
     for (const e of errors) console.warn(`  skipped ${e.file}: ${e.reason}`);
   }
@@ -403,9 +419,13 @@ function buildClasses(version: string): void {
   };
   mkdirSync(dirname(CLASSES_OUT), { recursive: true });
   writeFileSync(CLASSES_OUT, `${JSON.stringify(out, null, 2)}\n`);
+  // Mirror flat array to API Worker data directory.
+  mkdirSync(dirname(API_CLASSES_OUT), { recursive: true });
+  writeFileSync(API_CLASSES_OUT, `${JSON.stringify(heroClasses, null, 2)}\n`);
   console.log(
     `build:data — wrote ${heroClasses.length} classes to apps/web/public/data/classes.json`,
   );
+  console.log('             mirrored to apps/api/src/data/classes.json');
   if (errors.length > 0) {
     for (const e of errors) console.warn(`  skipped ${e.file}: ${e.reason}`);
   }

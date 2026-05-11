@@ -13,6 +13,7 @@ import {
   campaigns,
   intents as intentsTable,
 } from './db/schema';
+import { getStaticDataBundle } from './data';
 import { buildServerStampedIntent } from './lobby-do-build-intent';
 import { handleSideEffect } from './lobby-do-side-effects';
 import { stampIntent } from './lobby-do-stampers';
@@ -92,8 +93,6 @@ export class LobbyDO implements DurableObject {
         .where(eq(campaigns.id, campaignId))
         .get();
       const ownerId = campaign?.ownerId ?? campaignId; // fallback: use campaignId as sentinel
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore FIXME(phase-c): second arg lands when Phase C merges
       state = emptyCampaignState(campaignId, ownerId);
     }
 
@@ -114,7 +113,7 @@ export class LobbyDO implements DurableObject {
 
     for (const row of rows) {
       const intent = JSON.parse(row.payload) as Intent & { timestamp: number };
-      state = applyIntent(state, intent).state;
+      state = applyIntent(state, intent, { staticData: getStaticDataBundle() }).state;
     }
 
     // The reducer increments state.seq per non-voided apply, so it under-counts
@@ -258,7 +257,7 @@ export class LobbyDO implements DurableObject {
       await this.serialize(async () => {
         if (!this.campaignState) return;
         const stateBefore = this.campaignState;
-        const result = applyIntent(this.campaignState, intent);
+        const result = applyIntent(this.campaignState, intent, { staticData: getStaticDataBundle() });
         if (result.errors && result.errors.length > 0) {
           dispatchError = result.errors.map((e) => e.message).join('; ');
           return;
@@ -595,7 +594,7 @@ export class LobbyDO implements DurableObject {
     // (e.g. Respite reads stateBefore.partyVictories before it is drained to 0).
     const stateBefore = this.campaignState;
 
-    const result = applyIntent(this.campaignState, intent);
+    const result = applyIntent(this.campaignState, intent, { staticData: getStaticDataBundle() });
     if (result.errors && result.errors.length > 0) {
       const reason = result.errors.map((e) => e.message).join('; ');
       if (originSocket) {

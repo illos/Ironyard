@@ -129,7 +129,7 @@ Examples:
 | `AddMonster` | Resolves monster data from `monsters.json`; stamps the full monster payload |
 | `StartEncounter` | Reads each PC placeholder's `characters` row from D1; stamps `stampedPcs[]` with `{ characterId, ownerId, character: CharacterSchema }` |
 | `BringCharacterIntoEncounter` | Reads the `characters` row from D1 to verify ownership; stamps `ownerId` |
-| `SwapKit` | No stamping — pure D1 write; reducer validates authority from `state` |
+| `SwapKit` | Reads `characters.owner_id` from D1; stamps `ownerId` (mirrors `BringCharacterIntoEncounter`'s pattern) |
 
 The pattern generalises: whenever the reducer needs external data to make a decision, the DO attaches it to the payload at the boundary. The intent then contains its full context and can be replayed faithfully from the log.
 

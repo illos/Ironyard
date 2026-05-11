@@ -10,12 +10,16 @@ build/
 
 # bundled SteelCompendium data — rebuilt by CI, not committed
 apps/web/public/data/
-# NOTE: apps/api/src/data/monsters.json is intentionally tracked, not ignored.
-# It ships as a 0-monster placeholder so the JSON import in
-# apps/api/src/data/index.ts resolves on a fresh clone / in CI. `pnpm build:data`
-# overwrites it locally with the full SteelCompendium ingest; that dirty-state
+# NOTE: apps/api/src/data/*.json files are intentionally tracked, not ignored.
+# They ship as empty-array placeholders so JSON imports in
+# apps/api/src/data/index.ts resolve on a fresh clone / in CI. `pnpm build:data`
+# overwrites them locally with the full SteelCompendium ingest; that dirty-state
 # diff should NOT be committed. Run
 #   git update-index --skip-worktree apps/api/src/data/monsters.json
+#   git update-index --skip-worktree apps/api/src/data/classes.json
+#   git update-index --skip-worktree apps/api/src/data/kits.json
+#   git update-index --skip-worktree apps/api/src/data/ancestries.json
+#   git update-index --skip-worktree apps/api/src/data/careers.json
 # after your first local build to suppress the diff.
 
 # local reference clones (e.g. SteelCompendium/data-md) — used during dev, never committed

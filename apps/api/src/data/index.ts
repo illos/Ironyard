@@ -1,18 +1,26 @@
-// Monster data accessor for the API Worker. The JSON is copied from
-// apps/web/public/data/monsters.json at build time (currently a manual copy;
-// TODO: wire packages/data/build.ts to also write to apps/api/src/data/).
-//
-// The file is gitignored (see root .gitignore: apps/web/public/data/ and the
-// api/src/data/ entry added alongside) so it must be present locally and in CI.
+// Data accessors for the API Worker. JSON files are written to this directory
+// by `pnpm build:data` (packages/data/build.ts). Each file ships as a tracked
+// empty-array / empty-object placeholder so imports resolve on a fresh clone or
+// in CI without a data build step. `pnpm build:data` overwrites them locally
+// with the full SteelCompendium ingest — see .gitignore for the skip-worktree
+// instructions that suppress those diffs.
 
-import { type Monster, MonsterFileSchema } from '@ironyard/shared';
+import { AncestrySchema, CareerSchema, ClassSchema, type Monster, MonsterFileSchema } from '@ironyard/shared';
+import type { StaticDataBundle } from '@ironyard/rules';
+import { ResolvedKitSchema } from '@ironyard/rules';
 import monstersJson from './monsters.json';
+import classesRaw from './classes.json';
+import kitsRaw from './kits.json';
+import ancestriesRaw from './ancestries.json';
+import careersRaw from './careers.json';
+
+// ── Monsters ────────────────────────────────────────────────────────────────
 
 // Parse once at module load (lazy on first access).
-let cache: Map<string, Monster> | null = null;
+let monsterCache: Map<string, Monster> | null = null;
 
-function ensureCache(): Map<string, Monster> {
-  if (cache) return cache;
+function ensureMonsterCache(): Map<string, Monster> {
+  if (monsterCache) return monsterCache;
   const parsed = MonsterFileSchema.safeParse(monstersJson);
   const map = new Map<string, Monster>();
   if (parsed.success) {
@@ -30,10 +38,48 @@ function ensureCache(): Map<string, Monster> {
       if (r.success) map.set(r.data.id, r.data);
     }
   }
-  cache = map;
-  return cache;
+  monsterCache = map;
+  return monsterCache;
 }
 
 export function loadMonsterById(id: string): Monster | null {
-  return ensureCache().get(id) ?? null;
+  return ensureMonsterCache().get(id) ?? null;
+}
+
+// ── StaticDataBundle ─────────────────────────────────────────────────────────
+// Assembled once at module load; cached for the lifetime of the Worker
+// isolate. Passed as ReducerContext.staticData into every applyIntent call
+// so StartEncounter can materialize PC participants via deriveCharacterRuntime.
+
+let bundleCache: StaticDataBundle | null = null;
+
+export function getStaticDataBundle(): StaticDataBundle {
+  if (bundleCache) return bundleCache;
+
+  const ancestries: StaticDataBundle['ancestries'] = new Map();
+  for (const item of ancestriesRaw as unknown[]) {
+    const parsed = AncestrySchema.safeParse(item);
+    if (parsed.success) ancestries.set(parsed.data.id, parsed.data);
+  }
+
+  const careers: StaticDataBundle['careers'] = new Map();
+  for (const item of careersRaw as unknown[]) {
+    const parsed = CareerSchema.safeParse(item);
+    if (parsed.success) careers.set(parsed.data.id, parsed.data);
+  }
+
+  const classes: StaticDataBundle['classes'] = new Map();
+  for (const item of classesRaw as unknown[]) {
+    const parsed = ClassSchema.safeParse(item);
+    if (parsed.success) classes.set(parsed.data.id, parsed.data);
+  }
+
+  const kits: StaticDataBundle['kits'] = new Map();
+  for (const item of kitsRaw as unknown[]) {
+    const parsed = ResolvedKitSchema.safeParse(item);
+    if (parsed.success) kits.set(parsed.data.id, parsed.data);
+  }
+
+  bundleCache = { ancestries, careers, classes, kits };
+  return bundleCache;
 }
