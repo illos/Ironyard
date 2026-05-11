@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { CharacteristicsSchema } from '../characteristic';
-import { TypedResistanceSchema } from '../damage';
+import { DamageTypeSchema, TypedResistanceSchema } from '../damage';
 
 // Phase 1 slice 7 (monster ingest extension): extended Monster shape with
 // stamina, EV, immunities/weaknesses, characteristics, movement, abilities.
@@ -37,14 +37,27 @@ export const StaminaSchema = z.object({
 });
 export type Stamina = z.infer<typeof StaminaSchema>;
 
-// Power-roll ladder (raw effect text per tier). Engine will parse the strings
-// further as it grows; for now we preserve them verbatim so UI is always
-// correct.
+// Per-tier outcome. `raw` is always preserved verbatim — UI shows it as the
+// source-of-truth fallback. `damage` + `damageType` are structured when the
+// parser could extract a leading damage clause; `effect` captures the rest
+// (push, slide, save targets, condition mentions) as free text.
+export const TierOutcomeSchema = z.object({
+  raw: z.string(),
+  damage: z.number().int().nonnegative().nullable(),
+  damageType: DamageTypeSchema.optional(),
+  effect: z.string().optional(),
+});
+export type TierOutcome = z.infer<typeof TierOutcomeSchema>;
+
+// Power-roll ladder. Each tier carries both the raw markdown string AND a
+// structured parse — the combat UI feeds the structured ladder to RollPower
+// while still rendering the raw text so the director can see exactly what the
+// source said.
 export const PowerRollSchema = z.object({
   bonus: z.string().min(1), // raw "+2", "+5" — the characteristic add
-  tier1: z.string(), // "≤11" outcome
-  tier2: z.string(), // "12-16" outcome
-  tier3: z.string(), // "17+" outcome
+  tier1: TierOutcomeSchema, // "≤11" outcome
+  tier2: TierOutcomeSchema, // "12-16" outcome
+  tier3: TierOutcomeSchema, // "17+" outcome
 });
 export type PowerRoll = z.infer<typeof PowerRollSchema>;
 
@@ -118,6 +131,12 @@ export const MonsterFileSchema = z.object({
       withAnyWeakness: z.number().int().nonnegative(),
       totalAbilityBlocks: z.number().int().nonnegative(),
       parsedAbilityBlocks: z.number().int().nonnegative(),
+      // Per-tier damage parse coverage. `totalTierOutcomes` is 3× the number
+      // of abilities with a powerRoll; `tiersWithDamage` is how many of those
+      // tiers had a parseable leading "N (type) damage" clause. The rest are
+      // effect-only (movement, conditions, healing) and are not failures.
+      totalTierOutcomes: z.number().int().nonnegative().optional(),
+      tiersWithDamage: z.number().int().nonnegative().optional(),
     })
     .optional(),
 });

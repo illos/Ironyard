@@ -93,6 +93,22 @@ function main() {
   // Coverage counters — every monster that parsed has these fields, but they
   // may be empty/zero for legit reasons (e.g. no immunities). We count the
   // populated subset to surface parser-quality regressions over time.
+  // Per-tier damage parse coverage — counts how many tier outcomes (3 per
+  // powerRoll) have parseable structured damage. Effect-only tiers (e.g.
+  // "the target is Slowed") legitimately have damage=null and are not
+  // counted as failures, just as different.
+  let totalTierOutcomes = 0;
+  let tiersWithDamage = 0;
+  for (const m of deduped) {
+    for (const a of m.abilities) {
+      if (!a.powerRoll) continue;
+      for (const tier of [a.powerRoll.tier1, a.powerRoll.tier2, a.powerRoll.tier3]) {
+        totalTierOutcomes += 1;
+        if (tier.damage !== null) tiersWithDamage += 1;
+      }
+    }
+  }
+
   const cov = {
     total: deduped.length,
     withStamina: deduped.filter((m) => m.stamina.base > 0).length,
@@ -113,6 +129,8 @@ function main() {
           .length,
       0,
     ),
+    totalTierOutcomes,
+    tiersWithDamage,
   };
 
   const out: MonsterFile = {
@@ -151,6 +169,9 @@ function main() {
   );
   console.log(
     `    ability blocks:    ${cov.parsedAbilityBlocks}/${cov.totalAbilityBlocks}  (${pct(cov.parsedAbilityBlocks, cov.totalAbilityBlocks)})`,
+  );
+  console.log(
+    `    tier damage:       ${cov.tiersWithDamage}/${cov.totalTierOutcomes}  (${pct(cov.tiersWithDamage, cov.totalTierOutcomes)})`,
   );
 
   if (errors.length > 0) {
