@@ -1,11 +1,12 @@
 /**
  * User-owned character routes.
  *
- * GET  /api/characters      — list the caller's characters
- * GET  /api/characters/:id  — single character (owner or campaign-member)
- * POST /api/characters      — create character; optional campaignCode join + auto-submit
- * PUT  /api/characters/:id  — owner-only update of name and/or data
- * DELETE /api/characters/:id — owner-only delete
+ * GET  /api/characters          — list the caller's characters
+ * GET  /api/characters/:id      — single character (owner or campaign-member)
+ * POST /api/characters          — create character; optional campaignCode join + auto-submit
+ * POST /api/characters/:id/attach — retroactively attach standalone character to a campaign
+ * PUT  /api/characters/:id      — owner-only update of name and/or data
+ * DELETE /api/characters/:id    — owner-only delete
  */
 
 import {
@@ -17,10 +18,15 @@ import {
 } from '@ironyard/shared';
 import { and, eq } from 'drizzle-orm';
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { requireAuth } from '../auth/middleware';
 import { db } from '../db';
 import { campaignMemberships, campaigns, characters } from '../db/schema';
 import type { AppEnv } from '../types';
+
+const AttachCharacterRequestSchema = z.object({
+  campaignCode: z.string().length(6),
+});
 
 export const characterRoutes = new Hono<AppEnv>();
 
@@ -188,6 +194,100 @@ characterRoutes.post('/', async (c) => {
     name: parsed.data.name,
     data: initialData,
     createdAt: now,
+    updatedAt: now,
+    autoSubmitted,
+  });
+});
+
+// POST /api/characters/:id/attach — retroactively attach a standalone character to a campaign.
+// - Verifies ownership.
+// - Resolves campaign by invite code; 404 if unknown.
+// - Idempotently upserts campaign_memberships.
+// - Sets data.campaignId on the character row.
+// - If updated data passes CompleteCharacterSchema, auto-dispatches SubmitCharacter via LobbyDO.
+characterRoutes.post('/:id/attach', async (c) => {
+  const caller = c.get('user');
+  const id = c.req.param('id');
+  const conn = db(c.env.DB);
+
+  // Load the character row.
+  const row = await conn.select().from(characters).where(eq(characters.id, id)).get();
+  if (!row) return c.json({ error: 'not_found' }, 404);
+
+  // Ownership check.
+  if (row.ownerId !== caller.id) return c.json({ error: 'forbidden' }, 403);
+
+  // Parse request body.
+  const body = await c.req.json();
+  const parsed = AttachCharacterRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json({ error: 'invalid_request', issues: parsed.error.issues }, 400);
+  }
+
+  // Resolve campaign by invite code.
+  const campaign = await conn
+    .select()
+    .from(campaigns)
+    .where(eq(campaigns.inviteCode, parsed.data.campaignCode))
+    .get();
+  if (!campaign) return c.json({ error: 'campaign_not_found' }, 404);
+  const campaignId = campaign.id;
+
+  // Idempotent membership upsert.
+  const existing = await conn
+    .select()
+    .from(campaignMemberships)
+    .where(
+      and(
+        eq(campaignMemberships.campaignId, campaignId),
+        eq(campaignMemberships.userId, caller.id),
+      ),
+    )
+    .get();
+  if (!existing) {
+    await conn.insert(campaignMemberships).values({
+      campaignId,
+      userId: caller.id,
+      isDirector: 0,
+      joinedAt: Date.now(),
+    });
+  }
+
+  // Update character data to set campaignId.
+  const currentData = CharacterSchema.parse(JSON.parse(row.data));
+  const updatedData = { ...currentData, campaignId };
+  const now = Date.now();
+  await conn
+    .update(characters)
+    .set({ data: JSON.stringify(updatedData), updatedAt: now })
+    .where(eq(characters.id, id));
+
+  // Auto-submit if updated data is complete.
+  let autoSubmitted = false;
+  if (CompleteCharacterSchema.safeParse(updatedData).success) {
+    const doId = c.env.LOBBY_DO.idFromName(campaignId);
+    const stub = c.env.LOBBY_DO.get(doId);
+    const dispatchResp = await stub.fetch(
+      `https://internal/server-dispatch?campaignId=${encodeURIComponent(campaignId)}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          type: 'SubmitCharacter',
+          actor: { userId: caller.id },
+          source: 'server',
+          payload: { characterId: id, campaignId },
+        }),
+      },
+    );
+    autoSubmitted = dispatchResp.ok;
+  }
+
+  return c.json({
+    id: row.id,
+    ownerId: row.ownerId,
+    name: row.name,
+    data: updatedData,
+    createdAt: row.createdAt,
     updatedAt: now,
     autoSubmitted,
   });
