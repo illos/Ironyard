@@ -126,6 +126,8 @@ sessionRoutes.get('/:id/socket', async (c) => {
   const headers = new Headers(c.req.raw.headers);
   headers.set('x-user-id', user.id);
   headers.set('x-user-display-name', user.displayName);
+  headers.set('x-user-role', membership.role);
+  headers.set('x-session-id', id);
   const upgradeReq = new Request(c.req.raw, { headers });
 
   return stub.fetch(upgradeReq) as unknown as Response;

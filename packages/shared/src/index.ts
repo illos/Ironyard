@@ -32,3 +32,16 @@ export {
   generateInviteCode,
 } from './session';
 export type { CreateSessionRequest, JoinSessionRequest } from './session';
+
+export {
+  IntentTypes,
+  JoinSessionPayloadSchema,
+  LeaveSessionPayloadSchema,
+  NotePayloadSchema,
+} from './intents';
+export type {
+  JoinSessionPayload,
+  KnownIntentType,
+  LeaveSessionPayload,
+  NotePayload,
+} from './intents';

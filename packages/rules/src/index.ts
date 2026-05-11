@@ -1,9 +1,20 @@
-// The rules engine. Pure, stateless. Same code runs in the DO and the client.
-//
-// Phase 0 ships the canon registry + requireCanon gate (item 2).
-// Phase 1 adds applyIntent, inverse, canDispatch, and the intent/condition/resource modules.
+// The rules engine. Pure, stateless. Same code runs in the DO (authoritative)
+// and — eventually — the client (optimistic). Phase 1 slice 1 ships three
+// intent types (JoinSession, LeaveSession, Note); subsequent slices add rolls,
+// damage, conditions, resources, undo.
 
 export const PACKAGE = '@ironyard/rules' as const;
+
+export { applyIntent } from './reducer';
+export { emptySessionState } from './types';
+export type {
+  IntentResult,
+  LogEntry,
+  NoteEntry,
+  SessionState,
+  StampedIntent,
+  ValidationError,
+} from './types';
 
 export { requireCanon } from './require-canon';
 export type { CanonSlug, CanonStatus } from './canon-status.generated';
