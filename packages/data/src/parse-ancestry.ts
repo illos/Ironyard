@@ -140,3 +140,13 @@ export function parseAncestryMarkdown(content: string): AncestryParseResult {
   }
   return { ok: true, ancestry: parsed.data };
 }
+
+/**
+ * Convenience wrapper for tests: parses ancestry markdown and throws on failure.
+ * The `_filename` parameter is accepted for interface consistency but unused.
+ */
+export function parseAncestry(content: string, _filename: string): Ancestry {
+  const result = parseAncestryMarkdown(content);
+  if (!result.ok) throw new Error(result.reason);
+  return result.ancestry;
+}

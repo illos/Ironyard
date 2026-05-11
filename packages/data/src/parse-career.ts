@@ -283,3 +283,13 @@ export function parseCareerMarkdown(content: string): CareerParseResult {
   }
   return { ok: true, career: parsed.data };
 }
+
+/**
+ * Convenience wrapper for tests: parses career markdown and throws on failure.
+ * The `_filename` parameter is accepted for interface consistency but unused.
+ */
+export function parseCareer(content: string, _filename: string): Career {
+  const result = parseCareerMarkdown(content);
+  if (!result.ok) throw new Error(result.reason);
+  return result.career;
+}

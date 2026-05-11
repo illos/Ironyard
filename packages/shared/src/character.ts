@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { CharacteristicsSchema } from './characteristic';
 
 // ── Character appearance / narrative details ──────────────────────────────────
 
@@ -84,6 +83,8 @@ export type LevelChoices = z.infer<typeof LevelChoicesSchema>;
 export const CharacterSchema = z.object({
   // ── Advancement ──────────────────────────────────────────────────────────
   level: z.number().int().min(1).max(10).default(1),
+  // ── XP (Phase 2 addition) ────────────────────────────────────────────────
+  xp: z.number().int().min(0).default(0),
 
   // ── Narrative details ─────────────────────────────────────────────────────
   details: CharacterDetailsSchema.default({}),
@@ -115,16 +116,6 @@ export const CharacterSchema = z.object({
   // on the character sheet (the locked ones are pre-set by the class).
   // Null until the player has made this pick.
   characteristicArray: z.array(z.number().int()).nullable().default(null),
-
-  // Resolved characteristic scores — stored so the sheet renders correctly
-  // offline. Recomputed from classId + characteristicArray on every save.
-  characteristics: CharacteristicsSchema.default({
-    might: 0,
-    agility: 0,
-    reason: 0,
-    intuition: 0,
-    presence: 0,
-  }),
 
   // References the subclass id within classes.json (e.g. an Order, Aspect, etc.).
   subclassId: z.string().nullable().default(null),

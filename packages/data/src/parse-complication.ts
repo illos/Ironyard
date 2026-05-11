@@ -16,7 +16,12 @@ function extractDescription(body: string): string {
   for (const line of lines) {
     const t = line.trim();
     if (!t || t.startsWith('#')) continue;
-    if (/^\*\*Benefit:\*\*/i.test(t) || /^\*\*Drawback:\*\*/i.test(t)) break;
+    if (
+      /^\*\*Benefit:\*\*/i.test(t) ||
+      /^\*\*Drawback:\*\*/i.test(t) ||
+      /^\*\*Benefit and Drawback:\*\*/i.test(t)
+    )
+      break;
     parts.push(t);
   }
   return parts.join(' ').trim();
@@ -28,6 +33,49 @@ function extractBoldField(body: string, label: string): string | null {
   const m = re.exec(body);
   if (!m || m[1] === undefined) return null;
   return m[1].trim();
+}
+
+/**
+ * Extract benefit and drawback text from a complication body.
+ *
+ * Handles two layouts observed in the SteelCompendium markdown:
+ *
+ *   Standard (most complications):
+ *     **Benefit:** <inline text>
+ *     **Drawback:** <inline text>
+ *
+ *   Combined (8 complications: Advanced Studies, Feytouched, etc.):
+ *     **Benefit and Drawback:** <inline text followed by bullet list>
+ *     In this case the same text is used for both benefit and drawback fields
+ *     so the schema is satisfied and the full description is accessible.
+ */
+function extractBenefitAndDrawback(body: string): { benefit: string; drawback: string } | null {
+  // Try standard separate fields first.
+  const benefit = extractBoldField(body, 'Benefit');
+  const drawback = extractBoldField(body, 'Drawback');
+  if (benefit && drawback) return { benefit, drawback };
+
+  // Fallback: combined "Benefit and Drawback" field.
+  // Capture the inline text on the same line; subsequent bullet lines are
+  // included by collecting until the next blank line or heading.
+  const combinedRe = /^\*\*Benefit and Drawback:\*\*\s*(.*)$/im;
+  const combinedMatch = combinedRe.exec(body);
+  if (combinedMatch) {
+    const firstLine = (combinedMatch[1] ?? '').trim();
+    // Collect any continuation lines (bullet points, etc.) until blank/heading.
+    const afterIdx = body.indexOf(combinedMatch[0]) + combinedMatch[0].length;
+    const rest = body.slice(afterIdx);
+    const continuationLines: string[] = [];
+    for (const line of rest.split(/\r?\n/)) {
+      const t = line.trim();
+      if (!t || /^#{1,6}\s/.test(t) || /^\*\*\w/.test(t)) break;
+      continuationLines.push(t);
+    }
+    const combined = [firstLine, ...continuationLines].filter(Boolean).join(' ');
+    if (combined) return { benefit: combined, drawback: combined };
+  }
+
+  return null;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -51,11 +99,10 @@ export function parseComplicationMarkdown(content: string): ComplicationParseRes
   if (!name) return { ok: false, reason: 'missing item_name' };
 
   const description = extractDescription(body);
-  const benefit = extractBoldField(body, 'Benefit');
-  const drawback = extractBoldField(body, 'Drawback');
+  const fields = extractBenefitAndDrawback(body);
 
-  if (!benefit) return { ok: false, reason: 'missing Benefit field' };
-  if (!drawback) return { ok: false, reason: 'missing Drawback field' };
+  if (!fields) return { ok: false, reason: 'missing Benefit field' };
+  const { benefit, drawback } = fields;
 
   const candidate = { id, name, description, benefit, drawback };
   const parsed = ComplicationSchema.safeParse(candidate);
@@ -63,4 +110,14 @@ export function parseComplicationMarkdown(content: string): ComplicationParseRes
     return { ok: false, reason: `schema validation: ${parsed.error.message}` };
   }
   return { ok: true, complication: parsed.data };
+}
+
+/**
+ * Convenience wrapper for tests: parses complication markdown and throws on failure.
+ * The `_filename` parameter is accepted for interface consistency but unused.
+ */
+export function parseComplication(content: string, _filename: string): Complication {
+  const result = parseComplicationMarkdown(content);
+  if (!result.ok) throw new Error(result.reason);
+  return result.complication;
 }

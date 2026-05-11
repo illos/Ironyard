@@ -333,25 +333,57 @@ function parseAdvancementTable(body: string): ClassLevel[] {
 /**
  * Extract subclass label (e.g. "Order", "Domain", "Aspect") from the class body.
  *
- * Looks for the subclass-defining section heading which contains phrases like
- * "Your censor order is your subclass" or "Your primordial aspect is your subclass".
- * The sentence pattern is: "Your [name] is your subclass"
+ * Handles three sentence patterns observed across all nine classes:
+ *
+ *   Pattern A (most classes):
+ *     "Your [modifier] [noun] is your subclass"
+ *     e.g. "Your primordial aspect is your subclass" → "Aspect"
+ *          "Your censor order is your subclass"      → "Order"
+ *
+ *   Pattern B (Troubadour):
+ *     "Your [class] [word] [noun] is your subclass"  (multi-word modifier)
+ *     e.g. "Your troubadour class act is your subclass" → "Act"
+ *     Fixed by allowing `(?:\w+\s+)*` before the captured noun.
+ *
+ *   Pattern C (Conduit):
+ *     "[noun/phrase] make up your subclass"
+ *     e.g. "The two domains you pick make up your subclass" → "Domain"
+ *     Fixed with a second regex that captures the last noun before "you … make up".
  */
 function extractSubclassLabel(classBody: string): string | null {
-  const m = /[Yy]our (?:\w+ )?(\w+) is your subclass/i.exec(classBody);
-  if (!m || m[1] === undefined) return null;
-  const word = m[1].trim();
-  return word.charAt(0).toUpperCase() + word.slice(1);
+  // Pattern A + B: "Your [any number of modifier words] [noun] is your subclass"
+  const isYourSubclass = /[Yy]our\s+(?:\w+\s+)*(\w+)\s+is\s+your\s+subclass/i.exec(classBody);
+  if (isYourSubclass && isYourSubclass[1] !== undefined) {
+    const word = isYourSubclass[1].trim();
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }
+
+  // Pattern C: "[determiner] [count] [noun(s)] [optional words] make up your subclass"
+  // Captures the last standalone noun that appears before "you … make up your subclass".
+  // e.g. "The two domains you pick make up your subclass" → "Domain" (singular of "domains")
+  const makeUpSubclass = /\b(\w+)\s+(?:you\s+\w+\s+)?make\s+up\s+your\s+subclass/i.exec(classBody);
+  if (makeUpSubclass && makeUpSubclass[1] !== undefined) {
+    const rawNoun = makeUpSubclass[1].trim().toLowerCase();
+    // Singularize simple "-s" plural (domains → domain).
+    const singular = rawNoun.endsWith('s') ? rawNoun.slice(0, -1) : rawNoun;
+    return singular.charAt(0).toUpperCase() + singular.slice(1);
+  }
+
+  return null;
 }
 
 /**
  * Extract subclasses from bullet list items in the subclass section.
  *
- * Observed format:
+ * Primary format (most classes):
  *   - **Berserker:** Description text. You have the Lift skill.
  *   - **College of Black Ash:** Description. You have the Magic skill.
  *
- * Also handles "earth", "fire" etc. format without bold from Elementalist.
+ * Fallback for table-based subclass lists (Conduit):
+ *   When no bullet subclasses are found near the intro sentence, look for a
+ *   markdown table whose first column is labelled "[SubclassLabel]" (e.g.
+ *   "| Domain | Feature | Skill Group |") and extract the non-header rows of
+ *   the first column as subclass names.
  */
 function extractSubclasses(classBody: string, subclassLabel: string): Subclass[] {
   const subclasses: Subclass[] = [];
@@ -361,8 +393,13 @@ function extractSubclasses(classBody: string, subclassLabel: string): Subclass[]
   // We locate the list bullets that immediately follow the intro paragraph.
   // Pattern: `- **Name:** description` or `- Name: description`
   const bulletRe = /^-\s+\*\*(.+?)\*\*[:\s]+(.+)$/gm;
+
+  // The intro sentence may use "is your subclass", "from the following", or
+  // "make up your subclass" (Conduit). Allow any number of modifier words
+  // before the subclass label so multi-word labels like "class act" work.
   const subclassIntroRe = new RegExp(
-    `your\\s+(?:\\w+\\s+)?${subclassLabel}\\s+(?:is\\s+your\\s+subclass|from\\s+the\\s+following)`,
+    `(?:your\\s+(?:\\w+\\s+)*${subclassLabel}\\s+(?:is\\s+your\\s+subclass|is\\s+your\\s+art|from\\s+the\\s+following)` +
+      `|(?:\\w+\\s+)*${subclassLabel}s?\\s+(?:you\\s+\\w+\\s+)?make\\s+up\\s+your\\s+subclass)`,
     'i',
   );
 
@@ -379,6 +416,8 @@ function extractSubclasses(classBody: string, subclassLabel: string): Subclass[]
 
     // Skip if this looks like a feature description bullet rather than a subclass.
     if (rawName.toLowerCase() === 'quick build') continue;
+    // Skip domain piety/prayer effect bullets (Conduit structure).
+    if (/^(piety|prayer\s+effect)$/i.test(rawName)) continue;
 
     const id = rawName
       .toLowerCase()
@@ -395,6 +434,43 @@ function extractSubclasses(classBody: string, subclassLabel: string): Subclass[]
     }
 
     subclasses.push({ id, name: rawName, description: rawDesc, skillGrant });
+  }
+
+  // ── Fallback: table-based subclass list (e.g. Conduit domains) ─────────────
+  // If no bullet subclasses were found, look for a markdown table whose first
+  // column header matches the subclass label (singular or plural).
+  if (subclasses.length === 0) {
+    const tableHeaderRe = new RegExp(`\\|\\s*${subclassLabel}s?\\s*\\|`, 'i');
+    const lines = classBody.split(/\r?\n/);
+    let inTable = false;
+    let pastSeparator = false;
+    for (const line of lines) {
+      const t = line.trim();
+      if (!inTable) {
+        if (tableHeaderRe.test(t)) {
+          inTable = true;
+          pastSeparator = false;
+        }
+        continue;
+      }
+      // The separator row (| --- | --- | ...)
+      if (/^\|[\s:-]+\|/.test(t)) {
+        pastSeparator = true;
+        continue;
+      }
+      if (!pastSeparator) continue;
+      // Stop at blank line or non-table line.
+      if (!t.startsWith('|')) break;
+      // Extract first column value.
+      const firstCell = t.replace(/^\|/, '').split('|')[0]?.trim() ?? '';
+      if (firstCell && firstCell !== '-') {
+        const id = firstCell
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+        subclasses.push({ id, name: firstCell, description: '', skillGrant: null });
+      }
+    }
   }
 
   return subclasses;
@@ -521,4 +597,19 @@ export function parseClassMarkdown(
     return { ok: false, reason: `schema validation: ${parsed.error.message}` };
   }
   return { ok: true, heroClass: parsed.data };
+}
+
+/**
+ * Convenience wrapper for tests: parses a class from a single combined markdown
+ * file (the main class .md from data-md/Rules/Classes/ which contains both
+ * frontmatter and a Basics section inline) and throws on failure.
+ *
+ * The `_filename` parameter is accepted for interface consistency but unused.
+ * Both the class file and basics file arguments to `parseClassMarkdown` receive
+ * the same content because the canonical class files embed both sections.
+ */
+export function parseClass(content: string, _filename: string): HeroClass {
+  const result = parseClassMarkdown(content, content);
+  if (!result.ok) throw new Error(result.reason);
+  return result.heroClass;
 }
