@@ -1,9 +1,7 @@
-import { IntentTypes } from '@ironyard/shared';
 import { Link, useParams } from '@tanstack/react-router';
 import { useMe, useCharacter } from '../../api/queries';
 import { useWizardStaticData } from '../../api/static-data';
 import { useSessionSocket } from '../../ws/useSessionSocket';
-import { buildIntent } from '../../api/dispatch';
 import { RuntimeReadout } from './parts/RuntimeReadout';
 import { AttachToCampaign } from './parts/AttachToCampaign';
 
@@ -83,39 +81,26 @@ export function Sheet() {
 }
 
 function InLobbyControls({
-  characterId,
-  campaignId,
-  userId,
-  dispatch,
+  characterId: _characterId,
+  campaignId: _campaignId,
+  userId: _userId,
+  dispatch: _dispatch,
 }: {
   characterId: string;
   campaignId: string;
   userId: string;
   dispatch: ReturnType<typeof useSessionSocket>['dispatch'];
 }) {
-  const swapKit = () => {
-    // Real picker is Phase 2 Epic 2; for now this is a no-op placeholder.
-    // SwapKitPayloadSchema requires newKitId.min(1) and ownerId — the DO will
-    // reject the empty-string sentinel but the round-trip is benign until the
-    // picker is wired up.
-    dispatch(
-      buildIntent({
-        campaignId,
-        type: IntentTypes.SwapKit,
-        payload: { characterId, newKitId: '__placeholder__', ownerId: userId },
-        actor: { userId, role: 'player' },
-      }),
-    );
-  };
   return (
     <div className="rounded-md border border-neutral-800 p-4 space-y-3">
       <h3 className="font-medium">Lobby controls</h3>
       <button
         type="button"
-        onClick={swapKit}
-        className="min-h-11 px-3 py-2 rounded-md bg-neutral-100 text-neutral-900 text-sm font-medium"
+        disabled
+        title="Kit picker comes in Epic 2"
+        className="min-h-11 px-3 py-2 rounded-md bg-neutral-800 text-neutral-400 text-sm font-medium cursor-not-allowed"
       >
-        Swap kit (Epic 2 will populate the picker)
+        Swap kit (Epic 2)
       </button>
     </div>
   );
