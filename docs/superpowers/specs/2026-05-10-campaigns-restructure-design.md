@@ -5,7 +5,7 @@
 
 ## Summary
 
-Replace the current flat `sessions` model with a two-level structure: **Campaigns** (long-lived, director-owned containers) and **Lobbies** (the live DO runtime attached to a campaign). Introduce **Encounter Templates** (saved monster bundles, additive when loaded) and **Campaign-Characters** (a per-campaign roster of approved player characters, DM-gated). Reframe the engine so the lobby holds a persistent participant roster across encounters; `EndEncounter` becomes a phase reset, not a roster clear.
+Replace the current flat `sessions` model with a two-level structure: **Campaigns** (long-lived containers owned by a single user) and **Lobbies** (the live DO runtime attached to a campaign). Split the old "director" role into three tiers — **Owner** (permanent), **Director permission** (grantable by owner to other members), **Active Director** (transient, one at a time, freely contestable by any director-permitted member). Introduce **Encounter Templates** (saved monster bundles, additive when loaded) and **Campaign-Characters** (a per-campaign roster of submitted player characters, gated on active-director approval). Reframe the engine so the lobby holds a persistent participant roster across encounters; `EndEncounter` becomes a phase reset, not a roster clear.
 
 This is structural — every piece of D1, every route, the DO, and the reducer's top-level state type are touched. It's also pre-launch in scope: no production data to preserve.
 
@@ -13,7 +13,10 @@ This is structural — every piece of D1, every route, the DO, and the reducer's
 
 | Term | Meaning |
 |---|---|
-| **Campaign** | The top-level, long-lived container. Has a name, an invite code, members, and (eventually) saved encounters, party-level data, and more. Owned by a director. Replaces what `sessions` does today. |
+| **Campaign** | The top-level, long-lived container. Has a name, an invite code, members, and (eventually) saved encounters, party-level data, and more. Owned by a single user. Replaces what `sessions` does today. |
+| **Owner** | The user who created the campaign. Singular, permanent (for v1 — ownership transfer is a future feature). Always has director permission and is the ultimate authority: can grant/revoke director permission, kick players, deny characters, manage templates. Cannot be kicked. Cannot have their director permission revoked. |
+| **Director permission** | A per-member flag (`is_director`) granted by the owner. Members with this flag can take the director chair to run a session, and can perform all operational acts (approve/deny characters, kick players, manage templates, drive combat). The owner holds this implicitly. Any number of members can hold it. |
+| **Active Director** | The single member currently in the "director chair" — the one whose intents are accepted as director-driven (combat control, approvals, etc.). At most one per campaign. Defaults to the owner. Any director-permitted member can press "Take over directing" to become active; this is broadcast and immediate. The previous active director is bumped out of the chair (still has permission, can take it back). |
 | **Lobby** | The **runtime** environment for a campaign — the Durable Object holding live state, sockets, the active participant roster, and the current encounter phase. Not its own table; "joining the lobby" is just connecting a WebSocket to the campaign's DO. One DO per campaign. |
 | **Encounter (live)** | The phase of the lobby where initiative is rolled and combat is running. Not a separate persistent entity. Lives inside the campaign's DO state. |
 | **Encounter Template** | A named, reusable monster lineup saved by the director (e.g. "Goblin Patrol — 6 minions + 1 sniper"). Stored in D1 per-campaign. Additive when loaded into the lobby. |
@@ -23,10 +26,11 @@ This is structural — every piece of D1, every route, the DO, and the reducer's
 
 1. Director can create a Campaign and reuse it across multiple play nights without recreating state.
 2. Players join a Campaign once via invite code; membership persists until they leave or are kicked.
-3. Players can register characters with a campaign; DM approves before they're playable.
+3. Players can register characters with a campaign; the active director approves before they're playable.
 4. Director can save the current monster lineup as an Encounter Template and reload it later.
 5. Director can add monsters or templates to the lobby roster at any time — including mid-combat.
 6. `EndEncounter` resets only encounter-phase state (round, turn order, malice, conditions); roster and stamina persist.
+7. The owner can hand off directing duties: grant director permission to another member, who can then take the director chair (e.g. when the owner is absent or wants to play their PC for the night). Owner retains override at all times.
 
 ## Non-goals (v1)
 
@@ -47,7 +51,7 @@ auth_tokens
 auth_sessions
 campaigns                ← renamed from sessions; same metadata role
 campaign_memberships     ← renamed from memberships; user ↔ campaign
-campaign_characters      ← NEW; character ↔ campaign, DM-approved
+campaign_characters      ← NEW; character ↔ campaign, active-director approved
 encounter_templates      ← NEW; replaces dormant `encounters` table
 campaign_snapshots       ← renamed from session_snapshots; DO state cache
 intents                  ← unchanged structure; column renamed session_id → campaign_id
@@ -63,10 +67,17 @@ The dormant `encounters` table is **dropped**.
 
 ### Trust
 
-Unchanged from CLAUDE.md baseline. Director-trusted, players-trusted-with-receipts. Two new authorisation surfaces:
+Same spirit as CLAUDE.md baseline — director-trusted, players-trusted-with-receipts — refined into three permission tiers:
 
-- **Approve/deny character submission:** director-only intent. Reducer rejects from any non-director actor.
-- **Kick player:** director-only intent. Removes the player's memberships and campaign_characters via reducer + DO; persisted to D1 via the same intent pipeline.
+1. **Owner** — singular, permanent. Can do everything an active director can, plus grant/revoke director permission. Cannot be kicked or demoted. The `campaigns.owner_id` column is the source of truth; mirrored into `CampaignState.ownerId` for reducer access.
+2. **Director permission** — held by the owner implicitly, plus any other members the owner has granted it to via the grant route. Stored on `campaign_memberships.is_director`. A member with director permission can take the director chair at any time but is not automatically *the* director.
+3. **Active director** — at most one per campaign. Stored in `CampaignState.activeDirectorId`, defaults to `ownerId`. Mutated by the `TakeDirectorChair` intent (any director-permitted member can dispatch it; reducer sets `activeDirectorId = actor.userId`). All operational "director-only" intents check `actor.userId === state.activeDirectorId`.
+
+**Operational acts** (approve/deny character, kick player, manage templates, combat control, `RemoveParticipant`, `ClearLobby`): require *active director* (and the owner trivially satisfies this because they default to it and can take the chair at will).
+
+**Ownership acts** (grant/revoke director permission, future ownership transfer): require *owner*. Enforced by reducer / route checks against `state.ownerId`.
+
+**Revoking the active director.** If the owner revokes director permission from the user currently holding `activeDirectorId`, the revoke route force-dispatches a synthetic `TakeDirectorChair` from the owner so the chair returns to the owner atomically. No window in which a revoked user keeps the chair.
 
 ## Data model
 
@@ -75,26 +86,26 @@ Unchanged from CLAUDE.md baseline. Director-trusted, players-trusted-with-receip
 ```ts
 id           text PRIMARY KEY        // ULID
 name         text NOT NULL
-director_id  text NOT NULL → users.id
-invite_code  text NOT NULL UNIQUE    // 6-char, generated as today
+owner_id     text NOT NULL → users.id   // renamed from director_id
+invite_code  text NOT NULL UNIQUE       // 6-char, generated as today
 created_at   integer NOT NULL
 updated_at   integer NOT NULL
 ```
 
-Verbatim shape of today's `sessions` table, renamed.
+Renamed `director_id` → `owner_id` to reflect the permission split: this column is the permanent owner of the campaign, not "the director" (which is now a transient runtime concept).
 
 ### `campaign_memberships`
 
 ```ts
 campaign_id  text NOT NULL → campaigns.id ON DELETE CASCADE
 user_id      text NOT NULL → users.id
-role         text NOT NULL CHECK (role IN ('director','player'))
+is_director  integer NOT NULL DEFAULT 0   // 1 = has director permission; owner implicitly has it
 joined_at    integer NOT NULL
 PRIMARY KEY (campaign_id, user_id)
 INDEX idx_campaign_memberships_user ON (user_id)
 ```
 
-Verbatim shape of `memberships`, renamed.
+The `role` enum is replaced by `is_director`. The old `director` role is now derived (owner of the campaign OR a member with `is_director = 1`); everyone else is a plain member. The owner's membership row has `is_director = 1` set at create time for query convenience, but the owner's authority does not depend on it (it's derived from `campaigns.owner_id`).
 
 ### `campaign_characters`
 
@@ -182,6 +193,13 @@ The current `SessionState` shape lumps participants inside `activeEncounter`. Th
 ```ts
 export type CampaignState = {
   campaignId: string;
+  // Cached from campaigns.owner_id at load(); immutable per campaign for v1.
+  // Used by the reducer to authorise owner-only intents without a D1 round-trip.
+  ownerId: string;
+  // The user currently in the director chair. Defaults to ownerId on creation.
+  // Mutated by TakeDirectorChair. Operational "director-only" intents are
+  // gated on actor.userId === activeDirectorId.
+  activeDirectorId: string;
   seq: number;
   connectedMembers: Member[];
   notes: NoteEntry[];
@@ -205,7 +223,9 @@ export type EncounterPhase = {
 
 `Participant` keeps everything it has today (id, name, kind, stamina, conditions, resources, etc.). Conditions live on the participant and are wiped by `EndEncounter`.
 
-`emptyCampaignState(campaignId)` (renamed) returns `{ ..., participants: [], encounter: null }`.
+`emptyCampaignState(campaignId, ownerId)` (renamed, second param added) returns `{ campaignId, ownerId, activeDirectorId: ownerId, seq: 0, connectedMembers: [], notes: [], participants: [], encounter: null }`. The DO must know the campaign's owner at `load()` time — it reads `campaigns.owner_id` once during cold start and threads it into the empty-state factory.
+
+**Note on `directorMembers`.** The set of director-permitted users is **not** mirrored into `CampaignState`. The truth is `campaign_memberships.is_director`. The reducer cannot validate `TakeDirectorChair` purely from state — instead, the DO performs a D1 lookup of the actor's `is_director` flag inside the serialized op (the same pattern used for `LoadEncounterTemplate`), stamps the verdict onto the intent payload as `{ permitted: boolean }`, and the reducer accepts or rejects based on that plus `actor.userId === state.ownerId`.
 
 ## Intents
 
@@ -220,17 +240,23 @@ export type EncounterPhase = {
 
 ### New
 
-| Intent | Purpose |
-|---|---|
-| `AddMonster` | Adds one or more monster instances to the lobby roster from the codex. Payload: `{ monsterId, quantity, nameOverride? }`. |
-| `RemoveParticipant` | Removes a participant from the lobby roster. Rejected if the participant is the currently active participant of an in-progress encounter. Director-only. |
-| `ClearLobby` | Bulk-remove all participants. Rejected while an encounter is active. Director-only. |
-| `LoadEncounterTemplate` | Adds all participants from a saved template. Client payload: `{ templateId }`. The DO resolves the template row from D1 before invoking the reducer and stamps the resolved monster list onto the intent payload as `{ templateId, monsters: [...] }`; the reducer then emits one derived `AddMonster` per `monsters[]` entry. Works mid-combat (additive). |
-| `SubmitCharacter` | Player submits one of their characters for DM approval. Payload: `{ characterId }`. Creates a `campaign_characters` row with `status='pending'`. Player must already be a campaign member. |
-| `ApproveCharacter` | Director approves a pending submission. Payload: `{ characterId }`. Updates row to `status='approved'`. Director-only. |
-| `DenyCharacter` | Director denies a pending submission. Payload: `{ characterId }`. Deletes the row. Director-only. |
-| `RemoveApprovedCharacter` | Director removes a previously-approved character from the campaign. Payload: `{ characterId }`. Deletes the row. Also removes the corresponding participant from the lobby roster if present. Director-only. |
-| `KickPlayer` | Director removes a player from the campaign. Payload: `{ userId }`. Deletes their `campaign_memberships` row and all their `campaign_characters` rows; also removes any of their characters' participants from the lobby roster. Director-only. |
+Authority levels referenced below:
+- **Active-director gated:** reducer accepts iff `actor.userId === state.activeDirectorId`. The owner satisfies this trivially because the chair defaults to them and they can always take it back.
+- **Owner-gated:** reducer accepts iff `actor.userId === state.ownerId`.
+- **Director-permitted gated:** DO stamps a D1-derived `permitted` flag onto the intent; reducer accepts iff `permitted === true` OR `actor.userId === state.ownerId`.
+
+| Intent | Authority | Purpose |
+|---|---|---|
+| `AddMonster` | Active director | Adds one or more monster instances to the lobby roster from the codex. Payload: `{ monsterId, quantity, nameOverride? }`. |
+| `RemoveParticipant` | Active director | Removes a participant from the lobby roster. Rejected if the participant is the currently active participant of an in-progress encounter. |
+| `ClearLobby` | Active director | Bulk-remove all participants. Rejected while an encounter is active. |
+| `LoadEncounterTemplate` | Active director | Adds all participants from a saved template. Client payload: `{ templateId }`. The DO resolves the template row from D1 before invoking the reducer and stamps the resolved monster list onto the intent payload as `{ templateId, monsters: [...] }`; the reducer then emits one derived `AddMonster` per `monsters[]` entry. Works mid-combat (additive). |
+| `SubmitCharacter` | Any campaign member | Player submits one of their characters for director approval. Payload: `{ characterId }`. Creates a `campaign_characters` row with `status='pending'`. Player must already be a campaign member and own the character. |
+| `ApproveCharacter` | Active director | Approves a pending submission. Payload: `{ characterId }`. Updates row to `status='approved'`. |
+| `DenyCharacter` | Active director | Denies a pending submission. Payload: `{ characterId }`. Deletes the row. |
+| `RemoveApprovedCharacter` | Active director | Removes a previously-approved character from the campaign. Payload: `{ characterId }`. Deletes the row. Also removes the corresponding participant from the lobby roster if present. |
+| `KickPlayer` | Active director | Removes a player from the campaign. Payload: `{ userId }`. Deletes their `campaign_memberships` row and all their `campaign_characters` rows; also removes any of their characters' participants from the lobby roster. Rejected if `userId === state.ownerId` (owner can't be kicked). |
+| `TakeDirectorChair` | Director-permitted | Actor takes the director chair. Client payload: `{}`. DO stamps `{ permitted }` from D1; reducer sets `state.activeDirectorId = actor.userId`. The previous chair-holder simply loses the chair (no separate notification). |
 
 ### Removed
 
@@ -240,7 +266,9 @@ None — every old intent still has a clear home in the new model. The `encounte
 
 `SERVER_ONLY_INTENTS` set in the DO becomes: `JoinLobby`, `LeaveLobby`, `ApplyDamage`. Unchanged surface, renamed entries.
 
-The admin-style intents (`SubmitCharacter`, `Approve/DenyCharacter`, `RemoveApprovedCharacter`, `KickPlayer`, `RemoveParticipant`, `ClearLobby`) are **not** server-only — they're dispatched by clients and gated at the reducer level via actor-role checks. This matches the existing pattern (e.g. an "edit monster HP" intent is rejected by the reducer when a player dispatches against a monster they don't own, rather than being server-only).
+The admin-style intents (`SubmitCharacter`, `Approve/DenyCharacter`, `RemoveApprovedCharacter`, `KickPlayer`, `RemoveParticipant`, `ClearLobby`, `TakeDirectorChair`) are **not** server-only — they're dispatched by clients and gated at the reducer level via the authority checks documented in the intents table. This matches the existing pattern (e.g. an "edit monster HP" intent is rejected by the reducer when a player dispatches against a monster they don't own, rather than being server-only).
+
+The synthetic `TakeDirectorChair` dispatched by the revoke route (see HTTP routes below) is the **one exception**: it's server-emitted and bypasses client gating, because the revoke action needs to atomically clear the chair regardless of who currently holds it.
 
 ## HTTP routes
 
@@ -249,14 +277,17 @@ All routes under `/api/campaigns/*` (renamed from `/api/sessions/*`). Auth middl
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/api/campaigns` | List campaigns the caller belongs to. |
-| `POST` | `/api/campaigns` | Create a campaign; caller becomes director. |
-| `POST` | `/api/campaigns/join` | Redeem an invite code; caller joins as player. |
-| `GET` | `/api/campaigns/:id` | Campaign metadata (name, invite code, caller's role). |
+| `POST` | `/api/campaigns` | Create a campaign; caller becomes owner. The membership row for the caller is created with `is_director = 1`. |
+| `POST` | `/api/campaigns/join` | Redeem an invite code; caller joins as a member (no director permission). |
+| `GET` | `/api/campaigns/:id` | Campaign metadata (name, invite code, caller's permission flags: `isOwner`, `isDirector`, plus `activeDirectorId`). |
 | `GET` | `/api/campaigns/:id/socket` | WS upgrade → lobby DO. |
+| `GET` | `/api/campaigns/:id/members` | List members with their `is_director` flag. Any member. |
+| `POST` | `/api/campaigns/:id/members/:userId/director` | Grant director permission. Owner-only. Sets `is_director = 1`. |
+| `DELETE` | `/api/campaigns/:id/members/:userId/director` | Revoke director permission. Owner-only. Sets `is_director = 0`. If the revoked user is currently the active director, the route also dispatches a server-emitted `TakeDirectorChair` from the owner so the chair returns atomically. Rejected if `userId === ownerId` (owner's permission is implicit and cannot be revoked). |
 | `GET` | `/api/campaigns/:id/templates` | List the campaign's encounter templates. |
-| `POST` | `/api/campaigns/:id/templates` | Create a template. Director-only. Body: `{ name, data }`. |
-| `PATCH` | `/api/campaigns/:id/templates/:tid` | Rename or edit a template. Director-only. |
-| `DELETE` | `/api/campaigns/:id/templates/:tid` | Delete a template. Director-only. |
+| `POST` | `/api/campaigns/:id/templates` | Create a template. Active-director-only (route checks `state.activeDirectorId` via DO; or accepts owner unconditionally). Body: `{ name, data }`. |
+| `PATCH` | `/api/campaigns/:id/templates/:tid` | Rename or edit a template. Active-director-only. |
+| `DELETE` | `/api/campaigns/:id/templates/:tid` | Delete a template. Active-director-only. |
 | `GET` | `/api/campaigns/:id/characters` | List campaign-character rows (filtered by status). |
 
 The template endpoints sit outside the intent stream — they manage template definitions, not lobby state. Loading a template into the lobby goes through the `LoadEncounterTemplate` intent and reads the template row mid-dispatch.
@@ -275,19 +306,21 @@ Loading is a single button: **Add → Saved encounter → pick from list**. The 
 ## DO changes
 
 - Class rename `SessionDO` → `LobbyDO`.
-- Header rename `x-session-id` → `x-campaign-id`. `x-user-id`, `x-user-display-name`, `x-user-role` unchanged.
+- Header rename `x-session-id` → `x-campaign-id`. `x-user-id`, `x-user-display-name` unchanged. **`x-user-role` is removed** — the reducer derives authority from `actor.userId` against `state.ownerId` / `state.activeDirectorId` / D1-stamped `is_director`. There's no client-claimed role to honour.
 - DO is keyed by `campaignId` via `idFromName(campaignId)`. Same pattern as today.
-- `load()` reads `campaign_snapshots`, replays non-voided `intents` where `campaign_id = ...`. Identical to today modulo column names.
+- `load()` reads `campaign_snapshots`; if there is no snapshot it bootstraps from `campaigns.owner_id` to populate `ownerId` and seed `activeDirectorId = ownerId`. Then replays non-voided `intents` where `campaign_id = ...`. Identical to today modulo column names plus the bootstrap read.
 - WebSocket envelope kinds stay: `applied`, `rejected`, `snapshot`, `sync`, `dispatch`, `member_list`, `member_joined`, `member_left`. The Phase 0 `member_*` envelopes are still emitted for compatibility and removed in their own follow-up.
-- `LoadEncounterTemplate` is dispatched by a player or director through the normal `dispatch` path; the DO handler reads the template row from D1 inside the serialized op (before calling the reducer), and the reducer receives the resolved monster list as part of the intent payload at the boundary. **Alternative considered:** read the template in the reducer. Rejected because the reducer is pure (no D1 access) — the DO is the right place to fan a template into participants.
+- `LoadEncounterTemplate` is dispatched by a director through the normal `dispatch` path; the DO handler reads the template row from D1 inside the serialized op (before calling the reducer), and the reducer receives the resolved monster list as part of the intent payload at the boundary. **Alternative considered:** read the template in the reducer. Rejected because the reducer is pure (no D1 access) — the DO is the right place to fan a template into participants.
+- `TakeDirectorChair` follows the same DO-stamping pattern: handler reads `campaign_memberships.is_director` for the actor, stamps `{ permitted: boolean }` onto the payload before reducer dispatch. Cheap (single indexed read).
+- **Revoke-side synthetic dispatch.** When the revoke HTTP route fires while the target user is the active director, it constructs a `TakeDirectorChair` intent with `actor = { userId: ownerId, ... }`, `source = 'server'`, `permitted: true`, and pushes it through the normal `_applyOne` pipeline. Same serialized-op queue, same broadcast.
 
 ## Migration
 
 Drop-and-recreate. Project is pre-launch; the friend group is not yet using it.
 
-- New Drizzle migration `0001_campaigns.sql` (or whatever number is next) generated against the new schema.
+- New Drizzle migration generated against the new schema. Renames `sessions` → `campaigns` (and `director_id` → `owner_id`), `memberships` → `campaign_memberships` (and `role` column replaced with `is_director`), `session_snapshots` → `campaign_snapshots`, `intents.session_id` → `intents.campaign_id`. Drops dormant `encounters`. Adds `encounter_templates` and `campaign_characters`.
 - `pnpm db:reset` script updated to apply the new schema as the only schema.
-- Existing fixtures rewritten to seed a campaign + director user + one approved character + one encounter template.
+- Existing fixtures rewritten to seed: a campaign + owner user + one secondary director-permitted member + one approved character + one encounter template.
 
 If the user wants a data-preserving migration, the scope expands meaningfully (rename + data move for every table). Flag explicitly during review if so.
 
@@ -295,8 +328,8 @@ If the user wants a data-preserving migration, the scope expands meaningfully (r
 
 Per CLAUDE.md, every package gets test coverage before declaring done.
 
-- **`packages/rules`** — reducer tests for: EndEncounter clears conditions but preserves stamina; StartEncounter engages current roster; AddMonster mid-combat appends to roster without disturbing turn order; LoadEncounterTemplate fans into N AddMonster intents; ClearLobby rejected mid-encounter; RemoveParticipant rejected for active-turn participant; character lifecycle intents reject non-director actors.
-- **`apps/api`** — route tests for all `/api/campaigns/*` endpoints (auth, membership gating, director gating on templates); DO tests for header rename, replay correctness, LoadEncounterTemplate's D1-side-channel read.
+- **`packages/rules`** — reducer tests for: EndEncounter clears conditions but preserves stamina; StartEncounter engages current roster; AddMonster mid-combat appends to roster without disturbing turn order; LoadEncounterTemplate fans into N AddMonster intents; ClearLobby rejected mid-encounter; RemoveParticipant rejected for active-turn participant; operational intents reject actors who are not the active director; owner-gated checks (KickPlayer cannot target the owner); TakeDirectorChair rejected when `permitted=false` and actor is not owner; TakeDirectorChair accepted for owner unconditionally; TakeDirectorChair accepted for a director-permitted member and updates `activeDirectorId`.
+- **`apps/api`** — route tests for all `/api/campaigns/*` endpoints (auth, membership gating, active-director gating on templates, owner-only gating on grant/revoke director); revoke-while-active-director triggers a synthetic TakeDirectorChair and the chair returns to the owner atomically; DO tests for header rename, replay correctness, LoadEncounterTemplate's D1-side-channel read, TakeDirectorChair's D1-stamped `permitted` flag.
 - **`apps/web`** — query/mutation hooks renamed, plus integration test for "save current roster as template" round-trip.
 
 ## Risks and trade-offs
@@ -305,11 +338,13 @@ Per CLAUDE.md, every package gets test coverage before declaring done.
 - **Participant model split.** Moving `participants` out of `encounter` is a breaking shape change. Snapshot rows from pre-refactor sessions are unreadable. Acceptable because pre-launch.
 - **Template authoring outside the intent log.** Template CRUD is HTTP-only, so creating/editing/deleting a template is **not** an intent and **not** undoable. Acceptable trade — templates are setup data, not in-play state. The act of *loading* one into the lobby is an intent.
 - **`SubmitCharacter` requires character ownership at submission time.** A player who later transfers a character to another user, or whose character is deleted, leaves dangling references. Resolution: `ON DELETE CASCADE` on `character_id` handles deletion; ownership transfer isn't a v1 capability.
-- **Director adding their own characters.** A director can `SubmitCharacter` against their own characters (e.g. for DMPCs); the reducer-level approval still goes through `ApproveCharacter`, which they'll dispatch themselves. Slightly silly but cheap and consistent.
+- **Director adding their own characters.** A director can `SubmitCharacter` against their own characters (e.g. for DMPCs); the active-director approval still goes through `ApproveCharacter`, which they'll dispatch themselves. Slightly silly but cheap and consistent.
+- **Two sources of truth for director permission.** `campaign_memberships.is_director` (D1) is canonical; `CampaignState.activeDirectorId` (in state) is the runtime chair. They can drift if the revoke route writes the column but fails to dispatch the synthetic `TakeDirectorChair`. Mitigation: the route writes D1 and dispatches the intent inside the same Worker request, in that order; any failure between the two leaves the column updated and the chair stale, which the reducer self-corrects on the next operational intent (the now-revoked chair-holder's action gets rejected, prompting the owner to manually re-take the chair).
+- **Chair contests are non-collaborative.** Two director-permitted members pressing "Take over" in close succession will both succeed; the later one wins. No locking or confirmation. Acceptable at friend-group scale; revisit if it becomes a problem.
 
 ## Documentation impact
 
-- `CLAUDE.md` — terminology section: add Campaign / Lobby / Encounter Template / Session-reserved.
+- `CLAUDE.md` — terminology section: add Campaign / Owner / Director permission / Active Director / Lobby / Encounter Template / Session-reserved.
 - `docs/ARCHITECTURE.md` — rename "session" → "campaign" throughout; lobby/encounter split explained.
 - `docs/data-pipeline.md` — D1 schema section regenerated.
 - `docs/intent-protocol.md` — list new intents; `JoinSession`/`LeaveSession` renamed.
@@ -319,11 +354,15 @@ Per CLAUDE.md, every package gets test coverage before declaring done.
 
 ## Open assumptions surfaced during brainstorming
 
-1. Invite-code redemption grants membership immediately, no DM approval. (Membership is gate-free; character registration is the DM-gated step.)
-2. One invite code per campaign, regenerable by director. (Same as today; not specced here, but worth flagging it stays.)
+1. Invite-code redemption grants membership immediately, no approval. (Membership is gate-free; character registration is the director-gated step.)
+2. One invite code per campaign, regenerable by the owner. (Same as today; not specced in detail here, but worth flagging it stays owner-only.)
 3. A character can be in multiple campaigns simultaneously. (Schema doesn't constrain; user can run the same hero in two groups.)
 4. Templates contain monsters only — no heroes, no terrain geometry (just optional prose notes).
 5. Loading a template mid-combat is allowed and does not advance initiative; new monsters land in the roster and get added to the end of the turn order for the *next* round, not the current one. (Implementation detail to confirm during plan-writing.)
 6. `ClearLobby` exists and is the only roster-wipe affordance; `EndEncounter` never touches the roster.
+7. **Ownership transfer is out of scope for v1.** `campaigns.owner_id` is immutable once set. A future feature can introduce a `TransferOwnership` route guarded by both-party confirmation.
+8. **Operational acts collapse to "active director."** Anyone holding director permission who takes the chair can approve characters, kick players, manage templates, etc. The owner is not required for these — only for grant/revoke director permission. This makes a "I'm running tonight" handoff fully functional without owner involvement after the grant.
+9. **The chair is freely contestable.** Any director-permitted member can press "Take over" at any time and become active director immediately, with no consent from the previous chair-holder. Acceptable because permission is owner-controlled (only trusted users hold it) and changes are broadcast and attributed.
+10. **No "request to direct" flow.** A member without director permission cannot ask for it via an in-app intent. The owner grants permission out-of-band (or via a future UI). Keeps the surface small.
 
 If any of these are wrong, raise it on review.
