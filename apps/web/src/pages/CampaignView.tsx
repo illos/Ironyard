@@ -173,6 +173,37 @@ export function CampaignView() {
         </ul>
       </section>
 
+      {/* Player: build a character for this campaign */}
+      {!campaign.data.isDirector && (
+        <Link
+          to="/characters/new"
+          search={{ code: campaign.data.inviteCode }}
+          className="inline-flex items-center min-h-11 px-4 py-2 rounded-md bg-neutral-100 text-neutral-900 font-medium hover:bg-neutral-200"
+        >
+          Build a character for this campaign
+        </Link>
+      )}
+
+      {/* Respite — available to everyone when no encounter is active */}
+      {!activeEncounter && (
+        <button
+          type="button"
+          onClick={() =>
+            dispatch(
+              buildIntent({
+                campaignId: id,
+                type: IntentTypes.Respite,
+                payload: {},
+                actor,
+              }),
+            )
+          }
+          className="min-h-11 px-4 py-2 rounded-md bg-neutral-100 text-neutral-900 font-medium hover:bg-neutral-200"
+        >
+          Respite (refill recoveries, convert victories → XP)
+        </button>
+      )}
+
       {/* Submit character (player flow) */}
       <SubmitCharacterPanel
         campaignId={id}
