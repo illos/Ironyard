@@ -73,6 +73,7 @@ vi.mock('../src/db/schema', () => ({
 // ── Import stampers after mocks are set up ─────────────────────────────────
 import {
   stampAddMonster,
+  stampBringCharacterIntoEncounter,
   stampIntent,
   stampJumpBehindScreen,
   stampKickPlayer,
@@ -371,6 +372,32 @@ describe('stampStartEncounter', () => {
     expect(result).toBeNull();
     const payload = intent.payload as { stampedPcs?: unknown[] };
     expect(payload.stampedPcs).toEqual([]);
+  });
+});
+
+// ── BringCharacterIntoEncounter ────────────────────────────────────────────
+
+describe('stampBringCharacterIntoEncounter', () => {
+  it('looks up ownerId from D1 and stamps it onto the payload', async () => {
+    mockDbResult = { ownerId: 'user-alice' };
+    const intent = makeIntent('BringCharacterIntoEncounter', {
+      characterId: 'char-001',
+      ownerId: 'user-attacker', // client-supplied — should be overwritten
+    });
+    const result = await stampBringCharacterIntoEncounter(intent, makeCampaignState(), mockEnv);
+    expect(result).toBeNull();
+    const payload = intent.payload as { ownerId?: string; characterId?: string };
+    expect(payload.ownerId).toBe('user-alice'); // stamped from D1, not client value
+    expect(payload.characterId).toBe('char-001');
+  });
+
+  it('returns error when character does not exist', async () => {
+    mockDbResult = null; // no row
+    const intent = makeIntent('BringCharacterIntoEncounter', {
+      characterId: 'char-missing',
+    });
+    const result = await stampBringCharacterIntoEncounter(intent, makeCampaignState(), mockEnv);
+    expect(result).toMatch(/^character_not_found/);
   });
 });
 

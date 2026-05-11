@@ -68,13 +68,21 @@ export function applyStartEncounter(
       return entry;
     }
     const runtime = deriveCharacterRuntime(stamped.character, ctx.staticData);
+    const preservedStamina = preservedRuntime(state, entry.characterId, 'currentStamina');
+    const preservedRecoveriesCurrent = preservedRuntime(
+      state,
+      entry.characterId,
+      'recoveriesCurrent',
+    );
     const materialized: Participant = {
       id: `pc:${entry.characterId}`, // stable id derived from characterId
       name: stamped.name, // from characters.name column (stamped by DO)
       kind: 'pc',
       level: stamped.character.level,
       currentStamina:
-        preservedRuntime(state, entry.characterId, 'currentStamina') ?? runtime.maxStamina,
+        preservedStamina !== null
+          ? Math.min(preservedStamina, runtime.maxStamina)
+          : runtime.maxStamina,
       maxStamina: runtime.maxStamina,
       characteristics: runtime.characteristics,
       // CharacterRuntime uses `kind` but Participant uses `type` for the damage field name.
@@ -93,7 +101,9 @@ export function applyStartEncounter(
       surges: 0,
       recoveries: {
         current:
-          preservedRuntime(state, entry.characterId, 'recoveriesCurrent') ?? runtime.recoveriesMax,
+          preservedRecoveriesCurrent !== null
+            ? Math.min(preservedRecoveriesCurrent, runtime.recoveriesMax)
+            : runtime.recoveriesMax,
         max: runtime.recoveriesMax,
       },
       recoveryValue: runtime.recoveryValue,

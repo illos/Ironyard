@@ -10,6 +10,7 @@ import type { CampaignState, PcPlaceholder } from '@ironyard/rules';
 import {
   CharacterSchema,
   EncounterTemplateDataSchema,
+  type BringCharacterIntoEncounterPayload,
   type Intent,
   type LoadEncounterTemplatePayload,
 } from '@ironyard/shared';
@@ -231,6 +232,41 @@ export async function stampKickPlayer(
 }
 
 /**
+ * BringCharacterIntoEncounter — look up characters.owner_id for the given
+ * characterId in D1 and stamp ownerId onto the payload. Rejects if the
+ * character row does not exist (prevents a client from claiming any ownerId).
+ */
+export async function stampBringCharacterIntoEncounter(
+  intent: Intent & { timestamp: number },
+  _campaignState: CampaignState,
+  env: Bindings,
+): Promise<StampResult> {
+  const payload = intent.payload as MutablePayload;
+  const characterId = payload.characterId;
+  if (typeof characterId !== 'string' || !characterId) {
+    return 'invalid_payload: characterId required';
+  }
+
+  const conn = db(env.DB);
+  const row = await conn
+    .select({ ownerId: characters.ownerId })
+    .from(characters)
+    .where(eq(characters.id, characterId))
+    .get();
+
+  if (!row) return `character_not_found: ${characterId}`;
+
+  // Stamp the server-derived ownerId, discarding whatever the client sent.
+  const stamped: BringCharacterIntoEncounterPayload = {
+    characterId,
+    ownerId: row.ownerId,
+    ...(typeof payload.position === 'number' ? { position: payload.position } : {}),
+  };
+  Object.assign(payload, stamped);
+  return null;
+}
+
+/**
  * StartEncounter — find all PC placeholders in the current roster, load their
  * character blobs from D1, and stamp them onto `payload.stampedPcs`.
  * If there are no placeholders, stamps an empty array and returns null.
@@ -300,6 +336,8 @@ export async function stampIntent(
   switch (intent.type) {
     case 'AddMonster':
       return stampAddMonster(intent, campaignState, env);
+    case 'BringCharacterIntoEncounter':
+      return stampBringCharacterIntoEncounter(intent, campaignState, env);
     case 'LoadEncounterTemplate':
       return stampLoadEncounterTemplate(intent, campaignState, env);
     case 'JumpBehindScreen':

@@ -3,12 +3,14 @@ import { describe, expect, it } from 'vitest';
 import {
   type CampaignState,
   type PcPlaceholder,
+  type ReducerContext,
   type RosterEntry,
   type StampedIntent,
   applyIntent,
   emptyCampaignState,
   isParticipant,
 } from '../src/index';
+import { buildBundleWithFury, buildFuryL1Fixture } from './fixtures/character-runtime';
 
 const T = 1_700_000_000_000;
 const campaignId = 'sess_test';
@@ -134,6 +136,77 @@ describe('applyIntent — StartEncounter', () => {
     expect(roster[0]?.kind).toBe('pc-placeholder');
     // not in turn order since it's not a Participant
     expect(r.state.encounter?.turnOrder).toHaveLength(0);
+  });
+
+  it('preserves currentStamina + recoveries.current across StartEncounter → EndEncounter → StartEncounter', () => {
+    const ctx: ReducerContext = { staticData: buildBundleWithFury() };
+    const character = buildFuryL1Fixture();
+    const stampedPcs = [
+      {
+        characterId: 'char-1',
+        ownerId: 'user-player',
+        name: 'Kaela',
+        character,
+      },
+    ];
+
+    // 1. Construct a state with one PC placeholder for 'char-1'.
+    const placeholder: PcPlaceholder = {
+      kind: 'pc-placeholder',
+      characterId: 'char-1',
+      ownerId: 'user-player',
+      position: 0,
+    };
+    let s = emptyCampaignState(campaignId, 'user-owner');
+    s = { ...s, participants: [placeholder] };
+
+    // 2. StartEncounter — materialize the placeholder.
+    const r1 = applyIntent(s, intent('StartEncounter', { stampedPcs }), ctx);
+    expect(r1.errors).toBeUndefined();
+    const participant1 = r1.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'pc',
+    );
+    expect(participant1).toBeDefined();
+    // 3. Assert the participant materialized correctly (maxStamina from fury fixture: 18).
+    expect(participant1?.maxStamina).toBe(18);
+    expect(participant1?.currentStamina).toBe(18);
+    expect(participant1?.recoveries.max).toBe(8);
+    expect(participant1?.recoveries.current).toBe(8);
+
+    // 4. Mutate currentStamina = 5 and recoveries.current = 3 on the materialized participant.
+    s = {
+      ...r1.state,
+      participants: r1.state.participants.map((p) =>
+        isParticipant(p) && p.kind === 'pc'
+          ? { ...p, currentStamina: 5, recoveries: { ...p.recoveries, current: 3 } }
+          : p,
+      ),
+    };
+
+    // 5. EndEncounter.
+    const encounterId = s.encounter?.id;
+    if (!encounterId) throw new Error('no active encounter');
+    const r2 = applyIntent(s, intent('EndEncounter', { encounterId }), ctx);
+    expect(r2.errors).toBeUndefined();
+    expect(r2.state.encounter).toBeNull();
+    // Participant survives EndEncounter with mutated values preserved.
+    const participantAfterEnd = r2.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'pc',
+    );
+    expect(participantAfterEnd?.currentStamina).toBe(5);
+    expect(participantAfterEnd?.recoveries.current).toBe(3);
+
+    // 6. StartEncounter again (same ctx, same stamped blob).
+    const r3 = applyIntent(r2.state, intent('StartEncounter', { stampedPcs }), ctx);
+    expect(r3.errors).toBeUndefined();
+
+    // 7. Assert the new participant preserved currentStamina and recoveries.current.
+    const participant3 = r3.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'pc',
+    );
+    expect(participant3).toBeDefined();
+    expect(participant3?.currentStamina).toBe(5);
+    expect(participant3?.recoveries.current).toBe(3);
   });
 });
 
