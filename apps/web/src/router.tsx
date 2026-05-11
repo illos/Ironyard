@@ -1,4 +1,5 @@
 import { Outlet, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
+import { CombatRun } from './pages/CombatRun';
 import { EncounterBuilder } from './pages/EncounterBuilder';
 import { Home } from './pages/Home';
 import { MonsterBrowser } from './pages/MonsterBrowser';
@@ -30,6 +31,12 @@ const encounterBuilderRoute = createRoute({
   component: EncounterBuilder,
 });
 
+const combatRunRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/sessions/$id/play',
+  component: CombatRun,
+});
+
 const monsterCodexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/codex/monsters',
@@ -40,6 +47,7 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   sessionRoute,
   encounterBuilderRoute,
+  combatRunRoute,
   monsterCodexRoute,
 ]);
 
