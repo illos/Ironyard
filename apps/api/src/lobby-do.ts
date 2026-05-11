@@ -14,6 +14,8 @@ import {
   intents as intentsTable,
 } from './db/schema';
 import { buildServerStampedIntent } from './lobby-do-build-intent';
+import { handleSideEffect } from './lobby-do-side-effects';
+import { stampIntent } from './lobby-do-stampers';
 import type { Bindings } from './types';
 
 // LobbyDO: per-campaign authoritative state machine. Phase 1 slice 1 wires
@@ -137,13 +139,48 @@ export class LobbyDO implements DurableObject {
   }
 
   async fetch(request: Request): Promise<Response> {
-    // D5: internal /revoke-director endpoint for the director-revoke route (D1).
-    // The DO handler body lands in D6; accept the request here so the route's
-    // fire-and-forget fetch doesn't error on a 426 response.
     const url = new URL(request.url);
-    if (url.pathname === '/revoke-director') {
-      // D6 will implement the actual logic (close WS, broadcast demotion).
-      return new Response(null, { status: 200 });
+
+    // D6.3: /revoke-director — called by the revoke HTTP route after it updates
+    // campaign_memberships.is_director = 0. If the revoked user is currently the
+    // active director, emit a synthetic JumpBehindScreen from the owner so the
+    // screen moves back atomically and all clients are broadcast the change.
+    if (url.pathname === '/revoke-director' && request.method === 'POST') {
+      let body: unknown;
+      try {
+        body = await request.json();
+      } catch {
+        return new Response(JSON.stringify({ ok: false, error: 'invalid json' }), { status: 400 });
+      }
+      const revokedUserId =
+        body && typeof body === 'object' && 'revokedUserId' in body
+          ? (body as { revokedUserId: unknown }).revokedUserId
+          : null;
+      if (typeof revokedUserId !== 'string') {
+        return new Response(JSON.stringify({ ok: false, error: 'revokedUserId required' }), {
+          status: 400,
+        });
+      }
+
+      // Only emit the synthetic intent if the revoked user is currently behind the screen.
+      if (this.campaignState && this.campaignState.activeDirectorId === revokedUserId) {
+        const state = this.campaignState;
+        const synthetic: Intent & { timestamp: number } = {
+          id: ulid(),
+          campaignId: state.campaignId,
+          actor: { userId: state.ownerId, role: 'director' },
+          timestamp: Date.now(),
+          source: 'auto', // 'server' not in IntentSourceSchema; 'auto' is the closest — it's DO-emitted, not user-typed
+          type: 'JumpBehindScreen',
+          payload: { permitted: true },
+        };
+        void this.serialize(() => this.applyAndBroadcast(synthetic));
+      }
+
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
     }
 
     if (request.headers.get('upgrade')?.toLowerCase() !== 'websocket') {
@@ -267,6 +304,7 @@ export class LobbyDO implements DurableObject {
 
   // Intents the client can never dispatch directly. These are emitted by the
   // DO (campaign lifecycle) or by the reducer as derived intents (apply damage).
+  // D6.4: confirmed names post-rename (JoinSession/LeaveSession → JoinLobby/LeaveLobby).
   private readonly SERVER_ONLY_INTENTS = new Set(['JoinLobby', 'LeaveLobby', 'ApplyDamage']);
 
   private async handleDispatch(socket: CFWebSocket, clientIntent: Intent) {
@@ -296,6 +334,21 @@ export class LobbyDO implements DurableObject {
     if (intent.type === 'Undo') {
       await this.handleUndoDispatch(socket, intent);
       return;
+    }
+
+    // D6.1: Stamping pipeline — runs before applyAndBroadcast.
+    // Stampers may mutate intent.payload (adding server-derived fields) or
+    // return a rejection reason if server-side validation fails.
+    if (this.campaignState) {
+      const stampRejection = await stampIntent(intent, this.campaignState, this.env);
+      if (stampRejection !== null) {
+        this.sendTo(socket, {
+          kind: 'rejected',
+          intentId: intent.id,
+          reason: stampRejection,
+        });
+        return;
+      }
     }
 
     await this.applyAndBroadcast(intent, socket);
@@ -446,6 +499,11 @@ export class LobbyDO implements DurableObject {
     }
 
     this.broadcast({ kind: 'applied', intent, seq });
+
+    // D6.2: Post-reducer D1 side-effect writes (SubmitCharacter, ApproveCharacter,
+    // DenyCharacter, RemoveApprovedCharacter, KickPlayer). Failures are logged but
+    // do not re-throw — in-memory state has advanced, recovery is re-dispatch.
+    await handleSideEffect(intent, this.campaignId, this.env);
 
     // Derived intents inherit campaignId and run through the same pipeline. They
     // get their own ids/timestamps and a fresh seq. Recursive cascades stay
