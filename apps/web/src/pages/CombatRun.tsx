@@ -4,6 +4,7 @@ import {
   type DamageType,
   type EndRoundPayload,
   type EndTurnPayload,
+  type GainResourcePayload,
   type Intent,
   IntentTypes,
   type Monster,
@@ -11,7 +12,11 @@ import {
   type RemoveConditionPayload,
   type RollPowerPayload,
   type SetConditionPayload,
+  type SetResourcePayload,
   type SetStaminaPayload,
+  type SpendRecoveryPayload,
+  type SpendResourcePayload,
+  type SpendSurgePayload,
   type StartRoundPayload,
   type TierOutcome,
   type UndoPayload,
@@ -296,6 +301,40 @@ export function CombatRun() {
     send(IntentTypes.SetStamina, payload);
   };
 
+  const dispatchGainResource = (payload: GainResourcePayload) => {
+    setParticipantSnapshotBefore(participants);
+    send(IntentTypes.GainResource, payload);
+  };
+  const dispatchSpendResource = (payload: SpendResourcePayload) => {
+    setParticipantSnapshotBefore(participants);
+    send(IntentTypes.SpendResource, payload);
+  };
+  const dispatchSetResource = (payload: SetResourcePayload) => {
+    setParticipantSnapshotBefore(participants);
+    send(IntentTypes.SetResource, payload);
+  };
+  const dispatchSpendSurge = (payload: SpendSurgePayload) => {
+    setParticipantSnapshotBefore(participants);
+    send(IntentTypes.SpendSurge, payload);
+  };
+  const dispatchSpendRecovery = (payload: SpendRecoveryPayload) => {
+    setParticipantSnapshotBefore(participants);
+    send(IntentTypes.SpendRecovery, payload);
+  };
+  const dispatchGainMalice = (amount: number) => {
+    setParticipantSnapshotBefore(participants);
+    send(IntentTypes.GainMalice, { amount });
+  };
+  const dispatchSpendMalice = (amount: number) => {
+    setParticipantSnapshotBefore(participants);
+    send(IntentTypes.SpendMalice, { amount });
+  };
+  const handleEndEncounter = () => {
+    if (!activeEncounter) return;
+    setParticipantSnapshotBefore(participants);
+    send(IntentTypes.EndEncounter, { encounterId: activeEncounter.encounterId });
+  };
+
   const handleFocus = useCallback((id: string) => setFocusedId(id), []);
 
   const wsClosed = status !== 'open';
@@ -310,11 +349,15 @@ export function CombatRun() {
         hasEncounter={!!activeEncounter}
         isAtTurnEnd={isAtTurnEnd}
         canUndo={!!undoable && !wsClosed}
+        malice={activeEncounter?.malice.current ?? null}
         sessionId={sessionId}
         onStartRound={handleStartRound}
         onEndTurn={handleEndTurn}
         onEndRound={handleEndRound}
         onUndo={handleUndoHeader}
+        onMaliceGain={() => dispatchGainMalice(1)}
+        onMaliceSpend={() => dispatchSpendMalice(1)}
+        onEndEncounter={handleEndEncounter}
       />
 
       {!activeEncounter && (
@@ -376,6 +419,11 @@ export function CombatRun() {
               dispatchSetCondition={dispatchSetCondition}
               dispatchRemoveCondition={dispatchRemoveCondition}
               dispatchSetStamina={dispatchSetStamina}
+              dispatchGainResource={dispatchGainResource}
+              dispatchSpendResource={dispatchSpendResource}
+              dispatchSetResource={dispatchSetResource}
+              dispatchSpendSurge={dispatchSpendSurge}
+              dispatchSpendRecovery={dispatchSpendRecovery}
             />
           </section>
         </div>
@@ -394,10 +442,14 @@ type HeaderProps = {
   hasEncounter: boolean;
   isAtTurnEnd: boolean;
   canUndo: boolean;
+  malice: number | null;
   onStartRound: () => void;
   onEndTurn: () => void;
   onEndRound: () => void;
   onUndo: () => void;
+  onMaliceGain: () => void;
+  onMaliceSpend: () => void;
+  onEndEncounter: () => void;
 };
 
 function Header({
@@ -408,10 +460,14 @@ function Header({
   hasEncounter,
   isAtTurnEnd,
   canUndo,
+  malice,
   onStartRound,
   onEndTurn,
   onEndRound,
   onUndo,
+  onMaliceGain,
+  onMaliceSpend,
+  onEndEncounter,
 }: HeaderProps) {
   return (
     <header className="flex flex-wrap items-baseline justify-between gap-3">
@@ -447,6 +503,31 @@ function Header({
         >
           ← Lobby
         </Link>
+        {hasEncounter && malice !== null && (
+          <div className="inline-flex items-center rounded-md border border-rose-900/60 bg-rose-950/40 overflow-hidden">
+            <button
+              type="button"
+              onClick={onMaliceSpend}
+              disabled={status !== 'open'}
+              className="min-h-11 w-9 text-rose-200 hover:bg-rose-900/40 disabled:opacity-40"
+              aria-label="Spend 1 Malice"
+            >
+              −
+            </button>
+            <span className="px-2 text-sm tabular-nums font-mono text-rose-100">
+              Malice <span className="font-semibold">{malice}</span>
+            </span>
+            <button
+              type="button"
+              onClick={onMaliceGain}
+              disabled={status !== 'open'}
+              className="min-h-11 w-9 text-rose-200 hover:bg-rose-900/40 disabled:opacity-40"
+              aria-label="Gain 1 Malice"
+            >
+              +
+            </button>
+          </div>
+        )}
         <button
           type="button"
           onClick={onUndo}
@@ -455,6 +536,17 @@ function Header({
         >
           Undo
         </button>
+        {hasEncounter && (
+          <button
+            type="button"
+            onClick={onEndEncounter}
+            disabled={status !== 'open'}
+            className="min-h-11 px-3 rounded-md border border-neutral-700 bg-neutral-900 text-sm text-neutral-300 hover:bg-neutral-800 disabled:opacity-40"
+            title="End the encounter and reset encounter-scoped resources"
+          >
+            End encounter
+          </button>
+        )}
         {hasEncounter && currentRound !== null && !isAtTurnEnd && (
           <button
             type="button"

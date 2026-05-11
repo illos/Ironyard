@@ -1,16 +1,27 @@
 import {
   type ApplyDamagePayload,
+  type ApplyHealPayload,
   type BringCharacterIntoEncounterPayload,
   type ConditionInstance,
   type EndTurnPayload,
+  type GainMalicePayload,
+  type GainResourcePayload,
   type Intent,
   IntentTypes,
+  type MaliceState,
   type Member,
   type Participant,
   type RemoveConditionPayload,
+  type ResourceRef,
   type RollPowerPayload,
   ServerMsgSchema,
   type SetConditionPayload,
+  type SetResourcePayload,
+  type SetStaminaPayload,
+  type SpendMalicePayload,
+  type SpendRecoveryPayload,
+  type SpendResourcePayload,
+  type SpendSurgePayload,
   type StartEncounterPayload,
   type StartTurnPayload,
 } from '@ironyard/shared';
@@ -25,6 +36,8 @@ export type ActiveEncounter = {
   currentRound: number | null;
   turnOrder: string[];
   activeParticipantId: string | null;
+  // Slice 7 mirror addition — Director's Malice (canon §5.5).
+  malice: MaliceState;
 };
 
 // Compact intent-log entry. Just enough for the play screen to drive toasts,
@@ -60,7 +73,11 @@ function reflect(
       currentRound: null,
       turnOrder: [],
       activeParticipantId: null,
+      malice: { current: 0, lastMaliciousStrikeRound: null },
     };
+  }
+  if (type === IntentTypes.EndEncounter) {
+    return null;
   }
   if (!prev) return prev;
 
@@ -153,6 +170,86 @@ function reflect(
     };
   }
 
+  if (type === IntentTypes.SetStamina) {
+    const { participantId, currentStamina, maxStamina } = payload as SetStaminaPayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (p.id !== participantId) return p;
+        const nextMax = maxStamina ?? p.maxStamina;
+        const nextCurrent = currentStamina ?? Math.min(p.currentStamina, nextMax);
+        return { ...p, currentStamina: nextCurrent, maxStamina: nextMax };
+      }),
+    };
+  }
+
+  if (type === IntentTypes.ApplyHeal) {
+    const { targetId, amount } = payload as ApplyHealPayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) =>
+        p.id === targetId
+          ? { ...p, currentStamina: Math.min(p.maxStamina, p.currentStamina + amount) }
+          : p,
+      ),
+    };
+  }
+
+  if (type === IntentTypes.SpendRecovery) {
+    const { participantId } = payload as SpendRecoveryPayload;
+    // Only decrement recoveries.current here; the engine emits a derived
+    // ApplyHeal for the actual HP restoration which the ApplyHeal branch
+    // handles when it arrives in the broadcast stream.
+    return {
+      ...prev,
+      participants: prev.participants.map((p) =>
+        p.id === participantId
+          ? {
+              ...p,
+              recoveries: { ...p.recoveries, current: Math.max(0, p.recoveries.current - 1) },
+            }
+          : p,
+      ),
+    };
+  }
+
+  if (type === IntentTypes.SpendSurge) {
+    const { participantId, count } = payload as SpendSurgePayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) =>
+        p.id === participantId ? { ...p, surges: Math.max(0, p.surges - count) } : p,
+      ),
+    };
+  }
+
+  if (
+    type === IntentTypes.GainResource ||
+    type === IntentTypes.SpendResource ||
+    type === IntentTypes.SetResource
+  ) {
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => applyResourceMirror(p, type, payload)),
+    };
+  }
+
+  if (type === IntentTypes.GainMalice) {
+    const { amount } = payload as GainMalicePayload;
+    return {
+      ...prev,
+      malice: { ...prev.malice, current: prev.malice.current + amount },
+    };
+  }
+
+  if (type === IntentTypes.SpendMalice) {
+    const { amount } = payload as SpendMalicePayload;
+    return {
+      ...prev,
+      malice: { ...prev.malice, current: prev.malice.current - amount },
+    };
+  }
+
   // RollPower advances state seq in the engine but produces no participant
   // mutation on its own — its derived ApplyDamage is what moves HP. Toast
   // attribution leans on the parent RollPower being in the intent log though,
@@ -160,6 +257,95 @@ function reflect(
   void (payload as RollPowerPayload | undefined);
 
   return prev;
+}
+
+// Slice 7 mirror helper. Mutates the heroic / extras resource arrays on a
+// single participant for Gain / Spend / SetResource. The engine validates
+// floors and maxes; the mirror tracks the resulting value optimistically. The
+// reducer remains the source of truth — if these diverge, the next `snapshot`
+// envelope replaces the mirror wholesale.
+function applyResourceMirror(p: Participant, type: string, payload: unknown): Participant {
+  if (type === IntentTypes.GainResource) {
+    const { participantId, name, amount } = payload as GainResourcePayload;
+    if (p.id !== participantId) return p;
+    return adjustResource(p, name, (instance) => {
+      const next = instance.value + amount;
+      const capped = instance.max !== undefined ? Math.min(next, instance.max) : next;
+      return Math.max(instance.floor, capped);
+    });
+  }
+  if (type === IntentTypes.SpendResource) {
+    const { participantId, name, amount } = payload as SpendResourcePayload;
+    if (p.id !== participantId) return p;
+    return adjustResource(p, name, (instance) => Math.max(instance.floor, instance.value - amount));
+  }
+  if (type === IntentTypes.SetResource) {
+    const { participantId, name, value, initialize } = payload as SetResourcePayload;
+    if (p.id !== participantId) return p;
+    return upsertResource(p, name, value, initialize);
+  }
+  return p;
+}
+
+function adjustHeroicValue(
+  p: Participant,
+  name: Participant['heroicResources'][number]['name'],
+  computeValue: (instance: Participant['heroicResources'][number]) => number,
+): Participant {
+  return {
+    ...p,
+    heroicResources: p.heroicResources.map((r) =>
+      r.name === name ? { ...r, value: computeValue(r) } : r,
+    ),
+  };
+}
+
+function adjustExtraValue(
+  p: Participant,
+  name: string,
+  computeValue: (instance: Participant['extras'][number]) => number,
+): Participant {
+  return {
+    ...p,
+    extras: p.extras.map((r) => (r.name === name ? { ...r, value: computeValue(r) } : r)),
+  };
+}
+
+function adjustResource(
+  p: Participant,
+  ref: ResourceRef,
+  computeValue: (instance: { value: number; max?: number; floor: number }) => number,
+): Participant {
+  if (typeof ref === 'string') return adjustHeroicValue(p, ref, computeValue);
+  return adjustExtraValue(p, ref.extra, computeValue);
+}
+
+function upsertResource(
+  p: Participant,
+  ref: ResourceRef,
+  value: number,
+  initialize?: { max?: number; floor?: number },
+): Participant {
+  if (typeof ref === 'string') {
+    if (p.heroicResources.some((r) => r.name === ref)) {
+      return adjustHeroicValue(p, ref, () => value);
+    }
+    return {
+      ...p,
+      heroicResources: [
+        ...p.heroicResources,
+        { name: ref, value, max: initialize?.max, floor: initialize?.floor ?? 0 },
+      ],
+    };
+  }
+  const name = ref.extra;
+  if (p.extras.some((r) => r.name === name)) {
+    return adjustExtraValue(p, name, () => value);
+  }
+  return {
+    ...p,
+    extras: [...p.extras, { name, value, max: initialize?.max, floor: initialize?.floor ?? 0 }],
+  };
 }
 
 // Coerce a server-broadcast snapshot (`unknown` on the wire per wire.ts) into
@@ -176,6 +362,7 @@ function snapshotToEncounter(state: unknown): ActiveEncounter | null {
     currentRound?: number | null;
     turnOrder?: string[];
     activeParticipantId?: string | null;
+    malice?: MaliceState;
   };
   if (typeof enc.id !== 'string' || !Array.isArray(enc.participants)) return null;
   return {
@@ -184,6 +371,7 @@ function snapshotToEncounter(state: unknown): ActiveEncounter | null {
     currentRound: enc.currentRound ?? null,
     turnOrder: enc.turnOrder ?? [],
     activeParticipantId: enc.activeParticipantId ?? null,
+    malice: enc.malice ?? { current: 0, lastMaliciousStrikeRound: null },
   };
 }
 

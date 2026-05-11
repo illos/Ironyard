@@ -2,13 +2,20 @@ import {
   type Ability,
   type ConditionInstance,
   type ConditionType,
+  type GainResourcePayload,
+  HEROIC_RESOURCE_NAMES,
+  type HeroicResourceName,
   IntentTypes,
   type Monster,
   type Participant,
   type RemoveConditionPayload,
   type RollPowerPayload,
   type SetConditionPayload,
+  type SetResourcePayload,
   type SetStaminaPayload,
+  type SpendRecoveryPayload,
+  type SpendResourcePayload,
+  type SpendSurgePayload,
 } from '@ironyard/shared';
 import { useEffect, useMemo, useState } from 'react';
 import { pcFreeStrike } from '../../data/monsterAbilities';
@@ -49,6 +56,11 @@ type Props = {
   dispatchSetCondition: (payload: SetConditionPayload) => void;
   dispatchRemoveCondition: (payload: RemoveConditionPayload) => void;
   dispatchSetStamina: (payload: SetStaminaPayload) => void;
+  dispatchGainResource: (payload: GainResourcePayload) => void;
+  dispatchSpendResource: (payload: SpendResourcePayload) => void;
+  dispatchSetResource: (payload: SetResourcePayload) => void;
+  dispatchSpendSurge: (payload: SpendSurgePayload) => void;
+  dispatchSpendRecovery: (payload: SpendRecoveryPayload) => void;
 };
 
 export function DetailPane({
@@ -61,6 +73,11 @@ export function DetailPane({
   dispatchSetCondition,
   dispatchRemoveCondition,
   dispatchSetStamina,
+  dispatchGainResource,
+  dispatchSpendResource,
+  dispatchSetResource,
+  dispatchSpendSurge,
+  dispatchSpendRecovery,
 }: Props) {
   if (!focused) {
     return (
@@ -81,6 +98,11 @@ export function DetailPane({
       dispatchSetCondition={dispatchSetCondition}
       dispatchRemoveCondition={dispatchRemoveCondition}
       dispatchSetStamina={dispatchSetStamina}
+      dispatchGainResource={dispatchGainResource}
+      dispatchSpendResource={dispatchSpendResource}
+      dispatchSetResource={dispatchSetResource}
+      dispatchSpendSurge={dispatchSpendSurge}
+      dispatchSpendRecovery={dispatchSpendRecovery}
     />
   );
 }
@@ -97,6 +119,11 @@ function DetailBody({
   dispatchSetCondition,
   dispatchRemoveCondition,
   dispatchSetStamina,
+  dispatchGainResource,
+  dispatchSpendResource,
+  dispatchSetResource,
+  dispatchSpendSurge,
+  dispatchSpendRecovery,
 }: Props & { focused: Participant }) {
   const candidates = useMemo(
     () => participants.filter((p) => p.id !== focused.id),
@@ -190,6 +217,18 @@ function DetailBody({
           />
         )}
       </section>
+
+      {focused.kind === 'pc' && (
+        <ResourcesSection
+          focused={focused}
+          disabled={disabled}
+          dispatchGainResource={dispatchGainResource}
+          dispatchSpendResource={dispatchSpendResource}
+          dispatchSetResource={dispatchSetResource}
+          dispatchSpendSurge={dispatchSpendSurge}
+          dispatchSpendRecovery={dispatchSpendRecovery}
+        />
+      )}
 
       <section aria-label="conditions">
         <div className="flex items-baseline justify-between">
@@ -387,6 +426,283 @@ function StaminaEdit({
       {!validMax && <p className="mt-2 text-xs text-rose-400">Max must be at least 1.</p>}
     </div>
   );
+}
+
+function ResourcesSection({
+  focused,
+  disabled,
+  dispatchGainResource,
+  dispatchSpendResource,
+  dispatchSetResource,
+  dispatchSpendSurge,
+  dispatchSpendRecovery,
+}: {
+  focused: Participant;
+  disabled: boolean;
+  dispatchGainResource: (payload: GainResourcePayload) => void;
+  dispatchSpendResource: (payload: SpendResourcePayload) => void;
+  dispatchSetResource: (payload: SetResourcePayload) => void;
+  dispatchSpendSurge: (payload: SpendSurgePayload) => void;
+  dispatchSpendRecovery: (payload: SpendRecoveryPayload) => void;
+}) {
+  const [addOpen, setAddOpen] = useState(false);
+  const hasResources = focused.heroicResources.length > 0 || focused.extras.length > 0;
+  const recoveriesAvailable =
+    focused.recoveries.current > 0 && focused.currentStamina < focused.maxStamina;
+  const surgesAvailable = focused.surges > 0;
+
+  return (
+    <section
+      className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4 space-y-3"
+      aria-label="resources"
+    >
+      <div className="flex items-baseline justify-between">
+        <h3 className="text-sm uppercase tracking-wider text-neutral-400">Resources</h3>
+        <button
+          type="button"
+          onClick={() => setAddOpen((v) => !v)}
+          disabled={disabled}
+          className="text-xs min-h-11 px-2 rounded-md text-neutral-300 hover:bg-neutral-800/80 disabled:text-neutral-600"
+        >
+          {addOpen ? 'Cancel' : 'Add…'}
+        </button>
+      </div>
+
+      {addOpen && (
+        <AddHeroicResource
+          focused={focused}
+          disabled={disabled}
+          onAdd={(payload) => {
+            dispatchSetResource(payload);
+            setAddOpen(false);
+          }}
+          onClose={() => setAddOpen(false)}
+        />
+      )}
+
+      {focused.heroicResources.map((r) => (
+        <ResourceRow
+          key={`heroic-${r.name}`}
+          label={capitalize(r.name)}
+          value={r.value}
+          max={r.max}
+          floor={r.floor}
+          disabled={disabled}
+          onGain={(amount) =>
+            dispatchGainResource({ participantId: focused.id, name: r.name, amount })
+          }
+          onSpend={(amount) =>
+            dispatchSpendResource({ participantId: focused.id, name: r.name, amount })
+          }
+        />
+      ))}
+
+      {focused.extras.map((r) => (
+        <ResourceRow
+          key={`extra-${r.name}`}
+          label={r.name}
+          value={r.value}
+          max={r.max}
+          floor={r.floor}
+          disabled={disabled}
+          onGain={(amount) =>
+            dispatchGainResource({
+              participantId: focused.id,
+              name: { extra: r.name },
+              amount,
+            })
+          }
+          onSpend={(amount) =>
+            dispatchSpendResource({
+              participantId: focused.id,
+              name: { extra: r.name },
+              amount,
+            })
+          }
+        />
+      ))}
+
+      <div className="grid grid-cols-2 gap-3 pt-1">
+        <div className="rounded-md border border-neutral-800 bg-neutral-950 p-2.5">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-xs uppercase tracking-wider text-neutral-500">Surges</span>
+            <span className="font-mono tabular-nums text-base">{focused.surges}</span>
+          </div>
+          <button
+            type="button"
+            disabled={disabled || !surgesAvailable}
+            onClick={() => dispatchSpendSurge({ participantId: focused.id, count: 1 })}
+            className="mt-1.5 w-full min-h-11 rounded-md text-sm bg-amber-900/40 text-amber-100 hover:bg-amber-900/60 disabled:bg-neutral-800 disabled:text-neutral-500"
+          >
+            Spend 1
+          </button>
+        </div>
+
+        <div className="rounded-md border border-neutral-800 bg-neutral-950 p-2.5">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-xs uppercase tracking-wider text-neutral-500">Recoveries</span>
+            <span className="font-mono tabular-nums text-base">
+              {focused.recoveries.current}
+              <span className="text-neutral-500 text-sm">/{focused.recoveries.max}</span>
+            </span>
+          </div>
+          <button
+            type="button"
+            disabled={disabled || !recoveriesAvailable}
+            onClick={() => dispatchSpendRecovery({ participantId: focused.id })}
+            className="mt-1.5 w-full min-h-11 rounded-md text-sm bg-emerald-900/40 text-emerald-100 hover:bg-emerald-900/60 disabled:bg-neutral-800 disabled:text-neutral-500"
+            title={
+              recoveriesAvailable
+                ? `Heal up to ${focused.recoveryValue} HP`
+                : focused.recoveries.current === 0
+                  ? 'No recoveries left'
+                  : 'Already at full HP'
+            }
+          >
+            Spend (heal {focused.recoveryValue})
+          </button>
+        </div>
+      </div>
+
+      {!hasResources && !addOpen && (
+        <p className="text-xs text-neutral-500">
+          No heroic resource set. Tap Add… to attach one (Focus, Wrath, Clarity, etc.).
+        </p>
+      )}
+    </section>
+  );
+}
+
+function ResourceRow({
+  label,
+  value,
+  max,
+  floor,
+  disabled,
+  onGain,
+  onSpend,
+}: {
+  label: string;
+  value: number;
+  max?: number;
+  floor: number;
+  disabled: boolean;
+  onGain: (amount: number) => void;
+  onSpend: (amount: number) => void;
+}) {
+  const canSpend = !disabled && value > floor;
+  const canGain = !disabled && (max === undefined || value < max);
+  return (
+    <div className="flex items-center gap-2 rounded-md bg-neutral-950 border border-neutral-800 px-3 py-2">
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium truncate">{label}</div>
+        <div className="text-xs text-neutral-500 font-mono tabular-nums">
+          {value}
+          {max !== undefined && <span className="text-neutral-600">/{max}</span>}
+          {floor < 0 && <span className="ml-2 text-amber-500/80">floor {floor}</span>}
+        </div>
+      </div>
+      <button
+        type="button"
+        disabled={!canSpend}
+        onClick={() => onSpend(1)}
+        className="min-h-11 w-11 rounded-md bg-neutral-800 text-base text-neutral-200 hover:bg-neutral-700 disabled:text-neutral-600 disabled:bg-neutral-900"
+        aria-label={`Spend 1 ${label}`}
+      >
+        −
+      </button>
+      <button
+        type="button"
+        disabled={!canGain}
+        onClick={() => onGain(1)}
+        className="min-h-11 w-11 rounded-md bg-neutral-800 text-base text-neutral-200 hover:bg-neutral-700 disabled:text-neutral-600 disabled:bg-neutral-900"
+        aria-label={`Gain 1 ${label}`}
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
+function AddHeroicResource({
+  focused,
+  disabled,
+  onAdd,
+  onClose,
+}: {
+  focused: Participant;
+  disabled: boolean;
+  onAdd: (payload: SetResourcePayload) => void;
+  onClose: () => void;
+}) {
+  const owned = new Set(focused.heroicResources.map((r) => r.name));
+  const choices = HEROIC_RESOURCE_NAMES.filter((n) => !owned.has(n));
+  const [name, setName] = useState<HeroicResourceName | ''>(choices[0] ?? '');
+
+  if (choices.length === 0) {
+    return (
+      <div className="rounded-md border border-neutral-800 bg-neutral-950 p-3 text-xs text-neutral-400">
+        All 9 heroic resources already attached.{' '}
+        <button type="button" onClick={onClose} className="underline">
+          Close
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-md border border-neutral-800 bg-neutral-950 p-3 space-y-2">
+      <label className="flex flex-col text-xs text-neutral-400">
+        Resource
+        <select
+          value={name}
+          onChange={(e) => setName(e.target.value as HeroicResourceName)}
+          className="mt-1 min-h-11 rounded-md bg-neutral-900 border border-neutral-800 px-2 py-1 text-sm"
+        >
+          {choices.map((n) => (
+            <option key={n} value={n}>
+              {capitalize(n)}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="flex gap-2 justify-end">
+        <button
+          type="button"
+          onClick={onClose}
+          className="min-h-11 px-3 rounded-md bg-neutral-800 text-neutral-200 text-sm"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          disabled={disabled || !name}
+          onClick={() => {
+            if (!name) return;
+            // Talent's Clarity uses a negative floor (−(1 + Reason)). Use a
+            // conservative default; the director can SetResource later. The
+            // engine accepts any signed integer for `value`.
+            const isClarity = name === 'clarity';
+            onAdd({
+              participantId: focused.id,
+              name,
+              value: 0,
+              initialize: isClarity
+                ? { floor: -(1 + focused.characteristics.reason) }
+                : { floor: 0 },
+            });
+          }}
+          className="min-h-11 px-3 rounded-md bg-sky-700 text-sky-50 disabled:bg-neutral-800 disabled:text-neutral-500 text-sm"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 // Re-exporting the intent type identifiers used by the parent helps callers
