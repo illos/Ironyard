@@ -191,12 +191,12 @@ describe('AddMonster', () => {
       // Drain JoinLobby.
       await waitForMsg(nextMsg, (m) => m.kind === 'applied');
 
-      dispatch(ws, 'AddMonster', { monsterId: 'goblin-soldier-l1', quantity: 1 });
+      dispatch(ws, 'AddMonster', { monsterId: 'goblin-warrior-l1', quantity: 1 });
 
       const applied = await waitForMsg(nextMsg, (m) => m.kind === 'applied');
       const intent = applied.intent as { type?: string; payload?: { monsterId?: string } };
       expect(intent.type).toBe('AddMonster');
-      expect(intent.payload?.monsterId).toBe('goblin-soldier-l1');
+      expect(intent.payload?.monsterId).toBe('goblin-warrior-l1');
     } finally {
       close();
     }
@@ -230,7 +230,7 @@ describe('StartEncounter / EndEncounter', () => {
       await waitForMsg(nextMsg, (m) => m.kind === 'applied'); // JoinLobby
 
       // Add a monster so the roster is non-empty (StartEncounter works on current roster).
-      dispatch(ws, 'AddMonster', { monsterId: 'human-bandit-l1', quantity: 2 });
+      dispatch(ws, 'AddMonster', { monsterId: 'goblin-warrior-l1', quantity: 2 });
       await waitForMsg(nextMsg, (m) => m.kind === 'applied'); // AddMonster
 
       // StartEncounter — supply a known encounterId so EndEncounter can reference it.
