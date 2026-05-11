@@ -39,6 +39,11 @@ function loadSourcesPin(): string {
   return sources['data-md'] ?? 'unknown';
 }
 
+function pct(n: number, d: number): string {
+  if (d === 0) return '—';
+  return `${((n / d) * 100).toFixed(1)}%`;
+}
+
 function main() {
   try {
     statSync(MONSTERS_DIR);
@@ -50,8 +55,10 @@ function main() {
 
   const monsters: Monster[] = [];
   const errors: Array<{ file: string; reason: string }> = [];
+  let totalFiles = 0;
 
   for (const file of walkStatblockFiles(MONSTERS_DIR)) {
+    totalFiles += 1;
     let content: string;
     try {
       content = readFileSync(file, 'utf-8');
@@ -83,11 +90,37 @@ function main() {
     deduped.push(m);
   }
 
+  // Coverage counters — every monster that parsed has these fields, but they
+  // may be empty/zero for legit reasons (e.g. no immunities). We count the
+  // populated subset to surface parser-quality regressions over time.
+  const cov = {
+    total: deduped.length,
+    withStamina: deduped.filter((m) => m.stamina.base > 0).length,
+    withEv: deduped.filter((m) => m.ev.ev > 0).length,
+    withCharacteristics: deduped.filter((m) => {
+      const c = m.characteristics;
+      // Five-zero is improbable for a real monster; flag it as "not populated".
+      return [c.might, c.agility, c.reason, c.intuition, c.presence].some((v) => v !== 0);
+    }).length,
+    withAbilities: deduped.filter((m) => m.abilities.length > 0).length,
+    withAnyImmunity: deduped.filter((m) => m.immunities.length > 0 || m.immunityNote).length,
+    withAnyWeakness: deduped.filter((m) => m.weaknesses.length > 0 || m.weaknessNote).length,
+    totalAbilityBlocks: deduped.reduce((sum, m) => sum + m.abilities.length, 0),
+    parsedAbilityBlocks: deduped.reduce(
+      (sum, m) =>
+        sum +
+        m.abilities.filter((a) => a.powerRoll || a.effect || a.trigger || a.type === 'trait')
+          .length,
+      0,
+    ),
+  };
+
   const out: MonsterFile = {
     version: loadSourcesPin(),
     generatedAt: Date.now(),
     count: deduped.length,
     monsters: deduped,
+    coverage: cov,
   };
 
   mkdirSync(dirname(OUT_PATH), { recursive: true });
@@ -97,12 +130,35 @@ function main() {
     `build:data — wrote ${deduped.length} monsters to apps/web/public/data/monsters.json`,
   );
   console.log(`  version pin: ${out.version}`);
+  console.log(`  source files scanned: ${totalFiles}`);
+  console.log(`  parsed monsters:      ${deduped.length}  (${pct(deduped.length, totalFiles)})`);
+  console.log('  coverage:');
+  console.log(
+    `    stamina:           ${cov.withStamina}/${cov.total}  (${pct(cov.withStamina, cov.total)})`,
+  );
+  console.log(`    ev:                ${cov.withEv}/${cov.total}  (${pct(cov.withEv, cov.total)})`);
+  console.log(
+    `    characteristics:   ${cov.withCharacteristics}/${cov.total}  (${pct(cov.withCharacteristics, cov.total)})`,
+  );
+  console.log(
+    `    abilities:         ${cov.withAbilities}/${cov.total}  (${pct(cov.withAbilities, cov.total)})`,
+  );
+  console.log(
+    `    any immunity:      ${cov.withAnyImmunity}/${cov.total}  (${pct(cov.withAnyImmunity, cov.total)})`,
+  );
+  console.log(
+    `    any weakness:      ${cov.withAnyWeakness}/${cov.total}  (${pct(cov.withAnyWeakness, cov.total)})`,
+  );
+  console.log(
+    `    ability blocks:    ${cov.parsedAbilityBlocks}/${cov.totalAbilityBlocks}  (${pct(cov.parsedAbilityBlocks, cov.totalAbilityBlocks)})`,
+  );
+
   if (errors.length > 0) {
     console.warn(`  ${errors.length} file(s) skipped:`);
-    for (const e of errors.slice(0, 10)) {
-      console.warn(`    ${e.file}: ${e.reason}`);
+    for (const e of errors.slice(0, 20)) {
+      console.warn(`    ${e.file.replace(REPO_ROOT, '.')}: ${e.reason}`);
     }
-    if (errors.length > 10) console.warn(`    … and ${errors.length - 10} more`);
+    if (errors.length > 20) console.warn(`    … and ${errors.length - 20} more`);
   }
 }
 
