@@ -67,8 +67,11 @@ function reflect(
 ): ActiveEncounter | null {
   if (type === IntentTypes.StartEncounter) {
     const { encounterId } = payload as StartEncounterPayload;
+    // The reducer generates the canonical id; client-side mirror uses the
+    // optimistic suggestion if present, otherwise empty until the snapshot
+    // catches up.
     return {
-      encounterId,
+      encounterId: encounterId ?? '',
       participants: [],
       currentRound: null,
       turnOrder: [],
