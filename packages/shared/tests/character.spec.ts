@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { CharacterSchema, CompleteCharacterSchema, CreateCharacterRequestSchema } from '../src/character';
+import {
+  CharacterSchema,
+  CompleteCharacterSchema,
+  CreateCharacterRequestSchema,
+} from '../src/character';
 
 describe('CharacterSchema (draft)', () => {
   it('accepts an empty default character', () => {
@@ -85,9 +89,7 @@ describe('CompleteCharacterSchema (submission gate)', () => {
 
 describe('CreateCharacterRequestSchema', () => {
   it('accepts name only', () => {
-    expect(
-      CreateCharacterRequestSchema.parse({ name: 'Ash' }),
-    ).toBeDefined();
+    expect(CreateCharacterRequestSchema.parse({ name: 'Ash' })).toBeDefined();
   });
   it('accepts name + campaignCode', () => {
     const r = CreateCharacterRequestSchema.parse({

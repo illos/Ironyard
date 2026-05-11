@@ -152,10 +152,10 @@ export type Character = z.infer<typeof CharacterSchema>;
 // lookup and live in the wizard / reducer rather than the schema; this
 // schema enforces structural completeness only.
 
-export const CompleteCharacterSchema = CharacterSchema.refine(
-  (c) => c.ancestryId !== null,
-  { message: 'ancestry required', path: ['ancestryId'] },
-)
+export const CompleteCharacterSchema = CharacterSchema.refine((c) => c.ancestryId !== null, {
+  message: 'ancestry required',
+  path: ['ancestryId'],
+})
   .refine((c) => c.culture.environment !== null, {
     message: 'culture.environment required',
     path: ['culture', 'environment'],
