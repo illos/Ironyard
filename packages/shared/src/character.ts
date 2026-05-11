@@ -139,6 +139,79 @@ export const CharacterSchema = z.object({
 });
 export type Character = z.infer<typeof CharacterSchema>;
 
+// ── Submission-validity gate ──────────────────────────────────────────────
+//
+// CharacterSchema is draft-tolerant — every field nullable / defaulted.
+// CompleteCharacterSchema layers refinements that a fully-built character
+// must satisfy. Used by:
+//   - the wizard's Submit button enable state
+//   - POST /characters when both campaignCode and data are present
+//   - applySubmitCharacter authority check
+//
+// Per-career skill-count / language-count refinements require static-data
+// lookup and live in the wizard / reducer rather than the schema; this
+// schema enforces structural completeness only.
+
+export const CompleteCharacterSchema = CharacterSchema.refine(
+  (c) => c.ancestryId !== null,
+  { message: 'ancestry required', path: ['ancestryId'] },
+)
+  .refine((c) => c.culture.environment !== null, {
+    message: 'culture.environment required',
+    path: ['culture', 'environment'],
+  })
+  .refine((c) => c.culture.organization !== null, {
+    message: 'culture.organization required',
+    path: ['culture', 'organization'],
+  })
+  .refine((c) => c.culture.upbringing !== null, {
+    message: 'culture.upbringing required',
+    path: ['culture', 'upbringing'],
+  })
+  .refine((c) => c.culture.environmentSkill !== null, {
+    message: 'culture.environmentSkill required',
+    path: ['culture', 'environmentSkill'],
+  })
+  .refine((c) => c.culture.organizationSkill !== null, {
+    message: 'culture.organizationSkill required',
+    path: ['culture', 'organizationSkill'],
+  })
+  .refine((c) => c.culture.upbringingSkill !== null, {
+    message: 'culture.upbringingSkill required',
+    path: ['culture', 'upbringingSkill'],
+  })
+  .refine((c) => c.culture.language !== null, {
+    message: 'culture.language required',
+    path: ['culture', 'language'],
+  })
+  .refine((c) => c.careerId !== null, {
+    message: 'career required',
+    path: ['careerId'],
+  })
+  .refine((c) => c.careerChoices.incitingIncidentId !== null, {
+    message: 'inciting incident required',
+    path: ['careerChoices', 'incitingIncidentId'],
+  })
+  .refine((c) => c.classId !== null, {
+    message: 'class required',
+    path: ['classId'],
+  })
+  .refine((c) => c.characteristicArray !== null, {
+    message: 'characteristic array required',
+    path: ['characteristicArray'],
+  })
+  .refine(
+    (c) => {
+      for (let lvl = 1; lvl <= c.level; lvl++) {
+        if (!c.levelChoices[String(lvl)]) return false;
+      }
+      return true;
+    },
+    { message: 'levelChoices must cover every level up to `level`', path: ['levelChoices'] },
+  );
+
+export type CompleteCharacter = z.infer<typeof CompleteCharacterSchema>;
+
 // ── HTTP response shape ───────────────────────────────────────────────────────
 //
 // What the API returns when listing or fetching a character. The `data` field
@@ -159,8 +232,13 @@ export type CharacterResponse = z.infer<typeof CharacterResponseSchema>;
 export const CreateCharacterRequestSchema = z.object({
   name: z.string().min(1).max(80),
   // Optional invite code. If present: join the campaign, create the character
-  // with that campaign context, and auto-submit for director approval.
+  // with that campaign context, and (if `data` is also a complete character)
+  // auto-submit for director approval.
   campaignCode: z.string().length(6).optional(),
+  // Optional one-shot payload. If present alongside campaignCode AND passes
+  // CompleteCharacterSchema, the handler auto-submits. Otherwise the row is
+  // created with these draft contents.
+  data: CharacterSchema.optional(),
 });
 export type CreateCharacterRequest = z.infer<typeof CreateCharacterRequestSchema>;
 

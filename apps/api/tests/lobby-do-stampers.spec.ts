@@ -107,6 +107,7 @@ function makeCampaignState(overrides: Partial<CampaignState> = {}): CampaignStat
     notes: [],
     participants: [],
     encounter: null,
+    partyVictories: 0,
     ...overrides,
   };
 }

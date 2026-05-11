@@ -62,9 +62,11 @@ export type CampaignState = {
   notes: NoteEntry[];
   // Lobby-persistent roster. Heroes + monsters added to the lobby.
   // Survives EndEncounter; cleared only by RemoveParticipant or ClearLobby.
-  participants: Participant[];
+  participants: Participant[]; // Phase D will widen to a discriminated union
   // Encounter phase. null when there is no active encounter.
   encounter: EncounterPhase | null;
+  // Party victories earned this session. Drained by Respite to per-character XP.
+  partyVictories: number;
 };
 
 export type LogEntry = {
@@ -92,5 +94,6 @@ export function emptyCampaignState(campaignId: string, ownerId: string): Campaig
     notes: [],
     participants: [],
     encounter: null,
+    partyVictories: 0,
   };
 }

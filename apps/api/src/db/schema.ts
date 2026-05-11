@@ -39,6 +39,7 @@ export const campaigns = sqliteTable('campaigns', {
     .notNull()
     .references(() => users.id),
   inviteCode: text('invite_code').notNull().unique(),
+  campaignSettings: text('campaign_settings'),  // opaque, nullable, deferred-content
   createdAt: integer('created_at').notNull(),
   updatedAt: integer('updated_at').notNull(),
 });
