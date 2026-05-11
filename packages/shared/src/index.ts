@@ -160,3 +160,20 @@ export type { MaliceState } from './malice';
 
 export { ParticipantSchema } from './participant';
 export type { Participant } from './participant';
+
+export {
+  EncounterTemplateDataSchema,
+  EncounterTemplateEntrySchema,
+  EncounterTemplateSchema,
+} from './schemas/encounter-template';
+export type {
+  EncounterTemplate,
+  EncounterTemplateData,
+  EncounterTemplateEntry,
+} from './schemas/encounter-template';
+
+export {
+  CampaignCharacterSchema,
+  CampaignCharacterStatusSchema,
+} from './schemas/campaign-character';
+export type { CampaignCharacter, CampaignCharacterStatus } from './schemas/campaign-character';

@@ -52,7 +52,7 @@ export const campaignMemberships = sqliteTable(
     userId: text('user_id')
       .notNull()
       .references(() => users.id),
-    role: text('role', { enum: ['director', 'player'] }).notNull(),
+    isDirector: integer('is_director').notNull().default(0),
     joinedAt: integer('joined_at').notNull(),
   },
   (table) => ({
@@ -75,6 +75,43 @@ export const characters = sqliteTable(
   },
   (table) => ({
     ownerIdx: index('idx_characters_owner').on(table.ownerId),
+  }),
+);
+
+export const campaignCharacters = sqliteTable(
+  'campaign_characters',
+  {
+    campaignId: text('campaign_id')
+      .notNull()
+      .references(() => campaigns.id, { onDelete: 'cascade' }),
+    characterId: text('character_id')
+      .notNull()
+      .references(() => characters.id, { onDelete: 'cascade' }),
+    status: text('status', { enum: ['pending', 'approved'] }).notNull(),
+    submittedAt: integer('submitted_at').notNull(),
+    decidedAt: integer('decided_at'),
+    decidedBy: text('decided_by').references(() => users.id),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.campaignId, table.characterId] }),
+    campaignIdx: index('idx_campaign_characters_campaign').on(table.campaignId),
+  }),
+);
+
+export const encounterTemplates = sqliteTable(
+  'encounter_templates',
+  {
+    id: text('id').primaryKey(),
+    campaignId: text('campaign_id')
+      .notNull()
+      .references(() => campaigns.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    data: text('data').notNull(), // JSON, validated by EncounterTemplateDataSchema at the app boundary
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => ({
+    campaignIdx: index('idx_encounter_templates_campaign').on(table.campaignId),
   }),
 );
 

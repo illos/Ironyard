@@ -36,11 +36,11 @@ campaignRoutes.post('/', zValidator('json', CreateCampaignRequestSchema), async 
   await conn.insert(campaignMemberships).values({
     campaignId: id,
     userId: user.id,
-    role: 'director',
+    isDirector: 1,
     joinedAt: now,
   });
 
-  return c.json({ id, name, inviteCode, role: 'director' as const });
+  return c.json({ id, name, inviteCode, isDirector: true });
 });
 
 // POST /api/campaigns/join — redeem an invite code; caller joins as player.
@@ -68,7 +68,7 @@ campaignRoutes.post('/join', zValidator('json', JoinCampaignRequestSchema), asyn
     await conn.insert(campaignMemberships).values({
       campaignId: campaign.id,
       userId: user.id,
-      role: 'player',
+      isDirector: 0,
       joinedAt: Date.now(),
     });
   }
@@ -77,7 +77,7 @@ campaignRoutes.post('/join', zValidator('json', JoinCampaignRequestSchema), asyn
     id: campaign.id,
     name: campaign.name,
     inviteCode: campaign.inviteCode,
-    role: (existing?.role ?? 'player') as 'director' | 'player',
+    isDirector: (existing?.isDirector ?? 0) === 1,
   });
 });
 
@@ -101,7 +101,7 @@ campaignRoutes.get('/:id', async (c) => {
     id: campaign.id,
     name: campaign.name,
     inviteCode: campaign.inviteCode,
-    role: membership.role,
+    isDirector: membership.isDirector === 1,
   });
 });
 
@@ -128,7 +128,6 @@ campaignRoutes.get('/:id/socket', async (c) => {
   const headers = new Headers(c.req.raw.headers);
   headers.set('x-user-id', user.id);
   headers.set('x-user-display-name', user.displayName);
-  headers.set('x-user-role', membership.role);
   headers.set('x-campaign-id', id);
   const upgradeReq = new Request(c.req.raw, { headers });
 
