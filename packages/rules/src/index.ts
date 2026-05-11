@@ -8,6 +8,8 @@ export const PACKAGE = '@ironyard/rules' as const;
 export { applyIntent } from './reducer';
 export { emptySessionState } from './types';
 export type {
+  ActiveEncounter,
+  DerivedIntent,
   IntentResult,
   LogEntry,
   NoteEntry,
@@ -15,6 +17,10 @@ export type {
   StampedIntent,
   ValidationError,
 } from './types';
+
+export { applyDamageStep } from './damage';
+export { cancelEdgesAndBanes, resolvePowerRoll, tierFromTotal } from './power-roll';
+export type { PowerRollOutcome, Tier } from './power-roll';
 
 export { requireCanon } from './require-canon';
 export type { CanonSlug, CanonStatus } from './canon-status.generated';

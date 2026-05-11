@@ -34,17 +34,34 @@ export {
 export type { CreateSessionRequest, JoinSessionRequest } from './session';
 
 export {
+  ApplyDamagePayloadSchema,
+  BringCharacterIntoEncounterPayloadSchema,
   IntentTypes,
   JoinSessionPayloadSchema,
   LeaveSessionPayloadSchema,
   NotePayloadSchema,
+  RollPowerPayloadSchema,
+  StartEncounterPayloadSchema,
 } from './intents';
 export type {
+  ApplyDamagePayload,
+  BringCharacterIntoEncounterPayload,
   JoinSessionPayload,
   KnownIntentType,
   LeaveSessionPayload,
   NotePayload,
+  RollPowerPayload,
+  StartEncounterPayload,
 } from './intents';
 
 export { MonsterFileSchema, MonsterSchema } from './data/monster';
 export type { Monster, MonsterFile } from './data/monster';
+
+export { CharacteristicSchema, CharacteristicsSchema } from './characteristic';
+export type { Characteristic, Characteristics } from './characteristic';
+
+export { DAMAGE_TYPES, DamageTypeSchema, TypedResistanceSchema } from './damage';
+export type { DamageType, TypedResistance } from './damage';
+
+export { ParticipantSchema } from './participant';
+export type { Participant } from './participant';

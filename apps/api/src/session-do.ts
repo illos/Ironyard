@@ -207,16 +207,19 @@ export class SessionDO implements DurableObject {
     }
   }
 
+  // Intents the client can never dispatch directly. These are emitted by the
+  // DO (session lifecycle) or by the reducer as derived intents (apply damage).
+  private readonly SERVER_ONLY_INTENTS = new Set(['JoinSession', 'LeaveSession', 'ApplyDamage']);
+
   private async handleDispatch(socket: CFWebSocket, clientIntent: Intent) {
     const attached = this.sockets.get(socket);
     if (!attached || !this.sessionState) return;
 
-    // Session-lifecycle intents are auto-emitted by the DO only.
-    if (clientIntent.type === 'JoinSession' || clientIntent.type === 'LeaveSession') {
+    if (this.SERVER_ONLY_INTENTS.has(clientIntent.type)) {
       this.sendTo(socket, {
         kind: 'rejected',
         intentId: clientIntent.id,
-        reason: 'permission: session-lifecycle intents are server-only',
+        reason: `permission: ${clientIntent.type} is server-only`,
       });
       return;
     }
@@ -234,10 +237,17 @@ export class SessionDO implements DurableObject {
     await this.applyAndBroadcast(intent, socket);
   }
 
+  // Public entry — wraps the recursive _applyOne so derived-intent cascades all
+  // run inside the same serialized op. Calling serialize() from inside _applyOne
+  // would deadlock the queue.
   private async applyAndBroadcast(
     intent: Intent & { timestamp: number },
     originSocket?: CFWebSocket,
   ) {
+    await this._applyOne(intent, originSocket);
+  }
+
+  private async _applyOne(intent: Intent & { timestamp: number }, originSocket?: CFWebSocket) {
     if (!this.sessionState) return;
 
     const result = applyIntent(this.sessionState, intent);
@@ -272,6 +282,19 @@ export class SessionDO implements DurableObject {
     }
 
     this.broadcast({ kind: 'applied', intent, seq });
+
+    // Derived intents inherit sessionId and run through the same pipeline. They
+    // get their own ids/timestamps and a fresh seq. Recursive cascades stay
+    // bounded — slice 3's derived is one ApplyDamage per target, no further chain.
+    for (const derived of result.derived) {
+      const stampedDerived: Intent & { timestamp: number } = {
+        ...derived,
+        id: ulid(),
+        sessionId: this.sessionId,
+        timestamp: Date.now(),
+      };
+      await this._applyOne(stampedDerived);
+    }
   }
 
   private async handleSync(socket: CFWebSocket, sinceSeq: number) {
