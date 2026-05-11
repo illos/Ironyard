@@ -29,7 +29,7 @@ export function applyKickPlayer(state: CampaignState, intent: StampedIntent): In
     };
   }
 
-  const { userId, participantIdsToRemove } = parsed.data;
+  const { userId, participantIdsToRemove, placeholderCharacterIdsToRemove } = parsed.data;
 
   // Cannot kick the campaign owner.
   if (userId === state.ownerId) {
@@ -52,8 +52,8 @@ export function applyKickPlayer(state: CampaignState, intent: StampedIntent): In
     };
   }
 
-  // Emit derived RemoveParticipant intents for each of the kicked user's
-  // participants currently on the roster. The DO stamped the list onto the
+  // Emit derived RemoveParticipant intents for each of the kicked user's full
+  // Participants currently on the roster. The DO stamped the list onto the
   // payload by looking up campaign_characters rows owned by that user.
   const derived: DerivedIntent[] = participantIdsToRemove.map((participantId) => ({
     type: 'RemoveParticipant',
@@ -64,13 +64,26 @@ export function applyKickPlayer(state: CampaignState, intent: StampedIntent): In
     payload: { participantId },
   }));
 
+  // Directly evict any pc-placeholder entries owned by the kicked user.
+  // Placeholders (kind === 'pc-placeholder') are not full Participants — they
+  // have no `id` field and cannot be matched by RemoveParticipant. The stamper
+  // collected their characterIds; we drop them from state here.
+  const placeholderCharIdsSet = new Set(placeholderCharacterIdsToRemove);
+  const newParticipants = placeholderCharIdsSet.size > 0
+    ? state.participants.filter(
+        (p) => !(p.kind === 'pc-placeholder' && placeholderCharIdsSet.has(p.characterId)),
+      )
+    : state.participants;
+
+  const removedCount = participantIdsToRemove.length + (state.participants.length - newParticipants.length);
+
   return {
-    state: { ...state, seq: state.seq + 1 },
+    state: { ...state, seq: state.seq + 1, participants: newParticipants },
     derived,
     log: [
       {
         kind: 'info',
-        text: `player ${userId} kicked${participantIdsToRemove.length ? `; removing ${participantIdsToRemove.length} participant(s)` : ''}`,
+        text: `player ${userId} kicked${removedCount ? `; removing ${removedCount} roster entry(ies)` : ''}`,
         intentId: intent.id,
       },
     ],

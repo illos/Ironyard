@@ -228,7 +228,18 @@ export async function stampKickPlayer(
     )
     .map((p) => p.id);
 
+  // Also collect characterIds for any pc-placeholder entries owned by the kicked user.
+  // Placeholders are added by BringCharacterIntoEncounter but not yet materialized
+  // by StartEncounter — they have no `id`, only `characterId` + `ownerId`.
+  const placeholderCharacterIdsToRemove = campaignState.participants
+    .filter(
+      (p): p is PcPlaceholder =>
+        p.kind === 'pc-placeholder' && ownedCharacterIds.has(p.characterId),
+    )
+    .map((p) => p.characterId);
+
   payload.participantIdsToRemove = participantIdsToRemove;
+  payload.placeholderCharacterIdsToRemove = placeholderCharacterIdsToRemove;
   return null;
 }
 

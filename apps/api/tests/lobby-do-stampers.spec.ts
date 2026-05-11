@@ -321,8 +321,67 @@ describe('stampKickPlayer', () => {
     const intent = makeIntent('KickPlayer', { userId: 'user-nobody' });
     const result = await stampKickPlayer(intent, makeCampaignState(), mockEnv);
     expect(result).toBeNull();
-    const payload = intent.payload as { participantIdsToRemove?: string[] };
+    const payload = intent.payload as { participantIdsToRemove?: string[]; placeholderCharacterIdsToRemove?: string[] };
     expect(payload.participantIdsToRemove).toEqual([]);
+    expect(payload.placeholderCharacterIdsToRemove).toEqual([]);
+  });
+
+  it('stamps placeholderCharacterIdsToRemove from pc-placeholder entries owned by the kicked user', async () => {
+    mockDbResult = [{ characterId: 'char-placeholder-1' }]; // DB says user owns char-placeholder-1
+
+    const state = makeCampaignState({
+      participants: [
+        // pc-placeholder owned by the kicked user
+        { kind: 'pc-placeholder', characterId: 'char-placeholder-1', ownerId: 'user-alice', position: 0 },
+        // pc-placeholder owned by a different user — must NOT appear
+        { kind: 'pc-placeholder', characterId: 'char-other', ownerId: 'user-bob', position: 1 },
+      ],
+    });
+
+    const intent = makeIntent('KickPlayer', { userId: 'user-alice' });
+    const result = await stampKickPlayer(intent, state, mockEnv);
+    expect(result).toBeNull();
+    const payload = intent.payload as { participantIdsToRemove?: string[]; placeholderCharacterIdsToRemove?: string[] };
+    expect(payload.participantIdsToRemove).toEqual([]);
+    expect(payload.placeholderCharacterIdsToRemove).toContain('char-placeholder-1');
+    expect(payload.placeholderCharacterIdsToRemove).not.toContain('char-other');
+  });
+
+  it('stamps both participantIdsToRemove and placeholderCharacterIdsToRemove when user has both', async () => {
+    // DB returns two character IDs belonging to the kicked user
+    mockDbResult = [{ characterId: 'char-full' }, { characterId: 'char-placeholder-2' }];
+
+    const state = makeCampaignState({
+      participants: [
+        // Full pc Participant for char-full
+        {
+          id: 'char-full',
+          name: 'Mira',
+          kind: 'pc',
+          level: 1,
+          currentStamina: 30,
+          maxStamina: 30,
+          characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
+          immunities: [],
+          weaknesses: [],
+          conditions: [],
+          heroicResources: [],
+          extras: [],
+          surges: 0,
+          recoveries: { current: 3, max: 3 },
+          recoveryValue: 10,
+        },
+        // pc-placeholder for char-placeholder-2 (not yet materialized)
+        { kind: 'pc-placeholder', characterId: 'char-placeholder-2', ownerId: 'user-alice', position: 1 },
+      ],
+    });
+
+    const intent = makeIntent('KickPlayer', { userId: 'user-alice' });
+    const result = await stampKickPlayer(intent, state, mockEnv);
+    expect(result).toBeNull();
+    const payload = intent.payload as { participantIdsToRemove?: string[]; placeholderCharacterIdsToRemove?: string[] };
+    expect(payload.participantIdsToRemove).toContain('char-full');
+    expect(payload.placeholderCharacterIdsToRemove).toContain('char-placeholder-2');
   });
 });
 
