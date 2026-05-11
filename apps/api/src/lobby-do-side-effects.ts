@@ -5,8 +5,17 @@
 //
 // Idempotency: each write is designed to be safe if dispatched twice (INSERT OR
 // IGNORE / ON CONFLICT DO NOTHING, or conditional UPDATE/DELETE).
+//
+// Hybrid intents (state mutation AND D1 side-effect):
+// Some intents mutate CampaignState in the reducer AND need to read pre-reducer
+// state in the side-effect handler. For these, the DO passes `stateBefore` (the
+// state captured before calling applyIntent). The first such intent is Respite,
+// which reads `stateBefore.partyVictories` to know how much XP to award before
+// the reducer drained it to 0. Non-hybrid intents leave `stateBefore` undefined.
 
-import { CharacterSchema } from '@ironyard/shared';
+import type { CampaignState } from '@ironyard/rules';
+import { isParticipant } from '@ironyard/rules';
+import { CharacterSchema, type RespitePayload, RespitePayloadSchema } from '@ironyard/shared';
 import type { Intent } from '@ironyard/shared';
 import { and, eq, inArray } from 'drizzle-orm';
 import { db } from './db';
@@ -19,11 +28,16 @@ type MutablePayload = { [key: string]: unknown };
  * Run the appropriate D1 side-effect for the given intent after the reducer
  * has accepted it. Safe to call for every intent — non-side-effect types
  * are no-ops.
+ *
+ * `stateBefore` is required for hybrid intents (Respite) that need the
+ * pre-reducer state to compute their side-effect. For all other intents it
+ * is unused.
  */
 export async function handleSideEffect(
   intent: Intent & { timestamp: number },
   campaignId: string,
   env: Bindings,
+  stateBefore?: CampaignState,
 ): Promise<void> {
   try {
     switch (intent.type) {
@@ -44,6 +58,11 @@ export async function handleSideEffect(
         break;
       case 'SwapKit':
         await sideEffectSwapKit(intent, env);
+        break;
+      case 'Respite':
+        if (stateBefore !== undefined) {
+          await sideEffectRespite(intent, stateBefore, env);
+        }
         break;
       default:
         break;
@@ -215,3 +234,64 @@ async function sideEffectSwapKit(
     .set({ data: JSON.stringify(data), updatedAt: intent.timestamp })
     .where(eq(characters.id, characterId));
 }
+
+// Hybrid side-effect: writes per-character XP increments to D1 using the
+// partyVictories count that existed BEFORE the reducer drained it to 0.
+// Skips the write entirely when xpAwarded === 0 (no D1 round-trips needed).
+//
+// PC participant ids in the roster follow the convention `pc:<characterId>`.
+// We strip the prefix to get the D1 `characters` primary key.
+async function sideEffectRespite(
+  intent: Intent & { timestamp: number },
+  stateBefore: CampaignState,
+  env: Bindings,
+): Promise<void> {
+  // Validate payload (should always pass — reducer already accepted the intent).
+  const parsed = RespitePayloadSchema.safeParse(intent.payload);
+  if (!parsed.success) return;
+
+  const xpAwarded = stateBefore.partyVictories;
+  // Nothing to write when there are no victories to award.
+  if (xpAwarded === 0) return;
+
+  // Collect character ids for every PC participant that was in the roster
+  // before the respite. Participant ids are `pc:<characterId>`.
+  // We filter with isParticipant first to narrow from RosterEntry to Participant,
+  // then keep only kind === 'pc' (excluding monsters).
+  const pcCharIds = stateBefore.participants
+    .filter(isParticipant)
+    .filter((p) => p.kind === 'pc')
+    .map((p) => p.id.replace(/^pc:/, ''));
+
+  if (pcCharIds.length === 0) return;
+
+  const conn = db(env.DB);
+
+  for (const charId of pcCharIds) {
+    const row = await conn
+      .select({ data: characters.data })
+      .from(characters)
+      .where(eq(characters.id, charId))
+      .get();
+    if (!row) continue;
+
+    let data: ReturnType<typeof CharacterSchema.parse>;
+    try {
+      data = CharacterSchema.parse(JSON.parse(row.data));
+    } catch {
+      // Corrupt blob — skip this character rather than failing the whole batch.
+      console.error(`[side-effect] Respite: skipping character ${charId} — invalid blob`);
+      continue;
+    }
+
+    data.xp = (data.xp ?? 0) + xpAwarded;
+
+    await conn
+      .update(characters)
+      .set({ data: JSON.stringify(data), updatedAt: intent.timestamp })
+      .where(eq(characters.id, charId));
+  }
+}
+
+// Re-export RespitePayload type for consumers that need to reference it.
+export type { RespitePayload };

@@ -21,6 +21,7 @@ import {
   applyRemoveApprovedCharacter,
   applyRemoveCondition,
   applyRemoveParticipant,
+  applyRespite,
   applyRollPower,
   applyRollResistance,
   applySetCondition,
@@ -99,6 +100,8 @@ export function applyIntent(
       return applyNote(state, intent);
     case IntentTypes.RemoveApprovedCharacter:
       return applyRemoveApprovedCharacter(state, intent);
+    case IntentTypes.Respite:
+      return applyRespite(state, intent);
     case IntentTypes.RemoveCondition:
       return applyRemoveCondition(state, intent);
     case IntentTypes.RemoveParticipant:

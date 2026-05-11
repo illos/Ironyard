@@ -467,6 +467,10 @@ export class LobbyDO implements DurableObject {
   private async _applyOne(intent: Intent & { timestamp: number }, originSocket?: CFWebSocket) {
     if (!this.campaignState) return;
 
+    // Capture state before the reducer runs — needed by hybrid side-effects
+    // (e.g. Respite reads stateBefore.partyVictories before it is drained to 0).
+    const stateBefore = this.campaignState;
+
     const result = applyIntent(this.campaignState, intent);
     if (result.errors && result.errors.length > 0) {
       const reason = result.errors.map((e) => e.message).join('; ');
@@ -500,10 +504,11 @@ export class LobbyDO implements DurableObject {
 
     this.broadcast({ kind: 'applied', intent, seq });
 
-    // D6.2: Post-reducer D1 side-effect writes (SubmitCharacter, ApproveCharacter,
-    // DenyCharacter, RemoveApprovedCharacter, KickPlayer). Failures are logged but
-    // do not re-throw — in-memory state has advanced, recovery is re-dispatch.
-    await handleSideEffect(intent, this.campaignId, this.env);
+    // D6.2 / Phase F: Post-reducer D1 side-effect writes. Failures are logged
+    // but do not re-throw — in-memory state has advanced, recovery is re-dispatch.
+    // `stateBefore` is passed for hybrid intents (Respite) that need pre-reducer
+    // state; non-hybrid side-effects ignore it.
+    await handleSideEffect(intent, this.campaignId, this.env, stateBefore);
 
     // Derived intents inherit campaignId and run through the same pipeline. They
     // get their own ids/timestamps and a fresh seq. Recursive cascades stay

@@ -15,6 +15,7 @@ export { applyLeaveLobby } from './leave-lobby';
 export { applyLoadEncounterTemplate } from './load-encounter-template';
 export { applyNote } from './note';
 export { applyRemoveApprovedCharacter } from './remove-approved-character';
+export { applyRespite } from './respite';
 export { applyRemoveCondition } from './remove-condition';
 export { applyRemoveParticipant } from './remove-participant';
 export { applyRollPower } from './roll-power';

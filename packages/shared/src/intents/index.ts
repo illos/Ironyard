@@ -49,6 +49,8 @@ export { NotePayloadSchema } from './note';
 export type { NotePayload } from './note';
 export { RemoveApprovedCharacterPayloadSchema } from './remove-approved-character';
 export type { RemoveApprovedCharacterPayload } from './remove-approved-character';
+export { RespitePayloadSchema } from './respite';
+export type { RespitePayload } from './respite';
 export { RemoveConditionPayloadSchema } from './remove-condition';
 export type { RemoveConditionPayload } from './remove-condition';
 export { RemoveParticipantPayloadSchema } from './remove-participant';
@@ -127,6 +129,7 @@ export const IntentTypes = {
   SpendMalice: 'SpendMalice',
   SpendRecovery: 'SpendRecovery',
   SpendResource: 'SpendResource',
+  Respite: 'Respite',
   SpendSurge: 'SpendSurge',
   StartEncounter: 'StartEncounter',
   StartRound: 'StartRound',
