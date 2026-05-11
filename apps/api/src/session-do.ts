@@ -5,7 +5,7 @@ import type {
 } from '@cloudflare/workers-types';
 import { type SessionState, applyIntent, emptySessionState } from '@ironyard/rules';
 import { ClientMsgSchema, type Intent, type Member, type ServerMsg, ulid } from '@ironyard/shared';
-import { and, eq, gt } from 'drizzle-orm';
+import { and, desc, eq, gt } from 'drizzle-orm';
 import { db } from './db';
 import { intents as intentsTable, sessionSnapshots } from './db/schema';
 import type { Bindings } from './types';
@@ -77,10 +77,18 @@ export class SessionDO implements DurableObject {
       state = emptySessionState(sessionId);
     }
 
+    // Replay non-voided rows only — voided intents are the bookkeeping that
+    // makes Undo cheap (skip them and the reducer reproduces the post-undo state).
     const rows = await conn
       .select()
       .from(intentsTable)
-      .where(and(eq(intentsTable.sessionId, sessionId), gt(intentsTable.seq, fromSeq)))
+      .where(
+        and(
+          eq(intentsTable.sessionId, sessionId),
+          gt(intentsTable.seq, fromSeq),
+          eq(intentsTable.voided, 0),
+        ),
+      )
       .orderBy(intentsTable.seq)
       .all();
 
@@ -88,6 +96,18 @@ export class SessionDO implements DurableObject {
       const intent = JSON.parse(row.payload) as Intent & { timestamp: number };
       state = applyIntent(state, intent).state;
     }
+
+    // The reducer increments state.seq per non-voided apply, so it under-counts
+    // when voided rows are skipped. Re-base from the max persisted seq (voided
+    // included) so the DO assigns the right next-seq for new dispatches.
+    const maxRow = await conn
+      .select({ seq: intentsTable.seq })
+      .from(intentsTable)
+      .where(eq(intentsTable.sessionId, sessionId))
+      .orderBy(desc(intentsTable.seq))
+      .limit(1)
+      .get();
+    state = { ...state, seq: maxRow ? maxRow.seq : fromSeq };
 
     // After replay, connectedMembers reflects historical events, not current
     // sockets (which are all gone on cold start). Clear it; reconnecting
@@ -234,7 +254,112 @@ export class SessionDO implements DurableObject {
       source: 'manual',
     };
 
+    if (intent.type === 'Undo') {
+      await this.handleUndoDispatch(socket, intent);
+      return;
+    }
+
     await this.applyAndBroadcast(intent, socket);
+  }
+
+  // Undo: validate target, void target + derived chain in D1, persist the Undo
+  // intent, then reload state from D1 (replaying non-voided rows) and broadcast
+  // a snapshot. The snapshot row is dropped so the next load() replays from
+  // seq 0 — accurate but cheap-enough at Phase 1's intent volumes.
+  private async handleUndoDispatch(socket: CFWebSocket, intent: Intent & { timestamp: number }) {
+    const payload = intent.payload as { intentId?: unknown };
+    const targetId =
+      typeof payload?.intentId === 'string' && payload.intentId ? payload.intentId : null;
+    if (!targetId) {
+      this.sendTo(socket, {
+        kind: 'rejected',
+        intentId: intent.id,
+        reason: 'invalid_payload: intentId required',
+      });
+      return;
+    }
+
+    const conn = db(this.env.DB);
+    const allRows = await conn
+      .select()
+      .from(intentsTable)
+      .where(eq(intentsTable.sessionId, this.sessionId))
+      .all();
+
+    const target = allRows.find((r) => r.id === targetId);
+    if (!target) {
+      this.sendTo(socket, {
+        kind: 'rejected',
+        intentId: intent.id,
+        reason: 'target intent not found',
+      });
+      return;
+    }
+    if (target.voided) {
+      this.sendTo(socket, {
+        kind: 'rejected',
+        intentId: intent.id,
+        reason: 'target already voided',
+      });
+      return;
+    }
+
+    // Round boundary: undo only intents since the most recent non-voided EndRound.
+    let lastEndRoundSeq = 0;
+    for (const row of allRows) {
+      if (row.voided) continue;
+      const p = JSON.parse(row.payload) as { type?: string };
+      if (p.type === 'EndRound' && row.seq > lastEndRoundSeq) {
+        lastEndRoundSeq = row.seq;
+      }
+    }
+    if (target.seq <= lastEndRoundSeq) {
+      this.sendTo(socket, {
+        kind: 'rejected',
+        intentId: intent.id,
+        reason: 'target is committed (past EndRound boundary)',
+      });
+      return;
+    }
+
+    // Find derived chain.
+    const derived = allRows.filter((r) => {
+      if (r.voided) return false;
+      const p = JSON.parse(r.payload) as { causedBy?: string };
+      return p.causedBy === targetId;
+    });
+
+    const idsToVoid = [target.id, ...derived.map((r) => r.id)];
+    for (const id of idsToVoid) {
+      await conn.update(intentsTable).set({ voided: 1 }).where(eq(intentsTable.id, id));
+    }
+
+    // Apply the Undo intent through the normal pipeline so it gets persisted +
+    // broadcast as `applied`. The reducer treats it as a seq-advance + log
+    // entry (the real state revert happens in the reload below). Note that
+    // _applyOne may emit a stale snapshot (with the about-to-be-voided state)
+    // if the cadence fires — we drop it after this call returns.
+    await this._applyOne(intent, socket);
+
+    // Drop any snapshot row — _applyOne may have just written a stale one
+    // (captured the still-voided-in-memory state), and an earlier-still
+    // snapshot would also have included voided intents' effects. Replaying
+    // from seq 0 with voided rows skipped is correct and cheap at Phase 1
+    // volumes; later slices can do finer-grained snapshot invalidation.
+    await conn.delete(sessionSnapshots).where(eq(sessionSnapshots.sessionId, this.sessionId));
+    this.lastSnapshotSeq = 0;
+    this.lastSnapshotAt = 0;
+
+    // Reload the in-memory state from D1 (skipping voided rows) and broadcast
+    // a fresh snapshot so all clients converge.
+    await this.load(this.sessionId);
+    if (this.sessionState) {
+      this.broadcast({
+        kind: 'snapshot',
+        state: this.sessionState,
+        seq: this.sessionState.seq,
+      });
+    }
   }
 
   // Public entry — wraps the recursive _applyOne so derived-intent cascades all

@@ -34,6 +34,9 @@ export type {
   StartTurnPayload,
 } from './turn';
 
+export { UndoPayloadSchema } from './undo';
+export type { UndoPayload } from './undo';
+
 export const IntentTypes = {
   ApplyDamage: 'ApplyDamage',
   BringCharacterIntoEncounter: 'BringCharacterIntoEncounter',
@@ -47,5 +50,6 @@ export const IntentTypes = {
   StartEncounter: 'StartEncounter',
   StartRound: 'StartRound',
   StartTurn: 'StartTurn',
+  Undo: 'Undo',
 } as const;
 export type KnownIntentType = (typeof IntentTypes)[keyof typeof IntentTypes];

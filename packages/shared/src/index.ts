@@ -47,6 +47,7 @@ export {
   StartEncounterPayloadSchema,
   StartRoundPayloadSchema,
   StartTurnPayloadSchema,
+  UndoPayloadSchema,
 } from './intents';
 export type {
   ApplyDamagePayload,
@@ -62,6 +63,7 @@ export type {
   StartEncounterPayload,
   StartRoundPayload,
   StartTurnPayload,
+  UndoPayload,
 } from './intents';
 
 export { MonsterFileSchema, MonsterSchema } from './data/monster';

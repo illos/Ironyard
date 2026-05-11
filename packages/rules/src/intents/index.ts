@@ -12,3 +12,4 @@ export {
   applyStartRound,
   applyStartTurn,
 } from './turn';
+export { applyUndo } from './undo';

@@ -12,6 +12,7 @@ import {
   applyStartEncounter,
   applyStartRound,
   applyStartTurn,
+  applyUndo,
 } from './intents';
 import type { IntentResult, SessionState, StampedIntent } from './types';
 
@@ -45,6 +46,8 @@ export function applyIntent(state: SessionState, intent: StampedIntent): IntentR
       return applyEndTurn(state, intent);
     case IntentTypes.SetInitiative:
       return applySetInitiative(state, intent);
+    case IntentTypes.Undo:
+      return applyUndo(state, intent);
     default:
       return {
         state,
