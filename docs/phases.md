@@ -50,7 +50,6 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 - Interactive character sheet: stamina/recoveries/surges/heroic resource, ability cards with auto-roll, rest mechanics
 - Characters stored in D1, owned by a user
 - "Bring this character into the lobby" replaces the quick stat block from Phase 1
-- Local-first: characters cached in IndexedDB so the iPad keeps working when wifi flakes
 - **Item data pipeline:** ingest all treasure types from `data-md` (leveled weapon/armor/other, artifacts, consumables, trinkets). Display text is available immediately from the markdown body. Structured effect data (stat mods, ability grants) must be hand-authored in `packages/data/overrides/` — the compendium's effect text is prose only, not structured fields. Coverage is incremental, same as ability parsing.
 - **Character inventory:** items owned by and carried by a character; stored in the character JSON blob. Director can push items to a character from the item list; player manages from the sheet. Inventory tracks four distinct item categories with different rules:
   - **Consumables** — quantity-tracked (carry any number). Activated via `UseConsumable` intent (usually a maneuver), then removed from inventory. Effect type varies: instant (Healing Potion → derive `ApplyHeal`), timed/duration (Growth Potion lasts 3 rounds → temporary buff with duration), two-phase (Blood Essence Vial: capture-then-drink), attack (Black Ash Dart → derive `RollPower`), or summon/area. Consumable Stamina and damage bonuses stack with other treasure bonuses — the engine must track source type when folding modifiers.
@@ -108,7 +107,6 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 - Role-based permission tightening, audit
 - Rate limits and abuse protections
 - Observability — error tracking (Sentry), basic analytics, DO health metrics
-- PWA install + offline mode for the character sheet (combat tracker requires network)
 - Accessibility pass (keyboard nav, screen-reader labels)
 - Performance pass on iPad: bundle splitting, image optimization, animation tuning
 
@@ -116,22 +114,58 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 
 ## Phase 5 — UI rebuild
 
-**Goal:** "The app looks and feels like a finished product, not a prototype."
+**Goal:** "The app looks and feels like a finished product, not a prototype — beautiful by default, personal by choice, alive at the table."
 
 All UI shipped in Phases 1–4 is intentionally scaffolding — built to validate that the engine, data pipeline, intent protocol, realtime, and feature logic actually work end-to-end. The quality bar is "functional, dark theme, touch-first, no embarrassing wrong-feeling moments" — not "considered, distinctive, finished."
 
-Once everything from Phases 1–4 is shipping and stable, the UI gets stripped to the floorboards and rebuilt:
+Once everything from Phases 1–4 is shipping and stable, the UI gets stripped to the floorboards and rebuilt across three distinct layers. Each layer is independent: the base is fixed, the theme is player-chosen, the action effects are contextual. A player with a plain light theme still gets the full action effect treatment; a player who turns effects off still gets a beautiful themed app.
 
-- Considered visual language: typography system, palette, spacing scale, iconography, motion principles
+### Layer 1 — Base
+
+The fixed foundation. No user configuration at this layer — just the best possible layout and visual language for every screen.
+
+- Typography system, spacing scale, iconography, motion principles
 - Layout-first redesign of every screen (lobby, builder, run, codex, sheet, settings) — not a re-skin
 - Real interaction design: drag affordances, target-picking gestures, status-at-a-glance, attention management for the active turn
-- Component library extracted properly (or chosen properly, if we move off Radix)
-- Sound and haptic feedback designed alongside the visual pass, not bolted on
-- Brand identity (name, logo, marketing site) lands in this phase, not earlier
+- Component library extracted properly (or a new one chosen if we move off Radix)
+- Sound and haptic feedback designed alongside the visual pass, not bolted on afterward
+- Brand identity (name, logo, marketing site) lands here, not earlier
 
-**Constraint:** the engine and data layers are **not** rebuilt in this phase. The UI rebuild must consume the existing intent protocol and reducer surface as a stable contract. If a screen needs an intent that doesn't exist, that goes back to the engine phase backlog, not invented at the UI layer.
+The base is the glue. Everything else sits on top of it.
 
-**Acceptance:** the app feels like something you'd ship publicly — friends-of-friends ask "what is this," not "what's wrong with this."
+### Layer 2 — Theme
+
+Player-selectable customizations that flavor Ironyard to the personality of their character. All flavor, zero change in function.
+
+- **Light / dark** — account-level preference
+- **Color pack** — per-character selection; a highlight color and vibe applied across that character's experience. Examples: `Lightning` (electric blue-white), `Chrome` (silver-grey metallic), `Fireball` (amber-orange). Color packs affect accent colors, selection states, resource bars, and ability card borders — anything that "belongs" to the character visually. Other players at the same table can have different packs active simultaneously.
+- Color pack is stored on the character entity, applied when that character is the active sheet or participant being viewed by their controlling player.
+
+### Layer 3 — Action Effects
+
+Flashy, contextual animations and embellishments that make the app feel like you're playing a game of fighting dragons and casting spells — not filling out a complicated survey form. These are additions to key moments in the UI, not a coat of paint over everything.
+
+Examples of the intended register:
+- A roll button for a fire-typed ability gets an animated ember/flame border while the roll is pending
+- A slain foe's card in the combat tracker gains a skull-and-crossbones emblem when their HP hits zero
+- The XP bar fills with a slow liquid animation as you approach the next level; at threshold it transitions into a flowing, pulsing **LEVEL UP** button
+- Critical hits produce a brief screen flash in the character's color pack accent
+- Conditions applied to a participant animate onto their card rather than snapping in
+
+Action effects are anchored to game events and damage types — they're earned by the moment, not decorative noise. Each effect is individually toggleable for players who prefer a calmer experience (accessibility consideration).
+
+**Constraint:** the engine and data layers are **not** rebuilt in this phase. The UI rebuild must consume the existing intent protocol and reducer surface as a stable contract. If a screen needs an intent that doesn't exist, that goes back to the engine phase backlog, not invented at the UI layer. Action effects are purely presentational — they read game state, they never produce it.
+
+**Acceptance:** the app feels like something you'd ship publicly — friends-of-friends ask "what is this," not "what's wrong with this." A player switching color packs between their Wizard and their Fighter notices a meaningfully different feel. A critical hit lands and the table reacts to the screen, not just the dice.
+
+## Phase 6 — Follow-up features
+
+**Goal:** "The app works well even when the network doesn't, and the experience keeps improving beyond v1."
+
+- PWA install + offline mode for the character sheet (combat tracker requires network)
+- Additional follow-up features TBD
+
+**Acceptance:** a player can open their character sheet in a place with no signal and still reference their abilities, stats, and inventory without degradation.
 
 ## Out of scope (until decided otherwise)
 

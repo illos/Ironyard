@@ -31,7 +31,7 @@ Bumping these is a deliberate PR. The version string flows into `apps/web/public
 1. Read the pinned SDK version from `package.json`
 2. Walk SDK exports for `Statblock` instances → emit `monsters.json`
 3. Walk SDK exports for ability `Feature` instances → emit `abilities.json`
-4. Download the pinned `data-md` release tarball; parse markdown front-matter and headings into our normalized schemas → emit `classes.json`, `ancestries.json`, `careers.json`, `complications.json`, `conditions.json`, `rules.json`, `items.json`, `titles.json`
+4. Download the pinned `data-md` release tarball; parse markdown front-matter and headings into our normalized schemas → emit `classes.json`, `ancestries.json`, `careers.json`, `complications.json`, `conditions.json`, `rules.json`, `items.json`, `titles.json`, `kits.json`
 5. Validate each output against its Zod schema in `packages/shared/src/schemas/`
 6. Write to `apps/web/public/data/` (gitignored; CI rebuilds on every deploy)
 
@@ -117,13 +117,19 @@ CREATE TABLE auth_sessions (
 
 -- a long-lived campaign; owned by a single user
 CREATE TABLE campaigns (
-  id          TEXT PRIMARY KEY,            -- ULID
-  name        TEXT NOT NULL,
-  owner_id    TEXT NOT NULL REFERENCES users(id),  -- permanent owner (not mutable in v1)
-  invite_code TEXT NOT NULL UNIQUE,        -- 6-char human-friendly
-  created_at  INTEGER NOT NULL,
-  updated_at  INTEGER NOT NULL
+  id                TEXT PRIMARY KEY,            -- ULID
+  name              TEXT NOT NULL,
+  owner_id          TEXT NOT NULL REFERENCES users(id),  -- permanent owner (not mutable in v1)
+  invite_code       TEXT NOT NULL UNIQUE,        -- 6-char human-friendly
+  campaign_settings TEXT,                        -- nullable; opaque JSON blob (deferred design)
+  created_at        INTEGER NOT NULL,
+  updated_at        INTEGER NOT NULL
 );
+
+-- `campaign_settings` is opaque and nullable in v1. It's reserved for per-campaign
+-- character-creation restrictions / extensions (Option C from the Phase 2 Epic 1 design);
+-- the wizard's enrichment step is a no-op while the column is null. The shape of the
+-- content is a deferred design decision.
 
 -- campaign membership; is_director = 1 means the member can jump behind the screen
 CREATE TABLE campaign_memberships (

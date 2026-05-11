@@ -27,7 +27,7 @@ The full list lives in `packages/shared/src/intents.ts`. This is the conceptual 
 
 ### Combat lifecycle
 
-- `StartEncounter { encounterId }`
+- `StartEncounter { encounterId?, stampedPcs: StartEncounterStampedPc[] }` — DO loads each PC placeholder's character blob from D1 and stamps them onto `stampedPcs`; reducer materializes each placeholder into a full `Participant` via `deriveCharacterRuntime`, preserving runtime state from a prior encounter if present.
 - `EndEncounter`
 - `StartRound`
 - `EndRound`
@@ -60,6 +60,11 @@ Why the dice live in the payload: the reducer is pure (see below), so randomness
 - `GainResource { characterId, resource, amount }`
 - `EarnVictory { campaignId, amount }`
 
+### Character-runtime
+
+- `SwapKit { characterId, newKitId }` — side-effect intent. Mutates `characters.data.kitId` in D1. Rejected if `state.encounter !== null`. Authority: character owner OR active director. Next `StartEncounter` re-derives with the new kit.
+- `Respite` — hybrid intent (state-mutating AND D1 side-effect). State: refills `recoveries.current = max` on every PC participant; drains `state.partyVictories` to 0. D1: increments each PC's character `data.xp` by `partyVictories` (1:1 conversion). Rejected if `state.encounter !== null`. Not undoable.
+
 ### Manual override
 
 - `SetStat { participantId, field, value, reason }`
@@ -70,7 +75,7 @@ Why the dice live in the payload: the reducer is pure (see below), so randomness
 
 - `JoinLobby { userId, characterId? }` — server-only; DO emits when a WebSocket connects
 - `LeaveLobby { userId }` — server-only; DO emits on disconnect
-- `BringCharacterIntoEncounter { characterId, position }` — adds a hero to the lobby roster (works whether or not an encounter is active)
+- `BringCharacterIntoEncounter { characterId, ownerId, position }` — adds a `PcPlaceholder` to the lobby roster. The placeholder is materialized into a full `Participant` at the next `StartEncounter`; structural fields are re-derived from the character via `deriveCharacterRuntime` each time, while runtime state (`currentStamina`, `recoveries.current`) carries over between encounters within the lobby session. DO stamps `ownerId` from D1 before reducer.
 - `AddMonster { monsterId, quantity, nameOverride? }` — active-director gated; DO stamps the resolved monster payload from `monsters.json` before the reducer sees it
 - `RemoveParticipant { participantId }` — active-director gated; rejected if the participant is the currently active turn participant
 - `ClearLobby` — active-director gated; rejected while an encounter is active
@@ -122,6 +127,9 @@ Examples:
 | `LoadEncounterTemplate` | Reads `encounter_templates` row from D1; stamps `{ monsters: [...] }` |
 | `JumpBehindScreen` | Reads `campaign_memberships.is_director` for the actor; stamps `{ permitted: boolean }` |
 | `AddMonster` | Resolves monster data from `monsters.json`; stamps the full monster payload |
+| `StartEncounter` | Reads each PC placeholder's `characters` row from D1; stamps `stampedPcs[]` with `{ characterId, ownerId, character: CharacterSchema }` |
+| `BringCharacterIntoEncounter` | Reads the `characters` row from D1 to verify ownership; stamps `ownerId` |
+| `SwapKit` | No stamping — pure D1 write; reducer validates authority from `state` |
 
 The pattern generalises: whenever the reducer needs external data to make a decision, the DO attaches it to the payload at the boundary. The intent then contains its full context and can be replayed faithfully from the log.
 
@@ -134,6 +142,15 @@ A subset of intents — `SubmitCharacter`, `ApproveCharacter`, `DenyCharacter`, 
 - The reducer is still called and still performs its authority checks, but returns unchanged `CampaignState`.
 - Clients re-fetch the affected data via `GET /api/campaigns/:id/characters` or `GET /api/campaigns/:id/members` when they receive an `applied` envelope for one of these intents.
 - **These intents are not undoable.** The Undo flow voids rows in the log and replays `CampaignState` — it has no mechanism to reverse D1 row writes outside state. Instead of undoing, the director dispatches the opposing intent (e.g. `ApproveCharacter` after a mistaken deny flow is a fresh submission + approval).
+
+## Hybrid intents
+
+A third intent category, sitting between state-mutating intents (which change `CampaignState`) and side-effect intents (which write D1 outside `CampaignState`): **hybrid intents** do both inside a single serialized DO op. `Respite` is the canonical example.
+
+- The DO calls the reducer first; if it returns errors, the side-effect is skipped.
+- On success, the DO performs the D1 writes derived from the intent payload + reducer-returned state.
+- The intent is logged with full attribution.
+- **Not undoable.** The Undo path silently skips hybrid intents, same as pure side-effects, because rolling back the D1 writes isn't a state-replay concern.
 
 ## Server-only intents
 

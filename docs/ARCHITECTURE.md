@@ -38,13 +38,12 @@ Users, campaigns, characters, encounter templates, intent logs, chat. Read-write
 └────────────────┘                            │  - broadcasts to peers  │
        │                                      └────────────┬────────────┘
        │                                                   │
-       │ IndexedDB (Dexie)                                 │ persists
-       │   - offline character cache                       ▼
-       │   - intent queue                          ┌──────────────┐
-       │                                           │     D1       │
-       ▼                                           │  (SQLite)    │
-   Bundled static JSON                             └──────────────┘
-   (rules, monsters, classes)
+       ▼                                                   │ persists
+   Bundled static JSON                                     ▼
+   (rules, monsters, classes)                      ┌──────────────┐
+                                                   │     D1       │
+                                                   │  (SQLite)    │
+                                                   └──────────────┘
 ```
 
 **D1 tables:** `campaigns`, `campaign_memberships`, `campaign_characters`, `encounter_templates`, `campaign_snapshots`, `intents`, `characters`, `users`, `auth_tokens`, `auth_sessions`. See [`data-pipeline.md`](data-pipeline.md) for the full schema.
@@ -59,8 +58,6 @@ Users, campaigns, characters, encounter templates, intent logs, chat. Read-write
   1. Optimistically applies the intent to the local Zustand store via the rules reducer
   2. Sends the intent over the WebSocket to the lobby DO
   3. Reconciles when the DO broadcasts the canonical result
-- Local-first: intents queue in IndexedDB if the WS is down and replay on reconnect
-
 ### `apps/api` — Hono Worker + Durable Objects
 
 - HTTP routes for queries that don't need a lobby connection (login, list characters, list campaigns, fetch a campaign snapshot, encounter-template CRUD)
@@ -134,7 +131,7 @@ The DO's intent handler runs a permission check — and in some cases a D1 looku
 
 - The lobby DO snapshots state to D1 every N intents (or every 30s, whichever first)
 - On DO restart: load the latest `campaign_snapshots` row, replay any intents in the log past the snapshot sequence number
-- If the WS drops: client queues intents in IndexedDB; on reconnect, sends a `sync { sinceSeq }` and the DO replays missed intents in seq order
+- If the WS drops: client sends a `sync { sinceSeq }` on reconnect and the DO replays missed intents in seq order
 - Conflict resolution: the DO is the single writer. Optimistic client state is reconciled to whatever the DO says — see "Optimistic UI" in [`intent-protocol.md`](intent-protocol.md) for the per-envelope reconciliation rules.
 
 ## Performance targets (informal)

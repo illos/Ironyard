@@ -54,7 +54,6 @@ Director-trusted, players-trusted-with-receipts:
 | Routing | TanStack Router | Type-safe routes; first-class for SPAs |
 | Server state | TanStack Query | Cache + sync with server; pairs well with WebSocket invalidation |
 | Client state | Zustand | Simple, no boilerplate; works with the intent reducer |
-| Local persistence | Dexie (IndexedDB) | Offline-first character cache and intent queue |
 | Styling | Tailwind | Fast, responsive, consistent |
 | Form primitives | react-hook-form + Zod | Schema-driven forms for the character creator |
 | Headless UI | Radix UI | Accessible primitives; we style with Tailwind |
@@ -80,5 +79,5 @@ Per [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), every package has tests. Bef
 - **Don't bypass the intent reducer.** If you update `participant.hp` directly in a component, the change won't sync, won't be undoable, and won't be in the log. Always dispatch.
 - **Don't put SteelCompendium data into D1.** Static reference data is bundled with the app. D1 is for user-owned and campaign-owned data only.
 - **Don't add `any` to fix a type error.** Fix the type. If you genuinely need an escape hatch, it goes in `packages/shared/src/escape.ts` with a comment.
-- **Don't write to LocalStorage / SessionStorage in components.** Persistence goes through Dexie or the server.
+- **Don't write to LocalStorage / SessionStorage in components.** Persistence goes through the server (D1 via API routes).
 - **Don't fetch data directly with `fetch` in a component.** Use TanStack Query hooks defined in `apps/web/src/api/`.
