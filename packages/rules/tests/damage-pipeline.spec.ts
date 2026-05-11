@@ -12,6 +12,7 @@ function makeTarget(over: Partial<Participant> = {}): Participant {
     characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
     immunities: [],
     weaknesses: [],
+    conditions: [],
     ...over,
   };
 }

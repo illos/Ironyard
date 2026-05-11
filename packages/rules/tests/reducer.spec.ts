@@ -129,7 +129,7 @@ describe('applyIntent — Note', () => {
 describe('applyIntent — unknown intent type', () => {
   it('returns an unknown_intent error and leaves state alone', () => {
     const state = emptySessionState(sessionId);
-    const result = applyIntent(state, intent('SetCondition', { foo: 'bar' }));
+    const result = applyIntent(state, intent('NotYetImplemented', { foo: 'bar' }));
     expect(result.errors?.[0]?.code).toBe('unknown_intent');
     expect(result.state).toEqual(state);
   });

@@ -39,6 +39,7 @@ function pc(over: Partial<Participant> = {}): Participant {
     characteristics: { might: 2, agility: 1, reason: 0, intuition: 0, presence: 0 },
     immunities: [],
     weaknesses: [],
+    conditions: [],
     ...over,
   };
 }
@@ -53,6 +54,7 @@ function monster(over: Partial<Participant> = {}): Participant {
     characteristics: { might: 0, agility: 1, reason: -1, intuition: 0, presence: -1 },
     immunities: [],
     weaknesses: [],
+    conditions: [],
     ...over,
   };
 }

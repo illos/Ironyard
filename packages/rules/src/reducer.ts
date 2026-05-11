@@ -7,7 +7,10 @@ import {
   applyJoinSession,
   applyLeaveSession,
   applyNote,
+  applyRemoveCondition,
   applyRollPower,
+  applyRollResistance,
+  applySetCondition,
   applySetInitiative,
   applyStartEncounter,
   applyStartRound,
@@ -46,6 +49,12 @@ export function applyIntent(state: SessionState, intent: StampedIntent): IntentR
       return applyEndTurn(state, intent);
     case IntentTypes.SetInitiative:
       return applySetInitiative(state, intent);
+    case IntentTypes.SetCondition:
+      return applySetCondition(state, intent);
+    case IntentTypes.RemoveCondition:
+      return applyRemoveCondition(state, intent);
+    case IntentTypes.RollResistance:
+      return applyRollResistance(state, intent);
     case IntentTypes.Undo:
       return applyUndo(state, intent);
     default:

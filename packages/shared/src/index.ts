@@ -42,7 +42,10 @@ export {
   JoinSessionPayloadSchema,
   LeaveSessionPayloadSchema,
   NotePayloadSchema,
+  RemoveConditionPayloadSchema,
   RollPowerPayloadSchema,
+  RollResistancePayloadSchema,
+  SetConditionPayloadSchema,
   SetInitiativePayloadSchema,
   StartEncounterPayloadSchema,
   StartRoundPayloadSchema,
@@ -58,7 +61,10 @@ export type {
   KnownIntentType,
   LeaveSessionPayload,
   NotePayload,
+  RemoveConditionPayload,
   RollPowerPayload,
+  RollResistancePayload,
+  SetConditionPayload,
   SetInitiativePayload,
   StartEncounterPayload,
   StartRoundPayload,
@@ -74,6 +80,19 @@ export type { Characteristic, Characteristics } from './characteristic';
 
 export { DAMAGE_TYPES, DamageTypeSchema, TypedResistanceSchema } from './damage';
 export type { DamageType, TypedResistance } from './damage';
+
+export {
+  ConditionDurationSchema,
+  ConditionInstanceSchema,
+  ConditionSourceSchema,
+  ConditionTypeSchema,
+} from './condition';
+export type {
+  ConditionDuration,
+  ConditionInstance,
+  ConditionSource,
+  ConditionType,
+} from './condition';
 
 export { ParticipantSchema } from './participant';
 export type { Participant } from './participant';
