@@ -54,8 +54,28 @@ export type {
   StartEncounterPayload,
 } from './intents';
 
-export { MonsterFileSchema, MonsterSchema } from './data/monster';
-export type { Monster, MonsterFile } from './data/monster';
+export {
+  ABILITY_TYPES,
+  AbilitySchema,
+  AbilityTypeSchema,
+  EvSchema,
+  MOVEMENT_MODES,
+  MonsterFileSchema,
+  MonsterSchema,
+  MovementModeSchema,
+  PowerRollSchema,
+  StaminaSchema,
+} from './data/monster';
+export type {
+  Ability,
+  AbilityType,
+  Ev,
+  Monster,
+  MonsterFile,
+  MovementMode,
+  PowerRoll,
+  Stamina,
+} from './data/monster';
 
 export { CharacteristicSchema, CharacteristicsSchema } from './characteristic';
 export type { Characteristic, Characteristics } from './characteristic';
