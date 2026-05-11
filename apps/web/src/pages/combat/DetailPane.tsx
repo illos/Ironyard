@@ -1,14 +1,16 @@
 import {
+  type Ability,
   type ConditionInstance,
   type ConditionType,
   IntentTypes,
+  type Monster,
   type Participant,
   type RemoveConditionPayload,
   type RollPowerPayload,
   type SetConditionPayload,
 } from '@ironyard/shared';
 import { useEffect, useMemo, useState } from 'react';
-import { type StubAbility, abilitiesForMonster, abilitiesForPc } from '../../data/monsterAbilities';
+import { pcFreeStrike } from '../../data/monsterAbilities';
 import { useLongPress } from '../../lib/longPress';
 import { AbilityCard } from './AbilityCard';
 import { ConditionChip } from './ConditionChip';
@@ -31,10 +33,13 @@ type Props = {
   // Everyone else in the encounter (target candidates).
   participants: Participant[];
   monsterLevelById: Map<string, number>;
+  // Real monster data keyed by participant id (slice 10's `${monsterId}-instance-N`
+  // convention). Used to pull the focused monster's full ability list.
+  monsterByParticipantId: Map<string, Monster>;
   disabled: boolean;
   // Dispatch helpers wired by the parent CombatRun.
   dispatchRoll: (args: {
-    ability: StubAbility;
+    ability: Ability;
     attacker: Participant;
     target: Participant;
     rolls: [number, number];
@@ -48,6 +53,7 @@ export function DetailPane({
   focused,
   participants,
   monsterLevelById,
+  monsterByParticipantId,
   disabled,
   dispatchRoll,
   dispatchSetCondition,
@@ -66,6 +72,7 @@ export function DetailPane({
       focused={focused}
       participants={participants}
       monsterLevelById={monsterLevelById}
+      monsterByParticipantId={monsterByParticipantId}
       disabled={disabled}
       dispatchRoll={dispatchRoll}
       dispatchSetCondition={dispatchSetCondition}
@@ -80,6 +87,7 @@ function DetailBody({
   focused,
   participants,
   monsterLevelById,
+  monsterByParticipantId,
   disabled,
   dispatchRoll,
   dispatchSetCondition,
@@ -105,15 +113,21 @@ function DetailBody({
     }
   }, [targetId, candidates]);
 
-  const abilities =
-    focused.kind === 'monster'
-      ? abilitiesForMonster(focused.id, monsterLevelById.get(focused.id) ?? 1)
-      : abilitiesForPc();
+  // Pull real abilities from the cached monsters.json for monster focus; PC
+  // falls back to the single Free Strike stub until Phase 2 character sheets.
+  // Only abilities with a powerRoll are rollable from the combat run; pure
+  // traits (e.g. Crafty) are out-of-scope for the auto-roll loop.
+  const abilities: Ability[] = useMemo(() => {
+    if (focused.kind !== 'monster') return [pcFreeStrike()];
+    const monster = monsterByParticipantId.get(focused.id);
+    if (!monster) return [];
+    return monster.abilities.filter((a) => a.powerRoll !== undefined);
+  }, [focused, monsterByParticipantId]);
 
   const hpLongPress = useLongPress(() => setHpEditOpen(true), 500);
 
   const onRoll = (
-    ability: StubAbility,
+    ability: Ability,
     args: { rolls: [number, number]; source: 'manual' | 'auto' },
   ) => {
     if (!target) return;
@@ -279,11 +293,13 @@ function DetailBody({
         )}
         <div className="mt-3 grid gap-3">
           {abilities.length === 0 && (
-            <p className="text-sm text-neutral-500">No abilities loaded.</p>
+            <p className="text-sm text-neutral-500">
+              No rollable abilities — this monster has only traits or no ability data loaded.
+            </p>
           )}
           {abilities.map((ab) => (
             <AbilityCard
-              key={ab.id}
+              key={ab.name}
               ability={ab}
               disabled={disabled || candidates.length === 0 || !target}
               onRoll={(ability, args) => onRoll(ability, args)}

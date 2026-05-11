@@ -1,5 +1,5 @@
+import type { Ability, TierOutcome } from '@ironyard/shared';
 import { useState } from 'react';
-import type { StubAbility } from '../../data/monsterAbilities';
 import { TIER_RIGGED_ROLLS, roll2d10 } from '../../lib/rollDice';
 
 type RollArgs = {
@@ -8,14 +8,32 @@ type RollArgs = {
 };
 
 type Props = {
-  ability: StubAbility;
+  ability: Ability;
   // Disable if no target picked / WS closed / no active turn etc.
   disabled: boolean;
-  onRoll: (ability: StubAbility, args: RollArgs) => void;
+  onRoll: (ability: Ability, args: RollArgs) => void;
+};
+
+// Type chip styling — matches the data-layer `AbilityType` enum.
+const TYPE_CHIP_STYLE: Record<Ability['type'], string> = {
+  action: 'bg-rose-900/40 text-rose-200',
+  maneuver: 'bg-sky-900/40 text-sky-200',
+  triggered: 'bg-amber-900/40 text-amber-200',
+  'free-triggered': 'bg-amber-900/40 text-amber-200',
+  villain: 'bg-purple-900/40 text-purple-200',
+  trait: 'bg-neutral-800 text-neutral-300',
 };
 
 export function AbilityCard({ ability, disabled, onRoll }: Props) {
   const [manualOpen, setManualOpen] = useState(false);
+
+  // Defensive guard: only abilities with a powerRoll are rollable. The
+  // DetailPane filters these out, but keep the runtime check so future
+  // callers can't accidentally feed a trait through.
+  if (!ability.powerRoll) {
+    return null;
+  }
+  const pr = ability.powerRoll;
 
   const handleAuto = () => {
     onRoll(ability, { rolls: roll2d10(), source: 'auto' });
@@ -30,36 +48,53 @@ export function AbilityCard({ ability, disabled, onRoll }: Props) {
 
   return (
     <article className="rounded-lg border border-neutral-800 bg-neutral-900/60 p-4">
-      <header className="flex items-baseline justify-between gap-3">
-        <h3 className="font-semibold">{ability.name}</h3>
-        <span className="text-xs uppercase tracking-wider text-neutral-500">
-          {ability.characteristic}
+      <header className="flex flex-wrap items-baseline justify-between gap-2">
+        <div className="flex flex-wrap items-baseline gap-2">
+          <h3 className="font-semibold">{ability.name}</h3>
+          <span
+            className={`text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded ${TYPE_CHIP_STYLE[ability.type]}`}
+          >
+            {ability.type}
+          </span>
+          {ability.cost && (
+            <span className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300">
+              {ability.cost}
+            </span>
+          )}
+        </div>
+        <span className="text-xs font-mono tabular-nums text-neutral-500">
+          Power Roll {pr.bonus}
         </span>
       </header>
-      <p className="mt-1 text-sm text-neutral-400">{ability.blurb}</p>
-      <dl className="mt-3 grid grid-cols-3 gap-2 text-sm font-mono tabular-nums">
-        <div className="rounded-md bg-neutral-950 px-2 py-1.5 border border-neutral-800/60">
-          <dt className="text-[10px] uppercase tracking-wider text-neutral-500">t1</dt>
-          <dd className="text-neutral-200">
-            {ability.ladder.t1.damage}{' '}
-            <span className="text-neutral-500 text-xs">{ability.ladder.t1.damageType}</span>
-          </dd>
+      {ability.keywords.length > 0 && (
+        <div className="mt-1.5 flex flex-wrap gap-1">
+          {ability.keywords.map((k) => (
+            <span
+              key={k}
+              className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-950 border border-neutral-800 text-neutral-400"
+            >
+              {k}
+            </span>
+          ))}
         </div>
-        <div className="rounded-md bg-neutral-950 px-2 py-1.5 border border-neutral-800/60">
-          <dt className="text-[10px] uppercase tracking-wider text-neutral-500">t2</dt>
-          <dd className="text-neutral-200">
-            {ability.ladder.t2.damage}{' '}
-            <span className="text-neutral-500 text-xs">{ability.ladder.t2.damageType}</span>
-          </dd>
-        </div>
-        <div className="rounded-md bg-neutral-950 px-2 py-1.5 border border-neutral-800/60">
-          <dt className="text-[10px] uppercase tracking-wider text-neutral-500">t3</dt>
-          <dd className="text-neutral-200">
-            {ability.ladder.t3.damage}{' '}
-            <span className="text-neutral-500 text-xs">{ability.ladder.t3.damageType}</span>
-          </dd>
-        </div>
-      </dl>
+      )}
+      {(ability.distance || ability.target) && (
+        <p className="mt-1 text-xs text-neutral-500">
+          {ability.distance && <span className="font-mono">{ability.distance}</span>}
+          {ability.distance && ability.target && <span className="px-1">·</span>}
+          {ability.target && <span>{ability.target}</span>}
+        </p>
+      )}
+      <ol className="mt-3 space-y-1.5 text-sm" aria-label="tier ladder">
+        <TierRow label="≤11" tier={pr.tier1} />
+        <TierRow label="12–16" tier={pr.tier2} />
+        <TierRow label="17+" tier={pr.tier3} />
+      </ol>
+      {ability.effect && (
+        <p className="mt-2 text-xs text-neutral-400">
+          <span className="text-neutral-500 uppercase tracking-wider">Effect</span> {ability.effect}
+        </p>
+      )}
       <div className="mt-4 flex items-stretch gap-2">
         <button
           type="button"
@@ -109,5 +144,32 @@ export function AbilityCard({ ability, disabled, onRoll }: Props) {
         </div>
       )}
     </article>
+  );
+}
+
+// Render a single tier row. Prominent damage on the left; effect text right
+// under it. `raw` lives in the title attribute as the always-correct fallback.
+function TierRow({ label, tier }: { label: string; tier: TierOutcome }) {
+  const hasDamage = tier.damage !== null;
+  return (
+    <li
+      className="flex items-baseline gap-2 rounded-md bg-neutral-950 border border-neutral-800/60 px-2 py-1.5"
+      title={tier.raw}
+    >
+      <span className="text-[10px] uppercase tracking-wider font-mono tabular-nums text-neutral-500 w-12 shrink-0">
+        {label}
+      </span>
+      <span className="font-mono tabular-nums text-neutral-100 shrink-0">
+        {hasDamage ? (
+          <>
+            {tier.damage}{' '}
+            <span className="text-neutral-500 text-xs">{tier.damageType ?? 'untyped'}</span>
+          </>
+        ) : (
+          <span className="text-neutral-500 italic text-xs">no damage</span>
+        )}
+      </span>
+      {tier.effect && <span className="text-xs text-neutral-400 leading-tight">{tier.effect}</span>}
+    </li>
   );
 }

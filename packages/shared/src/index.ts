@@ -99,6 +99,7 @@ export {
   MovementModeSchema,
   PowerRollSchema,
   StaminaSchema,
+  TierOutcomeSchema,
 } from './data/monster';
 export type {
   Ability,
@@ -109,6 +110,7 @@ export type {
   MovementMode,
   PowerRoll,
   Stamina,
+  TierOutcome,
 } from './data/monster';
 
 export { CharacteristicSchema, CharacteristicsSchema } from './characteristic';

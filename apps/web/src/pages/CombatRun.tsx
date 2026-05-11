@@ -1,20 +1,24 @@
 import {
+  type Ability,
+  type Characteristic,
+  type DamageType,
   type EndRoundPayload,
   type EndTurnPayload,
   type Intent,
   IntentTypes,
+  type Monster,
   type Participant,
   type RemoveConditionPayload,
   type RollPowerPayload,
   type SetConditionPayload,
   type StartRoundPayload,
+  type TierOutcome,
   type UndoPayload,
 } from '@ironyard/shared';
 import { Link, useParams } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildIntent } from '../api/dispatch';
 import { useMe, useMonsters, useSession } from '../api/queries';
-import type { StubAbility } from '../data/monsterAbilities';
 import { describeIntent, findLatestUndoable } from '../lib/intentDescribe';
 import { type MirrorIntent, useSessionSocket } from '../ws/useSessionSocket';
 import { DetailPane } from './combat/DetailPane';
@@ -133,18 +137,30 @@ export function CombatRun() {
     );
   }, [intentLog]);
 
-  const monsterLevelById = useMemo(() => {
-    const map = new Map<string, number>();
+  // Shared lookup: participant id → full Monster record. The combat run needs
+  // both the level (for the type chip in DetailPane) and the abilities list
+  // (for the rollable ladder in AbilityCard). We build the full-monster map
+  // here and derive the level-only map from it so the two never drift.
+  const monsterByParticipantId = useMemo(() => {
+    const map = new Map<string, Monster>();
     if (!monsters.data || !activeEncounter) return map;
     for (const p of activeEncounter.participants) {
       if (p.kind !== 'monster') continue;
       // Participant ids look like `${monsterId}-instance-N` per slice 10.
       const base = p.id.replace(/-instance-\d+$/, '');
       const m = monsters.data.monsters.find((mm) => mm.id === base);
-      if (m) map.set(p.id, m.level);
+      if (m) map.set(p.id, m);
     }
     return map;
   }, [monsters.data, activeEncounter]);
+
+  const monsterLevelById = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const [pid, m] of monsterByParticipantId) {
+      map.set(pid, m.level);
+    }
+    return map;
+  }, [monsterByParticipantId]);
 
   // Header guards — handle loading / unauthenticated / no-session error before
   // touching dispatch helpers.
@@ -222,7 +238,7 @@ export function CombatRun() {
   };
 
   const dispatchRoll = (args: {
-    ability: StubAbility;
+    ability: Ability;
     attacker: Participant;
     target: Participant;
     rolls: [number, number];
@@ -230,15 +246,20 @@ export function CombatRun() {
   }) => {
     // Capture "before" snapshot for the upcoming attribution.
     setParticipantSnapshotBefore(participants);
+    if (!args.ability.powerRoll) return; // guarded upstream by AbilityCard filter
+    const characteristic = characteristicForAbility(args.ability);
+    const ladder = buildLadder(args.ability.powerRoll);
     const payload: RollPowerPayload = {
-      abilityId: args.ability.id,
+      // Slugify the ability name so RollPower payloads have a stable id even
+      // though data doesn't ship one. Same monster + same ability ⇒ same id.
+      abilityId: abilityIdFor(args.attacker, args.ability),
       attackerId: args.attacker.id,
       targetIds: [args.target.id],
-      characteristic: args.ability.characteristic,
+      characteristic,
       edges: 0,
       banes: 0,
       rolls: { d10: args.rolls },
-      ladder: args.ability.ladder,
+      ladder,
     };
     // The DO override of `source` is always 'manual' regardless of what we
     // send (see session-do.ts handleDispatch). To preserve manual-vs-auto
@@ -343,6 +364,7 @@ export function CombatRun() {
               focused={focused}
               participants={participants}
               monsterLevelById={monsterLevelById}
+              monsterByParticipantId={monsterByParticipantId}
               disabled={disabled}
               dispatchRoll={dispatchRoll}
               dispatchSetCondition={dispatchSetCondition}
@@ -459,6 +481,53 @@ function Header({
       </div>
     </header>
   );
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Ability → RollPower helpers
+// ──────────────────────────────────────────────────────────────────────────
+
+// Build a stable ability id from the attacker + ability. The data layer
+// doesn't ship a per-ability id today (each monster's abilities are keyed by
+// name only); pairing with the participant base id gives us uniqueness across
+// monsters that happen to share an ability name.
+function abilityIdFor(attacker: Participant, ability: Ability): string {
+  const slug = ability.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  const base = attacker.id.replace(/-instance-\d+$/, '');
+  return `${base}:${slug}`;
+}
+
+// Derive the rolling characteristic from the ability's PowerRoll.bonus. The
+// data layer currently captures the bonus as a signed integer string ("+2",
+// "-1") only — the source column header indicates the characteristic but the
+// parser doesn't preserve it yet. Default to Might per the original stub;
+// when the data layer extension adds an explicit characteristic field, swap
+// this for `ability.powerRoll?.characteristic ?? 'might'`.
+function characteristicForAbility(_ability: Ability): Characteristic {
+  return 'might';
+}
+
+// Convert a parsed TierOutcome into the wire ladder shape RollPower expects.
+// Tiers without parseable damage (e.g. "Pull 4; I < 3 frightened") send
+// damage:0 so the engine applies no stamina change — the director reads the
+// effect text from the toast and dispatches a follow-up SetCondition if the
+// rules call for it.
+function tierEffectFromOutcome(tier: TierOutcome): { damage: number; damageType: DamageType } {
+  if (tier.damage === null) {
+    return { damage: 0, damageType: 'untyped' };
+  }
+  return { damage: tier.damage, damageType: tier.damageType ?? 'untyped' };
+}
+
+function buildLadder(pr: NonNullable<Ability['powerRoll']>) {
+  return {
+    t1: tierEffectFromOutcome(pr.tier1),
+    t2: tierEffectFromOutcome(pr.tier2),
+    t3: tierEffectFromOutcome(pr.tier3),
+  };
 }
 
 // Suppress unused — keep MirrorIntent in scope so consumers importing the

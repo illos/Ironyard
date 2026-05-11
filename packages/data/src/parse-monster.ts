@@ -8,6 +8,7 @@ import {
   MonsterSchema,
   type MovementMode,
   type PowerRoll,
+  type TierOutcome,
   type TypedResistance,
 } from '@ironyard/shared';
 import matter from 'gray-matter';
@@ -363,12 +364,74 @@ function parseDistanceOrTarget(cell: string | undefined): string | undefined {
   return inner.replace(/^[^\w+0-9-]+\s*/, '').trim() || undefined;
 }
 
+// ──────────────────────────────────────────────────────────────────────────
+// Tier-outcome damage parsing
+// ──────────────────────────────────────────────────────────────────────────
+
+const DAMAGE_TYPE_ENUM_SET: ReadonlySet<string> = new Set<string>(DAMAGE_TYPES);
+
+// Parse a single tier's raw markdown string ("3 fire damage; push 1") into a
+// structured TierOutcome. Always returns — `raw` is preserved verbatim;
+// `damage` is null when no leading damage clause is found.
+//
+// Shape of expected inputs (sampled from monsters.json):
+//   "2 damage"                                    → damage 2, untyped
+//   "5 fire damage"                               → damage 5, fire
+//   "3 damage; push 1"                            → damage 3, effect "push 1"
+//   "12 fire damage; A < 1 burning (save ends)"   → damage 12, fire, effect
+//   "Pull 10; I < 4 slowed (save ends)"           → damage null, effect = raw
+//   "M < 3 restrained (save ends)"                → damage null, effect = raw
+//
+// Defensive prefix strip handles `≤11:`, `miss:`, `graze:`, `hit:`, `crit:`
+// even though current data never emits those at the tier-string level (the
+// parsePowerRoll regex already strips the round-number prefixes). This guards
+// against future SteelCompendium changes / manual overrides.
+export function parseTierOutcome(raw: string): TierOutcome {
+  // Strip leading round-number / hit-quality prefix if present.
+  const noPrefix = raw.replace(
+    /^\s*(?:(?:≤|<=)\s*11|12\s*[-–]\s*16|17\+|miss|graze|hit|crit)\s*[:\-]?\s*/i,
+    '',
+  );
+
+  // Damage regex: "N damage" or "N <type> damage". Word-boundary on damage
+  // keeps us from matching "12 squares" or similar.
+  const damageMatch = /^(\d+)\s+(?:([A-Za-z]+)\s+)?damage\b/i.exec(noPrefix);
+
+  if (!damageMatch) {
+    // No damage match — preserve full raw text as effect for UI rendering.
+    const effect = raw.trim();
+    return effect ? { raw, damage: null, effect } : { raw, damage: null };
+  }
+
+  const dmgStr = damageMatch[1] ?? '0';
+  const typeWord = (damageMatch[2] ?? '').toLowerCase();
+  const damage = Number.parseInt(dmgStr, 10);
+
+  // Type resolution: if `typeWord` is absent or literally "damage" (impossible
+  // with this regex but defensive), → untyped. If present and known → use it.
+  // If present and unknown → fall back to untyped (rather than fail closed and
+  // drop the damage value).
+  let damageType: DamageType = 'untyped';
+  if (typeWord && DAMAGE_TYPE_ENUM_SET.has(typeWord)) {
+    damageType = typeWord as DamageType;
+  }
+
+  // Effect = whatever follows the damage clause, stripping a leading "; ",
+  // ", ", " and " connector.
+  const tail = noPrefix.slice(damageMatch[0].length);
+  const effect = tail.replace(/^\s*(?:[;,]|\band\b)\s*/i, '').trim();
+
+  const result: TierOutcome = { raw, damage, damageType };
+  if (effect.length > 0) result.effect = effect;
+  return result;
+}
+
 function parsePowerRoll(blockLines: string[]): PowerRoll | null {
   const stripped = blockLines.map((l) => l.replace(/^>\s*/, '').trim());
   let bonus: string | null = null;
-  let tier1: string | null = null;
-  let tier2: string | null = null;
-  let tier3: string | null = null;
+  let tier1Raw: string | null = null;
+  let tier2Raw: string | null = null;
+  let tier3Raw: string | null = null;
 
   for (const line of stripped) {
     const head = /^\*\*Power Roll\s*([+\-]\s*\d+)\s*[:\s]/i.exec(line);
@@ -376,15 +439,20 @@ function parsePowerRoll(blockLines: string[]): PowerRoll | null {
       bonus = head[1].replace(/\s+/g, '');
     }
     const t1 = /^[-*]\s*\*\*(?:≤|<=)\s*11:\*\*\s*(.+)$/.exec(line);
-    if (t1 && t1[1] !== undefined) tier1 = t1[1].trim();
+    if (t1 && t1[1] !== undefined) tier1Raw = t1[1].trim();
     const t2 = /^[-*]\s*\*\*12\s*[-–]\s*16:\*\*\s*(.+)$/.exec(line);
-    if (t2 && t2[1] !== undefined) tier2 = t2[1].trim();
+    if (t2 && t2[1] !== undefined) tier2Raw = t2[1].trim();
     const t3 = /^[-*]\s*\*\*17\+:\*\*\s*(.+)$/.exec(line);
-    if (t3 && t3[1] !== undefined) tier3 = t3[1].trim();
+    if (t3 && t3[1] !== undefined) tier3Raw = t3[1].trim();
   }
 
-  if (bonus !== null && tier1 !== null && tier2 !== null && tier3 !== null) {
-    return { bonus, tier1, tier2, tier3 };
+  if (bonus !== null && tier1Raw !== null && tier2Raw !== null && tier3Raw !== null) {
+    return {
+      bonus,
+      tier1: parseTierOutcome(tier1Raw),
+      tier2: parseTierOutcome(tier2Raw),
+      tier3: parseTierOutcome(tier3Raw),
+    };
   }
   return null;
 }

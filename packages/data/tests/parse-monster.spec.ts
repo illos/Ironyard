@@ -497,9 +497,9 @@ describe('parseMonsterMarkdown — abilities', () => {
     expect(spear.target).toBe('One creature or object');
     expect(spear.powerRoll).toEqual({
       bonus: '+2',
-      tier1: '3 damage',
-      tier2: '4 damage',
-      tier3: '5 damage',
+      tier1: { raw: '3 damage', damage: 3, damageType: 'untyped' },
+      tier2: { raw: '4 damage', damage: 4, damageType: 'untyped' },
+      tier3: { raw: '5 damage', damage: 5, damageType: 'untyped' },
     });
   });
 
@@ -512,7 +512,11 @@ describe('parseMonsterMarkdown — abilities', () => {
     if (!bury) return;
     expect(bury.type).toBe('action');
     expect(bury.cost).toBe('2 Malice');
-    expect(bury.powerRoll?.tier1).toMatch(/5 damage/);
+    // Tier1 of "Bury the Point": "5 damage; M < 0 bleeding (save ends)"
+    expect(bury.powerRoll?.tier1.raw).toMatch(/5 damage/);
+    expect(bury.powerRoll?.tier1.damage).toBe(5);
+    expect(bury.powerRoll?.tier1.damageType).toBe('untyped');
+    expect(bury.powerRoll?.tier1.effect).toMatch(/bleeding \(save ends\)/);
   });
 
   it('parses a trait (Crafty)', () => {
