@@ -2,11 +2,13 @@ import { type CurrentUser, type MonsterFile, MonsterFileSchema } from '@ironyard
 import { useQuery } from '@tanstack/react-query';
 import { ApiError, api } from './client';
 
-export type SessionDetail = {
+export type CampaignDetail = {
   id: string;
   name: string;
   inviteCode: string;
-  role: 'director' | 'player';
+  isOwner: boolean;
+  isDirector: boolean;
+  activeDirectorId: string;
 };
 
 export function useMe() {
@@ -24,10 +26,10 @@ export function useMe() {
   });
 }
 
-export function useSession(id: string | undefined) {
-  return useQuery<SessionDetail>({
-    queryKey: ['session', id],
-    queryFn: () => api.get<SessionDetail>(`/api/campaigns/${id}`),
+export function useCampaign(id: string | undefined) {
+  return useQuery<CampaignDetail>({
+    queryKey: ['campaign', id],
+    queryFn: () => api.get<CampaignDetail>(`/api/campaigns/${id}`),
     enabled: !!id,
   });
 }

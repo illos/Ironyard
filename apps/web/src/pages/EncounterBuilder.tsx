@@ -10,7 +10,7 @@ import { IntentTypes, ulid } from '@ironyard/shared';
 import { Link, useNavigate, useParams } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { buildIntent } from '../api/dispatch';
-import { useMe, useMonsters, useSession } from '../api/queries';
+import { useCampaign, useMe, useMonsters } from '../api/queries';
 import { useSessionSocket } from '../ws/useSessionSocket';
 
 const CHARACTERISTIC_KEYS = ['might', 'agility', 'reason', 'intuition', 'presence'] as const;
@@ -28,10 +28,10 @@ const EMPTY_PC_FORM: QuickPcForm = {
 };
 
 export function EncounterBuilder() {
-  const { id: sessionId } = useParams({ from: '/sessions/$id/build' });
+  const { id: sessionId } = useParams({ from: '/campaigns/$id/build' });
   const navigate = useNavigate();
   const me = useMe();
-  const session = useSession(sessionId);
+  const session = useCampaign(sessionId);
   const { status, activeEncounter, dispatch } = useSessionSocket(sessionId);
 
   if (me.isLoading || session.isLoading) {
@@ -59,7 +59,9 @@ export function EncounterBuilder() {
   if (session.error || !session.data) {
     return (
       <main className="mx-auto max-w-6xl p-6 space-y-2">
-        <p className="text-rose-400">{(session.error as Error)?.message ?? 'Session not found.'}</p>
+        <p className="text-rose-400">
+          {(session.error as Error)?.message ?? 'Campaign not found.'}
+        </p>
         <Link to="/" className="underline text-neutral-300">
           Back home
         </Link>
@@ -67,7 +69,10 @@ export function EncounterBuilder() {
     );
   }
 
-  const actor = { userId: me.data.user.id, role: session.data.role };
+  const actor = {
+    userId: me.data.user.id,
+    role: (session.data.isDirector ? 'director' : 'player') as 'director' | 'player',
+  };
   const participants = activeEncounter?.participants ?? [];
 
   const handleAddMonster = (monster: Monster) => {
@@ -157,7 +162,7 @@ export function EncounterBuilder() {
     if (ok) {
       // Slice 11: land on the play screen instead of the lobby once the fight
       // begins. The lobby keeps a "Continue in play screen" link for re-entry.
-      navigate({ to: '/sessions/$id/play', params: { id: sessionId } });
+      navigate({ to: '/campaigns/$id/play', params: { id: sessionId } });
     }
   };
 
@@ -185,7 +190,7 @@ export function EncounterBuilder() {
         </div>
         <div className="flex items-center gap-4">
           <Link
-            to="/sessions/$id"
+            to="/campaigns/$id"
             params={{ id: sessionId }}
             className="text-sm text-neutral-400 hover:text-neutral-200"
           >

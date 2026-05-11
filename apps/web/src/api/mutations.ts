@@ -1,7 +1,7 @@
 import type { CurrentUser } from '@ironyard/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from './client';
-import type { SessionDetail } from './queries';
+import type { CampaignDetail } from './queries';
 
 export function useDevLogin() {
   const qc = useQueryClient();
@@ -27,15 +27,15 @@ export function useLogout() {
   });
 }
 
-export function useCreateSession() {
+export function useCreateCampaign() {
   return useMutation({
-    mutationFn: (input: { name: string }) => api.post<SessionDetail>('/api/campaigns', input),
+    mutationFn: (input: { name: string }) => api.post<CampaignDetail>('/api/campaigns', input),
   });
 }
 
-export function useJoinSession() {
+export function useJoinCampaign() {
   return useMutation({
     mutationFn: (input: { inviteCode: string }) =>
-      api.post<SessionDetail>('/api/campaigns/join', input),
+      api.post<CampaignDetail>('/api/campaigns/join', input),
   });
 }
