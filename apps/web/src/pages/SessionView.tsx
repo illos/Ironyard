@@ -6,7 +6,7 @@ export function SessionView() {
   const { id } = useParams({ from: '/sessions/$id' });
   const me = useMe();
   const session = useSession(id);
-  const { members, status } = useSessionSocket(id);
+  const { members, status, activeEncounter } = useSessionSocket(id);
 
   if (me.isLoading || session.isLoading) {
     return (
@@ -58,6 +58,15 @@ export function SessionView() {
           </p>
         </div>
         <div className="flex items-center gap-4">
+          {activeEncounter && activeEncounter.currentRound !== null && (
+            <Link
+              to="/sessions/$id/play"
+              params={{ id }}
+              className="text-sm text-emerald-300 hover:text-emerald-200 underline"
+            >
+              Continue in play screen →
+            </Link>
+          )}
           <Link
             to="/sessions/$id/build"
             params={{ id }}

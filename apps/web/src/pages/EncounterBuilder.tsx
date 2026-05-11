@@ -148,7 +148,9 @@ export function EncounterBuilder() {
       }),
     );
     if (ok) {
-      navigate({ to: '/sessions/$id', params: { id: sessionId } });
+      // Slice 11: land on the play screen instead of the lobby once the fight
+      // begins. The lobby keeps a "Continue in play screen" link for re-entry.
+      navigate({ to: '/sessions/$id/play', params: { id: sessionId } });
     }
   };
 
