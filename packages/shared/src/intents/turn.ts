@@ -11,7 +11,16 @@ export const StartTurnPayloadSchema = z.object({
 });
 export type StartTurnPayload = z.infer<typeof StartTurnPayloadSchema>;
 
-export const EndTurnPayloadSchema = z.object({}).strict();
+// Slice 6: optional `saveRolls` carries one d10 per `save_ends` condition on the
+// ending creature, ordered by the condition's `appliedAtSeq`. The engine emits
+// one derived `RollResistance` per save when this is present. Missing or
+// wrong-length ⇒ the engine logs `manual_override_required` per save and skips
+// the auto-fire so the table can roll manually (canon-gate idiom).
+export const EndTurnPayloadSchema = z
+  .object({
+    saveRolls: z.array(z.number().int().min(1).max(10)).optional(),
+  })
+  .strict();
 export type EndTurnPayload = z.infer<typeof EndTurnPayloadSchema>;
 
 export const SetInitiativePayloadSchema = z.object({

@@ -60,6 +60,7 @@ export function applyStartEncounter(state: SessionState, intent: StampedIntent):
         currentRound: null,
         turnOrder: [],
         activeParticipantId: null,
+        turnState: {},
       },
     },
     derived: [],

@@ -7,6 +7,7 @@ function makeTarget(over: Partial<Participant> = {}): Participant {
     id: 'p_1',
     name: 'Target',
     kind: 'monster',
+    level: 1,
     currentStamina: 20,
     maxStamina: 20,
     characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },

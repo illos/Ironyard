@@ -82,6 +82,9 @@ export function EncounterBuilder() {
       id: `${monster.id}-instance-${nextCount}`,
       name: nextCount > 1 ? `${monster.name} ${nextCount}` : monster.name,
       kind: 'monster',
+      // Slice 6: `level` powers Bleeding 1d6+level. Read from the monster data
+      // here once it's available; for now mirror the level the source carries.
+      level: monster.level,
       currentStamina: 20,
       maxStamina: 20,
       characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
@@ -374,6 +377,9 @@ function QuickPcForm({
       id: `pc-${ulid()}`,
       name,
       kind: 'pc',
+      // Slice 6: PC quick-stat blocks default to level 1; full sheet (Phase 2)
+      // will replace this with the character's actual level.
+      level: 1,
       currentStamina: maxStamina,
       maxStamina,
       characteristics,

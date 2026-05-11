@@ -27,5 +27,11 @@ export const RollPowerPayloadSchema = z.object({
     t2: TierEffectSchema,
     t3: TierEffectSchema,
   }),
+  // Slice 6: optional d6 used by the Bleeding hook (canon §3.5.1 — `1d6 + level`
+  // when the actor has Bleeding and uses an action / triggered action /
+  // Might-or-Agility roll). Dispatchers pre-roll this iff the actor has
+  // Bleeding; absent ⇒ engine logs `manual_override_required` and skips auto
+  // damage so the table can roll manually.
+  bleedingD6: z.number().int().min(1).max(6).optional(),
 });
 export type RollPowerPayload = z.infer<typeof RollPowerPayloadSchema>;

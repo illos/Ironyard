@@ -15,6 +15,15 @@ export type NoteEntry = {
   timestamp: number;
 };
 
+// Slice 6: per-actor turn-scoped flags consulted by condition hooks. Today only
+// `dazeActionUsedThisTurn` is tracked (Dazed allows one of {main, maneuver, move}
+// per turn — canon §3.5.2 / §4.9). Slice 7 will replace this with the full
+// canon §4.10 record (mainSpent, maneuversSpent, etc.) without renaming the
+// field. Map keys are participant ids; absent entries default to all-false.
+export type TurnState = {
+  dazeActionUsedThisTurn: boolean;
+};
+
 export type ActiveEncounter = {
   id: string;
   participants: Participant[];
@@ -24,6 +33,9 @@ export type ActiveEncounter = {
   currentRound: number | null;
   turnOrder: string[];
   activeParticipantId: string | null;
+  // Slice 6: per-actor turn-state flags. `StartTurn` resets the entry for the
+  // starting participant; `EndTurn` clears it. Empty by default.
+  turnState: Record<string, TurnState>;
 };
 
 export type SessionState = {

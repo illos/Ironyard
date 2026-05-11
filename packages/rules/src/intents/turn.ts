@@ -1,11 +1,20 @@
 import {
   EndRoundPayloadSchema,
   EndTurnPayloadSchema,
+  IntentTypes,
   SetInitiativePayloadSchema,
   StartRoundPayloadSchema,
   StartTurnPayloadSchema,
 } from '@ironyard/shared';
-import type { ActiveEncounter, IntentResult, SessionState, StampedIntent } from '../types';
+import { requireCanon } from '../require-canon';
+import type {
+  ActiveEncounter,
+  DerivedIntent,
+  IntentResult,
+  LogEntry,
+  SessionState,
+  StampedIntent,
+} from '../types';
 
 // Shared guard — every turn intent requires an active encounter.
 function requireEncounter(
@@ -138,6 +147,14 @@ export function applyStartTurn(state: SessionState, intent: StampedIntent): Inte
     };
   }
 
+  // Slice 6: reset per-turn flags consulted by condition hooks. Dazed gating
+  // uses `dazeActionUsedThisTurn`. Other flags (mainSpent etc.) join here in
+  // slice 7.
+  const nextTurnState = {
+    ...guard.encounter.turnState,
+    [participantId]: { dazeActionUsedThisTurn: false },
+  };
+
   return {
     state: {
       ...state,
@@ -145,6 +162,7 @@ export function applyStartTurn(state: SessionState, intent: StampedIntent): Inte
       activeEncounter: {
         ...guard.encounter,
         activeParticipantId: participantId,
+        turnState: nextTurnState,
       },
     },
     derived: [],
@@ -175,6 +193,68 @@ export function applyEndTurn(state: SessionState, intent: StampedIntent): Intent
   const nextId =
     currentIdx >= 0 && currentIdx + 1 < order.length ? (order[currentIdx + 1] ?? null) : null;
 
+  // Slice 6: clear the ending creature's per-turn flags. StartTurn re-seeds
+  // them next turn.
+  const { [currentId ?? '']: _cleared, ...remainingTurnState } = guard.encounter.turnState;
+  // _cleared is the dropped per-turn record; keeping the name for clarity.
+  void _cleared;
+
+  // Slice 6 hook: auto-fire RollResistance for each `save_ends` condition on
+  // the ending creature, in `appliedAtSeq` order (canon §3.3, Q9). The d10s
+  // ride on the EndTurn payload's `saveRolls` field. Missing or wrong-length
+  // ⇒ engine logs `manual_override_required` per save and skips the auto-fire
+  // (canon-gate idiom: dispatcher provides dice).
+  const derived: DerivedIntent[] = [];
+  const log: LogEntry[] = [
+    {
+      kind: 'info',
+      text: nextId
+        ? `${currentId ?? 'no one'} ends turn, ${nextId} is up`
+        : `${currentId ?? 'no one'} ends turn; round end pending`,
+      intentId: intent.id,
+    },
+  ];
+
+  if (currentId !== null && requireCanon('conditions.saving-throws')) {
+    const ending = guard.encounter.participants.find((p) => p.id === currentId);
+    if (ending) {
+      const saveEndsConditions = ending.conditions
+        .filter((c) => c.duration.kind === 'save_ends' && c.removable)
+        .slice()
+        .sort((a, b) => a.appliedAtSeq - b.appliedAtSeq);
+
+      const providedRolls = parsed.data.saveRolls;
+      if (saveEndsConditions.length > 0) {
+        if (providedRolls === undefined || providedRolls.length !== saveEndsConditions.length) {
+          for (const c of saveEndsConditions) {
+            log.push({
+              kind: 'info',
+              text: `manual_override_required: ${ending.name} owes a save vs ${c.source.id} (no d10 provided)`,
+              intentId: intent.id,
+            });
+          }
+        } else {
+          for (let i = 0; i < saveEndsConditions.length; i++) {
+            const c = saveEndsConditions[i];
+            const d10 = providedRolls[i];
+            if (!c || d10 === undefined) continue;
+            derived.push({
+              actor: intent.actor,
+              source: 'auto' as const,
+              type: IntentTypes.RollResistance,
+              payload: {
+                characterId: currentId,
+                effectId: c.source.id,
+                rolls: { d10 },
+              },
+              causedBy: intent.id,
+            });
+          }
+        }
+      }
+    }
+  }
+
   return {
     state: {
       ...state,
@@ -182,18 +262,11 @@ export function applyEndTurn(state: SessionState, intent: StampedIntent): Intent
       activeEncounter: {
         ...guard.encounter,
         activeParticipantId: nextId,
+        turnState: remainingTurnState,
       },
     },
-    derived: [],
-    log: [
-      {
-        kind: 'info',
-        text: nextId
-          ? `${currentId ?? 'no one'} ends turn, ${nextId} is up`
-          : `${currentId ?? 'no one'} ends turn; round end pending`,
-        intentId: intent.id,
-      },
-    ],
+    derived,
+    log,
   };
 }
 

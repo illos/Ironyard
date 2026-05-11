@@ -28,6 +28,7 @@ function part(id: string, name = id): Participant {
     id,
     name,
     kind: 'pc',
+    level: 1,
     currentStamina: 30,
     maxStamina: 30,
     characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
