@@ -2,6 +2,7 @@ import type {
   ApproveCharacterPayload,
   BringCharacterIntoEncounterPayload,
   CampaignCharacter,
+  CharacterResponse,
   DenyCharacterPayload,
   JumpBehindScreenPayload,
   KickPlayerPayload,
@@ -19,7 +20,6 @@ import {
 } from '../api/mutations';
 import {
   type CampaignMember,
-  type OwnedCharacter,
   useCampaign,
   useCampaignCharacters,
   useCampaignMembers,
@@ -462,7 +462,7 @@ function CharacterRow({
   onSubmit,
   disabled,
 }: {
-  character: OwnedCharacter;
+  character: CharacterResponse;
   onSubmit: (id: string) => void;
   disabled: boolean;
 }) {

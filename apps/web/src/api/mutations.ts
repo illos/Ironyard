@@ -1,4 +1,10 @@
-import type { CurrentUser, EncounterTemplateData } from '@ironyard/shared';
+import type {
+  CharacterResponse,
+  CreateCharacterRequest,
+  CurrentUser,
+  EncounterTemplateData,
+  UpdateCharacterRequest,
+} from '@ironyard/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from './client';
 import type { CampaignDetail } from './queries';
@@ -79,7 +85,47 @@ export function useRevokeDirectorPermission(campaignId: string) {
 export function useCreateCharacter() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { name: string }) => api.post('/api/characters', input),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['my-characters'] }),
+    mutationFn: (input: CreateCharacterRequest) =>
+      api.post<CharacterResponse>('/api/characters', input),
+    onSuccess: (created) => {
+      qc.invalidateQueries({ queryKey: ['my-characters'] });
+      qc.setQueryData(['character', created.id], created);
+    },
+  });
+}
+
+export function useUpdateCharacter(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateCharacterRequest) =>
+      api.put<CharacterResponse>(`/api/characters/${id}`, input),
+    onSuccess: (updated) => {
+      qc.invalidateQueries({ queryKey: ['my-characters'] });
+      qc.setQueryData(['character', id], updated);
+    },
+  });
+}
+
+export function useDeleteCharacter() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete<{ ok: true }>(`/api/characters/${id}`),
+    onSuccess: (_, id) => {
+      qc.invalidateQueries({ queryKey: ['my-characters'] });
+      qc.removeQueries({ queryKey: ['character', id] });
+    },
+  });
+}
+
+export function useAttachCharacterToCampaign(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { campaignCode: string }) =>
+      api.post<CharacterResponse>(`/api/characters/${id}/attach`, input),
+    onSuccess: (updated) => {
+      qc.invalidateQueries({ queryKey: ['my-characters'] });
+      qc.invalidateQueries({ queryKey: ['my-campaigns'] });
+      qc.setQueryData(['character', id], updated);
+    },
   });
 }

@@ -1,5 +1,6 @@
 import {
   type CampaignCharacter,
+  type CharacterResponse,
   type CurrentUser,
   type EncounterTemplate,
   type MonsterFile,
@@ -91,17 +92,18 @@ export function useCampaignMembers(campaignId: string | undefined) {
   });
 }
 
-export type OwnedCharacter = {
-  id: string;
-  name: string;
-  ownerId: string;
-  createdAt: number;
-};
-
 export function useMyCharacters() {
-  return useQuery<OwnedCharacter[]>({
+  return useQuery<CharacterResponse[]>({
     queryKey: ['my-characters'],
-    queryFn: () => api.get<OwnedCharacter[]>('/api/characters'),
+    queryFn: () => api.get<CharacterResponse[]>('/api/characters'),
+  });
+}
+
+export function useCharacter(id: string | undefined) {
+  return useQuery<CharacterResponse>({
+    queryKey: ['character', id],
+    queryFn: () => api.get<CharacterResponse>(`/api/characters/${id}`),
+    enabled: !!id,
   });
 }
 
