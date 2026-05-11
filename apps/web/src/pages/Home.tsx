@@ -1,6 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { useCreateSession, useDevLogin, useJoinSession, useLogout } from '../api/mutations';
+import { useCreateCampaign, useDevLogin, useJoinCampaign, useLogout } from '../api/mutations';
 import { useMe } from '../api/queries';
 
 export function Home() {
@@ -15,7 +15,7 @@ export function Home() {
   }
 
   if (!me.data) return <LoginPanel />;
-  return <SessionsPanel user={me.data.user} />;
+  return <CampaignsPanel user={me.data.user} />;
 }
 
 function LoginPanel() {
@@ -71,12 +71,12 @@ function LoginPanel() {
   );
 }
 
-function SessionsPanel({ user }: { user: { displayName: string; email: string } }) {
+function CampaignsPanel({ user }: { user: { displayName: string; email: string } }) {
   const navigate = useNavigate();
   const logout = useLogout();
-  const createSession = useCreateSession();
-  const joinSession = useJoinSession();
-  const [sessionName, setSessionName] = useState('');
+  const createCampaign = useCreateCampaign();
+  const joinCampaign = useJoinCampaign();
+  const [campaignName, setCampaignName] = useState('');
   const [inviteCode, setInviteCode] = useState('');
 
   return (
@@ -103,56 +103,56 @@ function SessionsPanel({ user }: { user: { displayName: string; email: string } 
       </header>
 
       <section className="rounded-lg border border-neutral-800 p-5">
-        <h2 className="font-semibold">Start a session</h2>
+        <h2 className="font-semibold">Start a campaign</h2>
         <form
           className="mt-3 flex gap-2"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!sessionName.trim()) return;
-            createSession.mutate(
-              { name: sessionName.trim() },
+            if (!campaignName.trim()) return;
+            createCampaign.mutate(
+              { name: campaignName.trim() },
               {
                 onSuccess: (s) => {
-                  setSessionName('');
-                  navigate({ to: '/sessions/$id', params: { id: s.id } });
+                  setCampaignName('');
+                  navigate({ to: '/campaigns/$id', params: { id: s.id } });
                 },
               },
             );
           }}
         >
           <input
-            value={sessionName}
-            onChange={(e) => setSessionName(e.target.value)}
+            value={campaignName}
+            onChange={(e) => setCampaignName(e.target.value)}
             placeholder="Saturday game"
             className="flex-1 rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 outline-none focus:border-neutral-600"
           />
           <button
             type="submit"
-            disabled={createSession.isPending || !sessionName.trim()}
+            disabled={createCampaign.isPending || !campaignName.trim()}
             className="rounded-md bg-neutral-100 text-neutral-900 px-4 py-2 font-medium disabled:opacity-60"
           >
             Create
           </button>
         </form>
-        {createSession.error && (
-          <p className="mt-2 text-sm text-rose-400">{(createSession.error as Error).message}</p>
+        {createCampaign.error && (
+          <p className="mt-2 text-sm text-rose-400">{(createCampaign.error as Error).message}</p>
         )}
       </section>
 
       <section className="rounded-lg border border-neutral-800 p-5">
-        <h2 className="font-semibold">Join a session</h2>
+        <h2 className="font-semibold">Join a campaign</h2>
         <form
           className="mt-3 flex gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             const code = inviteCode.trim().toUpperCase();
             if (!code) return;
-            joinSession.mutate(
+            joinCampaign.mutate(
               { inviteCode: code },
               {
                 onSuccess: (s) => {
                   setInviteCode('');
-                  navigate({ to: '/sessions/$id', params: { id: s.id } });
+                  navigate({ to: '/campaigns/$id', params: { id: s.id } });
                 },
               },
             );
@@ -166,14 +166,14 @@ function SessionsPanel({ user }: { user: { displayName: string; email: string } 
           />
           <button
             type="submit"
-            disabled={joinSession.isPending || !inviteCode.trim()}
+            disabled={joinCampaign.isPending || !inviteCode.trim()}
             className="rounded-md bg-neutral-100 text-neutral-900 px-4 py-2 font-medium disabled:opacity-60"
           >
             Join
           </button>
         </form>
-        {joinSession.error && (
-          <p className="mt-2 text-sm text-rose-400">{(joinSession.error as Error).message}</p>
+        {joinCampaign.error && (
+          <p className="mt-2 text-sm text-rose-400">{(joinCampaign.error as Error).message}</p>
         )}
       </section>
     </main>

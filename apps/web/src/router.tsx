@@ -1,9 +1,9 @@
 import { Outlet, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
+import { CampaignView } from './pages/CampaignView';
 import { CombatRun } from './pages/CombatRun';
 import { EncounterBuilder } from './pages/EncounterBuilder';
 import { Home } from './pages/Home';
 import { MonsterBrowser } from './pages/MonsterBrowser';
-import { SessionView } from './pages/SessionView';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -19,21 +19,21 @@ const indexRoute = createRoute({
   component: Home,
 });
 
-const sessionRoute = createRoute({
+const campaignRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/sessions/$id',
-  component: SessionView,
+  path: '/campaigns/$id',
+  component: CampaignView,
 });
 
 const encounterBuilderRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/sessions/$id/build',
+  path: '/campaigns/$id/build',
   component: EncounterBuilder,
 });
 
 const combatRunRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/sessions/$id/play',
+  path: '/campaigns/$id/play',
   component: CombatRun,
 });
 
@@ -45,7 +45,7 @@ const monsterCodexRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  sessionRoute,
+  campaignRoute,
   encounterBuilderRoute,
   combatRunRoute,
   monsterCodexRoute,
