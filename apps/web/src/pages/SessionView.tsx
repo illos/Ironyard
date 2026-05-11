@@ -57,9 +57,18 @@ export function SessionView() {
             Role: {session.data.role}
           </p>
         </div>
-        <Link to="/" className="text-sm text-neutral-400 hover:text-neutral-200">
-          Leave
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            to="/sessions/$id/build"
+            params={{ id }}
+            className="text-sm text-neutral-300 hover:text-neutral-100 underline"
+          >
+            Build encounter
+          </Link>
+          <Link to="/" className="text-sm text-neutral-400 hover:text-neutral-200">
+            Leave
+          </Link>
+        </div>
       </header>
 
       <section>
