@@ -7,13 +7,12 @@ Every state change in Ironyard is an **intent**: a typed, serializable object th
 ```ts
 type Intent = {
   id: string;              // ULID, generated client-side
-  sessionId: string;       // which session this affects
+  campaignId: string;      // which campaign this affects
   actor: {                 // who initiated
     userId: string;
-    role: 'director' | 'player';
   };
   timestamp: number;       // ms since epoch, set by the DO on receive
-  source: 'auto' | 'manual'; // 'auto' = engine-rolled, 'manual' = user typed
+  source: 'auto' | 'manual' | 'server'; // 'server' for DO-emitted synthetic intents
   type: IntentType;        // discriminator
   payload: IntentPayload;  // type-specific data, validated by Zod
   causedBy?: string;       // intent id this was derived from (for undo)
@@ -59,7 +58,7 @@ Why the dice live in the payload: the reducer is pure (see below), so randomness
 - `Slide { targetId, distance, direction? }`
 - `SpendResource { characterId, resource, amount }` (heroic resource, surges)
 - `GainResource { characterId, resource, amount }`
-- `EarnVictory { sessionId, amount }`
+- `EarnVictory { campaignId, amount }`
 
 ### Manual override
 
@@ -67,12 +66,26 @@ Why the dice live in the payload: the reducer is pure (see below), so randomness
   - The escape hatch. Used when a director long-presses a stat and edits it.
   - `field` is a typed enum of overridable stats (`stamina`, `tempStamina`, `surges`, etc.) — not arbitrary keys.
 
-### Session-level
+### Lobby / campaign management
 
-- `JoinSession { userId, characterId? }`
-- `LeaveSession { userId }`
-- `BringCharacterIntoEncounter { characterId, encounterId, position }`
-- `RemoveParticipant { participantId }`
+- `JoinLobby { userId, characterId? }` — server-only; DO emits when a WebSocket connects
+- `LeaveLobby { userId }` — server-only; DO emits on disconnect
+- `BringCharacterIntoEncounter { characterId, position }` — adds a hero to the lobby roster (works whether or not an encounter is active)
+- `AddMonster { monsterId, quantity, nameOverride? }` — active-director gated; DO stamps the resolved monster payload from `monsters.json` before the reducer sees it
+- `RemoveParticipant { participantId }` — active-director gated; rejected if the participant is the currently active turn participant
+- `ClearLobby` — active-director gated; rejected while an encounter is active
+- `LoadEncounterTemplate { templateId }` — active-director gated; DO resolves the template row from D1 and stamps `{ templateId, monsters: [...] }` onto the payload; the reducer fans into one derived `AddMonster` per entry
+- `JumpBehindScreen` — director-permitted gated; DO stamps `{ permitted: boolean }` from `campaign_memberships.is_director`; reducer accepts if `permitted === true` OR `actor.userId === state.ownerId`; sets `state.activeDirectorId = actor.userId`
+
+### Campaign-character lifecycle (side-effect intents)
+
+These intents flow through the intent log for attribution but mutate D1 directly — the reducer validates authority and returns unchanged `CampaignState`. They are **not undoable** today (the Undo flow has no hook to reverse D1 row writes). See "Side-effect intent pattern" below.
+
+- `SubmitCharacter { characterId }` — any campaign member; DO writes `campaign_characters` row with `status='pending'`; rejects if actor doesn't own the character or isn't a campaign member
+- `ApproveCharacter { characterId }` — active-director gated; DO updates row to `status='approved'`
+- `DenyCharacter { characterId }` — active-director gated; DO deletes the row
+- `RemoveApprovedCharacter { characterId }` — active-director gated; DO deletes the row; also removes the participant from the lobby roster if present
+- `KickPlayer { userId }` — active-director gated; rejected if `userId === state.ownerId`; DO deletes the target's `campaign_memberships` row and all their `campaign_characters` rows, then emits derived `RemoveParticipant` intents for any of their characters in the lobby roster
 
 ### Meta
 
@@ -84,10 +97,10 @@ Why the dice live in the payload: the reducer is pure (see below), so randomness
 
 ```ts
 function applyIntent(
-  state: SessionState,
+  state: CampaignState,
   intent: Intent,
 ): {
-  state: SessionState;       // new state (immutable update)
+  state: CampaignState;      // new state (immutable update)
   derived: Intent[];         // intents the engine emits in response
   log: LogEntry[];           // human-readable log entries
   errors?: ValidationError[]; // empty array on success
@@ -97,6 +110,36 @@ function applyIntent(
 - **Pure.** No `Date.now()`, no `Math.random()`. Both are passed in via the intent (`timestamp`, and roll results pre-computed by the dispatcher) so the same intent applied twice produces the same state.
 - **Derived intents.** A `RollPower` whose t2 effect is "8 fire damage and Bleeding (EoT)" produces two derived intents: `ApplyDamage` and `SetCondition`. They're pushed to the log with `causedBy = parent.id` and applied transactionally.
 - **Idempotent.** Re-applying the same intent produces the same result (we use the id to dedupe on reconnect).
+
+## DO stamping pattern
+
+Some intents require data that lives in D1 or in static JSON — data the pure reducer cannot fetch. The DO handler reads that data inside the serialized op (before calling the reducer) and stamps the resolved fields onto the intent payload. The reducer sees a complete payload and remains pure (no D1 access).
+
+Examples:
+
+| Intent | What the DO stamps |
+|---|---|
+| `LoadEncounterTemplate` | Reads `encounter_templates` row from D1; stamps `{ monsters: [...] }` |
+| `JumpBehindScreen` | Reads `campaign_memberships.is_director` for the actor; stamps `{ permitted: boolean }` |
+| `AddMonster` | Resolves monster data from `monsters.json`; stamps the full monster payload |
+
+The pattern generalises: whenever the reducer needs external data to make a decision, the DO attaches it to the payload at the boundary. The intent then contains its full context and can be replayed faithfully from the log.
+
+## Side-effect intent pattern
+
+A subset of intents — `SubmitCharacter`, `ApproveCharacter`, `DenyCharacter`, `RemoveApprovedCharacter`, `KickPlayer` — mutate D1 rows (in `campaign_characters` or `campaign_memberships`) rather than `CampaignState`. These are **side-effect intents**:
+
+- The DO validates authority and executes the D1 write inside the serialized op.
+- The intent is persisted to the `intents` log for attribution and auditability.
+- The reducer is still called and still performs its authority checks, but returns unchanged `CampaignState`.
+- Clients re-fetch the affected data via `GET /api/campaigns/:id/characters` or `GET /api/campaigns/:id/members` when they receive an `applied` envelope for one of these intents.
+- **These intents are not undoable.** The Undo flow voids rows in the log and replays `CampaignState` — it has no mechanism to reverse D1 row writes outside state. Instead of undoing, the director dispatches the opposing intent (e.g. `ApproveCharacter` after a mistaken deny flow is a fresh submission + approval).
+
+## Server-only intents
+
+`SERVER_ONLY_INTENTS` in the DO: `{ JoinLobby, LeaveLobby, ApplyDamage }`. These are emitted by the DO itself (on connect/disconnect events or as derived intents) and are **rejected if dispatched by a client** — the DO drops them at the envelope boundary before permission or reducer checks.
+
+The admin-style intents (`SubmitCharacter`, `Approve/DenyCharacter`, `RemoveApprovedCharacter`, `KickPlayer`, `RemoveParticipant`, `ClearLobby`, `JumpBehindScreen`) are **not** server-only. Clients dispatch them; authority is validated inside the reducer (and via DO stamping for `JumpBehindScreen`).
 
 ## Undo
 
@@ -148,7 +191,7 @@ type ClientMsg =
 type ServerMsg =
   | { kind: 'applied'; intent: Intent; seq: number; state?: PartialState }
   | { kind: 'rejected'; intentId: string; reason: string }
-  | { kind: 'snapshot'; state: SessionState; seq: number }
+  | { kind: 'snapshot'; state: CampaignState; seq: number }
   | { kind: 'pong' };
 ```
 

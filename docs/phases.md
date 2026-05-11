@@ -2,22 +2,22 @@
 
 The plan that survived contact with the requirements. Each phase ends in something usable; we don't lay plumbing for months without a payoff.
 
-## Phase 0 — Foundation + auth + session model
+## Phase 0 — Foundation + auth + campaign model
 
-**Goal:** "I can log in, create a session, and a friend can join. Nothing happens inside the session yet, but the plumbing is real."
+**Goal:** "I can log in, create a campaign, and a friend can join. Nothing happens inside the campaign yet, but the plumbing is real."
 
 - Monorepo scaffolding (pnpm workspaces): `apps/web`, `apps/api`, `packages/shared`, `packages/rules`, `packages/data`
 - Cloudflare Pages for `apps/web`, Worker for `apps/api`
 - Magic-link auth (Resend or comparable)
 - D1 schema deployed; Drizzle migrations working
-- Durable Object class wired up; one DO per session
-- WebSocket handshake working — client can connect to a session DO and exchange a `ping`/`pong`
+- `LobbyDO` class wired up; one DO per campaign
+- WebSocket handshake working — client can connect to a campaign's lobby DO and exchange a `ping`/`pong`
 - Intent envelope schemas in `packages/shared`, validated end-to-end with Zod
 - `packages/data` build script pulls SteelCompendium SDK and emits `monsters.json` (the rest follow in Phase 1+)
 - **Rules-canon registry pipeline:** `scripts/gen-canon-status.ts` parses `docs/rules-canon.md` and emits `packages/rules/src/canon-status.generated.ts`. The reducer ships with a `requireCanon(slug)` helper that gates auto-application on `'verified'` status. CI runs `pnpm canon:gen` and fails on diff. `pnpm canon:report` prints rule status. Mechanism is in place even though Phase 0 doesn't ship reducer behavior yet — when Phase 1 lights up the engine, the gating already works.
-- "Hello session" page at `/sessions/:id` lists members in realtime
+- "Hello campaign" page at `/campaigns/:id` lists members in realtime
 
-**Acceptance:** two browsers logged in as different users, both connected to the same session id, both see each other's connect/disconnect events live. Plus: `pnpm canon:gen` and `pnpm canon:report` run cleanly, and CI fails when the canon doc is edited without regenerating the registry.
+**Acceptance:** two browsers logged in as different users, both connected to the same campaign lobby, both see each other's connect/disconnect events live. Plus: `pnpm canon:gen` and `pnpm canon:report` run cleanly, and CI fails when the canon doc is edited without regenerating the registry.
 
 ## Phase 1 — Multi-user combat tracker (authoritative engine)
 
@@ -29,15 +29,17 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 - Monster browser at `/codex/monsters` (read-only)
 - Director item list at `/codex/items` (read-only, same pattern as monster browser) — browse all treasure types (leveled, artifacts, consumables, trinkets); director can hand an item to a player from here
 - `CharacterAttachment` framework in `packages/rules`: effect schema + folding logic, canon-gated via `requireCanon`. **No attachment content ships in Phase 1** — this is scaffolding only, same philosophy as the canon-status registry in Phase 0. Phase 2 lights it up. Magic items and titles are both instances of the same abstraction.
-- Encounter builder: pick monsters, set quantities, scale by victories
+- **Encounter template builder:** the active director picks monsters and quantities and saves them as a named encounter template (stored in `encounter_templates` D1 table). Templates are separate from lobby state — saving a template does not alter who is in the lobby roster.
+- **In-lobby Add affordance:** an "Add" menu on the lobby/run screen lets the active director add participants to the lobby roster three ways: (1) single monster from the codex, (2) single hero from the campaign's approved characters, (3) a saved encounter template (additive — merges into the current roster without replacing it). Works whether or not an encounter is active.
 - Combat run screen: initiative, HP/conditions/resources per participant, monster ability cards with auto-roll
-- Players join the session, claim a participant slot ("this is my character"), and roll attacks from their phone
+- Players join the campaign lobby, submit a character for director approval (`SubmitCharacter`), and once approved claim their participant slot and roll attacks from their phone
 - PCs are quick stat blocks for now (name, max stamina, immunities, characteristics) — full sheet comes in Phase 2
 - Per-round undo with toast attribution ("Sarah → Goblin 3 took 14 fire — Ash bolt hit. Undo · Edit")
 - Manual override on every stat (long-press)
-- Intent log persisted to D1; DO recovers on restart
+- Intent log persisted to D1; lobby DO recovers on restart
+- **`EndEncounter` preserves the lobby roster.** Participants (heroes and monsters) stay in the lobby when the encounter phase ends; only encounter-phase state (round, turn order, malice, conditions) is reset. Monsters must be explicitly removed via `RemoveParticipant` or `ClearLobby`.
 
-**Acceptance:** run a session of Draw Steel using only Ironyard. The director uses an iPad in landscape; players use phones. No paper, no other tools, no major bugs that force a restart.
+**Acceptance:** run a campaign session of Draw Steel using only Ironyard. The active director uses an iPad in landscape; players use phones. No paper, no other tools, no major bugs that force a restart.
 
 ## Phase 2 — Character creator + interactive sheet
 
@@ -47,7 +49,7 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 - Character creator wizard, mobile-friendly, savable as a draft
 - Interactive character sheet: stamina/recoveries/surges/heroic resource, ability cards with auto-roll, rest mechanics
 - Characters stored in D1, owned by a user
-- "Bring this character into the session" replaces the quick stat block from Phase 1
+- "Bring this character into the lobby" replaces the quick stat block from Phase 1
 - Local-first: characters cached in IndexedDB so the iPad keeps working when wifi flakes
 - **Item data pipeline:** ingest all treasure types from `data-md` (leveled weapon/armor/other, artifacts, consumables, trinkets). Display text is available immediately from the markdown body. Structured effect data (stat mods, ability grants) must be hand-authored in `packages/data/overrides/` — the compendium's effect text is prose only, not structured fields. Coverage is incremental, same as ability parsing.
 - **Character inventory:** items owned by and carried by a character; stored in the character JSON blob. Director can push items to a character from the item list; player manages from the sheet. Inventory tracks four distinct item categories with different rules:
@@ -60,43 +62,43 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 - **Magic items and titles** equipped to a character plug into the `CharacterAttachment` system (Phase 1 framework). The engine folds active attachments into effective character state — stat mods, ability grants, passive conditions — via `requireCanon` gating. Items without structured overrides yet fall back to manual override with the effect text displayed.
 - Titles follow the same attachment path as trinkets/leveled treasures; no separate implementation needed.
 
-**Acceptance:** a player can build a character from scratch in the app, bring it into a session, and play a full encounter using only the sheet (no rulebook open). A player can equip a magic item and see its abilities on their sheet; a player can activate a consumable during combat and see the effect applied.
+**Acceptance:** a player can build a character from scratch in the app, bring it into the campaign lobby, and play a full encounter using only the sheet (no rulebook open). A player can equip a magic item and see its abilities on their sheet; a player can activate a consumable during combat and see the effect applied.
 
-## Phase 3 — Collaborative session capabilities
+## Phase 3 — Collaborative campaign capabilities
 
-**Goal:** "The session feels like a place, and people can share characters and entities with each other."
+**Goal:** "The campaign feels like a place, and people can share characters and entities with each other."
 
 **UI quality bar:** same prototype-grade rule as Phase 1 — functional, dark theme, 44pt touch targets, no embarrassing wrong-feeling moments. The visual / interaction / motion pass happens in **Phase 5 (UI rebuild)**. Don't over-invest here.
 
 **Party sheet**
 
-- Session-scoped entity: not owned by any player, visible and editable by the whole table (director has override). A shared bag, not a per-player ledger.
+- Campaign-scoped entity: not owned by any player, visible and editable by the whole table (active director has override). A shared bag, not a per-player ledger.
 - Tracks: currency, consumables, plot items, and any other party-level resources the director adds.
 - Items in the party sheet are the same item types as character inventory; a player can move an item from the party sheet to their character (and back), which dispatches a `TransferItem` intent so the log attributes it.
-- The party sheet lives in `SessionState` alongside participants — it's a first-class session entity, not a character.
+- The party sheet lives in `CampaignState` alongside participants — it's a first-class campaign entity, not a character.
 
 **Lobby capabilities**
 
 - Shared 3D dice tray (or 2D, depending on iPad performance) — visible to all members
-- Text chat per session, with intent log visible in a separate tab
-- Ready / AFK states; turn timers (optional, configurable per session)
+- Text chat per campaign, with intent log visible in a separate tab
+- Ready / AFK states; turn timers (optional, configurable per campaign)
 - Character portraits, monster art (where licensable)
 - Sound effects for hits, crits, conditions (toggleable)
-- Session settings panel — rename, transfer director, kick member
+- Campaign settings panel — rename, grant/revoke director permission, kick member
 
 **Sharing and lending model** (spec: [`character-sharing.md`](character-sharing.md))
 
 - `entity_grants` table: persistent user-to-user grants over a specific entity, two kinds — `preview` (read-only sheet visibility) and `control` (act as the entity)
 - Generalized `effective_controller(entity)` resolver used by the intent permission check
-- **Player→player PC lending:** owner can grant preview and/or control of a PC to any number of other users; grants are persistent until revoked; encounter-lock prevents revocation mid-encounter
-- **Active controller per encounter:** at encounter start, one eligible user (owner + any control grantees) claims the seat; locked for the encounter; reshuffleable between encounters
+- **Player→player PC lending:** character owner can grant preview and/or control of a PC to any number of other users; grants are persistent until revoked; encounter-lock prevents revocation mid-encounter
+- **Active controller per encounter:** at encounter start, one eligible user (character owner + any control grantees) claims the seat; locked for the encounter; reshuffleable between encounters
 - **One human, multiple participants:** a user can be active controller of N participants in a single encounter (the duo-solo / two-handed pattern); tab strip switches between them
 - **Director→player monster handoff:** director grants control of a `monster_instance` to a player for tactical convenience; ephemeral (dies with the encounter); revocable instantly by the director; monster still acts on malice/director initiative
 - **Director-owned NPC allies:** new persistent entity kind (`npc_ally`), built from a monster stat block, owned by the director, acts on hero initiative by default; same grant model as PCs (control + preview, multi-grantee, encounter-lock); promote-from-monster flow at encounter end
 - Sharing settings panel per character / NPC ally (prototype-grade UI; the considered design lands in Phase 5)
 - Log attribution carries both `dispatched_by` and `acting_as` on every intent envelope
 
-**Acceptance:** a session feels social — friends start a session early to chat before play begins. A player can lend their character to another player and that player can run it through a full encounter, with the owner watching in real time. The director can hand off a monster to a player mid-fight, and can grant a persistent NPC ally to the party that travels with them across sessions.
+**Acceptance:** a campaign lobby feels social — friends join early to chat before play begins. A player can lend their character to another player and that player can run it through a full encounter, with the character owner watching in real time. The active director can hand off a monster to a player mid-fight, and can grant a persistent NPC ally to the party that travels with them across campaign sessions.
 
 ## Phase 4 — Polish, hardening, PWA
 

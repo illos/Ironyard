@@ -1,6 +1,18 @@
 # Ironyard — guidance for Claude Code
 
-This file is the brief for any Claude Code session working in this repo. Read it before doing anything substantive.
+This file is the brief for any Claude Code agent working in this repo. Read it before doing anything substantive.
+
+## Terminology
+
+| Term | Meaning |
+|---|---|
+| **Campaign** | The top-level, long-lived container. Has a name, an invite code, and members. Owned by a single user. Replaces what `sessions` did in the old model. |
+| **Owner** | The user who created the campaign. Singular and permanent (v1). Always has director permission; cannot be kicked or demoted. Source of truth: `campaigns.owner_id`. |
+| **Director permission** | A per-member flag (`is_director`) granted by the owner. A director-permitted member can jump behind the screen and perform all operational acts (approve/deny characters, kick players, manage templates, drive combat). |
+| **Active Director** | The single member currently behind the screen — the one whose intents are accepted as director-driven. At most one per campaign. Defaults to the owner. Any director-permitted member can press "Jump behind the screen" to become active; the previous active director steps out but keeps their permission. Mutated by the `JumpBehindScreen` intent. |
+| **Lobby** | The runtime environment for a campaign — the Durable Object (`LobbyDO`) holding live state, WebSocket connections, the active participant roster, and the current encounter phase. Not a D1 table; "joining the lobby" is connecting a WebSocket to the campaign's DO. One DO per campaign. |
+| **Encounter Template** | A named, reusable monster lineup saved by the director (e.g. "Goblin Patrol — 6 minions + 1 sniper"). Stored in D1 per campaign. Additive when loaded into the lobby. |
+| **Session** | **Reserved.** Not used in v1. Kept open for a future intra-campaign concept (e.g. "Session 12: Bandit Camp"). Do not use this word to describe the campaign-level container or the live lobby. |
 
 ## What this project is
 
@@ -31,7 +43,7 @@ Director-trusted, players-trusted-with-receipts:
 - Players can dispatch intents that affect their own character and roll attacks against any target.
 - Players cannot edit monsters or other players' characters.
 - The director can dispatch any intent and override anything.
-- Every intent is attributed in the session log (who, when, what).
+- Every intent is attributed in the campaign log (who, when, what).
 - No anti-cheat in v1 — friend-group trust. Architect such that swapping to server-side dice rolling later is just changing where `Math.random()` is called.
 
 ## Tech stack
@@ -50,7 +62,7 @@ Director-trusted, players-trusted-with-receipts:
 | Backend framework | Hono on Cloudflare Workers | Tiny, fast, typed, edge-deployed |
 | Database | D1 (SQLite at the edge) | Cheap, simple, durable for our scale |
 | ORM | Drizzle | TypeScript-native, lightweight, generates types from schema |
-| Realtime | Durable Objects + WebSocket | One DO per session; serializable, single-writer |
+| Realtime | Durable Objects + WebSocket | One DO per campaign; serializable, single-writer |
 | Auth | Magic-link via Resend | No passwords, friend-group friendly |
 | Deployment | Cloudflare Pages (web) + Workers (api) | Single platform, generous free tier |
 
@@ -66,7 +78,7 @@ Per [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), every package has tests. Bef
 ## Things that will hurt you if you skip them
 
 - **Don't bypass the intent reducer.** If you update `participant.hp` directly in a component, the change won't sync, won't be undoable, and won't be in the log. Always dispatch.
-- **Don't put SteelCompendium data into D1.** Static reference data is bundled with the app. D1 is for user-owned and session-owned data only.
+- **Don't put SteelCompendium data into D1.** Static reference data is bundled with the app. D1 is for user-owned and campaign-owned data only.
 - **Don't add `any` to fix a type error.** Fix the type. If you genuinely need an escape hatch, it goes in `packages/shared/src/escape.ts` with a comment.
 - **Don't write to LocalStorage / SessionStorage in components.** Persistence goes through Dexie or the server.
 - **Don't fetch data directly with `fetch` in a component.** Use TanStack Query hooks defined in `apps/web/src/api/`.
