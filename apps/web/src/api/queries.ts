@@ -76,6 +76,20 @@ export function useCampaignMembers(campaignId: string | undefined) {
   });
 }
 
+export type OwnedCharacter = {
+  id: string;
+  name: string;
+  ownerId: string;
+  createdAt: number;
+};
+
+export function useMyCharacters() {
+  return useQuery<OwnedCharacter[]>({
+    queryKey: ['my-characters'],
+    queryFn: () => api.get<OwnedCharacter[]>('/api/characters'),
+  });
+}
+
 // Static monster ingest output. Lives at apps/web/public/data/monsters.json
 // (gitignored, rebuilt by `pnpm --filter @ironyard/data build:data`). The
 // schema parse catches drift between the ingest and the runtime.

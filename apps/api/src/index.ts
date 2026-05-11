@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { authRoutes } from './auth/routes';
 import { campaignRoutes } from './campaigns/routes';
+import { characterRoutes } from './characters/routes';
 import type { AppEnv } from './types';
 
 const app = new Hono<AppEnv>();
@@ -9,6 +10,7 @@ app.get('/api/health', (c) => c.json({ ok: true, service: 'ironyard-api', versio
 
 app.route('/api/auth', authRoutes);
 app.route('/api/campaigns', campaignRoutes);
+app.route('/api/characters', characterRoutes);
 
 export default app;
 

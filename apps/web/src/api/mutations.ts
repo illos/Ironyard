@@ -75,3 +75,11 @@ export function useRevokeDirectorPermission(campaignId: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['campaign-members', campaignId] }),
   });
 }
+
+export function useCreateCharacter() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { name: string }) => api.post('/api/characters', input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['my-characters'] }),
+  });
+}
