@@ -30,6 +30,7 @@ import { describeIntent, findLatestUndoable } from '../lib/intentDescribe';
 import { type MirrorIntent, useSessionSocket } from '../ws/useSessionSocket';
 import { DetailPane } from './combat/DetailPane';
 import { InitiativePanel } from './combat/InitiativePanel';
+import { PlayerSheetPanel } from './combat/PlayerSheetPanel';
 import { type Toast, ToastStack } from './combat/ToastStack';
 
 const TOAST_DISMISS_MS = 6000;
@@ -414,24 +415,29 @@ export function CombatRun() {
               onFocus={handleFocus}
             />
           </aside>
-          <section className="rounded-lg border border-neutral-800 bg-neutral-950 p-4">
-            <DetailPane
-              focused={focused}
-              participants={participants}
-              monsterLevelById={monsterLevelById}
-              monsterByParticipantId={monsterByParticipantId}
-              disabled={disabled}
-              dispatchRoll={dispatchRoll}
-              dispatchSetCondition={dispatchSetCondition}
-              dispatchRemoveCondition={dispatchRemoveCondition}
-              dispatchSetStamina={dispatchSetStamina}
-              dispatchGainResource={dispatchGainResource}
-              dispatchSpendResource={dispatchSpendResource}
-              dispatchSetResource={dispatchSetResource}
-              dispatchSpendSurge={dispatchSpendSurge}
-              dispatchSpendRecovery={dispatchSpendRecovery}
-            />
-          </section>
+          <div className="space-y-4">
+            <section className="rounded-lg border border-neutral-800 bg-neutral-950 p-4">
+              <DetailPane
+                focused={focused}
+                participants={participants}
+                monsterLevelById={monsterLevelById}
+                monsterByParticipantId={monsterByParticipantId}
+                disabled={disabled}
+                dispatchRoll={dispatchRoll}
+                dispatchSetCondition={dispatchSetCondition}
+                dispatchRemoveCondition={dispatchRemoveCondition}
+                dispatchSetStamina={dispatchSetStamina}
+                dispatchGainResource={dispatchGainResource}
+                dispatchSpendResource={dispatchSpendResource}
+                dispatchSetResource={dispatchSetResource}
+                dispatchSpendSurge={dispatchSpendSurge}
+                dispatchSpendRecovery={dispatchSpendRecovery}
+              />
+            </section>
+            {/* PlayerSheetPanel: renders for the player who owns a PC participant;
+                returns null for directors and viewers without a materialized PC. */}
+            <PlayerSheetPanel campaignId={sessionId} />
+          </div>
         </div>
       )}
 
