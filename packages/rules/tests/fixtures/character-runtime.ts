@@ -1,4 +1,4 @@
-import type { Character } from '@ironyard/shared';
+import type { Character, HeroClass } from '@ironyard/shared';
 import type { ResolvedKit, StaticDataBundle } from '../../src/static-data';
 
 // ── Character fixture ─────────────────────────────────────────────────────────
@@ -111,7 +111,7 @@ export function buildBundleWithFury(): StaticDataBundle {
       grantsSkill: false,
       grantsCharacteristicIncrease: false,
     })),
-  } as never);
+  } satisfies HeroClass);
 
   bundle.kits.set('wrecker', {
     id: 'wrecker',

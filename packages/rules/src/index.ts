@@ -29,6 +29,7 @@ export { canonStatus } from './canon-status.generated';
 
 export type { StaticDataBundle } from './static-data';
 export { ResolvedKitSchema } from './static-data';
+export type { ResolvedKit } from './static-data';
 
 export { deriveCharacterRuntime } from './derive-character-runtime';
 export type { CharacterRuntime } from './derive-character-runtime';

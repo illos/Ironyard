@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { deriveCharacterRuntime } from '../src/derive-character-runtime';
 import type { StaticDataBundle } from '../src/static-data';
-import { buildBundleWithFury, buildFuryL1Fixture } from './fixtures/character-runtime';
+import { buildBundleWithFury, buildEmptyBundle, buildFuryL1Fixture } from './fixtures/character-runtime';
 
 // Adaptation note: the plan assumed ClassSchema fields that don't match the
 // actual schema (e.g. `recoveriesPerLevel`, `heroicResource: { name, floor, max }`,
@@ -106,5 +106,25 @@ describe('deriveCharacterRuntime', () => {
     // ClassSchema.heroicResource is a plain string — fixture uses 'ferocity'
     expect(r.heroicResource.name).toBe('ferocity');
     expect(r.heroicResource.floor).toBe(0);
+  });
+
+  it('returns safe zero defaults when classId is null and the bundle is empty', () => {
+    const empty = buildEmptyBundle();
+    const charNoClass = buildFuryL1Fixture();
+    // Force the character into an unset-class state
+    charNoClass.classId = null;
+    charNoClass.kitId = null;
+    charNoClass.ancestryId = null;
+    // Characteristics come from the stored array, not the class; clear the
+    // array to represent a character that hasn't assigned characteristics yet.
+    charNoClass.characteristicArray = [0, 0, 0, 0, 0];
+
+    const r = deriveCharacterRuntime(charNoClass, empty);
+    expect(r.maxStamina).toBe(0);
+    expect(r.recoveriesMax).toBe(0);
+    expect(r.recoveryValue).toBe(0);
+    expect(r.characteristics.might).toBe(0);
+    expect(r.characteristics.agility).toBe(0);
+    // Function should not throw
   });
 });
