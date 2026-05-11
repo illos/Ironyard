@@ -64,7 +64,13 @@ describe('applyIntent — StartEncounter', () => {
       intent('StartEncounter', { encounterId: 'e1' }),
     );
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter).toEqual({ id: 'e1', participants: [] });
+    expect(r.state.activeEncounter).toEqual({
+      id: 'e1',
+      participants: [],
+      currentRound: null,
+      turnOrder: [],
+      activeParticipantId: null,
+    });
   });
 
   it('is idempotent for the same encounter id', () => {

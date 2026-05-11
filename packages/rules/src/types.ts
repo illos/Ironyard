@@ -18,6 +18,12 @@ export type NoteEntry = {
 export type ActiveEncounter = {
   id: string;
   participants: Participant[];
+  // Slice 4: turn state. `currentRound` is null between rounds; `activeParticipantId`
+  // is null when no one's turn is currently running (between turns or rounds).
+  // `turnOrder` is the explicit initiative list; SetInitiative replaces it.
+  currentRound: number | null;
+  turnOrder: string[];
+  activeParticipantId: string | null;
 };
 
 export type SessionState = {

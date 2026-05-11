@@ -1,8 +1,8 @@
 // Payload schemas, one per intent type. Phase 1 ships these incrementally —
 // slice 1: JoinSession, LeaveSession, Note. Slice 3: StartEncounter,
-// BringCharacterIntoEncounter, RollPower, ApplyDamage. The blanket
-// IntentSchema.payload stays z.unknown() until enough types exist to warrant
-// a discriminated union.
+// BringCharacterIntoEncounter, RollPower, ApplyDamage. Slice 4: StartRound,
+// EndRound, StartTurn, EndTurn, SetInitiative. The blanket IntentSchema.payload
+// stays z.unknown() until enough types exist to warrant a discriminated union.
 
 export { ApplyDamagePayloadSchema } from './apply-damage';
 export type { ApplyDamagePayload } from './apply-damage';
@@ -19,13 +19,33 @@ export type { RollPowerPayload } from './roll-power';
 export { StartEncounterPayloadSchema } from './start-encounter';
 export type { StartEncounterPayload } from './start-encounter';
 
+export {
+  EndRoundPayloadSchema,
+  EndTurnPayloadSchema,
+  SetInitiativePayloadSchema,
+  StartRoundPayloadSchema,
+  StartTurnPayloadSchema,
+} from './turn';
+export type {
+  EndRoundPayload,
+  EndTurnPayload,
+  SetInitiativePayload,
+  StartRoundPayload,
+  StartTurnPayload,
+} from './turn';
+
 export const IntentTypes = {
   ApplyDamage: 'ApplyDamage',
   BringCharacterIntoEncounter: 'BringCharacterIntoEncounter',
+  EndRound: 'EndRound',
+  EndTurn: 'EndTurn',
   JoinSession: 'JoinSession',
   LeaveSession: 'LeaveSession',
   Note: 'Note',
   RollPower: 'RollPower',
+  SetInitiative: 'SetInitiative',
   StartEncounter: 'StartEncounter',
+  StartRound: 'StartRound',
+  StartTurn: 'StartTurn',
 } as const;
 export type KnownIntentType = (typeof IntentTypes)[keyof typeof IntentTypes];

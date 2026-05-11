@@ -2,11 +2,16 @@ import { IntentTypes } from '@ironyard/shared';
 import {
   applyApplyDamage,
   applyBringCharacterIntoEncounter,
+  applyEndRound,
+  applyEndTurn,
   applyJoinSession,
   applyLeaveSession,
   applyNote,
   applyRollPower,
+  applySetInitiative,
   applyStartEncounter,
+  applyStartRound,
+  applyStartTurn,
 } from './intents';
 import type { IntentResult, SessionState, StampedIntent } from './types';
 
@@ -30,6 +35,16 @@ export function applyIntent(state: SessionState, intent: StampedIntent): IntentR
       return applyRollPower(state, intent);
     case IntentTypes.ApplyDamage:
       return applyApplyDamage(state, intent);
+    case IntentTypes.StartRound:
+      return applyStartRound(state, intent);
+    case IntentTypes.EndRound:
+      return applyEndRound(state, intent);
+    case IntentTypes.StartTurn:
+      return applyStartTurn(state, intent);
+    case IntentTypes.EndTurn:
+      return applyEndTurn(state, intent);
+    case IntentTypes.SetInitiative:
+      return applySetInitiative(state, intent);
     default:
       return {
         state,

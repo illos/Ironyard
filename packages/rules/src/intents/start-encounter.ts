@@ -54,7 +54,13 @@ export function applyStartEncounter(state: SessionState, intent: StampedIntent):
     state: {
       ...state,
       seq,
-      activeEncounter: { id: encounterId, participants: [] },
+      activeEncounter: {
+        id: encounterId,
+        participants: [],
+        currentRound: null,
+        turnOrder: [],
+        activeParticipantId: null,
+      },
     },
     derived: [],
     log: [{ kind: 'info', text: `encounter ${encounterId} started`, intentId: intent.id }],
