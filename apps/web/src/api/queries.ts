@@ -1,4 +1,10 @@
-import { type CurrentUser, type MonsterFile, MonsterFileSchema } from '@ironyard/shared';
+import {
+  type CampaignCharacter,
+  type CurrentUser,
+  type EncounterTemplate,
+  type MonsterFile,
+  MonsterFileSchema,
+} from '@ironyard/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ApiError, api } from './client';
 
@@ -31,6 +37,42 @@ export function useCampaign(id: string | undefined) {
     queryKey: ['campaign', id],
     queryFn: () => api.get<CampaignDetail>(`/api/campaigns/${id}`),
     enabled: !!id,
+  });
+}
+
+export function useEncounterTemplates(campaignId: string | undefined) {
+  return useQuery<EncounterTemplate[]>({
+    queryKey: ['encounter-templates', campaignId],
+    queryFn: () => api.get<EncounterTemplate[]>(`/api/campaigns/${campaignId}/templates`),
+    enabled: !!campaignId,
+  });
+}
+
+export function useCampaignCharacters(
+  campaignId: string | undefined,
+  status: 'pending' | 'approved' | undefined,
+) {
+  return useQuery<CampaignCharacter[]>({
+    queryKey: ['campaign-characters', campaignId, status],
+    queryFn: () =>
+      api.get<CampaignCharacter[]>(
+        `/api/campaigns/${campaignId}/characters${status ? `?status=${status}` : ''}`,
+      ),
+    enabled: !!campaignId,
+  });
+}
+
+export type CampaignMember = {
+  userId: string;
+  displayName: string;
+  isDirector: boolean;
+};
+
+export function useCampaignMembers(campaignId: string | undefined) {
+  return useQuery<CampaignMember[]>({
+    queryKey: ['campaign-members', campaignId],
+    queryFn: () => api.get<CampaignMember[]>(`/api/campaigns/${campaignId}/members`),
+    enabled: !!campaignId,
   });
 }
 

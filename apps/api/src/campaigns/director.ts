@@ -2,12 +2,55 @@ import { and, eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { requireAuth } from '../auth/middleware';
 import { db } from '../db';
-import { campaignMemberships, campaigns } from '../db/schema';
+import { campaignMemberships, campaigns, users } from '../db/schema';
 import type { AppEnv } from '../types';
 
 export const directorRoutes = new Hono<AppEnv>();
 
 directorRoutes.use('*', requireAuth);
+
+/**
+ * GET /api/campaigns/:id/members
+ * Any member can list. Returns id, displayName, isDirector for each member.
+ */
+directorRoutes.get('/', async (c) => {
+  const campaignId = c.req.param('id');
+  if (!campaignId) return c.json({ error: 'missing campaign id' }, 400);
+  const caller = c.get('user');
+  const conn = db(c.env.DB);
+
+  // Auth: caller must be a member
+  const callerMembership = await conn
+    .select()
+    .from(campaignMemberships)
+    .where(
+      and(
+        eq(campaignMemberships.campaignId, campaignId),
+        eq(campaignMemberships.userId, caller.id),
+      ),
+    )
+    .get();
+  if (!callerMembership) return c.json({ error: 'not a member' }, 403);
+
+  const rows = await conn
+    .select({
+      userId: campaignMemberships.userId,
+      isDirector: campaignMemberships.isDirector,
+      displayName: users.displayName,
+    })
+    .from(campaignMemberships)
+    .innerJoin(users, eq(campaignMemberships.userId, users.id))
+    .where(eq(campaignMemberships.campaignId, campaignId))
+    .all();
+
+  return c.json(
+    rows.map((r) => ({
+      userId: r.userId,
+      displayName: r.displayName,
+      isDirector: r.isDirector === 1,
+    })),
+  );
+});
 
 /**
  * POST /api/campaigns/:id/members/:userId/director
