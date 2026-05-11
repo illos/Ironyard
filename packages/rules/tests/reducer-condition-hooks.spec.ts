@@ -35,6 +35,11 @@ function pc(over: Partial<Participant> = {}): Participant {
     immunities: [],
     weaknesses: [],
     conditions: [],
+    heroicResources: [],
+    extras: [],
+    surges: 0,
+    recoveries: { current: 0, max: 0 },
+    recoveryValue: 0,
     ...over,
   };
 }
@@ -51,6 +56,11 @@ function monster(over: Partial<Participant> = {}): Participant {
     immunities: [],
     weaknesses: [],
     conditions: [],
+    heroicResources: [],
+    extras: [],
+    surges: 0,
+    recoveries: { current: 0, max: 0 },
+    recoveryValue: 0,
     ...over,
   };
 }

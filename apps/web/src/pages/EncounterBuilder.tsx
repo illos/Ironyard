@@ -91,6 +91,14 @@ export function EncounterBuilder() {
       immunities: [],
       weaknesses: [],
       conditions: [],
+      // Slice 7: monsters don't have heroic resources or recoveries; surges
+      // are not part of the monster surface. Director's Malice lives on the
+      // encounter, not on participants. Leave everything zero/empty.
+      heroicResources: [],
+      extras: [],
+      surges: 0,
+      recoveries: { current: 0, max: 0 },
+      recoveryValue: 0,
     };
 
     if (!activeEncounter) {
@@ -388,6 +396,15 @@ function QuickPcForm({
       immunities: [],
       weaknesses: [],
       conditions: [],
+      // Slice 7: quick-stat PCs start without a heroic resource pool — Phase 2
+      // character sheet builds it from class + Reason. Recoveries / surges /
+      // recoveryValue default to zero here; the director or character sheet
+      // sets them via SetResource / direct SetStat overrides.
+      heroicResources: [],
+      extras: [],
+      surges: 0,
+      recoveries: { current: 0, max: 0 },
+      recoveryValue: 0,
     };
 
     onAdd(participant);

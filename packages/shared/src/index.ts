@@ -35,9 +35,12 @@ export type { CreateSessionRequest, JoinSessionRequest } from './session';
 
 export {
   ApplyDamagePayloadSchema,
+  ApplyHealPayloadSchema,
   BringCharacterIntoEncounterPayloadSchema,
   EndRoundPayloadSchema,
   EndTurnPayloadSchema,
+  GainMalicePayloadSchema,
+  GainResourcePayloadSchema,
   IntentTypes,
   JoinSessionPayloadSchema,
   LeaveSessionPayloadSchema,
@@ -47,6 +50,11 @@ export {
   RollResistancePayloadSchema,
   SetConditionPayloadSchema,
   SetInitiativePayloadSchema,
+  SetResourcePayloadSchema,
+  SpendMalicePayloadSchema,
+  SpendRecoveryPayloadSchema,
+  SpendResourcePayloadSchema,
+  SpendSurgePayloadSchema,
   StartEncounterPayloadSchema,
   StartRoundPayloadSchema,
   StartTurnPayloadSchema,
@@ -54,9 +62,12 @@ export {
 } from './intents';
 export type {
   ApplyDamagePayload,
+  ApplyHealPayload,
   BringCharacterIntoEncounterPayload,
   EndRoundPayload,
   EndTurnPayload,
+  GainMalicePayload,
+  GainResourcePayload,
   JoinSessionPayload,
   KnownIntentType,
   LeaveSessionPayload,
@@ -66,6 +77,11 @@ export type {
   RollResistancePayload,
   SetConditionPayload,
   SetInitiativePayload,
+  SetResourcePayload,
+  SpendMalicePayload,
+  SpendRecoveryPayload,
+  SpendResourcePayload,
+  SpendSurgePayload,
   StartEncounterPayload,
   StartRoundPayload,
   StartTurnPayload,
@@ -93,6 +109,23 @@ export type {
   ConditionSource,
   ConditionType,
 } from './condition';
+
+export {
+  ExtraResourceInstanceSchema,
+  HEROIC_RESOURCE_NAMES,
+  HeroicResourceInstanceSchema,
+  HeroicResourceNameSchema,
+  ResourceRefSchema,
+} from './resource';
+export type {
+  ExtraResourceInstance,
+  HeroicResourceInstance,
+  HeroicResourceName,
+  ResourceRef,
+} from './resource';
+
+export { MaliceStateSchema } from './malice';
+export type { MaliceState } from './malice';
 
 export { ParticipantSchema } from './participant';
 export type { Participant } from './participant';
