@@ -76,20 +76,16 @@ export function EncounterBuilder() {
       p.id.startsWith(`${monster.id}-instance-`),
     ).length;
     const nextCount = sameKindCount + 1;
-    // TODO: replace placeholder stamina + characteristics + resistances once
-    // the monster data ingest extends past id/name/level (see slice 2 notes).
     const participant: Participant = {
       id: `${monster.id}-instance-${nextCount}`,
       name: nextCount > 1 ? `${monster.name} ${nextCount}` : monster.name,
       kind: 'monster',
-      // Slice 6: `level` powers Bleeding 1d6+level. Read from the monster data
-      // here once it's available; for now mirror the level the source carries.
       level: monster.level,
-      currentStamina: 20,
-      maxStamina: 20,
-      characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
-      immunities: [],
-      weaknesses: [],
+      currentStamina: monster.stamina.base,
+      maxStamina: monster.stamina.base,
+      characteristics: monster.characteristics,
+      immunities: monster.immunities,
+      weaknesses: monster.weaknesses,
       conditions: [],
       // Slice 7: monsters don't have heroic resources or recoveries; surges
       // are not part of the monster surface. Director's Malice lives on the
