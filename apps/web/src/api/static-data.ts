@@ -88,8 +88,6 @@ export function useKits() {
 // by id. Returns null while any of the five underlying queries are still loading
 // so the wizard shell can gate rendering behind a single null check.
 
-// Derive the item types from the query return values so that the Map value
-// types align with what the hooks actually produce (including Zod defaults).
 // Derive item types from the hook return values so the Map value types align
 // with what the hooks actually produce (inclusive of Zod `.default()` handling).
 type AncestryItem = NonNullable<ReturnType<typeof useAncestries>['data']>[number];
