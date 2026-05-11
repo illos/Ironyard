@@ -167,11 +167,11 @@ describe('applyIntent — StartEncounter', () => {
       (p): p is Participant => isParticipant(p) && p.kind === 'pc',
     );
     expect(participant1).toBeDefined();
-    // 3. Assert the participant materialized correctly (maxStamina from fury fixture: 18).
-    expect(participant1?.maxStamina).toBe(18);
-    expect(participant1?.currentStamina).toBe(18);
-    expect(participant1?.recoveries.max).toBe(8);
-    expect(participant1?.recoveries.current).toBe(8);
+    // 3. Assert the participant materialized correctly (canon Fury: maxStamina 21, recoveries 10).
+    expect(participant1?.maxStamina).toBe(21);
+    expect(participant1?.currentStamina).toBe(21);
+    expect(participant1?.recoveries.max).toBe(10);
+    expect(participant1?.recoveries.current).toBe(10);
 
     // 4. Mutate currentStamina = 5 and recoveries.current = 3 on the materialized participant.
     s = {

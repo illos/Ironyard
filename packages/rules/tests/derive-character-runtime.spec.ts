@@ -29,17 +29,17 @@ describe('deriveCharacterRuntime', () => {
   });
 
   it('computes maxStamina = startingStamina + (level - 1) * staminaPerLevel + kit staminaBonus', () => {
-    // Fixture: startingStamina=18, staminaPerLevel=12, level=1, kitStaminaBonus=0
-    // Expected: 18 + 0 * 12 + 0 = 18
+    // Fixture matches canon Fury values: startingStamina=21, staminaPerLevel=9,
+    // level=1, kitStaminaBonus=0. Expected: 21 + 0 * 9 + 0 = 21.
     const char = buildFuryL1Fixture({ characteristicArray: [2, 1, -1, 0, 0] });
     const r = deriveCharacterRuntime(char, bundle);
-    expect(r.maxStamina).toBe(18);
+    expect(r.maxStamina).toBe(21);
   });
 
-  it('recoveries max = class.recoveries (8 for the test fixture)', () => {
+  it('recoveries max = class.recoveries (10 for Fury per canon §9.3)', () => {
     const char = buildFuryL1Fixture({ characteristicArray: [2, 1, -1, 0, 0] });
     const r = deriveCharacterRuntime(char, bundle);
-    expect(r.recoveriesMax).toBe(8);
+    expect(r.recoveriesMax).toBe(10);
   });
 
   it('recoveryValue = floor(maxStamina / 3)', () => {

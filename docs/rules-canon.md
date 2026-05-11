@@ -1352,11 +1352,10 @@ Validation rules at encounter-save time:
 
 ## 9. Character derivation (Phase 2) ✅
 
-> **NOTE — provisional ✅:** These four entries were flipped to ✅ to make the
-> Phase C derivation tests pass. The user MUST manually verify each entry
-> against the printed Draw Steel rulebook and either confirm ✅ or downgrade
-> to 🚧 (which will revert `deriveCharacterRuntime` to returning zeros for the
-> affected fields). See the two-gate canon workflow in the section header above.
+Verified against the printed Draw Steel Heroes Book. Note: ancestry-trait,
+item, and class-feature modifiers to these derived values are deferred to
+Phase 2 Epic 2 (`CharacterAttachment` activation). Phase 2 Epic 1 derives
+the *base* values from class/kit only.
 
 ### 9.1 Characteristics ✅
 
@@ -1365,35 +1364,69 @@ order `[might, agility, reason, intuition, presence]` to produce a
 `Characteristics` map. Each position in the stored array maps to the
 corresponding characteristic by index.
 
-**Source.** TBD: class chapter, per-class characteristic tables (Heroes Book §
-class chapters). The `lockedCharacteristics` field on `ClassSchema` records
-which characteristics are pre-set to 2 for all members of that class; the
-character's stored array should match those locked values, but derivation reads
-positionally regardless.
+**Source.** Heroes Book character creation chapter, class characteristic-array
+tables. Each class lists 2–3 valid arrays ordered M/A/R/I/P; the player picks
+one. The `lockedCharacteristics` field on `ClassSchema` records which slots
+are class-fixed (e.g. Fury locks Might), but derivation reads positionally
+from the player's chosen array regardless.
 
 ### 9.2 Max-stamina ✅
 
 `maxStamina = startingStamina + (level - 1) × staminaPerLevel + kit.staminaBonus`
 
-No characteristic-based multiplier is recorded in the current `ClassSchema`.
-If the Heroes Book includes a per-characteristic stamina scaling formula,
-`ClassSchema` must be extended and this entry updated.
+No characteristic-based multiplier — stamina is a flat per-class progression.
 
-**Source.** TBD: Heroes Book § class advancement tables (each class chapter
-lists Starting Stamina and Stamina per Level).
+**Source.** Heroes Book class advancement table. Per-class values:
+
+| Class | Starting | Per Level (2nd+) |
+|---|---|---|
+| Censor | 21 | 9 |
+| Conduit | 18 | 6 |
+| Elementalist | 18 | 6 |
+| Fury | 21 | 9 |
+| Null | 21 | 9 |
+| Shadow | 18 | 6 |
+| Tactician | 21 | 9 |
+| Talent | 18 | 6 |
+| Troubadour | 18 | 6 |
+
+Ancestry traits, items, and class features may modify the result — deferred
+to Epic 2 (`CharacterAttachment`).
 
 ### 9.3 Recoveries ✅
 
-`recoveriesMax = class.recoveries`. Each class records this value; no per-level
-scaling is modelled in Phase 2. Maps to `ClassSchema.recoveries` (the field
-name, not `recoveriesPerLevel` as an earlier plan draft assumed).
+`recoveriesMax = class.recoveries`. Fixed per-class base value; no per-level
+scaling. Maps to `ClassSchema.recoveries`.
 
-**Source.** TBD: Heroes Book § class advancement tables (most classes list
-recoveries in the Starting Stats block).
+**Source.** Heroes Book class chapter Starting Stats. Per-class base values:
+
+| Class | Recoveries |
+|---|---|
+| Censor | 12 |
+| Fury | 10 |
+| Null | 10 |
+| Tactician | 10 |
+| Conduit | 8 |
+| Elementalist | 8 |
+| Shadow | 8 |
+| Talent | 8 |
+| Troubadour | 8 |
+
+Modifiers (Phase 2 Epic 2 territory): ancestry traits like Human's *Staying
+Power* (+2 Recoveries) and Orc's *Glowing Recovery* (allows multi-Recovery
+Catch Breath); class features and items may also modify the pool or change
+how Recoveries are spent. Epic 1 derivation reads `class.recoveries` only.
 
 ### 9.4 Recovery-value ✅
 
 `recoveryValue = floor(maxStamina / 3)`.
 
-**Source.** TBD: Heroes Book § rest mechanics (Respite / spending recoveries
-section).
+**Source.** Heroes Book "Recoveries and Recovery Value" rule:
+> *Each hero has a number of Recoveries determined by their class. A hero
+> also has a recovery value that equals one-third of their Stamina maximum,
+> rounded down. When you use the Catch Breath maneuver in combat, you spend
+> a Recovery and regain Stamina equal to your recovery value.*
+
+Some abilities/items grant "recovery value plus a little extra" — those
+flow through their dispatch payload's `amount` field (an `ApplyHeal` intent
+derived from `SpendRecovery`), not through the base derivation.
