@@ -72,6 +72,7 @@ export {
   StartRoundPayloadSchema,
   StartTurnPayloadSchema,
   SubmitCharacterPayloadSchema,
+  SwapKitPayloadSchema,
   UndoPayloadSchema,
 } from './intents';
 export type {
@@ -113,6 +114,7 @@ export type {
   StartRoundPayload,
   StartTurnPayload,
   SubmitCharacterPayload,
+  SwapKitPayload,
   UndoPayload,
 } from './intents';
 

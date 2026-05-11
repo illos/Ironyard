@@ -28,6 +28,7 @@ export { applySpendResource } from './spend-resource';
 export { applySpendSurge } from './spend-surge';
 export { applyStartEncounter } from './start-encounter';
 export { applySubmitCharacter } from './submit-character';
+export { applySwapKit } from './swap-kit';
 export {
   applyEndRound,
   applyEndTurn,

@@ -6,6 +6,7 @@
 // Idempotency: each write is designed to be safe if dispatched twice (INSERT OR
 // IGNORE / ON CONFLICT DO NOTHING, or conditional UPDATE/DELETE).
 
+import { CharacterSchema } from '@ironyard/shared';
 import type { Intent } from '@ironyard/shared';
 import { and, eq, inArray } from 'drizzle-orm';
 import { db } from './db';
@@ -40,6 +41,9 @@ export async function handleSideEffect(
         break;
       case 'KickPlayer':
         await sideEffectKickPlayer(intent, campaignId, env);
+        break;
+      case 'SwapKit':
+        await sideEffectSwapKit(intent, env);
         break;
       default:
         break;
@@ -175,4 +179,39 @@ async function sideEffectKickPlayer(
         ),
       );
   }
+}
+
+async function sideEffectSwapKit(
+  intent: Intent & { timestamp: number },
+  env: Bindings,
+): Promise<void> {
+  const payload = intent.payload as MutablePayload;
+  const characterId = payload.characterId;
+  const newKitId = payload.newKitId;
+  if (typeof characterId !== 'string' || typeof newKitId !== 'string') return;
+
+  const conn = db(env.DB);
+
+  // Load the current character blob.
+  const row = await conn
+    .select({ data: characters.data })
+    .from(characters)
+    .where(eq(characters.id, characterId))
+    .get();
+  if (!row) return;
+
+  // Parse, update kitId, and persist.
+  let data: ReturnType<typeof CharacterSchema.parse>;
+  try {
+    data = CharacterSchema.parse(JSON.parse(row.data));
+  } catch {
+    // Invalid blob — skip silently, same pattern as stampStartEncounter.
+    return;
+  }
+  data.kitId = newKitId;
+
+  await conn
+    .update(characters)
+    .set({ data: JSON.stringify(data), updatedAt: intent.timestamp })
+    .where(eq(characters.id, characterId));
 }

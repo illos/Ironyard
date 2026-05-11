@@ -91,6 +91,8 @@ export type {
 
 export { SubmitCharacterPayloadSchema } from './submit-character';
 export type { SubmitCharacterPayload } from './submit-character';
+export { SwapKitPayloadSchema } from './swap-kit';
+export type { SwapKitPayload } from './swap-kit';
 export { UndoPayloadSchema } from './undo';
 export type { UndoPayload } from './undo';
 
@@ -130,6 +132,7 @@ export const IntentTypes = {
   StartRound: 'StartRound',
   StartTurn: 'StartTurn',
   SubmitCharacter: 'SubmitCharacter',
+  SwapKit: 'SwapKit',
   Undo: 'Undo',
 } as const;
 export type KnownIntentType = (typeof IntentTypes)[keyof typeof IntentTypes];

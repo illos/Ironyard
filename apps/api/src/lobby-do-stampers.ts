@@ -8,11 +8,12 @@
 import { isParticipant } from '@ironyard/rules';
 import type { CampaignState, PcPlaceholder } from '@ironyard/rules';
 import {
+  type BringCharacterIntoEncounterPayload,
   CharacterSchema,
   EncounterTemplateDataSchema,
-  type BringCharacterIntoEncounterPayload,
   type Intent,
   type LoadEncounterTemplatePayload,
+  type SwapKitPayload,
 } from '@ironyard/shared';
 import { and, eq, inArray } from 'drizzle-orm';
 import { loadMonsterById } from './data/index';
@@ -325,6 +326,42 @@ export async function stampStartEncounter(
 }
 
 /**
+ * SwapKit — look up characters.owner_id for the given characterId in D1 and
+ * stamp ownerId onto the payload. Rejects if the character row does not exist
+ * (prevents a client from claiming any ownerId). Matches the BringCharacterIntoEncounter
+ * pattern.
+ */
+export async function stampSwapKit(
+  intent: Intent & { timestamp: number },
+  _campaignState: CampaignState,
+  env: Bindings,
+): Promise<StampResult> {
+  const payload = intent.payload as MutablePayload;
+  const characterId = payload.characterId;
+  if (typeof characterId !== 'string' || !characterId) {
+    return 'invalid_payload: characterId required';
+  }
+
+  const conn = db(env.DB);
+  const row = await conn
+    .select({ ownerId: characters.ownerId })
+    .from(characters)
+    .where(eq(characters.id, characterId))
+    .get();
+
+  if (!row) return `character_not_found: ${characterId}`;
+
+  // Stamp the server-derived ownerId, discarding whatever the client sent.
+  const stamped: SwapKitPayload = {
+    characterId,
+    newKitId: typeof payload.newKitId === 'string' ? payload.newKitId : '',
+    ownerId: row.ownerId,
+  };
+  Object.assign(payload, stamped);
+  return null;
+}
+
+/**
  * Dispatch table — called by LobbyDO.handleDispatch before applyAndBroadcast.
  * Returns null (proceed) or a rejection reason (send rejected envelope).
  */
@@ -348,6 +385,8 @@ export async function stampIntent(
       return stampSubmitCharacter(intent, campaignState, env);
     case 'KickPlayer':
       return stampKickPlayer(intent, campaignState, env);
+    case 'SwapKit':
+      return stampSwapKit(intent, campaignState, env);
     // No stamping needed for these — they carry all required data or rely
     // solely on reducer authority checks.
     default:

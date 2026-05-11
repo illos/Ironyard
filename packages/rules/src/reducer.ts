@@ -35,6 +35,7 @@ import {
   applyStartRound,
   applyStartTurn,
   applySubmitCharacter,
+  applySwapKit,
   applyUndo,
 } from './intents';
 import type { CampaignState, IntentResult, ReducerContext, StampedIntent } from './types';
@@ -130,6 +131,8 @@ export function applyIntent(
       return applyStartTurn(state, intent);
     case IntentTypes.SubmitCharacter:
       return applySubmitCharacter(state, intent);
+    case IntentTypes.SwapKit:
+      return applySwapKit(state, intent);
     case IntentTypes.Undo:
       return applyUndo(state, intent);
     default:
