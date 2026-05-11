@@ -11,6 +11,7 @@ export type {
   ActiveEncounter,
   CampaignState,
   DerivedIntent,
+  EncounterPhase,
   IntentResult,
   LogEntry,
   NoteEntry,

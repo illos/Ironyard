@@ -47,7 +47,7 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
     bleedingD6,
   } = parsed.data;
 
-  const attacker = state.encounter.participants.find((p) => p.id === attackerId);
+  const attacker = state.participants.find((p) => p.id === attackerId);
   if (!attacker) {
     return {
       state,
@@ -59,7 +59,7 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
 
   const defenders = [];
   for (const id of targetIds) {
-    const target = state.encounter.participants.find((p) => p.id === id);
+    const target = state.participants.find((p) => p.id === id);
     if (!target) {
       return {
         state,

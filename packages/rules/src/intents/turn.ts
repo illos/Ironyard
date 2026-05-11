@@ -132,18 +132,18 @@ export function applyStartTurn(state: CampaignState, intent: StampedIntent): Int
   if (!guard.ok) return guard.result;
 
   const { participantId } = parsed.data;
-  if (!guard.encounter.participants.some((p) => p.id === participantId)) {
+  if (!state.participants.some((p) => p.id === participantId)) {
     return {
       state,
       derived: [],
       log: [
         {
           kind: 'error',
-          text: `participant ${participantId} not in encounter`,
+          text: `participant ${participantId} not in roster`,
           intentId: intent.id,
         },
       ],
-      errors: [{ code: 'participant_missing', message: `${participantId} not in encounter` }],
+      errors: [{ code: 'participant_missing', message: `${participantId} not in roster` }],
     };
   }
 
@@ -216,7 +216,7 @@ export function applyEndTurn(state: CampaignState, intent: StampedIntent): Inten
   ];
 
   if (currentId !== null && requireCanon('conditions.saving-throws')) {
-    const ending = guard.encounter.participants.find((p) => p.id === currentId);
+    const ending = state.participants.find((p) => p.id === currentId);
     if (ending) {
       const saveEndsConditions = ending.conditions
         .filter((c) => c.duration.kind === 'save_ends' && c.removable)
@@ -261,7 +261,7 @@ export function applyEndTurn(state: CampaignState, intent: StampedIntent): Inten
   // `|clarity|` untyped. Effortless Mind (10th-level toggle) suppression is
   // deferred to Phase 2 (character sheet).
   if (currentId !== null && requireCanon('heroic-resources-and-surges.talent-clarity')) {
-    const ending = guard.encounter.participants.find((p) => p.id === currentId);
+    const ending = state.participants.find((p) => p.id === currentId);
     if (ending) {
       const clarity = ending.heroicResources.find((r) => r.name === 'clarity');
       if (clarity && clarity.value < 0) {
@@ -321,7 +321,7 @@ export function applySetInitiative(state: CampaignState, intent: StampedIntent):
   if (!guard.ok) return guard.result;
 
   const { order } = parsed.data;
-  const participantIds = new Set(guard.encounter.participants.map((p) => p.id));
+  const participantIds = new Set(state.participants.map((p) => p.id));
   const proposedIds = new Set(order);
 
   if (order.length !== participantIds.size || proposedIds.size !== order.length) {

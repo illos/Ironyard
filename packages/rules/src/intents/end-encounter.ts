@@ -97,18 +97,15 @@ export function applyEndEncounter(state: CampaignState, intent: StampedIntent): 
     };
   }
 
-  // Reset every participant in place. We never use the resulting array (it
-  // goes away with encounter), but the per-participant resets are kept
-  // pure and stateless so a future "soft end" mode (keep encounter, just
-  // reset pools) can be added without forking the logic.
-  for (const p of state.encounter.participants) {
-    resetParticipantForEndOfEncounter(p);
-  }
+  // Reset every participant's encounter-scoped pools and conditions.
+  // Participants survive EndEncounter at the campaign level (lobby-persistent).
+  const resetParticipants = state.participants.map(resetParticipantForEndOfEncounter);
 
   return {
     state: {
       ...state,
       seq: state.seq + 1,
+      participants: resetParticipants,
       encounter: null,
     },
     derived: [],

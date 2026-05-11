@@ -51,28 +51,28 @@ function pc(over: Partial<Participant> = {}): Participant {
 }
 
 function ready(over?: Partial<Participant>): CampaignState {
-  let s = emptyCampaignState(campaignId);
-  s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
+  let s = emptyCampaignState(campaignId, 'user-owner');
   s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc(over) })).state;
+  s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
 
 function getAlice(s: CampaignState): Participant | undefined {
-  return s.encounter?.participants.find((p) => p.id === 'pc_alice');
+  return s.participants.find((p) => p.id === 'pc_alice');
 }
 
 describe('applyIntent — SetStamina', () => {
   it('rejects when no active encounter', () => {
     const r = applyIntent(
-      emptyCampaignState(campaignId),
+      emptyCampaignState(campaignId, 'user-owner'),
       intent('SetStamina', { participantId: 'pc_alice', currentStamina: 10 }),
     );
     expect(r.errors?.[0]?.code).toBe('no_active_encounter');
   });
 
   it('rejects when participant not found', () => {
-    let s = emptyCampaignState(campaignId);
-    s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
+    let s = emptyCampaignState(campaignId, 'user-owner');
+    s = applyIntent(s, intent('StartEncounter', {})).state;
     const r = applyIntent(
       s,
       intent('SetStamina', { participantId: 'pc_ghost', currentStamina: 1 }),

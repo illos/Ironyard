@@ -24,8 +24,17 @@ function intent(type: string, payload: unknown, overrides: Partial<Intent> = {})
 }
 
 function withEncounter(): CampaignState {
-  let s = emptyCampaignState(campaignId);
-  s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
+  let s = emptyCampaignState(campaignId, 'user-owner');
+  s = applyIntent(s, intent('StartEncounter', {})).state;
+  return s;
+}
+
+// Add participants to the roster before starting an encounter
+function withRosterAndEncounter(): CampaignState {
+  let s = emptyCampaignState(campaignId, 'user-owner');
+  s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
+  s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+  s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
 
@@ -72,68 +81,62 @@ function monster(over: Partial<Participant> = {}): Participant {
 }
 
 describe('applyIntent — StartEncounter', () => {
-  it('initialises encounter', () => {
-    const r = applyIntent(
-      emptyCampaignState(campaignId),
-      intent('StartEncounter', { encounterId: 'e1' }),
-    );
+  it('initialises encounter with a generated id and engages the current roster', () => {
+    let s = emptyCampaignState(campaignId, 'user-owner');
+    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
+    const r = applyIntent(s, intent('StartEncounter', {}));
     expect(r.errors).toBeUndefined();
-    expect(r.state.encounter).toEqual({
-      id: 'e1',
-      participants: [],
-      currentRound: null,
-      turnOrder: [],
-      activeParticipantId: null,
-      turnState: {},
-      // Slice 7: Director's Malice initialized to 0 with no Malicious Strike
-      // history (canon §5.5).
-      malice: { current: 0, lastMaliciousStrikeRound: null },
-    });
+    expect(r.state.encounter).not.toBeNull();
+    expect(r.state.encounter?.id).toMatch(/.{20,}/); // ULID
+    expect(r.state.encounter?.currentRound).toBe(1);
+    expect(r.state.encounter?.turnOrder).toEqual(['pc_alice']); // roster participant
+    expect(r.state.encounter?.activeParticipantId).toBeNull();
+    expect(r.state.encounter?.malice).toEqual({ current: 0, lastMaliciousStrikeRound: null });
   });
 
-  it('is idempotent for the same encounter id', () => {
-    const s = applyIntent(
-      emptyCampaignState(campaignId),
-      intent('StartEncounter', { encounterId: 'e1' }),
-    ).state;
-    const r = applyIntent(s, intent('StartEncounter', { encounterId: 'e1' }));
+  it('engages empty roster (zero participants) without error', () => {
+    const r = applyIntent(emptyCampaignState(campaignId, 'user-owner'), intent('StartEncounter', {}));
     expect(r.errors).toBeUndefined();
-    expect(r.state.encounter?.id).toBe('e1');
+    expect(r.state.encounter?.turnOrder).toHaveLength(0);
+    expect(r.state.participants).toHaveLength(0);
   });
 
-  it('rejects a different encounter while one is active', () => {
+  it('rejects starting when an encounter is already active', () => {
     const s = applyIntent(
-      emptyCampaignState(campaignId),
-      intent('StartEncounter', { encounterId: 'e1' }),
+      emptyCampaignState(campaignId, 'user-owner'),
+      intent('StartEncounter', {}),
     ).state;
-    const r = applyIntent(s, intent('StartEncounter', { encounterId: 'e2' }));
-    expect(r.errors?.[0]?.code).toBe('encounter_active');
-    expect(r.state.encounter?.id).toBe('e1'); // unchanged
+    const r = applyIntent(s, intent('StartEncounter', {}));
+    expect(r.errors?.[0]?.code).toBe('encounter_already_active');
+    expect(r.state.encounter?.id).toBe(s.encounter?.id); // unchanged
   });
 });
 
 describe('applyIntent — BringCharacterIntoEncounter', () => {
-  it('appends the participant to the active encounter', () => {
+  it('appends the participant to the lobby roster (no encounter required)', () => {
+    const r = applyIntent(
+      emptyCampaignState(campaignId, 'user-owner'),
+      intent('BringCharacterIntoEncounter', { participant: pc() }),
+    );
+    expect(r.errors).toBeUndefined();
+    expect(r.state.participants).toHaveLength(1);
+    expect(r.state.participants[0]?.name).toBe('Alice');
+    expect(r.state.encounter).toBeNull(); // roster change, no encounter started
+  });
+
+  it('appends to the roster even when an encounter is active', () => {
     const r = applyIntent(
       withEncounter(),
       intent('BringCharacterIntoEncounter', { participant: pc() }),
     );
     expect(r.errors).toBeUndefined();
-    expect(r.state.encounter?.participants).toHaveLength(1);
-    expect(r.state.encounter?.participants[0]?.name).toBe('Alice');
-  });
-
-  it('rejects with no_active_encounter when none is running', () => {
-    const r = applyIntent(
-      emptyCampaignState(campaignId),
-      intent('BringCharacterIntoEncounter', { participant: pc() }),
-    );
-    expect(r.errors?.[0]?.code).toBe('no_active_encounter');
+    expect(r.state.participants).toHaveLength(1);
+    expect(r.state.participants[0]?.name).toBe('Alice');
   });
 
   it('rejects duplicate participant ids', () => {
     const s = applyIntent(
-      withEncounter(),
+      emptyCampaignState(campaignId, 'user-owner'),
       intent('BringCharacterIntoEncounter', { participant: pc() }),
     ).state;
     const r = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() }));
@@ -142,7 +145,7 @@ describe('applyIntent — BringCharacterIntoEncounter', () => {
 
   it('rejects an invalid Participant payload', () => {
     const r = applyIntent(
-      withEncounter(),
+      emptyCampaignState(campaignId, 'user-owner'),
       intent('BringCharacterIntoEncounter', { participant: { id: '', name: 'X' } }),
     );
     expect(r.errors?.[0]?.code).toBe('invalid_payload');
@@ -151,10 +154,7 @@ describe('applyIntent — BringCharacterIntoEncounter', () => {
 
 describe('applyIntent — RollPower', () => {
   function ready(): CampaignState {
-    let s = withEncounter();
-    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
-    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
-    return s;
+    return withRosterAndEncounter();
   }
 
   const ladder = {
@@ -239,7 +239,7 @@ describe('applyIntent — RollPower', () => {
 
   it('rejects RollPower with no active encounter', () => {
     const r = applyIntent(
-      emptyCampaignState(campaignId),
+      emptyCampaignState(campaignId, 'user-owner'),
       intent('RollPower', {
         abilityId: 'a',
         attackerId: 'x',
@@ -255,7 +255,7 @@ describe('applyIntent — RollPower', () => {
   });
 
   it('multi-target emits one derived ApplyDamage per target', () => {
-    let s = withEncounter();
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
     s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
     s = applyIntent(
@@ -264,6 +264,7 @@ describe('applyIntent — RollPower', () => {
         participant: monster({ id: 'm_goblin_2', name: 'Goblin 2' }),
       }),
     ).state;
+    s = applyIntent(s, intent('StartEncounter', {})).state;
     const r = applyIntent(
       s,
       intent('RollPower', {
@@ -284,8 +285,9 @@ describe('applyIntent — RollPower', () => {
 
 describe('applyIntent — ApplyDamage', () => {
   function readyWithGoblin(): CampaignState {
-    let s = withEncounter();
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+    s = applyIntent(s, intent('StartEncounter', {})).state;
     return s;
   }
 
@@ -300,7 +302,7 @@ describe('applyIntent — ApplyDamage', () => {
       }),
     );
     expect(r.errors).toBeUndefined();
-    const goblin = r.state.encounter?.participants.find((p) => p.id === 'm_goblin');
+    const goblin = r.state.participants.find((p) => p.id === 'm_goblin');
     expect(goblin?.currentStamina).toBe(15);
   });
 
@@ -320,7 +322,7 @@ describe('applyIntent — ApplyDamage', () => {
 
 describe('end-to-end: RollPower → derived ApplyDamage cascade', () => {
   it('applying both intents in order reduces the target stamina', () => {
-    let s = withEncounter();
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
     s = applyIntent(
       s,
@@ -328,6 +330,7 @@ describe('end-to-end: RollPower → derived ApplyDamage cascade', () => {
         participant: monster({ weaknesses: [{ type: 'fire', value: 3 }] }),
       }),
     ).state;
+    s = applyIntent(s, intent('StartEncounter', {})).state;
 
     // Roll
     const ladder = {
@@ -360,7 +363,7 @@ describe('end-to-end: RollPower → derived ApplyDamage cascade', () => {
       campaignId,
       timestamp: T + 1,
     });
-    const goblin = damageResult.state.encounter?.participants.find((p) => p.id === 'm_goblin');
+    const goblin = damageResult.state.participants.find((p) => p.id === 'm_goblin');
     // t3 damage 9 + weakness 3 = 12 dealt; 20 - 12 = 8
     expect(goblin?.currentStamina).toBe(8);
   });

@@ -66,15 +66,15 @@ function monster(over: Partial<Participant> = {}): Participant {
 }
 
 function ready(extra?: Partial<Participant>): CampaignState {
-  let s = emptyCampaignState(campaignId);
-  s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
+  let s = emptyCampaignState(campaignId, 'user-owner');
   s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc(extra) })).state;
   s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+  s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
 
 function getParticipant(state: CampaignState, id: string): Participant | undefined {
-  return state.encounter?.participants.find((p) => p.id === id);
+  return state.participants.find((p) => p.id === id);
 }
 
 describe('applyIntent — StartEncounter (malice init, slice 7)', () => {
@@ -150,7 +150,7 @@ describe('applyIntent — GainResource', () => {
 
   it('rejects with no_active_encounter when there is no active encounter', () => {
     const r = applyIntent(
-      emptyCampaignState(campaignId),
+      emptyCampaignState(campaignId, 'user-owner'),
       intent('GainResource', { participantId: 'pc_talent', name: 'clarity', amount: 1 }),
     );
     expect(r.errors?.[0]?.code).toBe('no_active_encounter');
@@ -400,12 +400,12 @@ describe('applyIntent — Director Malice intents', () => {
   });
 
   it('GainMalice rejects with no_active_encounter when no encounter', () => {
-    const r = applyIntent(emptyCampaignState(campaignId), intent('GainMalice', { amount: 3 }));
+    const r = applyIntent(emptyCampaignState(campaignId, 'user-owner'), intent('GainMalice', { amount: 3 }));
     expect(r.errors?.[0]?.code).toBe('no_active_encounter');
   });
 
   it('SpendMalice rejects with no_active_encounter when no encounter', () => {
-    const r = applyIntent(emptyCampaignState(campaignId), intent('SpendMalice', { amount: 3 }));
+    const r = applyIntent(emptyCampaignState(campaignId, 'user-owner'), intent('SpendMalice', { amount: 3 }));
     expect(r.errors?.[0]?.code).toBe('no_active_encounter');
   });
 
@@ -417,10 +417,10 @@ describe('applyIntent — Director Malice intents', () => {
 
 describe('applyIntent — EndTurn Talent Clarity EoT damage hook', () => {
   function readyForTalent(over?: Partial<Participant>): CampaignState {
-    let s = emptyCampaignState(campaignId);
-    s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc(over) })).state;
     s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+    s = applyIntent(s, intent('StartEncounter', {})).state;
     s = applyIntent(s, intent('SetInitiative', { order: ['pc_talent', 'm_goblin'] })).state;
     s = applyIntent(s, intent('StartRound', {})).state;
     s = applyIntent(s, intent('StartTurn', { participantId: 'pc_talent' })).state;

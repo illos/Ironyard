@@ -24,9 +24,10 @@ export type TurnState = {
   dazeActionUsedThisTurn: boolean;
 };
 
-export type ActiveEncounter = {
+// Encounter-phase-only state. `participants` moved to CampaignState so they
+// survive EndEncounter. This type holds only the transient combat-tracking data.
+export type EncounterPhase = {
   id: string;
-  participants: Participant[];
   // Slice 4: turn state. `currentRound` is null between rounds; `activeParticipantId`
   // is null when no one's turn is currently running (between turns or rounds).
   // `turnOrder` is the explicit initiative list; SetInitiative replaces it.
@@ -43,12 +44,27 @@ export type ActiveEncounter = {
   malice: MaliceState;
 };
 
+// Keep ActiveEncounter as an alias for backwards compatibility within this
+// package (turn.ts imports it). Will be cleaned up in a follow-up.
+export type ActiveEncounter = EncounterPhase;
+
 export type CampaignState = {
   campaignId: string;
+  // Cached from campaigns.owner_id at load(); immutable per campaign for v1.
+  // Used by the reducer to authorise owner-only intents without a D1 round-trip.
+  ownerId: string;
+  // The user currently behind the screen. Defaults to ownerId on creation.
+  // Mutated by JumpBehindScreen. Operational "director-only" intents are
+  // gated on actor.userId === activeDirectorId.
+  activeDirectorId: string;
   seq: number; // last applied intent seq
   connectedMembers: Member[];
   notes: NoteEntry[];
-  encounter: ActiveEncounter | null;
+  // Lobby-persistent roster. Heroes + monsters added to the lobby.
+  // Survives EndEncounter; cleared only by RemoveParticipant or ClearLobby.
+  participants: Participant[];
+  // Encounter phase. null when there is no active encounter.
+  encounter: EncounterPhase | null;
 };
 
 export type LogEntry = {
@@ -66,12 +82,15 @@ export type IntentResult = {
   errors?: ValidationError[];
 };
 
-export function emptyCampaignState(campaignId: string): CampaignState {
+export function emptyCampaignState(campaignId: string, ownerId: string): CampaignState {
   return {
     campaignId,
+    ownerId,
+    activeDirectorId: ownerId,
     seq: 0,
     connectedMembers: [],
     notes: [],
+    participants: [],
     encounter: null,
   };
 }

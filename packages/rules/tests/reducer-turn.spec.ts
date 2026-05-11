@@ -44,11 +44,13 @@ function part(id: string, name = id): Participant {
 }
 
 function readyState(participantIds: string[] = ['alice', 'bob', 'cleric']): CampaignState {
-  let s = emptyCampaignState(campaignId);
-  s = applyIntent(s, intent('StartEncounter', { encounterId: 'e1' })).state;
+  let s = emptyCampaignState(campaignId, 'user-owner');
+  // Add participants to the lobby roster before starting the encounter
   for (const id of participantIds) {
     s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: part(id) })).state;
   }
+  // StartEncounter engages the current roster; currentRound initializes to 1
+  s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
 
@@ -85,7 +87,7 @@ describe('SetInitiative', () => {
 
   it('rejects with no active encounter', () => {
     const r = applyIntent(
-      emptyCampaignState(campaignId),
+      emptyCampaignState(campaignId, 'user-owner'),
       intent('SetInitiative', { order: ['alice'] }),
     );
     expect(r.errors?.[0]?.code).toBe('no_active_encounter');
@@ -100,31 +102,32 @@ describe('StartRound / EndRound', () => {
   }
 
   it('StartRound increments currentRound and activates the first in order', () => {
+    // StartEncounter already sets currentRound to 1; StartRound advances to 2
     const r = applyIntent(withOrder(), intent('StartRound', {}));
     expect(r.errors).toBeUndefined();
-    expect(r.state.encounter?.currentRound).toBe(1);
+    expect(r.state.encounter?.currentRound).toBe(2);
     expect(r.state.encounter?.activeParticipantId).toBe('alice');
   });
 
-  it('StartRound a second time increments to round 2', () => {
-    let s = applyIntent(withOrder(), intent('StartRound', {})).state;
+  it('StartRound a second time increments by 1 again', () => {
+    let s = applyIntent(withOrder(), intent('StartRound', {})).state; // round 2
     s = applyIntent(s, intent('EndRound', {})).state;
     const r = applyIntent(s, intent('StartRound', {}));
-    expect(r.state.encounter?.currentRound).toBe(2);
+    expect(r.state.encounter?.currentRound).toBe(3);
     expect(r.state.encounter?.activeParticipantId).toBe('alice');
   });
 
   it('StartRound with empty turnOrder leaves activeParticipantId null', () => {
     const s = applyIntent(readyState([]), intent('StartRound', {}));
-    expect(s.state.encounter?.currentRound).toBe(1);
+    expect(s.state.encounter?.currentRound).toBe(2); // 1 from StartEncounter + 1 from StartRound
     expect(s.state.encounter?.activeParticipantId).toBeNull();
   });
 
   it('EndRound clears activeParticipantId but preserves currentRound for the log', () => {
-    const s = applyIntent(withOrder(), intent('StartRound', {})).state;
+    const s = applyIntent(withOrder(), intent('StartRound', {})).state; // round 2
     const r = applyIntent(s, intent('EndRound', {}));
     expect(r.state.encounter?.activeParticipantId).toBeNull();
-    expect(r.state.encounter?.currentRound).toBe(1);
+    expect(r.state.encounter?.currentRound).toBe(2);
   });
 
   it('EndRound when no round is in progress is a no-op (still advances seq)', () => {
@@ -166,7 +169,7 @@ describe('StartTurn / EndTurn', () => {
   });
 
   it('full round walkthrough: StartRound → 3× EndTurn → null → EndRound', () => {
-    let s = inRoundOne();
+    let s = inRoundOne(); // StartEncounter sets round 1; StartRound (in inRoundOne) advances to 2
     expect(s.encounter?.activeParticipantId).toBe('alice');
     s = applyIntent(s, intent('EndTurn', {})).state;
     expect(s.encounter?.activeParticipantId).toBe('bob');
@@ -175,12 +178,12 @@ describe('StartTurn / EndTurn', () => {
     s = applyIntent(s, intent('EndTurn', {})).state;
     expect(s.encounter?.activeParticipantId).toBeNull();
     s = applyIntent(s, intent('EndRound', {})).state;
-    expect(s.encounter?.currentRound).toBe(1);
+    expect(s.encounter?.currentRound).toBe(2);
     expect(s.encounter?.activeParticipantId).toBeNull();
   });
 
   it('all turn intents require an active encounter', () => {
-    const empty = emptyCampaignState(campaignId);
+    const empty = emptyCampaignState(campaignId, 'user-owner');
     for (const t of ['StartRound', 'EndRound', 'StartTurn', 'EndTurn']) {
       const payload = t === 'StartTurn' ? { participantId: 'x' } : {};
       const r = applyIntent(empty, intent(t, payload));

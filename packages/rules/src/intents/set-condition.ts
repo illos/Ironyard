@@ -37,7 +37,7 @@ export function applySetCondition(state: CampaignState, intent: StampedIntent): 
   }
 
   const { targetId, condition, source, duration } = parsed.data;
-  const target = state.encounter.participants.find((p) => p.id === targetId);
+  const target = state.participants.find((p) => p.id === targetId);
   if (!target) {
     return {
       state,
@@ -89,7 +89,7 @@ export function applySetCondition(state: CampaignState, intent: StampedIntent): 
   }
 
   const updatedTarget: Participant = { ...target, conditions: nextConditions };
-  const updatedParticipants = state.encounter.participants.map((p) =>
+  const updatedParticipants = state.participants.map((p) =>
     p.id === targetId ? updatedTarget : p,
   );
 
@@ -97,10 +97,7 @@ export function applySetCondition(state: CampaignState, intent: StampedIntent): 
     state: {
       ...state,
       seq,
-      encounter: {
-        ...state.encounter,
-        participants: updatedParticipants,
-      },
+      participants: updatedParticipants,
     },
     derived: [],
     log: [

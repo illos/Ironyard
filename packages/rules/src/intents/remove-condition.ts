@@ -28,7 +28,7 @@ export function applyRemoveCondition(state: CampaignState, intent: StampedIntent
   }
 
   const { targetId, condition, sourceId } = parsed.data;
-  const target = state.encounter.participants.find((p) => p.id === targetId);
+  const target = state.participants.find((p) => p.id === targetId);
   if (!target) {
     return {
       state,
@@ -51,7 +51,7 @@ export function applyRemoveCondition(state: CampaignState, intent: StampedIntent
   const removed = target.conditions.length - nextConditions.length;
 
   const updatedTarget: Participant = { ...target, conditions: nextConditions };
-  const updatedParticipants = state.encounter.participants.map((p) =>
+  const updatedParticipants = state.participants.map((p) =>
     p.id === targetId ? updatedTarget : p,
   );
 
@@ -60,10 +60,7 @@ export function applyRemoveCondition(state: CampaignState, intent: StampedIntent
     state: {
       ...state,
       seq: state.seq + 1,
-      encounter: {
-        ...state.encounter,
-        participants: updatedParticipants,
-      },
+      participants: updatedParticipants,
     },
     derived: [],
     log: [

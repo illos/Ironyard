@@ -25,7 +25,7 @@ function intent(type: string, payload: unknown, overrides: Partial<Intent> = {})
 
 describe('applyIntent — JoinLobby', () => {
   it('adds a new member to connectedMembers and advances seq', () => {
-    const state = emptyCampaignState(campaignId);
+    const state = emptyCampaignState(campaignId, 'user-owner');
     const i = intent('JoinLobby', { userId: 'alice', displayName: 'Alice' });
     const result = applyIntent(state, i);
     expect(result.errors).toBeUndefined();
@@ -35,7 +35,7 @@ describe('applyIntent — JoinLobby', () => {
   });
 
   it('is idempotent: rejoining the same user is a no-op (still advances seq)', () => {
-    let s = emptyCampaignState(campaignId);
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(s, intent('JoinLobby', { userId: 'alice', displayName: 'Alice' })).state;
     const second = applyIntent(s, intent('JoinLobby', { userId: 'alice', displayName: 'Alice' }));
     expect(second.state.connectedMembers).toHaveLength(1);
@@ -44,14 +44,14 @@ describe('applyIntent — JoinLobby', () => {
   });
 
   it('rejects an empty userId', () => {
-    const state = emptyCampaignState(campaignId);
+    const state = emptyCampaignState(campaignId, 'user-owner');
     const result = applyIntent(state, intent('JoinLobby', { userId: '', displayName: 'X' }));
     expect(result.errors?.[0]?.code).toBe('invalid_payload');
     expect(result.state).toEqual(state); // state untouched
   });
 
   it('rejects a missing displayName', () => {
-    const state = emptyCampaignState(campaignId);
+    const state = emptyCampaignState(campaignId, 'user-owner');
     const result = applyIntent(state, intent('JoinLobby', { userId: 'alice' }));
     expect(result.errors?.[0]?.code).toBe('invalid_payload');
   });
@@ -59,7 +59,7 @@ describe('applyIntent — JoinLobby', () => {
 
 describe('applyIntent — LeaveLobby', () => {
   function withTwo(): CampaignState {
-    let s = emptyCampaignState(campaignId);
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(s, intent('JoinLobby', { userId: 'alice', displayName: 'Alice' })).state;
     s = applyIntent(s, intent('JoinLobby', { userId: 'bob', displayName: 'Bob' })).state;
     return s;
@@ -91,7 +91,7 @@ describe('applyIntent — LeaveLobby', () => {
 
 describe('applyIntent — Note', () => {
   it('appends a NoteEntry with intentId, actorId, text, and timestamp', () => {
-    const state = emptyCampaignState(campaignId);
+    const state = emptyCampaignState(campaignId, 'user-owner');
     const i = intent(
       'Note',
       { text: 'first blood' },
@@ -106,19 +106,19 @@ describe('applyIntent — Note', () => {
   });
 
   it('rejects an empty note', () => {
-    const state = emptyCampaignState(campaignId);
+    const state = emptyCampaignState(campaignId, 'user-owner');
     const result = applyIntent(state, intent('Note', { text: '' }));
     expect(result.errors?.[0]?.code).toBe('invalid_payload');
   });
 
   it('rejects a note over 2000 chars', () => {
-    const state = emptyCampaignState(campaignId);
+    const state = emptyCampaignState(campaignId, 'user-owner');
     const result = applyIntent(state, intent('Note', { text: 'x'.repeat(2001) }));
     expect(result.errors?.[0]?.code).toBe('invalid_payload');
   });
 
   it('preserves prior notes when appending', () => {
-    let s = emptyCampaignState(campaignId);
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(s, intent('Note', { text: 'first' })).state;
     s = applyIntent(s, intent('Note', { text: 'second' })).state;
     expect(s.notes.map((n) => n.text)).toEqual(['first', 'second']);
@@ -128,7 +128,7 @@ describe('applyIntent — Note', () => {
 
 describe('applyIntent — unknown intent type', () => {
   it('returns an unknown_intent error and leaves state alone', () => {
-    const state = emptyCampaignState(campaignId);
+    const state = emptyCampaignState(campaignId, 'user-owner');
     const result = applyIntent(state, intent('NotYetImplemented', { foo: 'bar' }));
     expect(result.errors?.[0]?.code).toBe('unknown_intent');
     expect(result.state).toEqual(state);
@@ -137,7 +137,7 @@ describe('applyIntent — unknown intent type', () => {
 
 describe('applyIntent — purity', () => {
   it('does not mutate the input state', () => {
-    const state = emptyCampaignState(campaignId);
+    const state = emptyCampaignState(campaignId, 'user-owner');
     const snapshot = JSON.stringify(state);
     applyIntent(state, intent('Note', { text: 'hello' }));
     applyIntent(state, intent('JoinLobby', { userId: 'alice', displayName: 'A' }));

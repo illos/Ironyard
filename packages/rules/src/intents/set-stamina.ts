@@ -39,7 +39,7 @@ export function applySetStamina(state: CampaignState, intent: StampedIntent): In
   }
 
   const { participantId, currentStamina, maxStamina } = parsed.data;
-  const target = state.encounter.participants.find((p) => p.id === participantId);
+  const target = state.participants.find((p) => p.id === participantId);
   if (!target) {
     return {
       state,
@@ -88,7 +88,7 @@ export function applySetStamina(state: CampaignState, intent: StampedIntent): In
   }
 
   const updatedTarget = { ...target, currentStamina: nextCurrent, maxStamina: nextMax };
-  const updatedParticipants = state.encounter.participants.map((p) =>
+  const updatedParticipants = state.participants.map((p) =>
     p.id === participantId ? updatedTarget : p,
   );
 
@@ -96,7 +96,7 @@ export function applySetStamina(state: CampaignState, intent: StampedIntent): In
     state: {
       ...state,
       seq: state.seq + 1,
-      encounter: { ...state.encounter, participants: updatedParticipants },
+      participants: updatedParticipants,
     },
     derived: [],
     log: [

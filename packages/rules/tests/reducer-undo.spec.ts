@@ -20,7 +20,7 @@ function intent(type: string, payload: unknown, overrides: Partial<Intent> = {})
 
 describe('applyUndo (reducer-side)', () => {
   it('is a no-op on state apart from seq + log (state revert happens at the DO via replay)', () => {
-    let s = emptyCampaignState(campaignId);
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(s, intent('Note', { text: 'first' })).state;
     const before = s;
     const r = applyIntent(s, intent('Undo', { intentId: 'some-id' }));
@@ -31,12 +31,12 @@ describe('applyUndo (reducer-side)', () => {
   });
 
   it('rejects an empty intentId', () => {
-    const r = applyIntent(emptyCampaignState(campaignId), intent('Undo', { intentId: '' }));
+    const r = applyIntent(emptyCampaignState(campaignId, 'user-owner'), intent('Undo', { intentId: '' }));
     expect(r.errors?.[0]?.code).toBe('invalid_payload');
   });
 
   it('rejects a missing intentId', () => {
-    const r = applyIntent(emptyCampaignState(campaignId), intent('Undo', {}));
+    const r = applyIntent(emptyCampaignState(campaignId, 'user-owner'), intent('Undo', {}));
     expect(r.errors?.[0]?.code).toBe('invalid_payload');
   });
 });

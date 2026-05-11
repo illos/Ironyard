@@ -33,7 +33,7 @@ export function applyRollResistance(state: CampaignState, intent: StampedIntent)
   }
 
   const { characterId, effectId, rolls } = parsed.data;
-  const target = state.encounter.participants.find((p) => p.id === characterId);
+  const target = state.participants.find((p) => p.id === characterId);
   if (!target) {
     return {
       state,
@@ -93,7 +93,7 @@ export function applyRollResistance(state: CampaignState, intent: StampedIntent)
   });
 
   const updatedTarget: Participant = { ...target, conditions: nextConditions };
-  const updatedParticipants = state.encounter.participants.map((p) =>
+  const updatedParticipants = state.participants.map((p) =>
     p.id === characterId ? updatedTarget : p,
   );
 
@@ -101,10 +101,7 @@ export function applyRollResistance(state: CampaignState, intent: StampedIntent)
     state: {
       ...state,
       seq: state.seq + 1,
-      encounter: {
-        ...state.encounter,
-        participants: updatedParticipants,
-      },
+      participants: updatedParticipants,
     },
     derived: [],
     log: [

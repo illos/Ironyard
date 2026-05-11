@@ -33,7 +33,7 @@ export function applyApplyHeal(state: CampaignState, intent: StampedIntent): Int
   }
 
   const { targetId, amount } = parsed.data;
-  const target = state.encounter.participants.find((p) => p.id === targetId);
+  const target = state.participants.find((p) => p.id === targetId);
   if (!target) {
     return {
       state,
@@ -47,7 +47,7 @@ export function applyApplyHeal(state: CampaignState, intent: StampedIntent): Int
   const after = Math.min(before + amount, target.maxStamina);
   const delivered = after - before;
   const updatedTarget = { ...target, currentStamina: after };
-  const updatedParticipants = state.encounter.participants.map((p) =>
+  const updatedParticipants = state.participants.map((p) =>
     p.id === targetId ? updatedTarget : p,
   );
 
@@ -55,7 +55,7 @@ export function applyApplyHeal(state: CampaignState, intent: StampedIntent): Int
     state: {
       ...state,
       seq: state.seq + 1,
-      encounter: { ...state.encounter, participants: updatedParticipants },
+      participants: updatedParticipants,
     },
     derived: [],
     log: [

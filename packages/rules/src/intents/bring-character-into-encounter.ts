@@ -21,30 +21,15 @@ export function applyBringCharacterIntoEncounter(
     };
   }
 
-  if (!state.encounter) {
-    return {
-      state,
-      derived: [],
-      log: [
-        {
-          kind: 'error',
-          text: 'no active encounter to bring a character into',
-          intentId: intent.id,
-        },
-      ],
-      errors: [{ code: 'no_active_encounter', message: 'no active encounter' }],
-    };
-  }
-
   const { participant } = parsed.data;
-  if (state.encounter.participants.some((p) => p.id === participant.id)) {
+  if (state.participants.some((p) => p.id === participant.id)) {
     return {
       state,
       derived: [],
       log: [
         {
           kind: 'error',
-          text: `participant ${participant.id} already in encounter`,
+          text: `participant ${participant.id} already in roster`,
           intentId: intent.id,
         },
       ],
@@ -56,10 +41,7 @@ export function applyBringCharacterIntoEncounter(
     state: {
       ...state,
       seq: state.seq + 1,
-      encounter: {
-        ...state.encounter,
-        participants: [...state.encounter.participants, participant],
-      },
+      participants: [...state.participants, participant],
     },
     derived: [],
     log: [

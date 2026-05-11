@@ -66,15 +66,15 @@ function monster(over: Partial<Participant> = {}): Participant {
 }
 
 function ready(): CampaignState {
-  let s = emptyCampaignState(campaignId);
-  s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
+  let s = emptyCampaignState(campaignId, 'user-owner');
   s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
   s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+  s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
 
 function getConditions(state: CampaignState, participantId: string): ConditionInstance[] {
-  return state.encounter?.participants.find((p) => p.id === participantId)?.conditions ?? [];
+  return state.participants.find((p) => p.id === participantId)?.conditions ?? [];
 }
 
 describe('applyIntent — SetCondition', () => {
@@ -258,7 +258,7 @@ describe('applyIntent — SetCondition', () => {
 
   it('rejects SetCondition with no active encounter', () => {
     const r = applyIntent(
-      emptyCampaignState(campaignId),
+      emptyCampaignState(campaignId, 'user-owner'),
       intent('SetCondition', {
         targetId: 'pc_alice',
         condition: 'Slowed',
@@ -374,8 +374,7 @@ describe('applyIntent — RemoveCondition', () => {
   it('does not remove instances flagged removable: false (defensive — for slice-6 dying Bleeding)', () => {
     // Construct a participant by hand with removable: false. Slice 5 handlers
     // never produce this, but the defensive guard should still hold.
-    let s = emptyCampaignState(campaignId);
-    s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(
       s,
       intent('BringCharacterIntoEncounter', {
@@ -392,6 +391,7 @@ describe('applyIntent — RemoveCondition', () => {
         }),
       }),
     ).state;
+    s = applyIntent(s, intent('StartEncounter', {})).state;
     const r = applyIntent(
       s,
       intent('RemoveCondition', { targetId: 'pc_alice', condition: 'Bleeding' }),
@@ -402,7 +402,7 @@ describe('applyIntent — RemoveCondition', () => {
 
   it('rejects RemoveCondition with no active encounter', () => {
     const r = applyIntent(
-      emptyCampaignState(campaignId),
+      emptyCampaignState(campaignId, 'user-owner'),
       intent('RemoveCondition', { targetId: 'pc_alice', condition: 'Bleeding' }),
     );
     expect(r.errors?.[0]?.code).toBe('no_active_encounter');
@@ -521,7 +521,7 @@ describe('applyIntent — RollResistance', () => {
 
   it('rejects RollResistance with no active encounter', () => {
     const r = applyIntent(
-      emptyCampaignState(campaignId),
+      emptyCampaignState(campaignId, 'user-owner'),
       intent('RollResistance', {
         characterId: 'pc_alice',
         effectId: 'spell_1',
