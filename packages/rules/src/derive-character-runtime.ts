@@ -1,0 +1,178 @@
+import type { Character, Characteristics } from '@ironyard/shared';
+import { requireCanon } from './require-canon';
+import type { StaticDataBundle } from './static-data';
+
+export type CharacterRuntime = {
+  characteristics: Characteristics;
+  maxStamina: number;
+  recoveriesMax: number;
+  recoveryValue: number;
+  heroicResource: { name: string; max: number | null; floor: number };
+  abilityIds: string[];
+  skills: string[];
+  languages: string[];
+  immunities: Array<{ kind: string; value: number }>;
+  weaknesses: Array<{ kind: string; value: number }>;
+  speed: number;
+  size: string;
+  stability: number;
+  freeStrikeDamage: number;
+};
+
+// Canonical order the 5 characteristic scores always map into.
+// AncestrySchema.lockedCharacteristics may declare some of these as "always 2",
+// but derivation reads the full array positionally regardless — whatever the
+// character stored is what we derive.
+const CANONICAL_CHARACTERISTIC_ORDER = [
+  'might',
+  'agility',
+  'reason',
+  'intuition',
+  'presence',
+] as const;
+
+const ZERO_CHARACTERISTICS: Characteristics = {
+  might: 0,
+  agility: 0,
+  reason: 0,
+  intuition: 0,
+  presence: 0,
+};
+
+export function deriveCharacterRuntime(
+  character: Character,
+  staticData: StaticDataBundle,
+): CharacterRuntime {
+  const cls = character.classId ? staticData.classes.get(character.classId) : null;
+  const kit = character.kitId ? staticData.kits.get(character.kitId) : null;
+  const ancestry = character.ancestryId ? staticData.ancestries.get(character.ancestryId) : null;
+
+  // Characteristics: map the stored array positionally to canonical order.
+  // NOTE: ClassSchema uses `lockedCharacteristics` + `characteristicArrays`
+  // to describe the class's characteristic layout, but the character stores
+  // all 5 values in one flat array in canonical order. Derivation reads it
+  // directly — no class-specific slot mapping needed.
+  const characteristics = deriveCharacteristics(character);
+
+  // Stamina: starting + (level - 1) * perLevel + kit bonus.
+  // NOTE: ClassSchema does NOT have staminaCharacteristic/staminaCharacteristicMultiplier
+  // fields (the plan assumed these but the actual schema omits them). If a
+  // characteristic-scaled stamina formula is added to ClassSchema in future,
+  // update this function and the `character-derivation.max-stamina` canon entry.
+  const maxStamina = requireCanon('character-derivation.max-stamina')
+    ? deriveMaxStamina(character, cls) + (kit?.staminaBonus ?? 0)
+    : 0;
+
+  // Recoveries: ClassSchema uses `recoveries` (not `recoveriesPerLevel`).
+  const recoveriesMax = requireCanon('character-derivation.recoveries')
+    ? (cls?.recoveries ?? 0)
+    : 0;
+
+  const recoveryValue = requireCanon('character-derivation.recovery-value')
+    ? Math.floor(maxStamina / 3)
+    : 0;
+
+  // Heroic resource: ClassSchema stores this as a plain string (the resource name).
+  // Phase C wraps it in the { name, floor, max } shape with sentinel defaults.
+  // If the schema is extended later to include floor/max, update here.
+  const heroicResource: CharacterRuntime['heroicResource'] = {
+    name: cls?.heroicResource ?? 'unknown',
+    max: null,
+    floor: 0,
+  };
+
+  const abilityIds = collectAbilityIds(character);
+  const skills = collectSkills(character);
+  const languages = collectLanguages(character);
+
+  const immunities: CharacterRuntime['immunities'] = [];
+  const weaknesses: CharacterRuntime['weaknesses'] = [];
+
+  // NOTE: AncestrySchema does not include speed, size, or stability fields.
+  // These fall back to game defaults. If the schema is extended, update here.
+  // `ancestry` is accessed to prevent an unused-variable warning.
+  void ancestry;
+  const speed = 5; // Draw Steel default
+  const size = '1M'; // Draw Steel default
+  const stability = kit?.stabilityBonus ?? 0;
+  const freeStrikeDamage = (kit?.meleeDamageBonus ?? 0) + 2; // canon: free-strike base 2
+
+  return {
+    characteristics,
+    maxStamina,
+    recoveriesMax,
+    recoveryValue,
+    heroicResource,
+    abilityIds,
+    skills,
+    languages,
+    immunities,
+    weaknesses,
+    speed,
+    size,
+    stability,
+    freeStrikeDamage,
+  };
+}
+
+function deriveCharacteristics(character: Character): Characteristics {
+  if (!requireCanon('character-derivation.characteristics')) return ZERO_CHARACTERISTICS;
+  if (!character.characteristicArray) return ZERO_CHARACTERISTICS;
+
+  const out: Characteristics = { ...ZERO_CHARACTERISTICS };
+  CANONICAL_CHARACTERISTIC_ORDER.forEach((slot, idx) => {
+    const value = character.characteristicArray?.[idx];
+    if (typeof value === 'number') {
+      (out as Record<string, number>)[slot] = value;
+    }
+  });
+  return out;
+}
+
+function deriveMaxStamina(
+  character: Character,
+  cls:
+    | {
+        startingStamina?: number;
+        staminaPerLevel?: number;
+      }
+    | null
+    | undefined,
+): number {
+  if (!cls) return 0;
+  const base = cls.startingStamina ?? 0;
+  const perLevel = (cls.staminaPerLevel ?? 0) * Math.max(0, character.level - 1);
+  return base + perLevel;
+}
+
+function collectAbilityIds(character: Character): string[] {
+  const out: string[] = [];
+  for (const lvl of Object.keys(character.levelChoices)) {
+    const choices = character.levelChoices[lvl];
+    if (choices) {
+      out.push(...choices.abilityIds);
+      out.push(...choices.subclassAbilityIds);
+    }
+  }
+  return out;
+}
+
+function collectSkills(character: Character): string[] {
+  const out: string[] = [];
+  if (character.culture.environmentSkill) out.push(character.culture.environmentSkill);
+  if (character.culture.organizationSkill) out.push(character.culture.organizationSkill);
+  if (character.culture.upbringingSkill) out.push(character.culture.upbringingSkill);
+  out.push(...character.careerChoices.skills);
+  for (const lvl of Object.keys(character.levelChoices)) {
+    const sk = character.levelChoices[lvl]?.skillId;
+    if (sk) out.push(sk);
+  }
+  return [...new Set(out)];
+}
+
+function collectLanguages(character: Character): string[] {
+  const out: string[] = [];
+  if (character.culture.language) out.push(character.culture.language);
+  out.push(...character.careerChoices.languages);
+  return [...new Set(out)];
+}

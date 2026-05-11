@@ -17,7 +17,8 @@
     "canon:report": "tsx scripts/canon-report.ts"
   },
   "dependencies": {
-    "@ironyard/shared": "workspace:*"
+    "@ironyard/shared": "workspace:*",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "tsx": "^4.19.2",

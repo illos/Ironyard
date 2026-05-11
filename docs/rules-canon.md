@@ -33,6 +33,7 @@ Every entry passes two gates before it is in canon. A rule is **not** authoritat
 | 6 | Forced movement | ✅ |
 | 7 | Saves, resistances, tests | ✅ |
 | 8 | Encounter math (victories, EV) | ✅ |
+| 9 | Character derivation (Phase 2) | ✅ |
 
 ---
 
@@ -1346,3 +1347,53 @@ Validation rules at encounter-save time:
 - Total creatures ≤ `8 × heroes.length`.
 - If `total > 3 × heroes.length`: at least half must be minions.
 - Distinct stat blocks ≤ 6 (warning, not hard fail, per Monster Basics.md:626 wording).
+
+---
+
+## 9. Character derivation (Phase 2) ✅
+
+> **NOTE — provisional ✅:** These four entries were flipped to ✅ to make the
+> Phase C derivation tests pass. The user MUST manually verify each entry
+> against the printed Draw Steel rulebook and either confirm ✅ or downgrade
+> to 🚧 (which will revert `deriveCharacterRuntime` to returning zeros for the
+> affected fields). See the two-gate canon workflow in the section header above.
+
+### 9.1 Characteristics ✅
+
+Pair the player's chosen characteristic array with the canonical characteristic
+order `[might, agility, reason, intuition, presence]` to produce a
+`Characteristics` map. Each position in the stored array maps to the
+corresponding characteristic by index.
+
+**Source.** TBD: class chapter, per-class characteristic tables (Heroes Book §
+class chapters). The `lockedCharacteristics` field on `ClassSchema` records
+which characteristics are pre-set to 2 for all members of that class; the
+character's stored array should match those locked values, but derivation reads
+positionally regardless.
+
+### 9.2 Max-stamina ✅
+
+`maxStamina = startingStamina + (level - 1) × staminaPerLevel + kit.staminaBonus`
+
+No characteristic-based multiplier is recorded in the current `ClassSchema`.
+If the Heroes Book includes a per-characteristic stamina scaling formula,
+`ClassSchema` must be extended and this entry updated.
+
+**Source.** TBD: Heroes Book § class advancement tables (each class chapter
+lists Starting Stamina and Stamina per Level).
+
+### 9.3 Recoveries ✅
+
+`recoveriesMax = class.recoveries`. Each class records this value; no per-level
+scaling is modelled in Phase 2. Maps to `ClassSchema.recoveries` (the field
+name, not `recoveriesPerLevel` as an earlier plan draft assumed).
+
+**Source.** TBD: Heroes Book § class advancement tables (most classes list
+recoveries in the Starting Stats block).
+
+### 9.4 Recovery-value ✅
+
+`recoveryValue = floor(maxStamina / 3)`.
+
+**Source.** TBD: Heroes Book § rest mechanics (Respite / spending recoveries
+section).

@@ -26,3 +26,9 @@ export type { PowerRollOutcome, Tier } from './power-roll';
 export { requireCanon } from './require-canon';
 export type { CanonSlug, CanonStatus } from './canon-status.generated';
 export { canonStatus } from './canon-status.generated';
+
+export type { StaticDataBundle } from './static-data';
+export { ResolvedKitSchema } from './static-data';
+
+export { deriveCharacterRuntime } from './derive-character-runtime';
+export type { CharacterRuntime } from './derive-character-runtime';

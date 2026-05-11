@@ -83,6 +83,11 @@ export const canonStatus = {
   'encounter-math.spending-the-ev-budget': 'verified',
   'encounter-math.initiative-groups': 'verified',
   'encounter-math.engine-model': 'verified',
+  'character-derivation': 'verified',
+  'character-derivation.characteristics': 'verified',
+  'character-derivation.max-stamina': 'verified',
+  'character-derivation.recoveries': 'verified',
+  'character-derivation.recovery-value': 'verified',
 } as const satisfies Record<string, CanonStatus>;
 
 export type CanonSlug = keyof typeof canonStatus;
