@@ -1,3 +1,4 @@
+import type { Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { applyIntent } from '../../src/index';
 import { OWNER_ID, baseState, makeMonsterFixture, ownerActor, stamped } from './test-utils';
@@ -21,9 +22,11 @@ describe('applyAddMonster', () => {
     );
     expect(result.errors).toBeUndefined();
     expect(result.state.participants).toHaveLength(3);
-    expect(result.state.participants[0]?.name).toMatch(/Goblin Warrior/);
+    expect((result.state.participants[0] as Participant)?.name).toMatch(/Goblin Warrior/);
     // Each monster gets a unique id
-    expect(result.state.participants[0]?.id).not.toEqual(result.state.participants[1]?.id);
+    expect((result.state.participants[0] as Participant)?.id).not.toEqual(
+      (result.state.participants[1] as Participant)?.id,
+    );
   });
 
   it('names each monster with a suffix when quantity > 1', () => {
@@ -36,8 +39,8 @@ describe('applyAddMonster', () => {
         payload: { monsterId: 'goblin-warrior-1', quantity: 2, monster: goblins },
       }),
     );
-    expect(result.state.participants[0]?.name).toBe('Goblin Warrior 1');
-    expect(result.state.participants[1]?.name).toBe('Goblin Warrior 2');
+    expect((result.state.participants[0] as Participant)?.name).toBe('Goblin Warrior 1');
+    expect((result.state.participants[1] as Participant)?.name).toBe('Goblin Warrior 2');
   });
 
   it('uses nameOverride when provided', () => {
@@ -55,7 +58,7 @@ describe('applyAddMonster', () => {
         },
       }),
     );
-    expect(result.state.participants[0]?.name).toBe('Cave Goblin');
+    expect((result.state.participants[0] as Participant)?.name).toBe('Cave Goblin');
   });
 
   it('sets currentStamina and maxStamina from monster.stamina.base', () => {
@@ -69,7 +72,7 @@ describe('applyAddMonster', () => {
         payload: { monsterId: 'big-monster', quantity: 1, monster },
       }),
     );
-    const p = result.state.participants[0];
+    const p = result.state.participants[0] as Participant | undefined;
     expect(p?.currentStamina).toBe(40);
     expect(p?.maxStamina).toBe(40);
   });

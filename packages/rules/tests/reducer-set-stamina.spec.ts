@@ -5,6 +5,7 @@ import {
   type StampedIntent,
   applyIntent,
   emptyCampaignState,
+  isParticipant,
 } from '../src/index';
 
 // Phase 1 cleanup: SetStamina — the client-dispatchable manual HP override.
@@ -52,13 +53,13 @@ function pc(over: Partial<Participant> = {}): Participant {
 
 function ready(over?: Partial<Participant>): CampaignState {
   let s = emptyCampaignState(campaignId, 'user-owner');
-  s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc(over) })).state;
+  s = { ...s, participants: [pc(over)] };
   s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
 
 function getAlice(s: CampaignState): Participant | undefined {
-  return s.participants.find((p) => p.id === 'pc_alice');
+  return s.participants.find((p): p is Participant => isParticipant(p) && p.id === 'pc_alice');
 }
 
 describe('applyIntent — SetStamina', () => {

@@ -1,6 +1,7 @@
 import { EndEncounterPayloadSchema, type Participant } from '@ironyard/shared';
 import { requireCanon } from '../require-canon';
-import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, RosterEntry, StampedIntent } from '../types';
+import { isParticipant } from '../types';
 
 // Phase 1 cleanup: closes out the active encounter. Walks every participant
 // and resets the encounter-scoped pools (heroicResources, extras, surges per
@@ -99,7 +100,10 @@ export function applyEndEncounter(state: CampaignState, intent: StampedIntent): 
 
   // Reset every participant's encounter-scoped pools and conditions.
   // Participants survive EndEncounter at the campaign level (lobby-persistent).
-  const resetParticipants = state.participants.map(resetParticipantForEndOfEncounter);
+  // PC placeholders are preserved as-is (they have no encounter-scoped state).
+  const resetParticipants: RosterEntry[] = state.participants.map((entry) =>
+    isParticipant(entry) ? resetParticipantForEndOfEncounter(entry) : entry,
+  );
 
   return {
     state: {

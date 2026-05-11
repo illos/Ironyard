@@ -1,5 +1,5 @@
 import type {
-  BringCharacterIntoEncounterPayload,
+  AddMonsterPayload,
   Characteristics,
   EncounterTemplate,
   Monster,
@@ -87,31 +87,8 @@ export function EncounterBuilder() {
   const isDirector = session.data.isDirector;
 
   const handleAddMonster = (monster: Monster) => {
-    // Auto-number duplicates by counting existing instances of this monster id.
-    const sameKindCount = participants.filter((p) =>
-      p.id.startsWith(`${monster.id}-instance-`),
-    ).length;
-    const nextCount = sameKindCount + 1;
-    const participant: Participant = {
-      id: `${monster.id}-instance-${nextCount}`,
-      name: nextCount > 1 ? `${monster.name} ${nextCount}` : monster.name,
-      kind: 'monster',
-      level: monster.level,
-      currentStamina: monster.stamina.base,
-      maxStamina: monster.stamina.base,
-      characteristics: monster.characteristics,
-      immunities: monster.immunities,
-      weaknesses: monster.weaknesses,
-      conditions: [],
-      heroicResources: [],
-      extras: [],
-      surges: 0,
-      recoveries: { current: 0, max: 0 },
-      recoveryValue: 0,
-    };
-
     if (!activeEncounter) {
-      const startPayload: StartEncounterPayload = { encounterId: ulid() };
+      const startPayload: StartEncounterPayload = { encounterId: ulid(), stampedPcs: [] };
       dispatch(
         buildIntent({
           campaignId: sessionId,
@@ -122,20 +99,30 @@ export function EncounterBuilder() {
       );
     }
 
-    const bringPayload: BringCharacterIntoEncounterPayload = { participant };
+    // DO stamps the full monster blob from static data by monsterId.
+    const addPayload: AddMonsterPayload = {
+      monsterId: monster.id,
+      quantity: 1,
+      // monster stamped by DO — cast satisfies schema; DO overwrites before reducer
+      monster,
+    };
     dispatch(
       buildIntent({
         campaignId: sessionId,
-        type: IntentTypes.BringCharacterIntoEncounter,
-        payload: bringPayload,
+        type: IntentTypes.AddMonster,
+        payload: addPayload,
         actor,
       }),
     );
   };
 
+  // Prototype: QuickPcForm creates an ad-hoc participant for playtesting.
+  // Phase 5 UI overhaul will replace this with a proper character-link flow.
+  // For now, route through AddMonster (DO stamps the monster blob, but we also
+  // include the participant shape directly so the optimistic mirror works).
   const handleAddPc = (participant: Participant) => {
     if (!activeEncounter) {
-      const startPayload: StartEncounterPayload = { encounterId: ulid() };
+      const startPayload: StartEncounterPayload = { encounterId: ulid(), stampedPcs: [] };
       dispatch(
         buildIntent({
           campaignId: sessionId,
@@ -145,12 +132,39 @@ export function EncounterBuilder() {
         }),
       );
     }
-    const bringPayload: BringCharacterIntoEncounterPayload = { participant };
+    // Prototype: add the quick-PC as a participant via AddMonster.
+    // The DO stamps the monster blob from static data; since there's no
+    // "quick PC" intent, we synthesise a minimal monster shape here.
+    const addPayload: AddMonsterPayload = {
+      monsterId: participant.id,
+      quantity: 1,
+      nameOverride: participant.name,
+      // Synthesised monster shape — prototype only. DO will attempt to look
+      // up by monsterId; if not found it will reject (harmless for dev use).
+      monster: {
+        id: participant.id,
+        name: participant.name,
+        level: participant.level,
+        roles: [],
+        ancestry: [],
+        ev: { ev: 0 },
+        stamina: { base: participant.maxStamina },
+        speed: 5,
+        movement: [],
+        size: '1M',
+        stability: 0,
+        freeStrike: 3,
+        characteristics: participant.characteristics,
+        immunities: participant.immunities,
+        weaknesses: participant.weaknesses,
+        abilities: [],
+      },
+    };
     dispatch(
       buildIntent({
         campaignId: sessionId,
-        type: IntentTypes.BringCharacterIntoEncounter,
-        payload: bringPayload,
+        type: IntentTypes.AddMonster,
+        payload: addPayload,
         actor,
       }),
     );

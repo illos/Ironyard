@@ -2,9 +2,12 @@ import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
   type CampaignState,
+  type PcPlaceholder,
+  type RosterEntry,
   type StampedIntent,
   applyIntent,
   emptyCampaignState,
+  isParticipant,
 } from '../src/index';
 
 const T = 1_700_000_000_000;
@@ -32,8 +35,7 @@ function withEncounter(): CampaignState {
 // Add participants to the roster before starting an encounter
 function withRosterAndEncounter(): CampaignState {
   let s = emptyCampaignState(campaignId, 'user-owner');
-  s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
-  s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+  s = { ...s, participants: [pc(), monster()] };
   s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
@@ -83,7 +85,7 @@ function monster(over: Partial<Participant> = {}): Participant {
 describe('applyIntent — StartEncounter', () => {
   it('initialises encounter with a generated id and engages the current roster', () => {
     let s = emptyCampaignState(campaignId, 'user-owner');
-    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
+    s = { ...s, participants: [pc()] };
     const r = applyIntent(s, intent('StartEncounter', {}));
     expect(r.errors).toBeUndefined();
     expect(r.state.encounter).not.toBeNull();
@@ -113,43 +115,114 @@ describe('applyIntent — StartEncounter', () => {
     expect(r.errors?.[0]?.code).toBe('encounter_already_active');
     expect(r.state.encounter?.id).toBe(s.encounter?.id); // unchanged
   });
+
+  it('placeholders without a stamped blob remain as placeholders in the roster', () => {
+    // pc-placeholder with no stampedPcs → stays as placeholder, not in turnOrder
+    const placeholder: PcPlaceholder = {
+      kind: 'pc-placeholder',
+      characterId: 'char_xyz',
+      ownerId: 'user_bob',
+      position: 0,
+    };
+    let s = emptyCampaignState(campaignId, 'user-owner');
+    s = { ...s, participants: [placeholder] };
+    const r = applyIntent(s, intent('StartEncounter', {}));
+    expect(r.errors).toBeUndefined();
+    // placeholder stays in roster (not materialized)
+    const roster: RosterEntry[] = r.state.participants;
+    expect(roster).toHaveLength(1);
+    expect(roster[0]?.kind).toBe('pc-placeholder');
+    // not in turn order since it's not a Participant
+    expect(r.state.encounter?.turnOrder).toHaveLength(0);
+  });
 });
 
+// BCIE intents must come from the active director (userId === activeDirectorId).
+// emptyCampaignState('sess_test', 'user-owner') sets activeDirectorId = 'user-owner'.
+function directorIntent(type: string, payload: unknown): StampedIntent {
+  return intent(type, payload, { actor: { userId: 'user-owner', role: 'director' } });
+}
+
 describe('applyIntent — BringCharacterIntoEncounter', () => {
-  it('appends the participant to the lobby roster (no encounter required)', () => {
+  it('adds a pc-placeholder to the roster (no encounter required)', () => {
     const r = applyIntent(
       emptyCampaignState(campaignId, 'user-owner'),
-      intent('BringCharacterIntoEncounter', { participant: pc() }),
+      directorIntent('BringCharacterIntoEncounter', {
+        characterId: 'char_abc',
+        ownerId: 'user_alice',
+      }),
     );
     expect(r.errors).toBeUndefined();
     expect(r.state.participants).toHaveLength(1);
-    expect(r.state.participants[0]?.name).toBe('Alice');
+    const entry = r.state.participants[0];
+    expect(entry?.kind).toBe('pc-placeholder');
+    expect((entry as PcPlaceholder).characterId).toBe('char_abc');
+    expect((entry as PcPlaceholder).ownerId).toBe('user_alice');
     expect(r.state.encounter).toBeNull(); // roster change, no encounter started
   });
 
-  it('appends to the roster even when an encounter is active', () => {
+  it('adds a pc-placeholder even when an encounter is active', () => {
     const r = applyIntent(
       withEncounter(),
-      intent('BringCharacterIntoEncounter', { participant: pc() }),
+      directorIntent('BringCharacterIntoEncounter', {
+        characterId: 'char_abc',
+        ownerId: 'user_alice',
+      }),
     );
     expect(r.errors).toBeUndefined();
     expect(r.state.participants).toHaveLength(1);
-    expect(r.state.participants[0]?.name).toBe('Alice');
+    expect(r.state.participants[0]?.kind).toBe('pc-placeholder');
   });
 
-  it('rejects duplicate participant ids', () => {
+  it('assigns a default position equal to the current roster length', () => {
+    let s = emptyCampaignState(campaignId, 'user-owner');
+    s = applyIntent(
+      s,
+      directorIntent('BringCharacterIntoEncounter', { characterId: 'char_a', ownerId: 'u1' }),
+    ).state;
+    const r = applyIntent(
+      s,
+      directorIntent('BringCharacterIntoEncounter', { characterId: 'char_b', ownerId: 'u2' }),
+    );
+    expect(r.errors).toBeUndefined();
+    const second = r.state.participants[1] as PcPlaceholder;
+    expect(second?.position).toBe(1);
+  });
+
+  it('rejects duplicate characterId', () => {
     const s = applyIntent(
       emptyCampaignState(campaignId, 'user-owner'),
-      intent('BringCharacterIntoEncounter', { participant: pc() }),
+      directorIntent('BringCharacterIntoEncounter', {
+        characterId: 'char_abc',
+        ownerId: 'user_alice',
+      }),
     ).state;
-    const r = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() }));
-    expect(r.errors?.[0]?.code).toBe('duplicate_participant');
+    const r = applyIntent(
+      s,
+      directorIntent('BringCharacterIntoEncounter', {
+        characterId: 'char_abc',
+        ownerId: 'user_alice',
+      }),
+    );
+    expect(r.errors?.[0]?.code).toBe('already_in_roster');
   });
 
-  it('rejects an invalid Participant payload', () => {
+  it('rejects when actor is not the active director', () => {
     const r = applyIntent(
       emptyCampaignState(campaignId, 'user-owner'),
-      intent('BringCharacterIntoEncounter', { participant: { id: '', name: 'X' } }),
+      intent(
+        'BringCharacterIntoEncounter',
+        { characterId: 'char_abc', ownerId: 'user_alice' },
+        { actor: { userId: 'user_alice', role: 'player' } },
+      ),
+    );
+    expect(r.errors?.[0]?.code).toBe('permission_denied');
+  });
+
+  it('rejects an invalid payload', () => {
+    const r = applyIntent(
+      emptyCampaignState(campaignId, 'user-owner'),
+      directorIntent('BringCharacterIntoEncounter', { characterId: '', ownerId: 'user_alice' }),
     );
     expect(r.errors?.[0]?.code).toBe('invalid_payload');
   });
@@ -259,14 +332,10 @@ describe('applyIntent — RollPower', () => {
 
   it('multi-target emits one derived ApplyDamage per target', () => {
     let s = emptyCampaignState(campaignId, 'user-owner');
-    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
-    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
-    s = applyIntent(
-      s,
-      intent('BringCharacterIntoEncounter', {
-        participant: monster({ id: 'm_goblin_2', name: 'Goblin 2' }),
-      }),
-    ).state;
+    s = {
+      ...s,
+      participants: [pc(), monster(), monster({ id: 'm_goblin_2', name: 'Goblin 2' })],
+    };
     s = applyIntent(s, intent('StartEncounter', {})).state;
     const r = applyIntent(
       s,
@@ -289,7 +358,7 @@ describe('applyIntent — RollPower', () => {
 describe('applyIntent — ApplyDamage', () => {
   function readyWithGoblin(): CampaignState {
     let s = emptyCampaignState(campaignId, 'user-owner');
-    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+    s = { ...s, participants: [monster()] };
     s = applyIntent(s, intent('StartEncounter', {})).state;
     return s;
   }
@@ -305,7 +374,9 @@ describe('applyIntent — ApplyDamage', () => {
       }),
     );
     expect(r.errors).toBeUndefined();
-    const goblin = r.state.participants.find((p) => p.id === 'm_goblin');
+    const goblin = r.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.id === 'm_goblin',
+    );
     expect(goblin?.currentStamina).toBe(15);
   });
 
@@ -326,13 +397,10 @@ describe('applyIntent — ApplyDamage', () => {
 describe('end-to-end: RollPower → derived ApplyDamage cascade', () => {
   it('applying both intents in order reduces the target stamina', () => {
     let s = emptyCampaignState(campaignId, 'user-owner');
-    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
-    s = applyIntent(
-      s,
-      intent('BringCharacterIntoEncounter', {
-        participant: monster({ weaknesses: [{ type: 'fire', value: 3 }] }),
-      }),
-    ).state;
+    s = {
+      ...s,
+      participants: [pc(), monster({ weaknesses: [{ type: 'fire', value: 3 }] })],
+    };
     s = applyIntent(s, intent('StartEncounter', {})).state;
 
     // Roll
@@ -366,7 +434,9 @@ describe('end-to-end: RollPower → derived ApplyDamage cascade', () => {
       campaignId,
       timestamp: T + 1,
     });
-    const goblin = damageResult.state.participants.find((p) => p.id === 'm_goblin');
+    const goblin = damageResult.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.id === 'm_goblin',
+    );
     // t3 damage 9 + weakness 3 = 12 dealt; 20 - 12 = 8
     expect(goblin?.currentStamina).toBe(8);
   });

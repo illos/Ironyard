@@ -5,13 +5,15 @@
 // Stampers that cannot reject (JumpBehindScreen, SubmitCharacter, KickPlayer)
 // still return null on success — the reducer performs the authority check.
 
-import type { CampaignState } from '@ironyard/rules';
+import { isParticipant } from '@ironyard/rules';
+import type { CampaignState, PcPlaceholder } from '@ironyard/rules';
 import {
+  CharacterSchema,
   EncounterTemplateDataSchema,
   type Intent,
   type LoadEncounterTemplatePayload,
 } from '@ironyard/shared';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { loadMonsterById } from './data/index';
 import { db } from './db';
 import {
@@ -216,12 +218,73 @@ export async function stampKickPlayer(
   const ownedCharacterIds = new Set(rows.map((r) => r.characterId));
 
   // Intersect with current roster participants.
-  // Hero participants have `kind === 'pc'`; their id is the character id by convention.
+  // Only full Participants (not placeholders) have `id`; filter with the type guard.
   const participantIdsToRemove = campaignState.participants
-    .filter((p) => p.kind === 'pc' && ownedCharacterIds.has(p.id))
+    .filter(
+      (p): p is import('@ironyard/shared').Participant =>
+        isParticipant(p) && p.kind === 'pc' && ownedCharacterIds.has(p.id),
+    )
     .map((p) => p.id);
 
   payload.participantIdsToRemove = participantIdsToRemove;
+  return null;
+}
+
+/**
+ * StartEncounter — find all PC placeholders in the current roster, load their
+ * character blobs from D1, and stamp them onto `payload.stampedPcs`.
+ * If there are no placeholders, stamps an empty array and returns null.
+ * Does NOT reject — if a character row is missing the placeholder is silently
+ * skipped (it remains as a placeholder after StartEncounter).
+ */
+export async function stampStartEncounter(
+  intent: Intent & { timestamp: number },
+  campaignState: CampaignState,
+  env: Bindings,
+): Promise<StampResult> {
+  const payload = intent.payload as MutablePayload;
+
+  // Collect characterIds for all pc-placeholder entries in the roster.
+  const placeholderCharIds = campaignState.participants
+    .filter((p): p is PcPlaceholder => p.kind === 'pc-placeholder')
+    .map((p) => p.characterId);
+
+  if (placeholderCharIds.length === 0) {
+    // No placeholders — stamp an empty array so the schema is always satisfied.
+    payload.stampedPcs = [];
+    return null;
+  }
+
+  const conn = db(env.DB);
+  const rows = await conn
+    .select({
+      id: characters.id,
+      ownerId: characters.ownerId,
+      name: characters.name,
+      data: characters.data,
+    })
+    .from(characters)
+    .where(inArray(characters.id, placeholderCharIds))
+    .all();
+
+  const stampedPcs = rows
+    .map((row) => {
+      try {
+        const parsed = CharacterSchema.safeParse(JSON.parse(row.data));
+        if (!parsed.success) return null; // invalid blob — skip silently
+        return {
+          characterId: row.id,
+          ownerId: row.ownerId,
+          name: row.name,
+          character: parsed.data,
+        };
+      } catch {
+        return null; // JSON.parse failure — skip silently
+      }
+    })
+    .filter((e): e is NonNullable<typeof e> => e !== null);
+
+  payload.stampedPcs = stampedPcs;
   return null;
 }
 
@@ -241,6 +304,8 @@ export async function stampIntent(
       return stampLoadEncounterTemplate(intent, campaignState, env);
     case 'JumpBehindScreen':
       return stampJumpBehindScreen(intent, campaignState, env);
+    case 'StartEncounter':
+      return stampStartEncounter(intent, campaignState, env);
     case 'SubmitCharacter':
       return stampSubmitCharacter(intent, campaignState, env);
     case 'KickPlayer':

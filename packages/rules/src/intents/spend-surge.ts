@@ -1,5 +1,6 @@
 import { SpendSurgePayloadSchema } from '@ironyard/shared';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import { isParticipant } from '../types';
 
 // Slice 7: decrement the universal surges pool by N (canon §5.6). Class-
 // specific spend consequences (extra damage, potency boost) wire in slice 8
@@ -32,7 +33,8 @@ export function applySpendSurge(state: CampaignState, intent: StampedIntent): In
   }
 
   const { participantId, count } = parsed.data;
-  const target = state.participants.find((p) => p.id === participantId);
+  const participants = state.participants.filter(isParticipant);
+  const target = participants.find((p) => p.id === participantId);
   if (!target) {
     return {
       state,
@@ -64,7 +66,7 @@ export function applySpendSurge(state: CampaignState, intent: StampedIntent): In
 
   const updatedTarget = { ...target, surges: target.surges - count };
   const updatedParticipants = state.participants.map((p) =>
-    p.id === participantId ? updatedTarget : p,
+    isParticipant(p) && p.id === participantId ? updatedTarget : p,
   );
 
   return {

@@ -5,6 +5,7 @@ import {
   type StampedIntent,
   applyIntent,
   emptyCampaignState,
+  isParticipant,
 } from '../src/index';
 
 const T = 1_700_000_000_000;
@@ -66,15 +67,20 @@ function monster(over: Partial<Participant> = {}): Participant {
 }
 
 function ready(): CampaignState {
+  // Directly seed the roster so tests are independent of BringCharacterIntoEncounter
+  // semantics. StartEncounter only materializes pc-placeholders; since we seed
+  // full Participants here, it just sets up the encounter phase.
   let s = emptyCampaignState(campaignId, 'user-owner');
-  s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
-  s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+  s = { ...s, participants: [pc(), monster()] };
   s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
 
 function getConditions(state: CampaignState, participantId: string): ConditionInstance[] {
-  return state.participants.find((p) => p.id === participantId)?.conditions ?? [];
+  return (
+    state.participants.find((p): p is Participant => isParticipant(p) && p.id === participantId)
+      ?.conditions ?? []
+  );
 }
 
 describe('applyIntent — SetCondition', () => {
@@ -375,10 +381,10 @@ describe('applyIntent — RemoveCondition', () => {
     // Construct a participant by hand with removable: false. Slice 5 handlers
     // never produce this, but the defensive guard should still hold.
     let s = emptyCampaignState(campaignId, 'user-owner');
-    s = applyIntent(
-      s,
-      intent('BringCharacterIntoEncounter', {
-        participant: pc({
+    s = {
+      ...s,
+      participants: [
+        pc({
           conditions: [
             {
               type: 'Bleeding',
@@ -389,8 +395,8 @@ describe('applyIntent — RemoveCondition', () => {
             },
           ],
         }),
-      }),
-    ).state;
+      ],
+    };
     s = applyIntent(s, intent('StartEncounter', {})).state;
     const r = applyIntent(
       s,

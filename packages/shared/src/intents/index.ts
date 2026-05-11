@@ -71,8 +71,8 @@ export { SpendResourcePayloadSchema } from './spend-resource';
 export type { SpendResourcePayload } from './spend-resource';
 export { SpendSurgePayloadSchema } from './spend-surge';
 export type { SpendSurgePayload } from './spend-surge';
-export { StartEncounterPayloadSchema } from './start-encounter';
-export type { StartEncounterPayload } from './start-encounter';
+export { StartEncounterPayloadSchema, StartEncounterStampedPcSchema } from './start-encounter';
+export type { StartEncounterPayload, StartEncounterStampedPc } from './start-encounter';
 
 export {
   EndRoundPayloadSchema,

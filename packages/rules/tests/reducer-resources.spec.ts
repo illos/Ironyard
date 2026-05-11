@@ -5,6 +5,7 @@ import {
   type StampedIntent,
   applyIntent,
   emptyCampaignState,
+  isParticipant,
 } from '../src/index';
 
 const T = 1_700_000_000_000;
@@ -67,14 +68,13 @@ function monster(over: Partial<Participant> = {}): Participant {
 
 function ready(extra?: Partial<Participant>): CampaignState {
   let s = emptyCampaignState(campaignId, 'user-owner');
-  s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc(extra) })).state;
-  s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+  s = { ...s, participants: [pc(extra), monster()] };
   s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
 
 function getParticipant(state: CampaignState, id: string): Participant | undefined {
-  return state.participants.find((p) => p.id === id);
+  return state.participants.find((p): p is Participant => isParticipant(p) && p.id === id);
 }
 
 describe('applyIntent — StartEncounter (malice init, slice 7)', () => {
@@ -424,8 +424,7 @@ describe('applyIntent — Director Malice intents', () => {
 describe('applyIntent — EndTurn Talent Clarity EoT damage hook', () => {
   function readyForTalent(over?: Partial<Participant>): CampaignState {
     let s = emptyCampaignState(campaignId, 'user-owner');
-    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc(over) })).state;
-    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+    s = { ...s, participants: [pc(over), monster()] };
     s = applyIntent(s, intent('StartEncounter', {})).state;
     s = applyIntent(s, intent('SetInitiative', { order: ['pc_talent', 'm_goblin'] })).state;
     s = applyIntent(s, intent('StartRound', {})).state;

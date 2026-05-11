@@ -1,4 +1,23 @@
 import type { Intent, MaliceState, Member, Participant } from '@ironyard/shared';
+import type { StaticDataBundle } from './static-data';
+
+export type PcPlaceholder = {
+  kind: 'pc-placeholder';
+  characterId: string;
+  ownerId: string;
+  position: number;
+};
+
+export type RosterEntry = Participant | PcPlaceholder;
+
+/** Type guard — narrows RosterEntry to a full Participant (pc or monster). */
+export function isParticipant(e: RosterEntry): e is Participant {
+  return e.kind === 'pc' || e.kind === 'monster';
+}
+
+// Context threaded through every applyIntent call. Most handlers ignore it;
+// applyStartEncounter uses staticData to materialize PC placeholders.
+export type ReducerContext = { staticData: StaticDataBundle };
 
 // The DO stamps `timestamp` before calling applyIntent — the reducer signature
 // uses StampedIntent so handlers don't need to second-guess that contract.
@@ -62,7 +81,7 @@ export type CampaignState = {
   notes: NoteEntry[];
   // Lobby-persistent roster. Heroes + monsters added to the lobby.
   // Survives EndEncounter; cleared only by RemoveParticipant or ClearLobby.
-  participants: Participant[]; // Phase D will widen to a discriminated union
+  participants: RosterEntry[]; // widened from Participant[] in Phase D
   // Encounter phase. null when there is no active encounter.
   encounter: EncounterPhase | null;
   // Party victories earned this session. Drained by Respite to per-character XP.

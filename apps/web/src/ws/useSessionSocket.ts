@@ -85,16 +85,13 @@ function reflect(
   if (!prev) return prev;
 
   if (type === IntentTypes.BringCharacterIntoEncounter) {
-    const { participant } = payload as BringCharacterIntoEncounterPayload;
-    if (prev.participants.some((p) => p.id === participant.id)) return prev;
-    return {
-      ...prev,
-      participants: [...prev.participants, participant],
-      // Default insertion-order initiative when no SetInitiative has run.
-      turnOrder: prev.turnOrder.includes(participant.id)
-        ? prev.turnOrder
-        : [...prev.turnOrder, participant.id],
-    };
+    // Phase 2: BCIE now creates a pc-placeholder in the lobby roster.
+    // Placeholders are materialized into full participants at StartEncounter.
+    // The optimistic mirror does not update participants here; the server
+    // snapshot after StartEncounter will reflect the materialized PCs.
+    const _typed = payload as BringCharacterIntoEncounterPayload; // type-check only
+    void _typed;
+    return prev;
   }
 
   if (type === IntentTypes.StartRound) {

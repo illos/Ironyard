@@ -1,6 +1,7 @@
 import { IntentTypes, SpendRecoveryPayloadSchema } from '@ironyard/shared';
 import { requireCanon } from '../require-canon';
 import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
+import { isParticipant } from '../types';
 
 // Slice 7: pay 1 recovery and dispatch a derived ApplyHeal for `recoveryValue`
 // HP (canon §2.13). Recoveries are encounter-spanning (not reset per turn);
@@ -33,7 +34,8 @@ export function applySpendRecovery(state: CampaignState, intent: StampedIntent):
   }
 
   const { participantId } = parsed.data;
-  const target = state.participants.find((p) => p.id === participantId);
+  const participants = state.participants.filter(isParticipant);
+  const target = participants.find((p) => p.id === participantId);
   if (!target) {
     return {
       state,
@@ -63,7 +65,7 @@ export function applySpendRecovery(state: CampaignState, intent: StampedIntent):
     recoveries: { ...target.recoveries, current: target.recoveries.current - 1 },
   };
   const updatedParticipants = state.participants.map((p) =>
-    p.id === participantId ? updatedTarget : p,
+    isParticipant(p) && p.id === participantId ? updatedTarget : p,
   );
 
   const derived: DerivedIntent[] = [];

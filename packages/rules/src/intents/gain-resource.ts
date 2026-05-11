@@ -1,6 +1,7 @@
 import { GainResourcePayloadSchema, type Participant } from '@ironyard/shared';
 import { refLabel, resolveResource, updateExtra, updateHeroic } from '../resources';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import { isParticipant } from '../types';
 
 // Slice 7: increment a heroic / extras resource on a participant. `amount` is
 // signed — negative values are allowed but rejected with `floor_breach` if
@@ -34,7 +35,8 @@ export function applyGainResource(state: CampaignState, intent: StampedIntent): 
   }
 
   const { participantId, name, amount } = parsed.data;
-  const target = state.participants.find((p) => p.id === participantId);
+  const participants = state.participants.filter(isParticipant);
+  const target = participants.find((p) => p.id === participantId);
   if (!target) {
     return {
       state,
@@ -97,7 +99,7 @@ export function applyGainResource(state: CampaignState, intent: StampedIntent): 
     });
   }
   const updatedParticipants = state.participants.map((p) =>
-    p.id === participantId ? updatedTarget : p,
+    isParticipant(p) && p.id === participantId ? updatedTarget : p,
   );
 
   return {

@@ -23,6 +23,9 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.8.0
         version: 0.8.0(hono@4.12.18)(zod@3.25.76)
+      '@ironyard/rules':
+        specifier: workspace:*
+        version: link:../../packages/rules
       '@ironyard/shared':
         specifier: workspace:*
         version: link:../../packages/shared

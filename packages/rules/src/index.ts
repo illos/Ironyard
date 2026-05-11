@@ -6,7 +6,7 @@
 export const PACKAGE = '@ironyard/rules' as const;
 
 export { applyIntent } from './reducer';
-export { emptyCampaignState } from './types';
+export { emptyCampaignState, isParticipant } from './types';
 export type {
   ActiveEncounter,
   CampaignState,
@@ -15,6 +15,9 @@ export type {
   IntentResult,
   LogEntry,
   NoteEntry,
+  PcPlaceholder,
+  ReducerContext,
+  RosterEntry,
   StampedIntent,
   ValidationError,
 } from './types';

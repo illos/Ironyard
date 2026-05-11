@@ -1,5 +1,6 @@
 import { SetStaminaPayloadSchema } from '@ironyard/shared';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import { isParticipant } from '../types';
 
 // Phase 1 cleanup: client-dispatchable manual HP override. Mirrors the
 // SetCondition shape — payload-validate → require encounter → locate
@@ -39,7 +40,8 @@ export function applySetStamina(state: CampaignState, intent: StampedIntent): In
   }
 
   const { participantId, currentStamina, maxStamina } = parsed.data;
-  const target = state.participants.find((p) => p.id === participantId);
+  const participants = state.participants.filter(isParticipant);
+  const target = participants.find((p) => p.id === participantId);
   if (!target) {
     return {
       state,
@@ -89,7 +91,7 @@ export function applySetStamina(state: CampaignState, intent: StampedIntent): In
 
   const updatedTarget = { ...target, currentStamina: nextCurrent, maxStamina: nextMax };
   const updatedParticipants = state.participants.map((p) =>
-    p.id === participantId ? updatedTarget : p,
+    isParticipant(p) && p.id === participantId ? updatedTarget : p,
   );
 
   return {

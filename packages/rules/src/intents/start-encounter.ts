@@ -1,7 +1,25 @@
-import { StartEncounterPayloadSchema, ulid } from '@ironyard/shared';
-import type { CampaignState, EncounterPhase, IntentResult, StampedIntent } from '../types';
+import {
+  type Participant,
+  StartEncounterPayloadSchema,
+  type TypedResistance,
+  ulid,
+} from '@ironyard/shared';
+import { deriveCharacterRuntime } from '../derive-character-runtime';
+import type {
+  CampaignState,
+  EncounterPhase,
+  IntentResult,
+  ReducerContext,
+  RosterEntry,
+  StampedIntent,
+} from '../types';
+import { isParticipant } from '../types';
 
-export function applyStartEncounter(state: CampaignState, intent: StampedIntent): IntentResult {
+export function applyStartEncounter(
+  state: CampaignState,
+  intent: StampedIntent,
+  ctx: ReducerContext,
+): IntentResult {
   const parsed = StartEncounterPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -38,15 +56,64 @@ export function applyStartEncounter(state: CampaignState, intent: StampedIntent)
     };
   }
 
+  // D4: Materialize PC placeholders into full participants.
+  // stampedPcs maps characterId → { name, ownerId, character }.
+  const stampedByCharId = new Map(parsed.data.stampedPcs.map((s) => [s.characterId, s]));
+
+  const nextParticipants: RosterEntry[] = state.participants.map((entry) => {
+    if (entry.kind !== 'pc-placeholder') return entry;
+    const stamped = stampedByCharId.get(entry.characterId);
+    if (!stamped) {
+      // No blob stamped → leave placeholder (skipped in encounter turnOrder).
+      return entry;
+    }
+    const runtime = deriveCharacterRuntime(stamped.character, ctx.staticData);
+    const materialized: Participant = {
+      id: `pc:${entry.characterId}`, // stable id derived from characterId
+      name: stamped.name, // from characters.name column (stamped by DO)
+      kind: 'pc',
+      level: stamped.character.level,
+      currentStamina:
+        preservedRuntime(state, entry.characterId, 'currentStamina') ?? runtime.maxStamina,
+      maxStamina: runtime.maxStamina,
+      characteristics: runtime.characteristics,
+      // CharacterRuntime uses `kind` but Participant uses `type` for the damage field name.
+      // The values are compatible DamageType strings at runtime; cast for TypeScript.
+      immunities: runtime.immunities.map((r) => ({
+        type: r.kind as TypedResistance['type'],
+        value: r.value,
+      })),
+      weaknesses: runtime.weaknesses.map((r) => ({
+        type: r.kind as TypedResistance['type'],
+        value: r.value,
+      })),
+      conditions: [],
+      heroicResources: [], // reset to class floor at encounter start (slice-7 logic)
+      extras: [],
+      surges: 0,
+      recoveries: {
+        current:
+          preservedRuntime(state, entry.characterId, 'recoveriesCurrent') ?? runtime.recoveriesMax,
+        max: runtime.recoveriesMax,
+      },
+      recoveryValue: runtime.recoveryValue,
+    };
+    return materialized;
+  });
+
   // Use the client-suggested encounterId if provided (useful for optimistic
   // local state and integration tests that need to reference the encounter
   // by ID in follow-up intents like EndEncounter). The server-generated ulid()
   // is the fallback.
   const encounterId = parsed.data.encounterId ?? ulid();
+
+  // Only full Participants (not remaining placeholders) go in the turn order.
+  const fullParticipants = nextParticipants.filter(isParticipant);
+
   const encounter: EncounterPhase = {
     id: encounterId,
     currentRound: 1,
-    turnOrder: state.participants.map((p) => p.id),
+    turnOrder: fullParticipants.map((p) => p.id),
     activeParticipantId: null,
     turnState: {},
     // Slice 7: Director's Malice starts at 0 with no Malicious Strike
@@ -58,15 +125,29 @@ export function applyStartEncounter(state: CampaignState, intent: StampedIntent)
     state: {
       ...state,
       seq: state.seq + 1,
+      participants: nextParticipants,
       encounter,
     },
     derived: [],
     log: [
       {
         kind: 'info',
-        text: `encounter ${encounterId} started with ${state.participants.length} participants`,
+        text: `encounter ${encounterId} started with ${fullParticipants.length} participants`,
         intentId: intent.id,
       },
     ],
   };
+}
+
+function preservedRuntime(
+  state: CampaignState,
+  characterId: string,
+  field: 'currentStamina' | 'recoveriesCurrent',
+): number | null {
+  const existing = state.participants.find(
+    (p): p is Participant => isParticipant(p) && p.kind === 'pc' && p.id === `pc:${characterId}`,
+  );
+  if (!existing) return null;
+  if (field === 'currentStamina') return existing.currentStamina;
+  return existing.recoveries.current;
 }

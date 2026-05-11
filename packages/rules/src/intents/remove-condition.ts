@@ -1,5 +1,6 @@
 import { type Participant, RemoveConditionPayloadSchema } from '@ironyard/shared';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import { isParticipant } from '../types';
 
 export function applyRemoveCondition(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = RemoveConditionPayloadSchema.safeParse(intent.payload);
@@ -28,7 +29,8 @@ export function applyRemoveCondition(state: CampaignState, intent: StampedIntent
   }
 
   const { targetId, condition, sourceId } = parsed.data;
-  const target = state.participants.find((p) => p.id === targetId);
+  const participants = state.participants.filter(isParticipant);
+  const target = participants.find((p) => p.id === targetId);
   if (!target) {
     return {
       state,
@@ -52,7 +54,7 @@ export function applyRemoveCondition(state: CampaignState, intent: StampedIntent
 
   const updatedTarget: Participant = { ...target, conditions: nextConditions };
   const updatedParticipants = state.participants.map((p) =>
-    p.id === targetId ? updatedTarget : p,
+    isParticipant(p) && p.id === targetId ? updatedTarget : p,
   );
 
   const sourceFragment = sourceId !== undefined ? ` from ${sourceId}` : '';

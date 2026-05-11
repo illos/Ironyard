@@ -5,6 +5,7 @@ import {
   type StampedIntent,
   applyIntent,
   emptyCampaignState,
+  isParticipant,
 } from '../src/index';
 import { resetParticipantForEndOfEncounter } from '../src/intents/end-encounter';
 
@@ -86,13 +87,13 @@ function endEncounter(s: CampaignState) {
 }
 
 function firstParticipant(s: CampaignState): Participant {
-  const p = s.participants[0];
+  const p = s.participants.find(isParticipant);
   if (!p) throw new Error('no participants');
   return p;
 }
 
 function findParticipant(s: CampaignState, id: string): Participant {
-  const p = s.participants.find((x) => x.id === id);
+  const p = s.participants.find((x): x is Participant => isParticipant(x) && x.id === id);
   if (!p) throw new Error(`participant ${id} not found`);
   return p;
 }
@@ -125,8 +126,7 @@ describe('applyIntent — EndEncounter', () => {
 
   it('preserves participants in the roster after ending the encounter', () => {
     let s = emptyCampaignState(campaignId, 'user-owner');
-    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
-    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+    s = { ...s, participants: [pc(), monster()] };
     s = applyIntent(s, intent('StartEncounter', {})).state;
     const r = endEncounter(s);
     expect(r.errors).toBeUndefined();
@@ -142,26 +142,21 @@ describe('applyIntent — EndEncounter', () => {
 
   it('resets every participant heroicResources value to 0 while preserving name/floor/max', () => {
     let s = emptyCampaignState(campaignId, 'user-owner');
-    s = applyIntent(
-      s,
-      intent('BringCharacterIntoEncounter', {
-        participant: pc({
+    s = {
+      ...s,
+      participants: [
+        pc({
           id: 'pc_talent',
           name: 'Talent',
           heroicResources: [{ name: 'clarity', value: -2, floor: -3 }],
         }),
-      }),
-    ).state;
-    s = applyIntent(
-      s,
-      intent('BringCharacterIntoEncounter', {
-        participant: pc({
+        pc({
           id: 'pc_censor',
           name: 'Censor',
           heroicResources: [{ name: 'wrath', value: 7, floor: 0 }],
         }),
-      }),
-    ).state;
+      ],
+    };
     s = applyIntent(s, intent('StartEncounter', {})).state;
 
     // Snapshot the participant before EndEncounter.
@@ -182,21 +177,15 @@ describe('applyIntent — EndEncounter', () => {
     expect(r.errors).toBeUndefined();
     expect(r.state.encounter).toBeNull();
     expect(r.state.participants).toHaveLength(2);
-    expect(r.state.participants.find((p) => p.id === 'pc_talent')?.heroicResources[0]?.value).toBe(
-      0,
-    );
+    expect(
+      r.state.participants.find((p): p is Participant => isParticipant(p) && p.id === 'pc_talent')
+        ?.heroicResources[0]?.value,
+    ).toBe(0);
   });
 
   it('resets extras values to 0 on every participant', () => {
     let s = emptyCampaignState(campaignId, 'user-owner');
-    s = applyIntent(
-      s,
-      intent('BringCharacterIntoEncounter', {
-        participant: pc({
-          extras: [{ name: 'virtue', value: 5, floor: 0 }],
-        }),
-      }),
-    ).state;
+    s = { ...s, participants: [pc({ extras: [{ name: 'virtue', value: 5, floor: 0 }] })] };
     s = applyIntent(s, intent('StartEncounter', {})).state;
 
     const cleared = resetParticipantForEndOfEncounter(firstParticipant(s));
@@ -206,35 +195,21 @@ describe('applyIntent — EndEncounter', () => {
 
   it('resets surges to 0 on every participant', () => {
     let s = emptyCampaignState(campaignId, 'user-owner');
-    s = applyIntent(
-      s,
-      intent('BringCharacterIntoEncounter', {
-        participant: pc({ surges: 3 }),
-      }),
-    ).state;
-    s = applyIntent(
-      s,
-      intent('BringCharacterIntoEncounter', {
-        participant: monster({ surges: 1 }),
-      }),
-    ).state;
+    s = { ...s, participants: [pc({ surges: 3 }), monster({ surges: 1 })] };
     s = applyIntent(s, intent('StartEncounter', {})).state;
 
     const before = s.participants ?? [];
     expect(before).toHaveLength(2);
     for (const p of before) {
-      expect(resetParticipantForEndOfEncounter(p).surges).toBe(0);
+      if (isParticipant(p)) {
+        expect(resetParticipantForEndOfEncounter(p).surges).toBe(0);
+      }
     }
   });
 
   it('does NOT reset recoveries.current (canon §2.13: respite only)', () => {
     let s = emptyCampaignState(campaignId, 'user-owner');
-    s = applyIntent(
-      s,
-      intent('BringCharacterIntoEncounter', {
-        participant: pc({ recoveries: { current: 5, max: 8 } }),
-      }),
-    ).state;
+    s = { ...s, participants: [pc({ recoveries: { current: 5, max: 8 } })] };
     s = applyIntent(s, intent('StartEncounter', {})).state;
 
     const cleared = resetParticipantForEndOfEncounter(firstParticipant(s));
@@ -244,10 +219,10 @@ describe('applyIntent — EndEncounter', () => {
 
   it('clears only end_of_encounter-duration conditions', () => {
     let s = emptyCampaignState(campaignId, 'user-owner');
-    s = applyIntent(
-      s,
-      intent('BringCharacterIntoEncounter', {
-        participant: pc({
+    s = {
+      ...s,
+      participants: [
+        pc({
           conditions: [
             {
               type: 'Bleeding',
@@ -272,12 +247,14 @@ describe('applyIntent — EndEncounter', () => {
             },
           ],
         }),
-      }),
-    ).state;
+      ],
+    };
     s = applyIntent(s, intent('StartEncounter', {})).state;
     const r = endEncounter(s);
     expect(r.errors).toBeUndefined();
-    const types = (r.state.participants[0]?.conditions ?? []).map((c) => c.type);
+    const types = ((r.state.participants[0] as Participant | undefined)?.conditions ?? []).map(
+      (c) => c.type,
+    );
     expect(types).toContain('Bleeding');
     expect(types).toContain('Grabbed');
     expect(types).not.toContain('Frightened');

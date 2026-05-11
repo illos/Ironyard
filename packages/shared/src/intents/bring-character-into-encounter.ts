@@ -1,8 +1,9 @@
 import { z } from 'zod';
-import { ParticipantSchema } from '../participant';
 
 export const BringCharacterIntoEncounterPayloadSchema = z.object({
-  participant: ParticipantSchema,
+  characterId: z.string().min(1),
+  ownerId: z.string().min(1), // DO stamps from D1 characters.owner_id
+  position: z.number().int().min(0).optional(),
 });
 export type BringCharacterIntoEncounterPayload = z.infer<
   typeof BringCharacterIntoEncounterPayloadSchema

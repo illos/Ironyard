@@ -37,13 +37,28 @@ import {
   applySubmitCharacter,
   applyUndo,
 } from './intents';
-import type { CampaignState, IntentResult, StampedIntent } from './types';
+import type { CampaignState, IntentResult, ReducerContext, StampedIntent } from './types';
+
+// Shared empty bundle for callers that don't need static data (e.g. tests that
+// don't involve PC materialization). Lazily initialized.
+const EMPTY_BUNDLE: ReducerContext['staticData'] = {
+  ancestries: new Map(),
+  careers: new Map(),
+  classes: new Map(),
+  kits: new Map(),
+};
 
 // The pure reducer. No Date.now(), no Math.random(). The DO stamps timestamp
 // and assigns seq before calling. Each handler returns a new state via
 // immutable spread — no mutation. Derived intents are emitted without
 // id/timestamp/campaignId; the DO fills those in before recursively applying.
-export function applyIntent(state: CampaignState, intent: StampedIntent): IntentResult {
+// `ctx` carries the static data bundle for PC materialization at StartEncounter;
+// callers that don't do PC materialization (most tests) may omit it.
+export function applyIntent(
+  state: CampaignState,
+  intent: StampedIntent,
+  ctx: ReducerContext = { staticData: EMPTY_BUNDLE },
+): IntentResult {
   switch (intent.type) {
     case IntentTypes.AddMonster:
       return applyAddMonster(state, intent);
@@ -108,7 +123,7 @@ export function applyIntent(state: CampaignState, intent: StampedIntent): Intent
     case IntentTypes.SpendSurge:
       return applySpendSurge(state, intent);
     case IntentTypes.StartEncounter:
-      return applyStartEncounter(state, intent);
+      return applyStartEncounter(state, intent, ctx);
     case IntentTypes.StartRound:
       return applyStartRound(state, intent);
     case IntentTypes.StartTurn:

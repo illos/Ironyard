@@ -1,5 +1,6 @@
 import { ApplyHealPayloadSchema } from '@ironyard/shared';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import { isParticipant } from '../types';
 
 // Slice 7: restore HP up to maxStamina. Used as the derived intent emitted by
 // SpendRecovery; future heal abilities reuse this dispatch path. A
@@ -33,7 +34,8 @@ export function applyApplyHeal(state: CampaignState, intent: StampedIntent): Int
   }
 
   const { targetId, amount } = parsed.data;
-  const target = state.participants.find((p) => p.id === targetId);
+  const participants = state.participants.filter(isParticipant);
+  const target = participants.find((p) => p.id === targetId);
   if (!target) {
     return {
       state,
@@ -48,7 +50,7 @@ export function applyApplyHeal(state: CampaignState, intent: StampedIntent): Int
   const delivered = after - before;
   const updatedTarget = { ...target, currentStamina: after };
   const updatedParticipants = state.participants.map((p) =>
-    p.id === targetId ? updatedTarget : p,
+    isParticipant(p) && p.id === targetId ? updatedTarget : p,
   );
 
   return {

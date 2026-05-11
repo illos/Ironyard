@@ -1,6 +1,7 @@
 import { type Participant, SpendResourcePayloadSchema } from '@ironyard/shared';
 import { refLabel, resolveResource, updateExtra, updateHeroic } from '../resources';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import { isParticipant } from '../types';
 
 // Slice 7: pay a positive cost from a heroic / extras pool. The floor-breach
 // check is the load-bearing edge case: Talent's Clarity has a negative floor
@@ -33,7 +34,8 @@ export function applySpendResource(state: CampaignState, intent: StampedIntent):
   }
 
   const { participantId, name, amount, reason } = parsed.data;
-  const target = state.participants.find((p) => p.id === participantId);
+  const participants = state.participants.filter(isParticipant);
+  const target = participants.find((p) => p.id === participantId);
   if (!target) {
     return {
       state,
@@ -95,7 +97,7 @@ export function applySpendResource(state: CampaignState, intent: StampedIntent):
     });
   }
   const updatedParticipants = state.participants.map((p) =>
-    p.id === participantId ? updatedTarget : p,
+    isParticipant(p) && p.id === participantId ? updatedTarget : p,
   );
 
   return {

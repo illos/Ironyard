@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { deriveCharacterRuntime } from '../src/derive-character-runtime';
 import type { StaticDataBundle } from '../src/static-data';
-import { buildBundleWithFury, buildEmptyBundle, buildFuryL1Fixture } from './fixtures/character-runtime';
+import {
+  buildBundleWithFury,
+  buildEmptyBundle,
+  buildFuryL1Fixture,
+} from './fixtures/character-runtime';
 
 // Adaptation note: the plan assumed ClassSchema fields that don't match the
 // actual schema (e.g. `recoveriesPerLevel`, `heroicResource: { name, floor, max }`,

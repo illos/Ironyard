@@ -1,5 +1,6 @@
 import { RemoveParticipantPayloadSchema } from '@ironyard/shared';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import { isParticipant } from '../types';
 
 export function applyRemoveParticipant(state: CampaignState, intent: StampedIntent): IntentResult {
   if (intent.actor.userId !== state.activeDirectorId) {
@@ -57,7 +58,9 @@ export function applyRemoveParticipant(state: CampaignState, intent: StampedInte
     };
   }
 
-  const newParticipants = state.participants.filter((p) => p.id !== participantId);
+  const newParticipants = state.participants.filter(
+    (p) => !isParticipant(p) || p.id !== participantId,
+  );
   const newEncounter =
     state.encounter === null
       ? null

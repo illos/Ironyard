@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyIntent } from '../../src/index';
+import { applyIntent, isParticipant } from '../../src/index';
 import {
   baseState,
   makeHeroParticipant,
@@ -23,7 +23,7 @@ describe('applyRemoveParticipant', () => {
       }),
     );
     expect(result.errors).toBeUndefined();
-    expect(result.state.participants.map((p) => p.id)).toEqual(['hero-1']);
+    expect(result.state.participants.filter(isParticipant).map((p) => p.id)).toEqual(['hero-1']);
   });
 
   it('advances seq', () => {

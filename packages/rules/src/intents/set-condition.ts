@@ -4,6 +4,7 @@ import {
   SetConditionPayloadSchema,
 } from '@ironyard/shared';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import { isParticipant } from '../types';
 
 // Conditions whose canonical text says a new imposition from a *different*
 // source replaces the old one (rules-canon.md §3.4: Frightened — Classes.md:458;
@@ -37,7 +38,8 @@ export function applySetCondition(state: CampaignState, intent: StampedIntent): 
   }
 
   const { targetId, condition, source, duration } = parsed.data;
-  const target = state.participants.find((p) => p.id === targetId);
+  const participants = state.participants.filter(isParticipant);
+  const target = participants.find((p) => p.id === targetId);
   if (!target) {
     return {
       state,
@@ -90,7 +92,7 @@ export function applySetCondition(state: CampaignState, intent: StampedIntent): 
 
   const updatedTarget: Participant = { ...target, conditions: nextConditions };
   const updatedParticipants = state.participants.map((p) =>
-    p.id === targetId ? updatedTarget : p,
+    isParticipant(p) && p.id === targetId ? updatedTarget : p,
   );
 
   return {

@@ -1,5 +1,6 @@
 import { type Participant, RollResistancePayloadSchema } from '@ironyard/shared';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import { isParticipant } from '../types';
 
 // Saving throw: 1d10, >= 6 ends the matching `save_ends` condition
 // (rules-canon.md §3.3, Q9). NOT a power roll. Slice 5 fires only on explicit
@@ -33,7 +34,8 @@ export function applyRollResistance(state: CampaignState, intent: StampedIntent)
   }
 
   const { characterId, effectId, rolls } = parsed.data;
-  const target = state.participants.find((p) => p.id === characterId);
+  const participants = state.participants.filter(isParticipant);
+  const target = participants.find((p) => p.id === characterId);
   if (!target) {
     return {
       state,
@@ -94,7 +96,7 @@ export function applyRollResistance(state: CampaignState, intent: StampedIntent)
 
   const updatedTarget: Participant = { ...target, conditions: nextConditions };
   const updatedParticipants = state.participants.map((p) =>
-    p.id === characterId ? updatedTarget : p,
+    isParticipant(p) && p.id === characterId ? updatedTarget : p,
   );
 
   return {

@@ -5,6 +5,7 @@ import {
   type StampedIntent,
   applyIntent,
   emptyCampaignState,
+  isParticipant,
 } from '../src/index';
 
 const T = 1_700_000_000_000;
@@ -72,10 +73,9 @@ const ladder = {
 };
 
 function readyState(parts: Participant[] = [pc(), monster()]): CampaignState {
+  // Directly seed the roster — independent of BringCharacterIntoEncounter semantics.
   let s = emptyCampaignState(campaignId, 'user-owner');
-  for (const p of parts) {
-    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: p })).state;
-  }
+  s = { ...s, participants: parts };
   s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
@@ -91,7 +91,10 @@ function inRoundWithActor(parts: Participant[], order: string[], actorId: string
 }
 
 function getConditions(state: CampaignState, participantId: string): ConditionInstance[] {
-  return state.participants.find((p) => p.id === participantId)?.conditions ?? [];
+  return (
+    state.participants.find((p): p is Participant => isParticipant(p) && p.id === participantId)
+      ?.conditions ?? []
+  );
 }
 
 // ============================================================================

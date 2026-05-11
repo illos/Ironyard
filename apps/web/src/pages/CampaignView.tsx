@@ -5,7 +5,6 @@ import type {
   DenyCharacterPayload,
   JumpBehindScreenPayload,
   KickPlayerPayload,
-  Participant,
   SubmitCharacterPayload,
 } from '@ironyard/shared';
 import { IntentTypes, ulid } from '@ironyard/shared';
@@ -593,25 +592,14 @@ function ApprovedRosterPanel({
   const approved = useCampaignCharacters(campaignId, 'approved');
 
   const handleBring = (cc: CampaignCharacter) => {
-    // Bring as a stub PC participant. Phase 2 will link to the real character sheet.
-    const participant: Participant = {
-      id: `pc-${cc.characterId}`,
-      name: cc.characterId.slice(0, 8),
-      kind: 'pc',
-      level: 1,
-      currentStamina: 20,
-      maxStamina: 20,
-      characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
-      immunities: [],
-      weaknesses: [],
-      conditions: [],
-      heroicResources: [],
-      extras: [],
-      surges: 0,
-      recoveries: { current: 3, max: 3 },
-      recoveryValue: 10,
+    // Phase 2: BringCharacterIntoEncounter now creates a pc-placeholder.
+    // DO stamps the character blob from D1 at StartEncounter.
+    // Prototype: ownerId is stamped by the DO from D1; actor.userId is a safe
+    // fallback here since the director is typically the one bringing PCs.
+    const payload: BringCharacterIntoEncounterPayload = {
+      characterId: cc.characterId,
+      ownerId: actor.userId,
     };
-    const payload: BringCharacterIntoEncounterPayload = { participant };
     dispatch(
       buildIntent({
         campaignId,

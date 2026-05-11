@@ -45,10 +45,8 @@ function part(id: string, name = id): Participant {
 
 function readyState(participantIds: string[] = ['alice', 'bob', 'cleric']): CampaignState {
   let s = emptyCampaignState(campaignId, 'user-owner');
-  // Add participants to the lobby roster before starting the encounter
-  for (const id of participantIds) {
-    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: part(id) })).state;
-  }
+  // Directly seed participants — independent of BringCharacterIntoEncounter semantics
+  s = { ...s, participants: participantIds.map((id) => part(id)) };
   // StartEncounter engages the current roster; currentRound initializes to 1
   s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;

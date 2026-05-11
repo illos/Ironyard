@@ -50,6 +50,7 @@ vi.mock('../src/db', () => ({
       from: () => ({
         where: () => ({
           get: async () => mockDbResult,
+          all: async () => (Array.isArray(mockDbResult) ? mockDbResult : []),
         }),
         innerJoin: () => ({
           where: () => ({
@@ -76,6 +77,7 @@ import {
   stampJumpBehindScreen,
   stampKickPlayer,
   stampLoadEncounterTemplate,
+  stampStartEncounter,
   stampSubmitCharacter,
 } from '../src/lobby-do-stampers';
 
@@ -320,6 +322,55 @@ describe('stampKickPlayer', () => {
     expect(result).toBeNull();
     const payload = intent.payload as { participantIdsToRemove?: string[] };
     expect(payload.participantIdsToRemove).toEqual([]);
+  });
+});
+
+// ── StartEncounter ────────────────────────────────────────────────────────
+
+describe('stampStartEncounter', () => {
+  it('stamps empty stampedPcs when there are no pc-placeholders', async () => {
+    mockDbResult = [];
+    const intent = makeIntent('StartEncounter', {});
+    const state = makeCampaignState({ participants: [] });
+    const result = await stampStartEncounter(intent, state, mockEnv);
+    expect(result).toBeNull();
+    const payload = intent.payload as { stampedPcs?: unknown[] };
+    expect(payload.stampedPcs).toEqual([]);
+  });
+
+  it('stamps matched character rows onto stampedPcs', async () => {
+    // Minimal valid Character blob — CharacterSchema fills in all defaults.
+    const characterData = JSON.stringify({});
+    mockDbResult = [{ id: 'char-1', ownerId: 'user-alice', name: 'Alice', data: characterData }];
+    const intent = makeIntent('StartEncounter', {});
+    const state = makeCampaignState({
+      participants: [
+        { kind: 'pc-placeholder', characterId: 'char-1', ownerId: 'user-alice', position: 0 },
+      ],
+    });
+    const result = await stampStartEncounter(intent, state, mockEnv);
+    expect(result).toBeNull();
+    const payload = intent.payload as { stampedPcs?: Array<{ characterId: string; name: string }> };
+    expect(payload.stampedPcs).toHaveLength(1);
+    expect(payload.stampedPcs?.[0]?.characterId).toBe('char-1');
+    expect(payload.stampedPcs?.[0]?.name).toBe('Alice');
+  });
+
+  it('skips characters with invalid data blobs', async () => {
+    mockDbResult = [
+      { id: 'char-bad', ownerId: 'user-alice', name: 'Bad', data: 'not-json-at-all' },
+    ];
+    const intent = makeIntent('StartEncounter', {});
+    const state = makeCampaignState({
+      participants: [
+        { kind: 'pc-placeholder', characterId: 'char-bad', ownerId: 'user-alice', position: 0 },
+      ],
+    });
+    // Should not throw — invalid blob is silently skipped.
+    const result = await stampStartEncounter(intent, state, mockEnv);
+    expect(result).toBeNull();
+    const payload = intent.payload as { stampedPcs?: unknown[] };
+    expect(payload.stampedPcs).toEqual([]);
   });
 });
 
