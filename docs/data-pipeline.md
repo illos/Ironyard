@@ -9,7 +9,7 @@ The static reference data — rules, monsters, abilities, classes, ancestries, c
 | Source | What's in it | How we use it |
 |---|---|---|
 | `steel-compendium-sdk` (npm) | TypeScript classes for `Statblock`, `Feature`, `Effect`, etc. | Primary source for monsters and abilities |
-| `data-md` (GitHub releases) | Markdown for the Heroes Book and Bestiary | Source for class/ancestry/career/complication data the SDK doesn't yet model |
+| `data-md` (GitHub releases) | Markdown for the Heroes Book and Bestiary | Source for class/ancestry/career/complication/treasure/title data the SDK doesn't yet model |
 
 ### Pinning
 
@@ -31,7 +31,7 @@ Bumping these is a deliberate PR. The version string flows into `apps/web/public
 1. Read the pinned SDK version from `package.json`
 2. Walk SDK exports for `Statblock` instances → emit `monsters.json`
 3. Walk SDK exports for ability `Feature` instances → emit `abilities.json`
-4. Download the pinned `data-md` release tarball; parse markdown front-matter and headings into our normalized schemas → emit `classes.json`, `ancestries.json`, `careers.json`, `complications.json`, `conditions.json`, `rules.json`
+4. Download the pinned `data-md` release tarball; parse markdown front-matter and headings into our normalized schemas → emit `classes.json`, `ancestries.json`, `careers.json`, `complications.json`, `conditions.json`, `rules.json`, `items.json`, `titles.json`
 5. Validate each output against its Zod schema in `packages/shared/src/schemas/`
 6. Write to `apps/web/public/data/` (gitignored; CI rebuilds on every deploy)
 
@@ -183,6 +183,34 @@ CREATE INDEX idx_memberships_user ON memberships(user_id);
 D1 query patterns for these are always "load one record by id, write one record by id." The schema-inside-the-blob is huge (full character sheet) and changes as we evolve features. Putting it in columns means a migration every time we add a class feature toggle. JSON blobs validated by Zod on read/write give us schema flexibility without sacrificing type safety.
 
 The trade-off is no SQL-side filtering of inner fields. We don't need it — the queries we run are by id, by owner, by session.
+
+## Treasure and title ingest
+
+Treasure and title data comes entirely from `data-md` — the SDK has no models for these yet.
+
+**Structure in the source files.** Front-matter carries only identity fields (`item_id`, `item_name`, `treasure_type`, `type`, `echelon`, SCC/SCDC paths). **Effect text lives in the markdown body as prose** — there are no structured effect fields in the YAML. This applies to all treasure subtypes (leveled weapon/armor/other, artifacts, consumables, trinkets) and to titles.
+
+Practical consequence: the ingest pipeline can emit display-ready `items.json` and `titles.json` immediately (name, type, echelon, description, raw body text). But for the `CharacterAttachment` engine to auto-apply a treasure's effect — stat mods, ability grants, passive conditions — that effect must be hand-authored in `packages/data/overrides/<item_id>.json`. Coverage is incremental; unstructured items fall back to manual override in the UI.
+
+Leveled treasures have three tiers of effects in the body (1st / 5th / 9th level). Overrides must represent each tier separately:
+
+```json
+// packages/data/overrides/blade-of-quintessence.json
+{
+  "attachment_effects": {
+    "1": [
+      { "kind": "stat_mod", "stat": "weapon_damage_bonus", "op": "add", "value": 1 },
+      { "kind": "ability_mod", "mod": "damage_type_choosable", "types": ["cold","fire","lightning","sonic"] }
+    ],
+    "5": [ ... ],
+    "9": [ ... ]
+  }
+}
+```
+
+Titles in the source have a single `Effect` section (prose) with bullet-point options. Structured overrides follow the same pattern but without tiers (`"attachment_effects": { "any": [...] }`).
+
+The `CharacterAttachment` schema in `packages/rules` is the authoritative type for these overrides. See `docs/rules-engine.md § CharacterAttachment`.
 
 ## Migrations
 

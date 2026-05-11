@@ -27,6 +27,8 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 
 - `packages/rules` reducer with the core intents: combat lifecycle, rolls, damage, conditions, resources, undo
 - Monster browser at `/codex/monsters` (read-only)
+- Director item list at `/codex/items` (read-only, same pattern as monster browser) — browse all treasure types (leveled, artifacts, consumables, trinkets); director can hand an item to a player from here
+- `CharacterAttachment` framework in `packages/rules`: effect schema + folding logic, canon-gated via `requireCanon`. **No attachment content ships in Phase 1** — this is scaffolding only, same philosophy as the canon-status registry in Phase 0. Phase 2 lights it up. Magic items and titles are both instances of the same abstraction.
 - Encounter builder: pick monsters, set quantities, scale by victories
 - Combat run screen: initiative, HP/conditions/resources per participant, monster ability cards with auto-roll
 - Players join the session, claim a participant slot ("this is my character"), and roll attacks from their phone
@@ -47,12 +49,33 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 - Characters stored in D1, owned by a user
 - "Bring this character into the session" replaces the quick stat block from Phase 1
 - Local-first: characters cached in IndexedDB so the iPad keeps working when wifi flakes
+- **Item data pipeline:** ingest all treasure types from `data-md` (leveled weapon/armor/other, artifacts, consumables, trinkets). Display text is available immediately from the markdown body. Structured effect data (stat mods, ability grants) must be hand-authored in `packages/data/overrides/` — the compendium's effect text is prose only, not structured fields. Coverage is incremental, same as ability parsing.
+- **Character inventory:** items owned by and carried by a character; stored in the character JSON blob. Director can push items to a character from the item list; player manages from the sheet. Inventory tracks four distinct item categories with different rules:
+  - **Consumables** — quantity-tracked (carry any number). Activated via `UseConsumable` intent (usually a maneuver), then removed from inventory. Effect type varies: instant (Healing Potion → derive `ApplyHeal`), timed/duration (Growth Potion lasts 3 rounds → temporary buff with duration), two-phase (Blood Essence Vial: capture-then-drink), attack (Black Ash Dart → derive `RollPower`), or summon/area. Consumable Stamina and damage bonuses stack with other treasure bonuses — the engine must track source type when folding modifiers.
+  - **Trinkets** — passive effects while worn/carried, no carry limit. Use `CharacterAttachment` with `tier: null`. Wearable trinkets carry a body slot keyword (Arms, Feet, Hands, Head, Neck, Waist, Ring); the engine tracks worn slots and surfaces conflicts when the director rules too many of the same slot means none function.
+  - **Leveled treasures** — `CharacterAttachment` with tier derived from character level (1st for levels 1–4, 5th for 5–8, 9th for 9–10). **Carry limit: 3 safely.** Carrying more than 3 requires a Presence test each respite. The engine enforces the count and surfaces a warning at 4+; the test result is a manual prompt, not auto-applied.
+  - **Artifacts** — unique, singular. Treated as leveled treasure (tier null, no level scaling) but flagged as artifact for UI distinction.
+- **Equipped vs. carried:** leveled treasures and trinkets must be worn/wielded to activate their `CharacterAttachment` effects; they can be carried without being active. Consumables are always "ready" while carried.
+- **Kit integration:** weapon and armor leveled treasures must match kit keywords to grant benefits — the attachment fold checks kit compatibility before applying weapon/armor effects.
+- **Magic items and titles** equipped to a character plug into the `CharacterAttachment` system (Phase 1 framework). The engine folds active attachments into effective character state — stat mods, ability grants, passive conditions — via `requireCanon` gating. Items without structured overrides yet fall back to manual override with the effect text displayed.
+- Titles follow the same attachment path as trinkets/leveled treasures; no separate implementation needed.
 
-**Acceptance:** a player can build a character from scratch in the app, bring it into a session, and play a full encounter using only the sheet (no rulebook open).
+**Acceptance:** a player can build a character from scratch in the app, bring it into a session, and play a full encounter using only the sheet (no rulebook open). A player can equip a magic item and see its abilities on their sheet; a player can activate a consumable during combat and see the effect applied.
 
-## Phase 3 — Lobby polish
+## Phase 3 — Collaborative session capabilities
 
-**Goal:** "The session feels like a place, not a tracker."
+**Goal:** "The session feels like a place, and people can share characters and entities with each other."
+
+**UI quality bar:** same prototype-grade rule as Phase 1 — functional, dark theme, 44pt touch targets, no embarrassing wrong-feeling moments. The visual / interaction / motion pass happens in **Phase 5 (UI rebuild)**. Don't over-invest here.
+
+**Party sheet**
+
+- Session-scoped entity: not owned by any player, visible and editable by the whole table (director has override). A shared bag, not a per-player ledger.
+- Tracks: currency, consumables, plot items, and any other party-level resources the director adds.
+- Items in the party sheet are the same item types as character inventory; a player can move an item from the party sheet to their character (and back), which dispatches a `TransferItem` intent so the log attributes it.
+- The party sheet lives in `SessionState` alongside participants — it's a first-class session entity, not a character.
+
+**Lobby capabilities**
 
 - Shared 3D dice tray (or 2D, depending on iPad performance) — visible to all members
 - Text chat per session, with intent log visible in a separate tab
@@ -61,7 +84,19 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 - Sound effects for hits, crits, conditions (toggleable)
 - Session settings panel — rename, transfer director, kick member
 
-**Acceptance:** a session feels social. Friends start a session early to chat before play begins.
+**Sharing and lending model** (spec: [`character-sharing.md`](character-sharing.md))
+
+- `entity_grants` table: persistent user-to-user grants over a specific entity, two kinds — `preview` (read-only sheet visibility) and `control` (act as the entity)
+- Generalized `effective_controller(entity)` resolver used by the intent permission check
+- **Player→player PC lending:** owner can grant preview and/or control of a PC to any number of other users; grants are persistent until revoked; encounter-lock prevents revocation mid-encounter
+- **Active controller per encounter:** at encounter start, one eligible user (owner + any control grantees) claims the seat; locked for the encounter; reshuffleable between encounters
+- **One human, multiple participants:** a user can be active controller of N participants in a single encounter (the duo-solo / two-handed pattern); tab strip switches between them
+- **Director→player monster handoff:** director grants control of a `monster_instance` to a player for tactical convenience; ephemeral (dies with the encounter); revocable instantly by the director; monster still acts on malice/director initiative
+- **Director-owned NPC allies:** new persistent entity kind (`npc_ally`), built from a monster stat block, owned by the director, acts on hero initiative by default; same grant model as PCs (control + preview, multi-grantee, encounter-lock); promote-from-monster flow at encounter end
+- Sharing settings panel per character / NPC ally (prototype-grade UI; the considered design lands in Phase 5)
+- Log attribution carries both `dispatched_by` and `acting_as` on every intent envelope
+
+**Acceptance:** a session feels social — friends start a session early to chat before play begins. A player can lend their character to another player and that player can run it through a full encounter, with the owner watching in real time. The director can hand off a monster to a player mid-fight, and can grant a persistent NPC ally to the party that travels with them across sessions.
 
 ## Phase 4 — Polish, hardening, PWA
 

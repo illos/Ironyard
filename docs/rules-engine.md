@@ -161,6 +161,63 @@ Edge/bane contributions from conditions are gathered at `onRollResolution` time,
 
 **Saving throws.** At the end of an affected creature's turn, the reducer dispatches a `RollResistance` intent for each `save_ends` condition on them, in `appliedAtSeq` order. Each save is independent — d10 ≥ 6 ends the effect — per canon § 3.3 and [Q9](rule-questions.md#q9-saving-throws--per-effect-or-per-turn-).
 
+### CharacterAttachment
+
+A `CharacterAttachment` is anything affixed to a character that contributes abilities or modifies state. Magic items (leveled treasures, artifacts, consumables, trinkets) and titles are both instances. Kit (armor/implement/weapon) will be too.
+
+```ts
+type CharacterAttachment = {
+  source_type: 'magic_item' | 'title' | 'kit';
+  source_id:   string;           // compendium item_id
+  tier:        1 | 5 | 9 | null; // null for non-tiered (most titles, artifacts)
+  effects:     AttachmentEffect[];
+};
+
+type AttachmentEffect =
+  | { kind: 'ability_grant';     ability_id: string }
+  | { kind: 'stat_mod';          stat: StatKey; op: 'add' | 'set'; value: number }
+  | { kind: 'passive_condition'; condition: ConditionSlug }
+  | { kind: 'immunity';          damage_type: DamageType; value: number | 'level' }
+  | { kind: 'weakness';          damage_type: DamageType; value: number }
+  | { kind: 'ability_mod';       mod: string; [key: string]: unknown };
+```
+
+The reducer folds all active attachments into effective character state before resolving any ability or stat lookup. `canDispatch` and the damage pipeline always read effective state, not base state.
+
+**Leveled treasures.** The active tier is determined by the character's level at the time of the fold: tier 1 for levels 1–4, tier 5 for levels 5–8, tier 9 for levels 9–10. Only the current tier's effects apply.
+
+**Canon gating.** Like all auto-apply branches, attachment effect application is wrapped in `requireCanon('attachment/<item_id>')`. Items without a structured override in `packages/data/overrides/` will not have a registered slug and therefore always fall back to the manual-override path. The UI surfaces the item's raw effect text and prompts the table.
+
+**Consumables are not attachments.** Consuming an item dispatches `UseConsumable`, which removes the item from inventory and emits derived intents based on effect type — see `UseConsumable` below. There is no fold step; the effect fires once (or starts a timed buff) and the item is gone.
+
+**Body slot conflicts.** The fold checks worn-slot keywords. If a character has more of the same slot keyword worn than the director allows, the fold skips those attachments and emits a `SlotConflict` log entry for the UI to surface.
+
+**Carry-3 limit for leveled treasures.** The engine counts carried (not just equipped) leveled treasures. At 4+ it sets a `leveled_carry_warning` flag on the participant. The Presence test at respite is a manual prompt, not auto-rolled — same override pattern as other un-verified rules.
+
+**Scaffolded in Phase 1, populated in Phase 2.** The framework — types, fold logic, canon gating — is wired in Phase 1 so the engine surface is stable before any item content exists. The first actual overrides land in Phase 2 alongside character inventory.
+
+### UseConsumable
+
+`UseConsumable { actorId, itemId, target? }` is the intent for activating a consumable. The reducer:
+
+1. Verifies the item exists in the actor's inventory and is a consumable.
+2. Decrements quantity (or removes the item if quantity reaches 0).
+3. Dispatches derived intents based on the item's structured override:
+
+| Effect kind | Derived intent |
+|---|---|
+| `instant_heal` | `ApplyHeal { targetId, amount }` |
+| `timed_buff` | `ApplyTimedBuff { targetId, effects[], duration }` |
+| `power_roll` | `RollPower { actorId, abilityId: item_id, target, rolls }` |
+| `spawn` | `SpawnParticipant { ... }` (director confirms) |
+| `manual` | `LogEntry { text: rawEffectText }` — manual prompt |
+
+Items without a structured override in `packages/data/overrides/` always emit `manual`.
+
+**Timed buffs** from consumables are tracked separately from `CharacterAttachment` — they have an explicit duration (rounds, minutes, encounter) and are stored on the participant alongside conditions. The fold includes active timed buffs when computing effective state. Stacking rule: consumable Stamina and damage bonuses stack with attachment bonuses (not subject to the "only higher applies" rule); the fold applies attachment bonuses first, then consumable bonuses additively.
+
+**Two-phase consumables** (e.g. Blood Essence Vial) store intermediate state on the item instance itself in the character's inventory blob (`{ captured_damage: number }`). The first-phase action is a separate intent kind (`ActivateConsumablePhase1`); the item is not removed until the second phase completes or the item is discarded.
+
 ### Heroic resources and surges
 
 Each class has its own heroic resource — Censor: wrath · Conduit: piety · Elementalist: essence · Fury: ferocity · Null: discipline · Shadow: insight · Tactician: focus · Talent: clarity · Troubadour: drama. The engine ships a generic resource model — pool, floor, ceiling, gain triggers, spend rules, ongoing effects, lifecycle — parameterized per class. Per-class detail lives in [`rules-canon.md` § 5](rules-canon.md#5-heroic-resources--surges).
@@ -200,12 +257,17 @@ packages/rules/
 │   ├── require-canon.ts          # requireCanon(slug) gate
 │   ├── intents/
 │   │   ├── rollPower.ts          # one file per intent type
+│   │   ├── useConsumable.ts      # UseConsumable + ActivateConsumablePhase1
 │   │   ├── rollTest.ts
 │   │   ├── rollResistance.ts
 │   │   ├── rollOpposedTest.ts
 │   │   ├── applyDamage.ts
 │   │   ├── push.ts / pull.ts / slide.ts
 │   │   ├── ...
+│   │   └── index.ts
+│   ├── attachments/
+│   │   ├── fold.ts               # folds CharacterAttachment[] into effective state
+│   │   ├── types.ts              # CharacterAttachment, AttachmentEffect union
 │   │   └── index.ts
 │   ├── conditions/               # one file per condition
 │   │   ├── bleeding.ts
