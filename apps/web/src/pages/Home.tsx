@@ -1,7 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useCreateCampaign, useDevLogin, useJoinCampaign, useLogout } from '../api/mutations';
-import { useMe, useMyCampaigns } from '../api/queries';
+import { useMe, useMyCampaigns, useMyCharacters } from '../api/queries';
 
 export function Home() {
   const me = useMe();
@@ -136,6 +136,20 @@ function CampaignsPanel({ user }: { user: { displayName: string; email: string }
       </section>
 
       <section className="rounded-lg border border-neutral-800 p-5">
+        <header className="flex items-center justify-between">
+          <h2 className="font-semibold">Your characters</h2>
+          <Link
+            to="/characters/new"
+            search={{ code: undefined }}
+            className="text-sm text-neutral-300 hover:text-neutral-100 underline"
+          >
+            + New character
+          </Link>
+        </header>
+        <YourCharactersList />
+      </section>
+
+      <section className="rounded-lg border border-neutral-800 p-5">
         <h2 className="font-semibold">Start a campaign</h2>
         <form
           className="mt-3 flex gap-2"
@@ -210,5 +224,29 @@ function CampaignsPanel({ user }: { user: { displayName: string; email: string }
         )}
       </section>
     </main>
+  );
+}
+
+function YourCharactersList() {
+  const chars = useMyCharacters();
+  if (chars.isLoading) return <p className="mt-3 text-sm text-neutral-500">Loading…</p>;
+  if (!chars.data || chars.data.length === 0) {
+    return <p className="mt-3 text-sm text-neutral-500">No characters yet.</p>;
+  }
+  return (
+    <ul className="mt-3 space-y-2">
+      {chars.data.map((c) => (
+        <li key={c.id}>
+          <Link
+            to="/characters/$id"
+            params={{ id: c.id }}
+            className="flex items-center gap-3 rounded-md bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 px-4 py-3 min-h-11"
+          >
+            <span className="flex-1 font-medium">{c.name}</span>
+            <span className="text-xs text-neutral-500">L{c.data.level}</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
