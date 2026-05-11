@@ -151,25 +151,83 @@ export function AbilityCard({ ability, disabled, onRoll }: Props) {
 // under it. `raw` lives in the title attribute as the always-correct fallback.
 function TierRow({ label, tier }: { label: string; tier: TierOutcome }) {
   const hasDamage = tier.damage !== null;
+  const targetConditions = tier.conditions.filter((c) => c.scope === 'target');
+  const otherConditions = tier.conditions.filter((c) => c.scope === 'other');
   return (
     <li
-      className="flex items-baseline gap-2 rounded-md bg-neutral-950 border border-neutral-800/60 px-2 py-1.5"
+      className="rounded-md bg-neutral-950 border border-neutral-800/60 px-2 py-1.5"
       title={tier.raw}
     >
-      <span className="text-[10px] uppercase tracking-wider font-mono tabular-nums text-neutral-500 w-12 shrink-0">
-        {label}
-      </span>
-      <span className="font-mono tabular-nums text-neutral-100 shrink-0">
-        {hasDamage ? (
-          <>
-            {tier.damage}{' '}
-            <span className="text-neutral-500 text-xs">{tier.damageType ?? 'untyped'}</span>
-          </>
-        ) : (
-          <span className="text-neutral-500 italic text-xs">no damage</span>
+      <div className="flex items-baseline gap-2 flex-wrap">
+        <span className="text-[10px] uppercase tracking-wider font-mono tabular-nums text-neutral-500 w-12 shrink-0">
+          {label}
+        </span>
+        <span className="font-mono tabular-nums text-neutral-100 shrink-0">
+          {hasDamage ? (
+            <>
+              {tier.damage}{' '}
+              <span className="text-neutral-500 text-xs">{tier.damageType ?? 'untyped'}</span>
+            </>
+          ) : (
+            <span className="text-neutral-500 italic text-xs">no damage</span>
+          )}
+        </span>
+        {targetConditions.map((c) => (
+          <span
+            key={`t-${c.condition}-${c.duration.kind}-${c.note ?? ''}`}
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider bg-amber-900/40 text-amber-200"
+            title={`Auto-applied on hit · ${describeDuration(c.duration)}${c.note ? ` · ${c.note}` : ''}`}
+          >
+            {c.condition}
+            <span className="text-amber-400/80 normal-case tracking-normal">
+              {durationGlyph(c.duration)}
+            </span>
+          </span>
+        ))}
+        {otherConditions.map((c) => (
+          <span
+            key={`o-${c.condition}-${c.duration.kind}-${c.note ?? ''}`}
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider bg-neutral-800 text-neutral-300"
+            title={`Not auto-applied (multi-target / unusual scope)${c.note ? ` · ${c.note}` : ''}`}
+          >
+            {c.condition}
+            <span className="text-neutral-500 normal-case tracking-normal">·manual</span>
+          </span>
+        ))}
+        {tier.effect && (
+          <span className="text-xs text-neutral-400 leading-tight">{tier.effect}</span>
         )}
-      </span>
-      {tier.effect && <span className="text-xs text-neutral-400 leading-tight">{tier.effect}</span>}
+      </div>
     </li>
   );
+}
+
+function durationGlyph(d: TierOutcome['conditions'][number]['duration']): string {
+  switch (d.kind) {
+    case 'save_ends':
+      return 'save';
+    case 'EoT':
+      return 'EoT';
+    case 'until_start_next_turn':
+      return 'SoT';
+    case 'end_of_encounter':
+      return 'EoE';
+    case 'trigger':
+      return 'trig';
+  }
+}
+
+function describeDuration(d: TierOutcome['conditions'][number]['duration']): string {
+  switch (d.kind) {
+    case 'save_ends':
+      return 'save ends';
+    case 'EoT':
+      return 'until end of next turn';
+    case 'until_start_next_turn':
+      return 'until start of next turn';
+    case 'end_of_encounter':
+      return 'until end of encounter';
+    case 'trigger':
+      return d.description;
+  }
 }

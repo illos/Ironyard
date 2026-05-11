@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CharacteristicsSchema } from '../characteristic';
+import { ConditionApplicationOutcomeSchema } from '../condition';
 import { DamageTypeSchema, TypedResistanceSchema } from '../damage';
 
 // Phase 1 slice 7 (monster ingest extension): extended Monster shape with
@@ -46,6 +47,11 @@ export const TierOutcomeSchema = z.object({
   damage: z.number().int().nonnegative().nullable(),
   damageType: DamageTypeSchema.optional(),
   effect: z.string().optional(),
+  // Conditions the parser extracted from the effect text. `scope: 'target'`
+  // entries are auto-dispatched by the engine; `scope: 'other'` (multi-target
+  // / unusual qualifier) are surfaced visually but stay manual. See
+  // condition.ts for the schema.
+  conditions: z.array(ConditionApplicationOutcomeSchema).default([]),
 });
 export type TierOutcome = z.infer<typeof TierOutcomeSchema>;
 
@@ -137,6 +143,7 @@ export const MonsterFileSchema = z.object({
       // effect-only (movement, conditions, healing) and are not failures.
       totalTierOutcomes: z.number().int().nonnegative().optional(),
       tiersWithDamage: z.number().int().nonnegative().optional(),
+      tiersWithConditions: z.number().int().nonnegative().optional(),
     })
     .optional(),
 });

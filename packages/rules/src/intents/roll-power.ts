@@ -127,6 +127,31 @@ export function applyRollPower(state: SessionState, intent: StampedIntent): Inte
     causedBy: intent.id,
   }));
 
+  // Slice: auto-apply conditions in the landing tier (canon §3.5). The data
+  // parser extracted these from the ability's tier-outcome effect text and
+  // `buildLadder` filtered them to scope='target'. Each application becomes
+  // a real derived SetCondition so bounded undo (slice 8) treats it as part
+  // of the parent chain. `source.kind = 'creature'` with id = attackerId so
+  // canon §3.4 stacking (Frightened/Taunted replace-by-source) works.
+  if (requireCanon('conditions.what-a-condition-is') && tierEffect.conditions.length > 0) {
+    for (const targetId of targetIds) {
+      for (const c of tierEffect.conditions) {
+        derived.push({
+          actor: intent.actor,
+          source: 'auto' as const,
+          type: IntentTypes.SetCondition,
+          payload: {
+            targetId,
+            condition: c.condition,
+            duration: c.duration,
+            source: { kind: 'creature', id: attackerId },
+          },
+          causedBy: intent.id,
+        });
+      }
+    }
+  }
+
   // Slice 6: Bleeding hook (canon §3.5.1). Fires on every RollPower because
   // RollPower is the main-action surface today AND because Might/Agility
   // characteristic also triggers. We classify the trigger for the log only —

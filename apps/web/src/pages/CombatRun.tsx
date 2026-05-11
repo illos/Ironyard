@@ -1,6 +1,7 @@
 import {
   type Ability,
   type Characteristic,
+  type ConditionApplicationDispatch,
   type DamageType,
   type EndRoundPayload,
   type EndTurnPayload,
@@ -254,7 +255,7 @@ export function CombatRun() {
     setParticipantSnapshotBefore(participants);
     if (!args.ability.powerRoll) return; // guarded upstream by AbilityCard filter
     const characteristic = characteristicForAbility(args.ability);
-    const ladder = buildLadder(args.ability.powerRoll);
+    const ladder = buildLadder(args.ability.powerRoll, args.attacker.id);
     const payload: RollPowerPayload = {
       // Slugify the ability name so RollPower payloads have a stable id even
       // though data doesn't ship one. Same monster + same ability ⇒ same id.
@@ -614,18 +615,36 @@ function characteristicForAbility(_ability: Ability): Characteristic {
 // damage:0 so the engine applies no stamina change — the director reads the
 // effect text from the toast and dispatches a follow-up SetCondition if the
 // rules call for it.
-function tierEffectFromOutcome(tier: TierOutcome): { damage: number; damageType: DamageType } {
-  if (tier.damage === null) {
-    return { damage: 0, damageType: 'untyped' };
-  }
-  return { damage: tier.damage, damageType: tier.damageType ?? 'untyped' };
+function tierEffectFromOutcome(
+  tier: TierOutcome,
+  attackerId: string,
+): {
+  damage: number;
+  damageType: DamageType;
+  conditions: ConditionApplicationDispatch[];
+} {
+  const damage = tier.damage === null ? 0 : tier.damage;
+  const damageType = tier.damage === null ? 'untyped' : (tier.damageType ?? 'untyped');
+  // Filter parser output to `scope === 'target'` and rewrite the
+  // `until_start_next_turn` placeholder ownerId to the attacker's id so the
+  // engine anchors the duration to a real participant (canon §3.2).
+  const conditions: ConditionApplicationDispatch[] = tier.conditions
+    .filter((c) => c.scope === 'target')
+    .map((c) => ({
+      condition: c.condition,
+      duration:
+        c.duration.kind === 'until_start_next_turn'
+          ? { kind: 'until_start_next_turn', ownerId: attackerId }
+          : c.duration,
+    }));
+  return { damage, damageType, conditions };
 }
 
-function buildLadder(pr: NonNullable<Ability['powerRoll']>) {
+function buildLadder(pr: NonNullable<Ability['powerRoll']>, attackerId: string) {
   return {
-    t1: tierEffectFromOutcome(pr.tier1),
-    t2: tierEffectFromOutcome(pr.tier2),
-    t3: tierEffectFromOutcome(pr.tier3),
+    t1: tierEffectFromOutcome(pr.tier1, attackerId),
+    t2: tierEffectFromOutcome(pr.tier2, attackerId),
+    t3: tierEffectFromOutcome(pr.tier3, attackerId),
   };
 }
 

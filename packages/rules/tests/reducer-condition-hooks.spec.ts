@@ -757,3 +757,114 @@ describe('reducer hooks — full conditions data preserved', () => {
     expect(getConditions(r.state, attacker.id).map((c) => c.type)).toEqual(['Weakened']);
   });
 });
+
+// =============================================================================
+// Phase 1 — auto-apply conditions from RollPower ladder
+// =============================================================================
+
+describe('RollPower — auto-applies conditions from landing tier', () => {
+  it('derives SetCondition for the landing tier per target', () => {
+    const attacker = pc();
+    const target = monster();
+    const s = inRoundWithActor([attacker, target], [attacker.id, target.id], attacker.id);
+    const r = applyIntent(
+      s,
+      intent('RollPower', {
+        abilityId: 'a',
+        attackerId: attacker.id,
+        targetIds: [target.id],
+        characteristic: 'might',
+        edges: 0,
+        banes: 0,
+        rolls: { d10: [9, 9] }, // total → tier 3
+        ladder: {
+          t1: { damage: 1, damageType: 'untyped' as const, conditions: [] },
+          t2: { damage: 5, damageType: 'untyped' as const, conditions: [] },
+          t3: {
+            damage: 9,
+            damageType: 'untyped' as const,
+            conditions: [{ condition: 'Slowed', duration: { kind: 'save_ends' } }],
+          },
+        },
+      }),
+    );
+    expect(r.errors).toBeUndefined();
+    const setCond = r.derived.filter((d) => d.type === 'SetCondition');
+    expect(setCond).toHaveLength(1);
+    const payload = setCond[0]?.payload as {
+      targetId: string;
+      condition: string;
+      source: { kind: string; id: string };
+    };
+    expect(payload.targetId).toBe(target.id);
+    expect(payload.condition).toBe('Slowed');
+    expect(payload.source).toEqual({ kind: 'creature', id: attacker.id });
+  });
+
+  it('does not derive conditions from non-landing tiers', () => {
+    const attacker = pc();
+    const target = monster();
+    const s = inRoundWithActor([attacker, target], [attacker.id, target.id], attacker.id);
+    const r = applyIntent(
+      s,
+      intent('RollPower', {
+        abilityId: 'a',
+        attackerId: attacker.id,
+        targetIds: [target.id],
+        characteristic: 'might',
+        edges: 0,
+        banes: 0,
+        rolls: { d10: [1, 1] }, // total 2 + 2 (might) → tier 1
+        ladder: {
+          t1: { damage: 1, damageType: 'untyped' as const, conditions: [] },
+          t2: {
+            damage: 5,
+            damageType: 'untyped' as const,
+            conditions: [{ condition: 'Slowed', duration: { kind: 'save_ends' } }],
+          },
+          t3: {
+            damage: 9,
+            damageType: 'untyped' as const,
+            conditions: [{ condition: 'Restrained', duration: { kind: 'save_ends' } }],
+          },
+        },
+      }),
+    );
+    const setCond = r.derived.filter((d) => d.type === 'SetCondition');
+    expect(setCond).toHaveLength(0);
+  });
+
+  it('derives one SetCondition per condition per target', () => {
+    const attacker = pc();
+    const t1 = monster({ id: 'm_1' });
+    const t2 = monster({ id: 'm_2' });
+    const s = inRoundWithActor([attacker, t1, t2], [attacker.id, t1.id, t2.id], attacker.id);
+    const r = applyIntent(
+      s,
+      intent('RollPower', {
+        abilityId: 'a',
+        attackerId: attacker.id,
+        targetIds: [t1.id, t2.id],
+        characteristic: 'might',
+        edges: 0,
+        banes: 0,
+        rolls: { d10: [9, 9] }, // tier 3
+        ladder: {
+          t1: { damage: 1, damageType: 'untyped' as const, conditions: [] },
+          t2: { damage: 5, damageType: 'untyped' as const, conditions: [] },
+          t3: {
+            damage: 9,
+            damageType: 'untyped' as const,
+            conditions: [
+              { condition: 'Frightened', duration: { kind: 'EoT' } },
+              { condition: 'Slowed', duration: { kind: 'save_ends' } },
+            ],
+          },
+        },
+      }),
+    );
+    const setCond = r.derived.filter((d) => d.type === 'SetCondition');
+    // 2 targets × 2 conditions
+    expect(setCond).toHaveLength(4);
+  });
+});

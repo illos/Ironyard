@@ -124,12 +124,17 @@ export { DAMAGE_TYPES, DamageTypeSchema, TypedResistanceSchema } from './damage'
 export type { DamageType, TypedResistance } from './damage';
 
 export {
+  CONDITION_TYPES,
+  ConditionApplicationDispatchSchema,
+  ConditionApplicationOutcomeSchema,
   ConditionDurationSchema,
   ConditionInstanceSchema,
   ConditionSourceSchema,
   ConditionTypeSchema,
 } from './condition';
 export type {
+  ConditionApplicationDispatch,
+  ConditionApplicationOutcome,
   ConditionDuration,
   ConditionInstance,
   ConditionSource,

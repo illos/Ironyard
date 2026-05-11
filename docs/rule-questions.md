@@ -32,6 +32,8 @@ Anywhere a `rules-canon.md` entry rests on a judgment call rather than a direct 
 | Q11 | Does using a granted ability off-turn consume the recipient's triggered-action quota? | 🟢 | rules-canon § 4.8 |
 | Q12 | Stability application — voluntary (target choice) or automatic up to cap? | 🟢 | rules-canon § 6.9, § 6.12 |
 | Q13 | Opposed power rolls — simultaneous or sequential? | 🟢 | rules-canon § 7.5, § 7.8 |
+| Q14 | Numeric Bleeding rating ("Bleeding 5") — flavor for canon §3.5.1 or per-instance damage? | 🟡 | (parser, not in canon yet) |
+| Q15 | Default duration when a tier outcome names a condition with no marker | 🟡 | (parser, not in canon yet) |
 
 ---
 
@@ -427,6 +429,44 @@ The distinction matters because hero-tokens (Tests.md:97) let a player re-roll a
 **Engine implication.** § 7.8: opposed power rolls dispatch as a single `RollOpposedTest` intent with both sets of d10 values in the payload. The reducer computes both totals independently (each with their own characteristic, bonuses, edges/banes per § 1) and emits the winner. The hero-token re-roll path operates on one side's roll, decided before the simultaneous comparison; the same mechanism applies to both sides if both have access to re-roll currency (rare).
 
 **To revisit if:** an MCDM clarification specifies a turn-order for opposed rolls, or if the table finds simultaneous resolution removes interesting tactical decisions.
+
+---
+
+## Q14. Numeric Bleeding rating ("Bleeding 5") 🟡
+
+**Question.** Some monster ability tier text reads `… is Bleeding 5 (save ends)` (canon-equivalent form). Is the `5` a per-instance damage rating that *replaces* the canon §3.5.1 default (`1d6 + level`)? Or is it ornamental flavor, with the Bleeding hook firing canonical damage regardless?
+
+**Source.** Zero occurrences of `Bleeding \d+` in the current pinned SteelCompendium snapshot. Mentioned in the brief and observed in informal community homebrew, but not in pinned data today.
+
+**Options.**
+- **A.** Ornamental — engine ignores `N`. Bleeding fires canonical `1d6 + level` per §3.5.1.
+- **B.** Per-instance damage — the rating overrides canonical for that instance.
+- **C.** Stacking source — the rating adds to canonical damage.
+
+**Call (provisional).** **A.** The parser preserves the rating in the `ConditionApplicationOutcome.note` field so a director can see it, but the engine doesn't read it. Pending user's printed-rulebook confirmation. If it turns out to be B or C, the schema already has `note: '<name> N'` — extending the engine to consume it is a small lift; needs `ConditionInstance` to carry an optional `rating` field.
+
+**Engine implication.** Today: no engine impact. If revised to B/C: extend `ConditionInstanceSchema` with `rating?: number`, extend the Bleeding hook to prefer instance rating over canonical when present.
+
+**To revisit if:** printed-rulebook says one of B/C, or future data shows nonzero `Bleeding \d+` occurrences.
+
+---
+
+## Q15. Default duration when a tier outcome names a condition with no marker 🟡
+
+**Question.** When a tier reads `the target is Slowed` (no `(save ends)`, no `(EoT)`, no `until …` marker), what duration does the engine apply?
+
+**Source.** Canon §3.2 textual default is `end_of_encounter`. But empirically, tier-outcome strings in SteelCompendium consistently read as ephemeral (action-scoped) effects — applying a until-encounter-end Slowed on every unmarked roll would lock conditions on for whole encounters and almost certainly be wrong for table play.
+
+**Options.**
+- **A.** Default to `EoT` (until end of next turn) — the most common explicit form, matches table intuition.
+- **B.** Default to `end_of_encounter` — matches canon §3.2 literal.
+- **C.** Default to `save_ends` — never end automatically; force the director to dispatch saves.
+
+**Call (provisional).** **A.** Parser defaults unmarked duration to `EoT`. The wrong default would silently lock conditions on for whole encounters, so we picked the conservative direction; surfacing this for the user's printed-rulebook check.
+
+**Engine implication.** Parser-only — engine reads whatever the parser emits. If revised to B, the parser swaps the default; engine is unchanged. Existing markers (`(save ends)`, `until …`) override the default in all cases.
+
+**To revisit if:** printed-rulebook §3.2 reads explicitly that monster abilities default end_of_encounter, or playtest finds unmarked conditions should stick longer than EoT.
 
 ---
 

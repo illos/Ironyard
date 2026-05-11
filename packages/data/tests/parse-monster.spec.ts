@@ -497,9 +497,9 @@ describe('parseMonsterMarkdown — abilities', () => {
     expect(spear.target).toBe('One creature or object');
     expect(spear.powerRoll).toEqual({
       bonus: '+2',
-      tier1: { raw: '3 damage', damage: 3, damageType: 'untyped' },
-      tier2: { raw: '4 damage', damage: 4, damageType: 'untyped' },
-      tier3: { raw: '5 damage', damage: 5, damageType: 'untyped' },
+      tier1: { raw: '3 damage', damage: 3, damageType: 'untyped', conditions: [] },
+      tier2: { raw: '4 damage', damage: 4, damageType: 'untyped', conditions: [] },
+      tier3: { raw: '5 damage', damage: 5, damageType: 'untyped', conditions: [] },
     });
   });
 
@@ -512,11 +512,20 @@ describe('parseMonsterMarkdown — abilities', () => {
     if (!bury) return;
     expect(bury.type).toBe('action');
     expect(bury.cost).toBe('2 Malice');
-    // Tier1 of "Bury the Point": "5 damage; M < 0 bleeding (save ends)"
+    // Tier1 of "Bury the Point": "5 damage; M < 0 bleeding (save ends)" — the
+    // Bleeding condition is now extracted into `conditions` (with the potency
+    // prefix preserved in `note`), and the leftover residue lands in `effect`.
     expect(bury.powerRoll?.tier1.raw).toMatch(/5 damage/);
     expect(bury.powerRoll?.tier1.damage).toBe(5);
     expect(bury.powerRoll?.tier1.damageType).toBe('untyped');
-    expect(bury.powerRoll?.tier1.effect).toMatch(/bleeding \(save ends\)/);
+    expect(bury.powerRoll?.tier1.conditions).toEqual([
+      {
+        condition: 'Bleeding',
+        duration: { kind: 'save_ends' },
+        scope: 'target',
+        note: 'M < 0',
+      },
+    ]);
   });
 
   it('parses a trait (Crafty)', () => {

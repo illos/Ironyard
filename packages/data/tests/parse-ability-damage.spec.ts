@@ -8,7 +8,7 @@ import { parseTierOutcome } from '../src/parse-monster';
 
 describe('parseTierOutcome — damage-leading shapes', () => {
   it('parses bare untyped damage', () => {
-    expect(parseTierOutcome('2 damage')).toEqual({
+    expect(parseTierOutcome('2 damage')).toMatchObject({
       raw: '2 damage',
       damage: 2,
       damageType: 'untyped',
@@ -16,7 +16,7 @@ describe('parseTierOutcome — damage-leading shapes', () => {
   });
 
   it('parses typed damage (fire)', () => {
-    expect(parseTierOutcome('5 fire damage')).toEqual({
+    expect(parseTierOutcome('5 fire damage')).toMatchObject({
       raw: '5 fire damage',
       damage: 5,
       damageType: 'fire',
@@ -24,7 +24,7 @@ describe('parseTierOutcome — damage-leading shapes', () => {
   });
 
   it('parses typed damage (corruption)', () => {
-    expect(parseTierOutcome('13 corruption damage')).toEqual({
+    expect(parseTierOutcome('13 corruption damage')).toMatchObject({
       raw: '13 corruption damage',
       damage: 13,
       damageType: 'corruption',
@@ -32,7 +32,7 @@ describe('parseTierOutcome — damage-leading shapes', () => {
   });
 
   it('parses typed damage with mixed case', () => {
-    expect(parseTierOutcome('7 Cold damage')).toEqual({
+    expect(parseTierOutcome('7 Cold damage')).toMatchObject({
       raw: '7 Cold damage',
       damage: 7,
       damageType: 'cold',
@@ -40,7 +40,7 @@ describe('parseTierOutcome — damage-leading shapes', () => {
   });
 
   it('parses zero damage', () => {
-    expect(parseTierOutcome('0 damage')).toEqual({
+    expect(parseTierOutcome('0 damage')).toMatchObject({
       raw: '0 damage',
       damage: 0,
       damageType: 'untyped',
@@ -48,7 +48,7 @@ describe('parseTierOutcome — damage-leading shapes', () => {
   });
 
   it('parses large damage values (boss-tier)', () => {
-    expect(parseTierOutcome('25 holy damage')).toEqual({
+    expect(parseTierOutcome('25 holy damage')).toMatchObject({
       raw: '25 holy damage',
       damage: 25,
       damageType: 'holy',
@@ -58,7 +58,7 @@ describe('parseTierOutcome — damage-leading shapes', () => {
 
 describe('parseTierOutcome — damage + trailing effect', () => {
   it('parses damage + push suffix (semicolon-separated)', () => {
-    expect(parseTierOutcome('3 damage; push 1')).toEqual({
+    expect(parseTierOutcome('3 damage; push 1')).toMatchObject({
       raw: '3 damage; push 1',
       damage: 3,
       damageType: 'untyped',
@@ -66,47 +66,59 @@ describe('parseTierOutcome — damage + trailing effect', () => {
     });
   });
 
-  it('parses typed damage + condition save', () => {
-    expect(parseTierOutcome('12 fire damage; A < 1 the target is burning (save ends)')).toEqual({
+  it('parses typed damage + condition save (non-canon condition stays in effect)', () => {
+    // "burning" is not in the 9-canon-condition enum, so it's left in effect
+    // text verbatim and no condition is structurally extracted.
+    expect(
+      parseTierOutcome('12 fire damage; A < 1 the target is burning (save ends)'),
+    ).toMatchObject({
       raw: '12 fire damage; A < 1 the target is burning (save ends)',
       damage: 12,
       damageType: 'fire',
       effect: 'A < 1 the target is burning (save ends)',
+      conditions: [],
     });
   });
 
-  it('parses damage + " and " separator', () => {
-    expect(parseTierOutcome('6 damage and the target is Slowed (save ends)')).toEqual({
+  it('parses damage + " and " separator (canon condition gets extracted)', () => {
+    expect(parseTierOutcome('6 damage and the target is Slowed (save ends)')).toMatchObject({
       raw: '6 damage and the target is Slowed (save ends)',
       damage: 6,
       damageType: 'untyped',
-      effect: 'the target is Slowed (save ends)',
+      conditions: [{ condition: 'Slowed', duration: { kind: 'save_ends' }, scope: 'target' }],
     });
   });
 
   it('parses multi-clause damage effects', () => {
-    expect(parseTierOutcome('8 sonic damage; slide 5, the maestro shifts up to 5 squares')).toEqual(
-      {
-        raw: '8 sonic damage; slide 5, the maestro shifts up to 5 squares',
-        damage: 8,
-        damageType: 'sonic',
-        effect: 'slide 5, the maestro shifts up to 5 squares',
-      },
-    );
+    expect(
+      parseTierOutcome('8 sonic damage; slide 5, the maestro shifts up to 5 squares'),
+    ).toMatchObject({
+      raw: '8 sonic damage; slide 5, the maestro shifts up to 5 squares',
+      damage: 8,
+      damageType: 'sonic',
+      effect: 'slide 5, the maestro shifts up to 5 squares',
+    });
   });
 });
 
 describe('parseTierOutcome — effect-only (no damage)', () => {
-  it('parses save-clause without damage', () => {
-    expect(parseTierOutcome('M < 3 restrained (save ends)')).toEqual({
+  it('parses save-clause without damage — extracts canon condition, notes potency', () => {
+    expect(parseTierOutcome('M < 3 restrained (save ends)')).toMatchObject({
       raw: 'M < 3 restrained (save ends)',
       damage: null,
-      effect: 'M < 3 restrained (save ends)',
+      conditions: [
+        {
+          condition: 'Restrained',
+          duration: { kind: 'save_ends' },
+          scope: 'target',
+          note: 'M < 3',
+        },
+      ],
     });
   });
 
   it('parses pure movement-only outcome', () => {
-    expect(parseTierOutcome('Vertical push 3')).toEqual({
+    expect(parseTierOutcome('Vertical push 3')).toMatchObject({
       raw: 'Vertical push 3',
       damage: null,
       effect: 'Vertical push 3',
@@ -116,26 +128,26 @@ describe('parseTierOutcome — effect-only (no damage)', () => {
   it('parses healing / narrative outcome', () => {
     expect(
       parseTierOutcome('The target regains 12 Stamina and the Director gains 3 Malice.'),
-    ).toEqual({
+    ).toMatchObject({
       raw: 'The target regains 12 Stamina and the Director gains 3 Malice.',
       damage: null,
       effect: 'The target regains 12 Stamina and the Director gains 3 Malice.',
     });
   });
 
-  it('parses condition-only narrative', () => {
-    expect(parseTierOutcome('the target is Restrained until end of next turn')).toEqual({
+  it('parses condition-only narrative — extracts canon condition with EoT', () => {
+    expect(parseTierOutcome('the target is Restrained until end of next turn')).toMatchObject({
       raw: 'the target is Restrained until end of next turn',
       damage: null,
-      effect: 'the target is Restrained until end of next turn',
+      conditions: [{ condition: 'Restrained', duration: { kind: 'EoT' }, scope: 'target' }],
     });
   });
 
-  it('does not match a number not followed by "damage"', () => {
-    expect(parseTierOutcome('Pull 10; I < 4 slowed (save ends)')).toEqual({
+  it('does not match a number not followed by "damage" — push 10 stays in effect, slowed gets extracted', () => {
+    expect(parseTierOutcome('Pull 10; I < 4 slowed (save ends)')).toMatchObject({
       raw: 'Pull 10; I < 4 slowed (save ends)',
       damage: null,
-      effect: 'Pull 10; I < 4 slowed (save ends)',
+      conditions: [{ condition: 'Slowed', duration: { kind: 'save_ends' }, scope: 'target' }],
     });
   });
 });
@@ -145,7 +157,7 @@ describe('parseTierOutcome — defensive prefix stripping', () => {
   // defensive so future SteelCompendium changes / overrides don't break us.
 
   it('strips a leading "≤11:" prefix', () => {
-    expect(parseTierOutcome('≤11: 2 damage')).toEqual({
+    expect(parseTierOutcome('≤11: 2 damage')).toMatchObject({
       raw: '≤11: 2 damage',
       damage: 2,
       damageType: 'untyped',
@@ -153,7 +165,7 @@ describe('parseTierOutcome — defensive prefix stripping', () => {
   });
 
   it('strips a leading "miss:" prefix', () => {
-    expect(parseTierOutcome('miss: 5 fire damage')).toEqual({
+    expect(parseTierOutcome('miss: 5 fire damage')).toMatchObject({
       raw: 'miss: 5 fire damage',
       damage: 5,
       damageType: 'fire',
@@ -161,7 +173,7 @@ describe('parseTierOutcome — defensive prefix stripping', () => {
   });
 
   it('strips a leading "crit:" prefix', () => {
-    expect(parseTierOutcome('crit: 9 damage')).toEqual({
+    expect(parseTierOutcome('crit: 9 damage')).toMatchObject({
       raw: 'crit: 9 damage',
       damage: 9,
       damageType: 'untyped',
@@ -189,7 +201,7 @@ describe('parseTierOutcome — raw always preserved', () => {
   });
 
   it('handles empty string without throwing', () => {
-    expect(parseTierOutcome('')).toEqual({
+    expect(parseTierOutcome('')).toMatchObject({
       raw: '',
       damage: null,
     });

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CharacteristicSchema } from '../characteristic';
+import { ConditionApplicationDispatchSchema } from '../condition';
 import { DamageTypeSchema } from '../damage';
 
 const d10 = z.number().int().min(1).max(10);
@@ -7,6 +8,11 @@ const d10 = z.number().int().min(1).max(10);
 const TierEffectSchema = z.object({
   damage: z.number().int().min(0),
   damageType: DamageTypeSchema,
+  // Conditions to auto-apply on this tier landing. CombatRun's buildLadder
+  // populates from `Ability.powerRoll.tierN.conditions` (filtered to
+  // scope='target'); the engine derives one SetCondition per entry per
+  // target. Default [] keeps slice-3 RollPower payloads valid.
+  conditions: z.array(ConditionApplicationDispatchSchema).default([]),
 });
 
 // Phase 1 slice 3: the ability's tier ladder lives in the payload. Slice 4+

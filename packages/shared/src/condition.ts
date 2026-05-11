@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Draw Steel has exactly 9 conditions (rules-canon.md §3.1). The set is closed —
 // class-specific statuses like the Talent's Strained are deliberately *not* here.
-const CONDITION_TYPES = [
+export const CONDITION_TYPES = [
   'Bleeding',
   'Dazed',
   'Frightened',
@@ -49,3 +49,28 @@ export const ConditionInstanceSchema = z.object({
   removable: z.boolean().default(true),
 });
 export type ConditionInstance = z.infer<typeof ConditionInstanceSchema>;
+
+// What the data parser emits for each condition mention found inside a tier
+// outcome's effect text. `scope: 'other'` means the condition applied to a
+// non-primary target (multi-target wording like "two targets are Slowed" or
+// "all enemies within 3"); the engine leaves those for manual handling. The
+// `note` field carries flavor the regex didn't structurally extract: the
+// potency-test prefix ("A < 2"), scope qualifier, or numeric rating on
+// Bleeding.
+export const ConditionApplicationOutcomeSchema = z.object({
+  condition: ConditionTypeSchema,
+  duration: ConditionDurationSchema,
+  scope: z.enum(['target', 'other']),
+  note: z.string().optional(),
+});
+export type ConditionApplicationOutcome = z.infer<typeof ConditionApplicationOutcomeSchema>;
+
+// Wire-side dispatch shape, carried inside a RollPower ladder's tier effect.
+// CombatRun filters the data-side `scope` to 'target' before building this
+// (so the engine never auto-applies multi-target conditions); the data-side
+// `note` is dropped since the engine doesn't read it.
+export const ConditionApplicationDispatchSchema = z.object({
+  condition: ConditionTypeSchema,
+  duration: ConditionDurationSchema,
+});
+export type ConditionApplicationDispatch = z.infer<typeof ConditionApplicationDispatchSchema>;

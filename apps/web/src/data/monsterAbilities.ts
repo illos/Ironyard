@@ -18,9 +18,9 @@ export function pcFreeStrike(): Ability {
     target: 'One creature',
     powerRoll: {
       bonus: '+0',
-      tier1: { raw: '2 damage', damage: 2, damageType: 'untyped' },
-      tier2: { raw: '5 damage', damage: 5, damageType: 'untyped' },
-      tier3: { raw: '8 damage', damage: 8, damageType: 'untyped' },
+      tier1: { raw: '2 damage', damage: 2, damageType: 'untyped', conditions: [] },
+      tier2: { raw: '5 damage', damage: 5, damageType: 'untyped', conditions: [] },
+      tier3: { raw: '8 damage', damage: 8, damageType: 'untyped', conditions: [] },
     },
     raw: 'Free Strike (Phase-2 placeholder)\n\n**Power Roll +0**\n\n- **≤11:** 2 damage\n- **12-16:** 5 damage\n- **17+:** 8 damage',
   };

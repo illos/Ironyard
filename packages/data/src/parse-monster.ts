@@ -1,6 +1,10 @@
 import {
   type Ability,
   type AbilityType,
+  CONDITION_TYPES,
+  type ConditionApplicationOutcome,
+  type ConditionDuration,
+  type ConditionType,
   DAMAGE_TYPES,
   type DamageType,
   type Ev,
@@ -370,6 +374,129 @@ function parseDistanceOrTarget(cell: string | undefined): string | undefined {
 
 const DAMAGE_TYPE_ENUM_SET: ReadonlySet<string> = new Set<string>(DAMAGE_TYPES);
 
+// Condition-name regex — word-boundary, case-insensitive, optional numeric
+// rating (Bleeding 5). Stateful (g flag) so callers must reset lastIndex.
+const CONDITION_NAME_RE = new RegExp(
+  String.raw`\b(?<name>${CONDITION_TYPES.join('|')})\b(?:\s+(?<rating>\d+))?`,
+  'gi',
+);
+
+// Multi-target / "other" scope qualifiers. Order matters — longest first.
+const OTHER_SCOPE_PATTERNS: RegExp[] = [
+  /two targets?/i,
+  /three targets?/i,
+  /each (?:enemy|ally|creature|target)/i,
+  /all (?:enemies|allies|creatures|targets)/i,
+  /every (?:enemy|ally|creature|target)/i,
+];
+
+// Order matters: more specific patterns first so the broader fallback
+// (`until end of … turn` → EoT) doesn't shadow `until start of … turn`.
+const DURATION_PATTERNS: Array<{ re: RegExp; build: () => ConditionDuration }> = [
+  { re: /\(\s*save\s*ends\s*\)/i, build: () => ({ kind: 'save_ends' }) },
+  { re: /\(\s*eot\s*\)/i, build: () => ({ kind: 'EoT' }) },
+  {
+    re: /until (?:the )?end of (?:the )?encounter/i,
+    build: () => ({ kind: 'end_of_encounter' }),
+  },
+  {
+    re: /for the rest of the encounter/i,
+    build: () => ({ kind: 'end_of_encounter' }),
+  },
+  {
+    re: /until (?:the )?start of (?:the |its |her |his |their |the target's )?(?:next )?turn/i,
+    // ownerId is a placeholder — CombatRun.dispatchRoll rewrites it to the
+    // attacker's participantId at dispatch time so the duration is anchored
+    // correctly per canon §3.2.
+    build: () => ({ kind: 'until_start_next_turn', ownerId: '<auto>' }),
+  },
+  {
+    re: /until (?:the )?end of (?:the |its |her |his |their |the target's )?(?:next )?turn/i,
+    build: () => ({ kind: 'EoT' }),
+  },
+];
+
+function detectScope(clause: string): { scope: 'target' | 'other'; note?: string } {
+  for (const re of OTHER_SCOPE_PATTERNS) {
+    const m = clause.match(re);
+    if (m) return { scope: 'other', note: m[0] };
+  }
+  return { scope: 'target' };
+}
+
+function detectDuration(clause: string): ConditionDuration {
+  for (const p of DURATION_PATTERNS) {
+    if (p.re.test(clause)) return p.build();
+  }
+  // Default: end of next turn. Canon §3.2 textual default is end_of_encounter,
+  // but tier-outcome strings empirically read as EoT (see docs/rule-questions.md
+  // Q15). Wrong default would silently lock conditions on for whole encounters.
+  return { kind: 'EoT' };
+}
+
+function normalizeConditionName(raw: string): ConditionType {
+  const lower = raw.toLowerCase();
+  const normalized = (lower.charAt(0).toUpperCase() + lower.slice(1)) as ConditionType;
+  return normalized;
+}
+
+// Within a clause, find every condition mention. A clause may have multiple
+// conditions joined by "and" ("bleeding and slowed (save ends)"). Each gets
+// the same clause-level duration / scope.
+function extractConditionsFromClause(clause: string): ConditionApplicationOutcome[] {
+  const matches: Array<{ name: ConditionType; rating?: string }> = [];
+  CONDITION_NAME_RE.lastIndex = 0;
+  let m: RegExpExecArray | null = CONDITION_NAME_RE.exec(clause);
+  while (m !== null) {
+    const groups = m.groups ?? {};
+    matches.push({
+      name: normalizeConditionName(groups.name ?? ''),
+      rating: groups.rating,
+    });
+    m = CONDITION_NAME_RE.exec(clause);
+  }
+  if (matches.length === 0) return [];
+
+  const duration = detectDuration(clause);
+  const { scope, note: scopeNote } = detectScope(clause);
+
+  const noteParts: string[] = [];
+  const potencyMatch = clause.match(/[MAIPR]\s*<\s*[A-Z\d]+(?:\s+[A-Z]+)?/);
+  if (potencyMatch) noteParts.push(potencyMatch[0]);
+  if (scopeNote) noteParts.push(scopeNote);
+
+  return matches.map(({ name, rating }) => {
+    const parts = [...noteParts];
+    if (rating) parts.push(`${name} ${rating}`);
+    const note = parts.join('; ').trim();
+    const out: ConditionApplicationOutcome = { condition: name, duration, scope };
+    if (note.length > 0) out.note = note;
+    return out;
+  });
+}
+
+// Split a tier-outcome residue (everything after the leading damage clause)
+// into clauses on top-level semicolons.
+function splitClauses(text: string): string[] {
+  return text
+    .split(';')
+    .map((c) => c.trim())
+    .filter((c) => c.length > 0);
+}
+
+// Strip matched condition spans + duration markers + dangling connectives
+// from a clause so the leftover prose can stay in `effect` for the director.
+function stripConditionsFromClause(clause: string): string {
+  let s = clause;
+  for (const p of DURATION_PATTERNS) s = s.replace(p.re, '');
+  s = s.replace(CONDITION_NAME_RE, '');
+  s = s.replace(/\bthe (?:target|creature) is\b/gi, '');
+  s = s.replace(/\b(?:are|is|and)\b/gi, '');
+  s = s.replace(/\s+/g, ' ').trim();
+  s = s.replace(/^[,;.\s]+|[,;.\s]+$/g, '');
+  return s;
+}
+
 // Parse a single tier's raw markdown string ("3 fire damage; push 1") into a
 // structured TierOutcome. Always returns — `raw` is preserved verbatim;
 // `damage` is null when no leading damage clause is found.
@@ -397,31 +524,53 @@ export function parseTierOutcome(raw: string): TierOutcome {
   // keeps us from matching "12 squares" or similar.
   const damageMatch = /^(\d+)\s+(?:([A-Za-z]+)\s+)?damage\b/i.exec(noPrefix);
 
-  if (!damageMatch) {
-    // No damage match — preserve full raw text as effect for UI rendering.
+  let damage: number | null = null;
+  let damageType: DamageType | undefined;
+  let residue = noPrefix;
+
+  if (damageMatch) {
+    const dmgStr = damageMatch[1] ?? '0';
+    const typeWord = (damageMatch[2] ?? '').toLowerCase();
+    damage = Number.parseInt(dmgStr, 10);
+    damageType = 'untyped';
+    if (typeWord && DAMAGE_TYPE_ENUM_SET.has(typeWord)) {
+      damageType = typeWord as DamageType;
+    }
+    // Residue = whatever follows the damage clause, stripping a leading
+    // "; " / ", " / " and " connector.
+    residue = noPrefix.slice(damageMatch[0].length).replace(/^\s*(?:[;,]|\band\b)\s*/i, '');
+  }
+
+  // Condition extraction runs against the residue (post-damage) clause-by-
+  // clause. Each clause may yield zero or more ConditionApplicationOutcomes.
+  // What the regex doesn't recognize stays in `effect` as raw prose so the
+  // director sees the truth.
+  const clauses = splitClauses(residue);
+  const conditions: ConditionApplicationOutcome[] = [];
+  const residueClauses: string[] = [];
+  for (const clause of clauses) {
+    const conds = extractConditionsFromClause(clause);
+    conditions.push(...conds);
+    // Only strip when a canon condition was extracted. Otherwise the clause
+    // (e.g. "the target is burning (save ends)" — "burning" isn't in the 9)
+    // stays verbatim so the director still sees the full source phrasing.
+    const stripped = conds.length > 0 ? stripConditionsFromClause(clause) : clause;
+    if (stripped.length > 0) residueClauses.push(stripped);
+  }
+
+  // If we found no damage AND no conditions, fall back to the historical
+  // behavior: preserve the full raw text in `effect` so the director still
+  // sees the bullet verbatim.
+  if (damage === null && conditions.length === 0) {
     const effect = raw.trim();
-    return effect ? { raw, damage: null, effect } : { raw, damage: null };
+    return effect
+      ? { raw, damage: null, effect, conditions: [] }
+      : { raw, damage: null, conditions: [] };
   }
 
-  const dmgStr = damageMatch[1] ?? '0';
-  const typeWord = (damageMatch[2] ?? '').toLowerCase();
-  const damage = Number.parseInt(dmgStr, 10);
-
-  // Type resolution: if `typeWord` is absent or literally "damage" (impossible
-  // with this regex but defensive), → untyped. If present and known → use it.
-  // If present and unknown → fall back to untyped (rather than fail closed and
-  // drop the damage value).
-  let damageType: DamageType = 'untyped';
-  if (typeWord && DAMAGE_TYPE_ENUM_SET.has(typeWord)) {
-    damageType = typeWord as DamageType;
-  }
-
-  // Effect = whatever follows the damage clause, stripping a leading "; ",
-  // ", ", " and " connector.
-  const tail = noPrefix.slice(damageMatch[0].length);
-  const effect = tail.replace(/^\s*(?:[;,]|\band\b)\s*/i, '').trim();
-
-  const result: TierOutcome = { raw, damage, damageType };
+  const effect = residueClauses.join('; ').trim();
+  const result: TierOutcome =
+    damage === null ? { raw, damage: null, conditions } : { raw, damage, damageType, conditions };
   if (effect.length > 0) result.effect = effect;
   return result;
 }

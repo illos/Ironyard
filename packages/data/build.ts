@@ -99,12 +99,14 @@ function main() {
   // counted as failures, just as different.
   let totalTierOutcomes = 0;
   let tiersWithDamage = 0;
+  let tiersWithConditions = 0;
   for (const m of deduped) {
     for (const a of m.abilities) {
       if (!a.powerRoll) continue;
       for (const tier of [a.powerRoll.tier1, a.powerRoll.tier2, a.powerRoll.tier3]) {
         totalTierOutcomes += 1;
         if (tier.damage !== null) tiersWithDamage += 1;
+        if (tier.conditions.length > 0) tiersWithConditions += 1;
       }
     }
   }
@@ -131,6 +133,7 @@ function main() {
     ),
     totalTierOutcomes,
     tiersWithDamage,
+    tiersWithConditions,
   };
 
   const out: MonsterFile = {
@@ -172,6 +175,9 @@ function main() {
   );
   console.log(
     `    tier damage:       ${cov.tiersWithDamage}/${cov.totalTierOutcomes}  (${pct(cov.tiersWithDamage, cov.totalTierOutcomes)})`,
+  );
+  console.log(
+    `    tier conditions:   ${cov.tiersWithConditions}/${cov.totalTierOutcomes}  (${pct(cov.tiersWithConditions, cov.totalTierOutcomes)})`,
   );
 
   if (errors.length > 0) {
