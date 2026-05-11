@@ -25,6 +25,16 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # TODO: wire `pnpm --filter @ironyard/data build:data` here once the
+      # data-md tarball-fetch is implemented. The build currently reads from a
+      # local clone at .reference/data-md (gitignored), and the pin in
+      # packages/data/sources.json is still "main.placeholder". apps/api needs
+      # monsters.json at typecheck time — the build now mirrors it to
+      # apps/api/src/data/, but CI has no source to read from yet.
+      # In the meantime, the api package commits a placeholder monsters.json
+      # OR developers run build:data locally before pushing schema-coupled
+      # changes. Phase 2 finalizes the data pipeline.
+
       - name: Typecheck
         run: pnpm typecheck
 

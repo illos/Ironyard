@@ -170,7 +170,7 @@ export class LobbyDO implements DurableObject {
           campaignId: state.campaignId,
           actor: { userId: state.ownerId, role: 'director' },
           timestamp: Date.now(),
-          source: 'auto', // 'server' not in IntentSourceSchema; 'auto' is the closest — it's DO-emitted, not user-typed
+          source: 'server', // synthetic, emitted by the DO on behalf of the owner — distinct from 'auto' (engine-derived) and 'manual' (user)
           type: 'JumpBehindScreen',
           payload: { permitted: true },
         };

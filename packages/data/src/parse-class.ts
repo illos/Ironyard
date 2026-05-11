@@ -48,7 +48,11 @@ function parseCharacteristicsBlock(body: string): {
   potencyCharacteristic: Characteristic;
 } | null {
   // ── Locked stats ─────────────────────────────────────────────────────────
-  const startLine = /\*\*Starting Characteristics\*\*[:\s]*(.+)/i.exec(body);
+  // Tolerate colon inside the bold (`**Starting Characteristics:**`) or after
+  // (`**Starting Characteristics**:`) — the SteelCompendium markdown is the
+  // former for all classes today, but both shapes appear elsewhere in their
+  // corpus.
+  const startLine = /\*\*Starting Characteristics:?\*\*[:\s]*(.+)/i.exec(body);
   if (!startLine || startLine[1] === undefined) return null;
   const charLine = normalizeMinus(startLine[1]);
 
@@ -75,8 +79,13 @@ function parseCharacteristicsBlock(body: string): {
     if (nums.length > 0) characteristicArrays.push(nums);
   }
   // Arrays appear between "Starting Characteristics" and "Weak Potency".
-  // Filter to only those before the "Weak Potency" heading.
-  const weakPotencyIdx = body.indexOf('**Weak Potency**');
+  // Filter to only those before the "Weak Potency" heading. Tolerate the
+  // colon-inside-bold variant the SteelCompendium markdown uses.
+  const weakPotencyIdx = (() => {
+    const a = body.indexOf('**Weak Potency:**');
+    if (a !== -1) return a;
+    return body.indexOf('**Weak Potency**');
+  })();
   const charSectionEnd = weakPotencyIdx === -1 ? body.length : weakPotencyIdx;
   const charSection = body.slice(0, charSectionEnd);
   const filteredArrays: number[][] = [];
@@ -91,8 +100,9 @@ function parseCharacteristicsBlock(body: string): {
   }
 
   // ── Potency characteristic ────────────────────────────────────────────────
-  // "**Strong Potency:** Might" or "**Strong Potency:** Might − 0" (rare)
-  const strongMatch = /\*\*Strong Potency\*\*[:\s]+([A-Za-z]+)/i.exec(body);
+  // "**Strong Potency:** Might" or "**Strong Potency:** Might − 0" (rare).
+  // Colon may live inside or outside the bold.
+  const strongMatch = /\*\*Strong Potency:?\*\*[:\s]+([A-Za-z]+)/i.exec(body);
   if (!strongMatch || strongMatch[1] === undefined) return null;
   const potencyCharacteristic = asCharacteristic(strongMatch[1]);
   if (!potencyCharacteristic) return null;
@@ -121,9 +131,12 @@ function parseStaminaAndRecoveries(body: string): {
   staminaPerLevel: number;
   recoveries: number;
 } | null {
-  const startMatch = /\*\*Starting Stamina at 1st Level\*\*[:\s]+(\d+)/i.exec(body);
-  const perLevelMatch = /\*\*Stamina Gained at 2nd and Higher Levels\*\*[:\s]+(\d+)/i.exec(body);
-  const recoveriesMatch = /\*\*Recoveries\*\*[:\s]+(\d+)/i.exec(body);
+  // Tolerate colon inside or after the bold marker — the SteelCompendium
+  // markdown uses inside (`**Foo:**`) throughout, but the parser was written
+  // against the outside form.
+  const startMatch = /\*\*Starting Stamina at 1st Level:?\*\*[:\s]+(\d+)/i.exec(body);
+  const perLevelMatch = /\*\*Stamina Gained at 2nd and Higher Levels:?\*\*[:\s]+(\d+)/i.exec(body);
+  const recoveriesMatch = /\*\*Recoveries:?\*\*[:\s]+(\d+)/i.exec(body);
 
   if (!startMatch || !perLevelMatch || !recoveriesMatch) return null;
 

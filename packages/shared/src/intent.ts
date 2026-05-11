@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import { ActorSchema } from './actor';
 
-export const IntentSourceSchema = z.enum(['auto', 'manual']);
+// 'auto' = engine-derived (e.g. RollPower → ApplyDamage); 'manual' = the
+// player/director typed/clicked; 'server' = emitted by the DO itself for
+// side-effect plumbing (e.g. the synthetic JumpBehindScreen the revoke-director
+// route fires to return the chair to the owner).
+export const IntentSourceSchema = z.enum(['auto', 'manual', 'server']);
 export type IntentSource = z.infer<typeof IntentSourceSchema>;
 
 // Phase 0 keeps the type discriminator open; Phase 1 narrows it to a literal
