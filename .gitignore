@@ -10,6 +10,8 @@ build/
 
 # bundled SteelCompendium data — rebuilt by CI, not committed
 apps/web/public/data/
+# API worker copy of SteelCompendium data — copied from apps/web/public/data/ at build time
+apps/api/src/data/monsters.json
 
 # local reference clones (e.g. SteelCompendium/data-md) — used during dev, never committed
 .reference/

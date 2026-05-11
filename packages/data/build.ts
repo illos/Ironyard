@@ -13,6 +13,8 @@ const REPO_ROOT = resolve(here, '../..');
 const DATA_MD = process.env.DATA_MD_PATH ?? join(REPO_ROOT, '.reference/data-md');
 const MONSTERS_DIR = join(DATA_MD, 'Bestiary/Monsters/Monsters');
 const OUT_PATH = join(REPO_ROOT, 'apps/web/public/data/monsters.json');
+// Also emit a copy for the API Worker so it can look up monsters at stamping time.
+const API_OUT_PATH = join(REPO_ROOT, 'apps/api/src/data/monsters.json');
 
 function* walkStatblockFiles(root: string): Generator<string> {
   let entries: string[];
@@ -147,9 +149,14 @@ function main() {
   mkdirSync(dirname(OUT_PATH), { recursive: true });
   writeFileSync(OUT_PATH, `${JSON.stringify(out, null, 2)}\n`);
 
+  // Mirror to the API Worker data directory so the stamping pipeline can load monsters.
+  mkdirSync(dirname(API_OUT_PATH), { recursive: true });
+  writeFileSync(API_OUT_PATH, `${JSON.stringify(out, null, 2)}\n`);
+
   console.log(
     `build:data — wrote ${deduped.length} monsters to apps/web/public/data/monsters.json`,
   );
+  console.log('             mirrored to apps/api/src/data/monsters.json');
   console.log(`  version pin: ${out.version}`);
   console.log(`  source files scanned: ${totalFiles}`);
   console.log(`  parsed monsters:      ${deduped.length}  (${pct(deduped.length, totalFiles)})`);
