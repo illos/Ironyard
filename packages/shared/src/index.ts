@@ -45,3 +45,6 @@ export type {
   LeaveSessionPayload,
   NotePayload,
 } from './intents';
+
+export { MonsterFileSchema, MonsterSchema } from './data/monster';
+export type { Monster, MonsterFile } from './data/monster';

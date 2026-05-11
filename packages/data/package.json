@@ -7,12 +7,14 @@
   "types": "./src/index.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "build": "tsx build.ts",
     "build:data": "tsx build.ts"
   },
   "dependencies": {
-    "@ironyard/shared": "workspace:*"
+    "@ironyard/shared": "workspace:*",
+    "gray-matter": "^4.0.3",
+    "steel-compendium-sdk": "^2.2.0"
   },
   "devDependencies": {
     "tsx": "^4.19.2",
