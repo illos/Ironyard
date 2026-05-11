@@ -1,10 +1,10 @@
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
-  type SessionState,
+  type CampaignState,
   type StampedIntent,
   applyIntent,
-  emptySessionState,
+  emptyCampaignState,
 } from '../src/index';
 import { resetParticipantForEndOfEncounter } from '../src/intents/end-encounter';
 
@@ -14,12 +14,12 @@ import { resetParticipantForEndOfEncounter } from '../src/intents/end-encounter'
 // `duration.kind === 'end_of_encounter'` are filtered from every participant.
 
 const T = 1_700_000_000_000;
-const sessionId = 'sess_test';
+const campaignId = 'sess_test';
 
 function intent(type: string, payload: unknown, overrides: Partial<Intent> = {}): StampedIntent {
   return {
     id: overrides.id ?? `i_${Math.random().toString(36).slice(2)}`,
-    sessionId: overrides.sessionId ?? sessionId,
+    campaignId: overrides.campaignId ?? campaignId,
     actor: overrides.actor ?? { userId: 'alice', role: 'director' },
     timestamp: overrides.timestamp ?? T,
     source: overrides.source ?? 'manual',
@@ -71,30 +71,30 @@ function monster(over: Partial<Participant> = {}): Participant {
   };
 }
 
-function withEncounter(): SessionState {
-  let s = emptySessionState(sessionId);
+function withEncounter(): CampaignState {
+  let s = emptyCampaignState(campaignId);
   s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
   return s;
 }
 
-function firstParticipant(s: SessionState): Participant {
-  const p = s.activeEncounter?.participants[0];
+function firstParticipant(s: CampaignState): Participant {
+  const p = s.encounter?.participants[0];
   if (!p) throw new Error('no participants');
   return p;
 }
 
-function findParticipant(s: SessionState, id: string): Participant {
-  const p = s.activeEncounter?.participants.find((x) => x.id === id);
+function findParticipant(s: CampaignState, id: string): Participant {
+  const p = s.encounter?.participants.find((x) => x.id === id);
   if (!p) throw new Error(`participant ${id} not found`);
   return p;
 }
 
 describe('applyIntent — EndEncounter', () => {
   it('is a no-op when no encounter is active', () => {
-    const s0 = emptySessionState(sessionId);
+    const s0 = emptyCampaignState(campaignId);
     const r = applyIntent(s0, intent('EndEncounter', { encounterId: 'enc_1' }));
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter).toBeNull();
+    expect(r.state.encounter).toBeNull();
     expect(r.state.seq).toBe(s0.seq + 1);
     expect(r.log[0]?.text).toMatch(/no active encounter/i);
   });
@@ -103,14 +103,14 @@ describe('applyIntent — EndEncounter', () => {
     const s = withEncounter();
     const r = applyIntent(s, intent('EndEncounter', { encounterId: 'enc_other' }));
     expect(r.errors?.[0]?.code).toBe('wrong_encounter');
-    expect(r.state.activeEncounter?.id).toBe('enc_1'); // unchanged
+    expect(r.state.encounter?.id).toBe('enc_1'); // unchanged
   });
 
-  it('drops activeEncounter to null on the happy path', () => {
+  it('drops encounter to null on the happy path', () => {
     const s = withEncounter();
     const r = applyIntent(s, intent('EndEncounter', { encounterId: 'enc_1' }));
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter).toBeNull();
+    expect(r.state.encounter).toBeNull();
     expect(r.state.seq).toBe(s.seq + 1);
   });
 
@@ -143,7 +143,7 @@ describe('applyIntent — EndEncounter', () => {
       }),
     ).state;
 
-    // Snapshot the participant before EndEncounter wipes activeEncounter.
+    // Snapshot the participant before EndEncounter wipes encounter.
     const talent = findParticipant(s, 'pc_talent');
     const censor = findParticipant(s, 'pc_censor');
     expect(talent.heroicResources[0]?.value).toBe(-2);
@@ -156,10 +156,10 @@ describe('applyIntent — EndEncounter', () => {
     const clearedCensor = resetParticipantForEndOfEncounter(censor);
     expect(clearedCensor.heroicResources[0]?.value).toBe(0);
 
-    // And after the full EndEncounter dispatch, activeEncounter is null.
+    // And after the full EndEncounter dispatch, encounter is null.
     const r = applyIntent(s, intent('EndEncounter', { encounterId: 'enc_1' }));
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter).toBeNull();
+    expect(r.state.encounter).toBeNull();
   });
 
   it('resets extras values to 0 on every participant', () => {
@@ -193,7 +193,7 @@ describe('applyIntent — EndEncounter', () => {
       }),
     ).state;
 
-    const before = s.activeEncounter?.participants ?? [];
+    const before = s.encounter?.participants ?? [];
     expect(before).toHaveLength(2);
     for (const p of before) {
       expect(resetParticipantForEndOfEncounter(p).surges).toBe(0);
@@ -257,17 +257,17 @@ describe('applyIntent — EndEncounter', () => {
   it('resets malice to fresh state (current 0, lastMaliciousStrikeRound null)', () => {
     let s = withEncounter();
     s = applyIntent(s, intent('GainMalice', { amount: 12 })).state;
-    expect(s.activeEncounter?.malice.current).toBe(12);
+    expect(s.encounter?.malice.current).toBe(12);
 
     const r = applyIntent(s, intent('EndEncounter', { encounterId: 'enc_1' }));
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter).toBeNull();
+    expect(r.state.encounter).toBeNull();
 
     // Re-start a new encounter and confirm malice was wiped (StartEncounter inits
     // to 0 on its own — this is a sanity check that EndEncounter doesn't leak
     // prior state into a freshly-started encounter via the seq increment).
     const r2 = applyIntent(r.state, intent('StartEncounter', { encounterId: 'enc_2' }));
-    expect(r2.state.activeEncounter?.malice).toEqual({
+    expect(r2.state.encounter?.malice).toEqual({
       current: 0,
       lastMaliciousStrikeRound: null,
     });

@@ -1,10 +1,10 @@
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
-  type SessionState,
+  type CampaignState,
   type StampedIntent,
   applyIntent,
-  emptySessionState,
+  emptyCampaignState,
 } from '../src/index';
 
 // Phase 1 cleanup: SetStamina — the client-dispatchable manual HP override.
@@ -14,12 +14,12 @@ import {
 // contract — no Bleeding hooks, no condition triggers, no dying transition).
 
 const T = 1_700_000_000_000;
-const sessionId = 'sess_test';
+const campaignId = 'sess_test';
 
 function intent(type: string, payload: unknown, overrides: Partial<Intent> = {}): StampedIntent {
   return {
     id: overrides.id ?? `i_${Math.random().toString(36).slice(2)}`,
-    sessionId: overrides.sessionId ?? sessionId,
+    campaignId: overrides.campaignId ?? campaignId,
     actor: overrides.actor ?? { userId: 'alice', role: 'director' },
     timestamp: overrides.timestamp ?? T,
     source: overrides.source ?? 'manual',
@@ -50,28 +50,28 @@ function pc(over: Partial<Participant> = {}): Participant {
   };
 }
 
-function ready(over?: Partial<Participant>): SessionState {
-  let s = emptySessionState(sessionId);
+function ready(over?: Partial<Participant>): CampaignState {
+  let s = emptyCampaignState(campaignId);
   s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
   s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc(over) })).state;
   return s;
 }
 
-function getAlice(s: SessionState): Participant | undefined {
-  return s.activeEncounter?.participants.find((p) => p.id === 'pc_alice');
+function getAlice(s: CampaignState): Participant | undefined {
+  return s.encounter?.participants.find((p) => p.id === 'pc_alice');
 }
 
 describe('applyIntent — SetStamina', () => {
   it('rejects when no active encounter', () => {
     const r = applyIntent(
-      emptySessionState(sessionId),
+      emptyCampaignState(campaignId),
       intent('SetStamina', { participantId: 'pc_alice', currentStamina: 10 }),
     );
     expect(r.errors?.[0]?.code).toBe('no_active_encounter');
   });
 
   it('rejects when participant not found', () => {
-    let s = emptySessionState(sessionId);
+    let s = emptyCampaignState(campaignId);
     s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
     const r = applyIntent(
       s,

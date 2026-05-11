@@ -3,14 +3,14 @@ import {
   type Participant,
   SetConditionPayloadSchema,
 } from '@ironyard/shared';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 // Conditions whose canonical text says a new imposition from a *different*
 // source replaces the old one (rules-canon.md §3.4: Frightened — Classes.md:458;
 // Taunted — Classes.md:490). Same-source impositions remain idempotent.
 const REPLACE_ON_DIFFERENT_SOURCE = new Set<string>(['Frightened', 'Taunted']);
 
-export function applySetCondition(state: SessionState, intent: StampedIntent): IntentResult {
+export function applySetCondition(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = SetConditionPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -27,7 +27,7 @@ export function applySetCondition(state: SessionState, intent: StampedIntent): I
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -37,7 +37,7 @@ export function applySetCondition(state: SessionState, intent: StampedIntent): I
   }
 
   const { targetId, condition, source, duration } = parsed.data;
-  const target = state.activeEncounter.participants.find((p) => p.id === targetId);
+  const target = state.encounter.participants.find((p) => p.id === targetId);
   if (!target) {
     return {
       state,
@@ -89,7 +89,7 @@ export function applySetCondition(state: SessionState, intent: StampedIntent): I
   }
 
   const updatedTarget: Participant = { ...target, conditions: nextConditions };
-  const updatedParticipants = state.activeEncounter.participants.map((p) =>
+  const updatedParticipants = state.encounter.participants.map((p) =>
     p.id === targetId ? updatedTarget : p,
   );
 
@@ -97,8 +97,8 @@ export function applySetCondition(state: SessionState, intent: StampedIntent): I
     state: {
       ...state,
       seq,
-      activeEncounter: {
-        ...state.activeEncounter,
+      encounter: {
+        ...state.encounter,
         participants: updatedParticipants,
       },
     },

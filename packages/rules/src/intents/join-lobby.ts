@@ -1,8 +1,8 @@
-import { JoinSessionPayloadSchema } from '@ironyard/shared';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import { JoinLobbyPayloadSchema } from '@ironyard/shared';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
-export function applyJoinSession(state: SessionState, intent: StampedIntent): IntentResult {
-  const parsed = JoinSessionPayloadSchema.safeParse(intent.payload);
+export function applyJoinLobby(state: CampaignState, intent: StampedIntent): IntentResult {
+  const parsed = JoinLobbyPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
       state,
@@ -10,7 +10,7 @@ export function applyJoinSession(state: SessionState, intent: StampedIntent): In
       log: [
         {
           kind: 'error',
-          text: `JoinSession rejected: ${parsed.error.message}`,
+          text: `JoinLobby rejected: ${parsed.error.message}`,
           intentId: intent.id,
         },
       ],

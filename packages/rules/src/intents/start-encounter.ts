@@ -1,7 +1,7 @@
 import { StartEncounterPayloadSchema } from '@ironyard/shared';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
-export function applyStartEncounter(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyStartEncounter(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = StartEncounterPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -22,7 +22,7 @@ export function applyStartEncounter(state: SessionState, intent: StampedIntent):
   const seq = state.seq + 1;
 
   // Idempotent if the same encounter is already active.
-  if (state.activeEncounter && state.activeEncounter.id === encounterId) {
+  if (state.encounter && state.encounter.id === encounterId) {
     return {
       state: { ...state, seq },
       derived: [],
@@ -30,21 +30,21 @@ export function applyStartEncounter(state: SessionState, intent: StampedIntent):
     };
   }
 
-  if (state.activeEncounter && state.activeEncounter.id !== encounterId) {
+  if (state.encounter && state.encounter.id !== encounterId) {
     return {
       state,
       derived: [],
       log: [
         {
           kind: 'error',
-          text: `cannot start ${encounterId}: ${state.activeEncounter.id} is already active`,
+          text: `cannot start ${encounterId}: ${state.encounter.id} is already active`,
           intentId: intent.id,
         },
       ],
       errors: [
         {
           code: 'encounter_active',
-          message: `another encounter (${state.activeEncounter.id}) is already running`,
+          message: `another encounter (${state.encounter.id}) is already running`,
         },
       ],
     };
@@ -54,7 +54,7 @@ export function applyStartEncounter(state: SessionState, intent: StampedIntent):
     state: {
       ...state,
       seq,
-      activeEncounter: {
+      encounter: {
         id: encounterId,
         participants: [],
         currentRound: null,

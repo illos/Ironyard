@@ -1,8 +1,8 @@
 import { ApplyDamagePayloadSchema } from '@ironyard/shared';
 import { applyDamageStep } from '../damage';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
-export function applyApplyDamage(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyApplyDamage(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = ApplyDamagePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -19,7 +19,7 @@ export function applyApplyDamage(state: SessionState, intent: StampedIntent): In
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -29,7 +29,7 @@ export function applyApplyDamage(state: SessionState, intent: StampedIntent): In
   }
 
   const { targetId, amount, damageType } = parsed.data;
-  const target = state.activeEncounter.participants.find((p) => p.id === targetId);
+  const target = state.encounter.participants.find((p) => p.id === targetId);
   if (!target) {
     return {
       state,
@@ -40,7 +40,7 @@ export function applyApplyDamage(state: SessionState, intent: StampedIntent): In
   }
 
   const result = applyDamageStep(target, amount, damageType);
-  const updatedParticipants = state.activeEncounter.participants.map((p) =>
+  const updatedParticipants = state.encounter.participants.map((p) =>
     p.id === targetId ? result.newParticipant : p,
   );
 
@@ -48,8 +48,8 @@ export function applyApplyDamage(state: SessionState, intent: StampedIntent): In
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
-        ...state.activeEncounter,
+      encounter: {
+        ...state.encounter,
         participants: updatedParticipants,
       },
     },

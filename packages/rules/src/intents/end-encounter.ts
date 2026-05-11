@@ -1,12 +1,12 @@
 import { EndEncounterPayloadSchema, type Participant } from '@ironyard/shared';
 import { requireCanon } from '../require-canon';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 // Phase 1 cleanup: closes out the active encounter. Walks every participant
 // and resets the encounter-scoped pools (heroicResources, extras, surges per
 // canon §5.4/§5.6) to 0, strips conditions whose duration is
 // `end_of_encounter`, then wipes Director's Malice (canon §5.5) and sets
-// `activeEncounter` to null. Recoveries are NOT touched (canon §2.13 —
+// `encounter` to null. Recoveries are NOT touched (canon §2.13 —
 // respite-only). No derived intents — this is a single atomic state-machine
 // transition (matches StartEncounter's shape).
 //
@@ -42,7 +42,7 @@ export function resetParticipantForEndOfEncounter(p: Participant): Participant {
   };
 }
 
-export function applyEndEncounter(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyEndEncounter(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = EndEncounterPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -63,7 +63,7 @@ export function applyEndEncounter(state: SessionState, intent: StampedIntent): I
 
   // Idempotent no-op: dispatching EndEncounter when none is active is logged
   // but does not error. Bumps seq so the intent still appears in the log.
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state: { ...state, seq: state.seq + 1 },
       derived: [],
@@ -77,31 +77,31 @@ export function applyEndEncounter(state: SessionState, intent: StampedIntent): I
     };
   }
 
-  if (state.activeEncounter.id !== encounterId) {
+  if (state.encounter.id !== encounterId) {
     return {
       state,
       derived: [],
       log: [
         {
           kind: 'error',
-          text: `cannot end ${encounterId}: active encounter is ${state.activeEncounter.id}`,
+          text: `cannot end ${encounterId}: active encounter is ${state.encounter.id}`,
           intentId: intent.id,
         },
       ],
       errors: [
         {
           code: 'wrong_encounter',
-          message: `active encounter id is ${state.activeEncounter.id}`,
+          message: `active encounter id is ${state.encounter.id}`,
         },
       ],
     };
   }
 
   // Reset every participant in place. We never use the resulting array (it
-  // goes away with activeEncounter), but the per-participant resets are kept
+  // goes away with encounter), but the per-participant resets are kept
   // pure and stateless so a future "soft end" mode (keep encounter, just
   // reset pools) can be added without forking the logic.
-  for (const p of state.activeEncounter.participants) {
+  for (const p of state.encounter.participants) {
     resetParticipantForEndOfEncounter(p);
   }
 
@@ -109,7 +109,7 @@ export function applyEndEncounter(state: SessionState, intent: StampedIntent): I
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: null,
+      encounter: null,
     },
     derived: [],
     log: [

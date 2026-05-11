@@ -234,7 +234,7 @@ export type EncounterPhase = {
 | Intent | Change |
 |---|---|
 | `StartEncounter` | No longer accepts a monster lineup. Engages whoever is currently on the lobby roster: assigns initiative order, sets `encounter.currentRound = 1`, initialises malice. Rejected if `encounter` is already non-null. |
-| `EndEncounter` | Sets `encounter = null`. Iterates `participants` and clears each one's conditions array. Stamina, resources, recoveries, surges, heroic resource untouched. |
+| `EndEncounter` | Sets `encounter = null`. Iterates `participants` and applies the existing end-of-encounter resets per canon (today's `resetParticipantForEndOfEncounter` helper): conditions whose `duration.kind === 'end_of_encounter'` are removed; heroic resources, extras, and surges reset to 0; recoveries untouched (canon §2.13 — respite-only). Stamina and `Participant.id` are preserved. The structural change vs. today: participants live at the campaign level, so they *survive* EndEncounter; today they vanish with `activeEncounter`. |
 | `BringCharacterIntoEncounter` | Renamed semantically (but keeping the type literal for now to limit blast radius) — adds a character to the lobby roster, not "into the encounter." Works whether or not an encounter is active. |
 | `JoinSession` / `LeaveSession` | Renamed to `JoinLobby` / `LeaveLobby`. Same semantics. |
 

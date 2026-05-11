@@ -29,13 +29,13 @@ export function useLogout() {
 
 export function useCreateSession() {
   return useMutation({
-    mutationFn: (input: { name: string }) => api.post<SessionDetail>('/api/sessions', input),
+    mutationFn: (input: { name: string }) => api.post<SessionDetail>('/api/campaigns', input),
   });
 }
 
 export function useJoinSession() {
   return useMutation({
     mutationFn: (input: { inviteCode: string }) =>
-      api.post<SessionDetail>('/api/sessions/join', input),
+      api.post<SessionDetail>('/api/campaigns/join', input),
   });
 }

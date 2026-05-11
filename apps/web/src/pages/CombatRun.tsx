@@ -76,8 +76,8 @@ export function CombatRun() {
     for (const entry of newEntries) {
       // Only toast types worth seeing. JoinSession / LeaveSession spam the
       // log on every connect and never need an undo affordance.
-      if (entry.type === IntentTypes.JoinSession) continue;
-      if (entry.type === IntentTypes.LeaveSession) continue;
+      if (entry.type === IntentTypes.JoinLobby) continue;
+      if (entry.type === IntentTypes.LeaveLobby) continue;
       // Derived intents inherit attribution from their parent — surface the
       // parent's text but make Undo target the parent id (the DO voids the
       // whole chain via the parent).
@@ -212,7 +212,7 @@ export function CombatRun() {
   const undoable = findLatestUndoable(intentLog);
 
   const send = (type: string, payload: unknown): boolean =>
-    dispatch(buildIntent({ sessionId, type, payload, actor }));
+    dispatch(buildIntent({ campaignId: sessionId, type, payload, actor }));
 
   const handleStartRound = () => {
     const payload: StartRoundPayload = {};
@@ -274,7 +274,7 @@ export function CombatRun() {
     // TODO: lobby for the DO to honour client `source`, or extend the wire
     // protocol with a `source: 'manual' | 'auto'` field independent of trust.
     const intent: Intent = buildIntent({
-      sessionId,
+      campaignId: sessionId,
       type: IntentTypes.RollPower,
       payload,
       actor,

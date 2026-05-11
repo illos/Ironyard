@@ -1,12 +1,12 @@
 import { type Participant, SpendResourcePayloadSchema } from '@ironyard/shared';
 import { refLabel, resolveResource, updateExtra, updateHeroic } from '../resources';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 // Slice 7: pay a positive cost from a heroic / extras pool. The floor-breach
 // check is the load-bearing edge case: Talent's Clarity has a negative floor
 // (`-(1 + Reason)`), so legal Clarity spends go below 0; every other resource
 // floors at 0 so the same check rejects negative balances (canon §5.3 / §5.4).
-export function applySpendResource(state: SessionState, intent: StampedIntent): IntentResult {
+export function applySpendResource(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = SpendResourcePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -23,7 +23,7 @@ export function applySpendResource(state: SessionState, intent: StampedIntent): 
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -33,7 +33,7 @@ export function applySpendResource(state: SessionState, intent: StampedIntent): 
   }
 
   const { participantId, name, amount, reason } = parsed.data;
-  const target = state.activeEncounter.participants.find((p) => p.id === participantId);
+  const target = state.encounter.participants.find((p) => p.id === participantId);
   if (!target) {
     return {
       state,
@@ -94,7 +94,7 @@ export function applySpendResource(state: SessionState, intent: StampedIntent): 
       name: resolved.instance.name,
     });
   }
-  const updatedParticipants = state.activeEncounter.participants.map((p) =>
+  const updatedParticipants = state.encounter.participants.map((p) =>
     p.id === participantId ? updatedTarget : p,
   );
 
@@ -102,7 +102,7 @@ export function applySpendResource(state: SessionState, intent: StampedIntent): 
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: { ...state.activeEncounter, participants: updatedParticipants },
+      encounter: { ...state.encounter, participants: updatedParticipants },
     },
     derived: [],
     log: [

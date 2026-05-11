@@ -27,7 +27,7 @@ export function useMe() {
 export function useSession(id: string | undefined) {
   return useQuery<SessionDetail>({
     queryKey: ['session', id],
-    queryFn: () => api.get<SessionDetail>(`/api/sessions/${id}`),
+    queryFn: () => api.get<SessionDetail>(`/api/campaigns/${id}`),
     enabled: !!id,
   });
 }

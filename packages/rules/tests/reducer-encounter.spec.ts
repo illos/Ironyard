@@ -1,19 +1,19 @@
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
-  type SessionState,
+  type CampaignState,
   type StampedIntent,
   applyIntent,
-  emptySessionState,
+  emptyCampaignState,
 } from '../src/index';
 
 const T = 1_700_000_000_000;
-const sessionId = 'sess_test';
+const campaignId = 'sess_test';
 
 function intent(type: string, payload: unknown, overrides: Partial<Intent> = {}): StampedIntent {
   return {
     id: overrides.id ?? `i_${Math.random().toString(36).slice(2)}`,
-    sessionId: overrides.sessionId ?? sessionId,
+    campaignId: overrides.campaignId ?? campaignId,
     actor: overrides.actor ?? { userId: 'alice', role: 'director' },
     timestamp: overrides.timestamp ?? T,
     source: overrides.source ?? 'manual',
@@ -23,8 +23,8 @@ function intent(type: string, payload: unknown, overrides: Partial<Intent> = {})
   };
 }
 
-function withEncounter(): SessionState {
-  let s = emptySessionState(sessionId);
+function withEncounter(): CampaignState {
+  let s = emptyCampaignState(campaignId);
   s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
   return s;
 }
@@ -72,13 +72,13 @@ function monster(over: Partial<Participant> = {}): Participant {
 }
 
 describe('applyIntent — StartEncounter', () => {
-  it('initialises activeEncounter', () => {
+  it('initialises encounter', () => {
     const r = applyIntent(
-      emptySessionState(sessionId),
+      emptyCampaignState(campaignId),
       intent('StartEncounter', { encounterId: 'e1' }),
     );
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter).toEqual({
+    expect(r.state.encounter).toEqual({
       id: 'e1',
       participants: [],
       currentRound: null,
@@ -93,22 +93,22 @@ describe('applyIntent — StartEncounter', () => {
 
   it('is idempotent for the same encounter id', () => {
     const s = applyIntent(
-      emptySessionState(sessionId),
+      emptyCampaignState(campaignId),
       intent('StartEncounter', { encounterId: 'e1' }),
     ).state;
     const r = applyIntent(s, intent('StartEncounter', { encounterId: 'e1' }));
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter?.id).toBe('e1');
+    expect(r.state.encounter?.id).toBe('e1');
   });
 
   it('rejects a different encounter while one is active', () => {
     const s = applyIntent(
-      emptySessionState(sessionId),
+      emptyCampaignState(campaignId),
       intent('StartEncounter', { encounterId: 'e1' }),
     ).state;
     const r = applyIntent(s, intent('StartEncounter', { encounterId: 'e2' }));
     expect(r.errors?.[0]?.code).toBe('encounter_active');
-    expect(r.state.activeEncounter?.id).toBe('e1'); // unchanged
+    expect(r.state.encounter?.id).toBe('e1'); // unchanged
   });
 });
 
@@ -119,13 +119,13 @@ describe('applyIntent — BringCharacterIntoEncounter', () => {
       intent('BringCharacterIntoEncounter', { participant: pc() }),
     );
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter?.participants).toHaveLength(1);
-    expect(r.state.activeEncounter?.participants[0]?.name).toBe('Alice');
+    expect(r.state.encounter?.participants).toHaveLength(1);
+    expect(r.state.encounter?.participants[0]?.name).toBe('Alice');
   });
 
   it('rejects with no_active_encounter when none is running', () => {
     const r = applyIntent(
-      emptySessionState(sessionId),
+      emptyCampaignState(campaignId),
       intent('BringCharacterIntoEncounter', { participant: pc() }),
     );
     expect(r.errors?.[0]?.code).toBe('no_active_encounter');
@@ -150,7 +150,7 @@ describe('applyIntent — BringCharacterIntoEncounter', () => {
 });
 
 describe('applyIntent — RollPower', () => {
-  function ready(): SessionState {
+  function ready(): CampaignState {
     let s = withEncounter();
     s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
     s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
@@ -239,7 +239,7 @@ describe('applyIntent — RollPower', () => {
 
   it('rejects RollPower with no active encounter', () => {
     const r = applyIntent(
-      emptySessionState(sessionId),
+      emptyCampaignState(campaignId),
       intent('RollPower', {
         abilityId: 'a',
         attackerId: 'x',
@@ -283,7 +283,7 @@ describe('applyIntent — RollPower', () => {
 });
 
 describe('applyIntent — ApplyDamage', () => {
-  function readyWithGoblin(): SessionState {
+  function readyWithGoblin(): CampaignState {
     let s = withEncounter();
     s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
     return s;
@@ -300,7 +300,7 @@ describe('applyIntent — ApplyDamage', () => {
       }),
     );
     expect(r.errors).toBeUndefined();
-    const goblin = r.state.activeEncounter?.participants.find((p) => p.id === 'm_goblin');
+    const goblin = r.state.encounter?.participants.find((p) => p.id === 'm_goblin');
     expect(goblin?.currentStamina).toBe(15);
   });
 
@@ -357,12 +357,10 @@ describe('end-to-end: RollPower → derived ApplyDamage cascade', () => {
     const damageResult = applyIntent(s, {
       ...derived,
       id: 'derived_1',
-      sessionId,
+      campaignId,
       timestamp: T + 1,
     });
-    const goblin = damageResult.state.activeEncounter?.participants.find(
-      (p) => p.id === 'm_goblin',
-    );
+    const goblin = damageResult.state.encounter?.participants.find((p) => p.id === 'm_goblin');
     // t3 damage 9 + weakness 3 = 12 dealt; 20 - 12 = 8
     expect(goblin?.currentStamina).toBe(8);
   });

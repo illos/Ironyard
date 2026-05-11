@@ -1,18 +1,18 @@
 import { z } from 'zod';
 
-export const CreateSessionRequestSchema = z.object({
+export const CreateCampaignRequestSchema = z.object({
   name: z.string().min(1).max(80),
 });
-export type CreateSessionRequest = z.infer<typeof CreateSessionRequestSchema>;
+export type CreateCampaignRequest = z.infer<typeof CreateCampaignRequestSchema>;
 
-export const JoinSessionRequestSchema = z.object({
+export const JoinCampaignRequestSchema = z.object({
   inviteCode: z
     .string()
     .min(4)
     .max(16)
     .regex(/^[0-9A-Z]+$/, 'invite code must be uppercase alphanumeric'),
 });
-export type JoinSessionRequest = z.infer<typeof JoinSessionRequestSchema>;
+export type JoinCampaignRequest = z.infer<typeof JoinCampaignRequestSchema>;
 
 // Invite code: 6-char Crockford-Base32. Same alphabet as ULID so I/L/O/U
 // don't get confused with 1/0/V at the table.

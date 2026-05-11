@@ -27,11 +27,11 @@ export {
 export type { CurrentUser, DevLoginRequest, MagicLinkRequest } from './auth';
 
 export {
-  CreateSessionRequestSchema,
-  JoinSessionRequestSchema,
+  CreateCampaignRequestSchema,
+  JoinCampaignRequestSchema,
   generateInviteCode,
-} from './session';
-export type { CreateSessionRequest, JoinSessionRequest } from './session';
+} from './campaign';
+export type { CreateCampaignRequest, JoinCampaignRequest } from './campaign';
 
 export {
   ApplyDamagePayloadSchema,
@@ -43,8 +43,8 @@ export {
   GainMalicePayloadSchema,
   GainResourcePayloadSchema,
   IntentTypes,
-  JoinSessionPayloadSchema,
-  LeaveSessionPayloadSchema,
+  JoinLobbyPayloadSchema,
+  LeaveLobbyPayloadSchema,
   NotePayloadSchema,
   RemoveConditionPayloadSchema,
   RollPowerPayloadSchema,
@@ -71,9 +71,9 @@ export type {
   EndTurnPayload,
   GainMalicePayload,
   GainResourcePayload,
-  JoinSessionPayload,
+  JoinLobbyPayload,
   KnownIntentType,
-  LeaveSessionPayload,
+  LeaveLobbyPayload,
   NotePayload,
   RemoveConditionPayload,
   RollPowerPayload,

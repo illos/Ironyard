@@ -1,8 +1,8 @@
 import { BringCharacterIntoEncounterPayloadSchema } from '@ironyard/shared';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 export function applyBringCharacterIntoEncounter(
-  state: SessionState,
+  state: CampaignState,
   intent: StampedIntent,
 ): IntentResult {
   const parsed = BringCharacterIntoEncounterPayloadSchema.safeParse(intent.payload);
@@ -21,7 +21,7 @@ export function applyBringCharacterIntoEncounter(
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -37,7 +37,7 @@ export function applyBringCharacterIntoEncounter(
   }
 
   const { participant } = parsed.data;
-  if (state.activeEncounter.participants.some((p) => p.id === participant.id)) {
+  if (state.encounter.participants.some((p) => p.id === participant.id)) {
     return {
       state,
       derived: [],
@@ -56,9 +56,9 @@ export function applyBringCharacterIntoEncounter(
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
-        ...state.activeEncounter,
-        participants: [...state.activeEncounter.participants, participant],
+      encounter: {
+        ...state.encounter,
+        participants: [...state.encounter.participants, participant],
       },
     },
     derived: [],

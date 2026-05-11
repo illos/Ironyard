@@ -1,5 +1,5 @@
 import { SetStaminaPayloadSchema } from '@ironyard/shared';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 // Phase 1 cleanup: client-dispatchable manual HP override. Mirrors the
 // SetCondition shape — payload-validate → require encounter → locate
@@ -12,7 +12,7 @@ import type { IntentResult, SessionState, StampedIntent } from '../types';
 // follow-up that requires participant ownership (Participant.ownerUserId) in
 // the schema, which doesn't exist yet. The DO already stamps `actor` from the
 // WS headers, so impersonation isn't possible regardless.
-export function applySetStamina(state: SessionState, intent: StampedIntent): IntentResult {
+export function applySetStamina(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = SetStaminaPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -29,7 +29,7 @@ export function applySetStamina(state: SessionState, intent: StampedIntent): Int
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -39,7 +39,7 @@ export function applySetStamina(state: SessionState, intent: StampedIntent): Int
   }
 
   const { participantId, currentStamina, maxStamina } = parsed.data;
-  const target = state.activeEncounter.participants.find((p) => p.id === participantId);
+  const target = state.encounter.participants.find((p) => p.id === participantId);
   if (!target) {
     return {
       state,
@@ -88,7 +88,7 @@ export function applySetStamina(state: SessionState, intent: StampedIntent): Int
   }
 
   const updatedTarget = { ...target, currentStamina: nextCurrent, maxStamina: nextMax };
-  const updatedParticipants = state.activeEncounter.participants.map((p) =>
+  const updatedParticipants = state.encounter.participants.map((p) =>
     p.id === participantId ? updatedTarget : p,
   );
 
@@ -96,7 +96,7 @@ export function applySetStamina(state: SessionState, intent: StampedIntent): Int
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: { ...state.activeEncounter, participants: updatedParticipants },
+      encounter: { ...state.encounter, participants: updatedParticipants },
     },
     derived: [],
     log: [

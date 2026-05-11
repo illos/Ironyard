@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  CreateSessionRequestSchema,
-  JoinSessionRequestSchema,
+  CreateCampaignRequestSchema,
+  JoinCampaignRequestSchema,
   generateInviteCode,
-} from '../src/session';
+} from '../src/campaign';
 
 describe('generateInviteCode', () => {
   it('produces a 6-char uppercase Crockford-Base32 string', () => {
@@ -17,34 +17,34 @@ describe('generateInviteCode', () => {
   });
 });
 
-describe('CreateSessionRequestSchema', () => {
+describe('CreateCampaignRequestSchema', () => {
   it('accepts a valid name', () => {
-    expect(CreateSessionRequestSchema.parse({ name: 'Saturday game' })).toEqual({
+    expect(CreateCampaignRequestSchema.parse({ name: 'Saturday game' })).toEqual({
       name: 'Saturday game',
     });
   });
 
   it('rejects empty name', () => {
-    expect(() => CreateSessionRequestSchema.parse({ name: '' })).toThrow();
+    expect(() => CreateCampaignRequestSchema.parse({ name: '' })).toThrow();
   });
 
   it('rejects name over 80 chars', () => {
-    expect(() => CreateSessionRequestSchema.parse({ name: 'x'.repeat(81) })).toThrow();
+    expect(() => CreateCampaignRequestSchema.parse({ name: 'x'.repeat(81) })).toThrow();
   });
 });
 
-describe('JoinSessionRequestSchema', () => {
+describe('JoinCampaignRequestSchema', () => {
   it('accepts a 6-char uppercase code', () => {
-    expect(JoinSessionRequestSchema.parse({ inviteCode: 'ABC123' })).toEqual({
+    expect(JoinCampaignRequestSchema.parse({ inviteCode: 'ABC123' })).toEqual({
       inviteCode: 'ABC123',
     });
   });
 
   it('rejects a lowercase code', () => {
-    expect(() => JoinSessionRequestSchema.parse({ inviteCode: 'abc123' })).toThrow();
+    expect(() => JoinCampaignRequestSchema.parse({ inviteCode: 'abc123' })).toThrow();
   });
 
   it('rejects a too-short code', () => {
-    expect(() => JoinSessionRequestSchema.parse({ inviteCode: 'ABC' })).toThrow();
+    expect(() => JoinCampaignRequestSchema.parse({ inviteCode: 'ABC' })).toThrow();
   });
 });

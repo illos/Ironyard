@@ -1,7 +1,7 @@
 import { type Participant, RemoveConditionPayloadSchema } from '@ironyard/shared';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
-export function applyRemoveCondition(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyRemoveCondition(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = RemoveConditionPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -18,7 +18,7 @@ export function applyRemoveCondition(state: SessionState, intent: StampedIntent)
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -28,7 +28,7 @@ export function applyRemoveCondition(state: SessionState, intent: StampedIntent)
   }
 
   const { targetId, condition, sourceId } = parsed.data;
-  const target = state.activeEncounter.participants.find((p) => p.id === targetId);
+  const target = state.encounter.participants.find((p) => p.id === targetId);
   if (!target) {
     return {
       state,
@@ -51,7 +51,7 @@ export function applyRemoveCondition(state: SessionState, intent: StampedIntent)
   const removed = target.conditions.length - nextConditions.length;
 
   const updatedTarget: Participant = { ...target, conditions: nextConditions };
-  const updatedParticipants = state.activeEncounter.participants.map((p) =>
+  const updatedParticipants = state.encounter.participants.map((p) =>
     p.id === targetId ? updatedTarget : p,
   );
 
@@ -60,8 +60,8 @@ export function applyRemoveCondition(state: SessionState, intent: StampedIntent)
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
-        ...state.activeEncounter,
+      encounter: {
+        ...state.encounter,
         participants: updatedParticipants,
       },
     },

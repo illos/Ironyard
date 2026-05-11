@@ -1,5 +1,5 @@
-// D1 schema for dynamic session data. Mirrors docs/data-pipeline.md verbatim.
-// JSON blob columns (characters.data, encounters.data, session_snapshots.state,
+// D1 schema for dynamic campaign data. Mirrors docs/data-pipeline.md verbatim.
+// JSON blob columns (characters.data, campaign_snapshots.state,
 // intents.payload) are typed text here and validated against Zod schemas in
 // @ironyard/shared at the application boundary — Phase 1 adds those helpers.
 
@@ -32,10 +32,10 @@ export const authSessions = sqliteTable('auth_sessions', {
   createdAt: integer('created_at').notNull(),
 });
 
-export const sessions = sqliteTable('sessions', {
+export const campaigns = sqliteTable('campaigns', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
-  directorId: text('director_id')
+  ownerId: text('owner_id')
     .notNull()
     .references(() => users.id),
   inviteCode: text('invite_code').notNull().unique(),
@@ -43,12 +43,12 @@ export const sessions = sqliteTable('sessions', {
   updatedAt: integer('updated_at').notNull(),
 });
 
-export const memberships = sqliteTable(
-  'memberships',
+export const campaignMemberships = sqliteTable(
+  'campaign_memberships',
   {
-    sessionId: text('session_id')
+    campaignId: text('campaign_id')
       .notNull()
-      .references(() => sessions.id, { onDelete: 'cascade' }),
+      .references(() => campaigns.id, { onDelete: 'cascade' }),
     userId: text('user_id')
       .notNull()
       .references(() => users.id),
@@ -56,8 +56,8 @@ export const memberships = sqliteTable(
     joinedAt: integer('joined_at').notNull(),
   },
   (table) => ({
-    pk: primaryKey({ columns: [table.sessionId, table.userId] }),
-    userIdx: index('idx_memberships_user').on(table.userId),
+    pk: primaryKey({ columns: [table.campaignId, table.userId] }),
+    userIdx: index('idx_campaign_memberships_user').on(table.userId),
   }),
 );
 
@@ -78,22 +78,11 @@ export const characters = sqliteTable(
   }),
 );
 
-export const encounters = sqliteTable('encounters', {
-  id: text('id').primaryKey(),
-  sessionId: text('session_id')
-    .notNull()
-    .references(() => sessions.id, { onDelete: 'cascade' }),
-  name: text('name').notNull(),
-  data: text('data').notNull(), // JSON; monster instances + terrain
-  createdAt: integer('created_at').notNull(),
-  updatedAt: integer('updated_at').notNull(),
-});
-
-export const sessionSnapshots = sqliteTable('session_snapshots', {
-  sessionId: text('session_id')
+export const campaignSnapshots = sqliteTable('campaign_snapshots', {
+  campaignId: text('campaign_id')
     .primaryKey()
-    .references(() => sessions.id, { onDelete: 'cascade' }),
-  state: text('state').notNull(), // JSON SessionState (Phase 1)
+    .references(() => campaigns.id, { onDelete: 'cascade' }),
+  state: text('state').notNull(), // JSON CampaignState (Phase 1)
   seq: integer('seq').notNull(),
   savedAt: integer('saved_at').notNull(),
 });
@@ -102,9 +91,9 @@ export const intents = sqliteTable(
   'intents',
   {
     id: text('id').primaryKey(), // ULID
-    sessionId: text('session_id')
+    campaignId: text('campaign_id')
       .notNull()
-      .references(() => sessions.id, { onDelete: 'cascade' }),
+      .references(() => campaigns.id, { onDelete: 'cascade' }),
     seq: integer('seq').notNull(),
     actorId: text('actor_id')
       .notNull()
@@ -114,7 +103,7 @@ export const intents = sqliteTable(
     createdAt: integer('created_at').notNull(),
   },
   (table) => ({
-    sessionSeqUnique: unique('intents_session_seq_unique').on(table.sessionId, table.seq),
-    sessionSeqIdx: index('idx_intents_session_seq').on(table.sessionId, table.seq),
+    campaignSeqUnique: unique('intents_campaign_seq_unique').on(table.campaignId, table.seq),
+    campaignSeqIdx: index('idx_intents_campaign_seq').on(table.campaignId, table.seq),
   }),
 );

@@ -353,8 +353,8 @@ function upsertResource(
 // mismatch — caller treats null as "no encounter to restore."
 function snapshotToEncounter(state: unknown): ActiveEncounter | null {
   if (!state || typeof state !== 'object') return null;
-  const s = state as { activeEncounter?: unknown };
-  const e = s.activeEncounter;
+  const s = state as { encounter?: unknown };
+  const e = s.encounter;
   if (!e || typeof e !== 'object') return null;
   const enc = e as {
     id?: string;
@@ -386,7 +386,7 @@ export function useSessionSocket(sessionId: string | undefined) {
   useEffect(() => {
     if (!sessionId) return;
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${proto}//${window.location.host}/api/sessions/${sessionId}/socket`);
+    const ws = new WebSocket(`${proto}//${window.location.host}/api/campaigns/${sessionId}/socket`);
     wsRef.current = ws;
     setStatus('connecting');
     setActiveEncounter(null);

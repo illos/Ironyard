@@ -1,10 +1,10 @@
 import { GainMalicePayloadSchema } from '@ironyard/shared';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 // Slice 7: add to the Director's encounter-scoped Malice counter (canon §5.5).
 // `amount` is signed — negative values are permitted (e.g. Elementalist's
 // Sap Strength drives Malice below 0). No floor.
-export function applyGainMalice(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyGainMalice(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = GainMalicePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -21,7 +21,7 @@ export function applyGainMalice(state: SessionState, intent: StampedIntent): Int
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -31,16 +31,16 @@ export function applyGainMalice(state: SessionState, intent: StampedIntent): Int
   }
 
   const { amount } = parsed.data;
-  const before = state.activeEncounter.malice.current;
+  const before = state.encounter.malice.current;
   const after = before + amount;
 
   return {
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
-        ...state.activeEncounter,
-        malice: { ...state.activeEncounter.malice, current: after },
+      encounter: {
+        ...state.encounter,
+        malice: { ...state.encounter.malice, current: after },
       },
     },
     derived: [],

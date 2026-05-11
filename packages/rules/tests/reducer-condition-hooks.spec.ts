@@ -1,19 +1,19 @@
 import type { ConditionInstance, Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
-  type SessionState,
+  type CampaignState,
   type StampedIntent,
   applyIntent,
-  emptySessionState,
+  emptyCampaignState,
 } from '../src/index';
 
 const T = 1_700_000_000_000;
-const sessionId = 'sess_test';
+const campaignId = 'sess_test';
 
 function intent(type: string, payload: unknown, overrides: Partial<Intent> = {}): StampedIntent {
   return {
     id: overrides.id ?? `i_${Math.random().toString(36).slice(2)}`,
-    sessionId: overrides.sessionId ?? sessionId,
+    campaignId: overrides.campaignId ?? campaignId,
     actor: overrides.actor ?? { userId: 'alice', role: 'director' },
     timestamp: overrides.timestamp ?? T,
     source: overrides.source ?? 'manual',
@@ -71,8 +71,8 @@ const ladder = {
   t3: { damage: 9, damageType: 'untyped' as const },
 };
 
-function readyState(parts: Participant[] = [pc(), monster()]): SessionState {
-  let s = emptySessionState(sessionId);
+function readyState(parts: Participant[] = [pc(), monster()]): CampaignState {
+  let s = emptyCampaignState(campaignId);
   s = applyIntent(s, intent('StartEncounter', { encounterId: 'e1' })).state;
   for (const p of parts) {
     s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: p })).state;
@@ -82,7 +82,7 @@ function readyState(parts: Participant[] = [pc(), monster()]): SessionState {
 
 // Helper — start a round with the given initiative order, then start the
 // attacker's turn so the daze-state tracker is initialised.
-function inRoundWithActor(parts: Participant[], order: string[], actorId: string): SessionState {
+function inRoundWithActor(parts: Participant[], order: string[], actorId: string): CampaignState {
   let s = readyState(parts);
   s = applyIntent(s, intent('SetInitiative', { order })).state;
   s = applyIntent(s, intent('StartRound', {})).state;
@@ -90,8 +90,8 @@ function inRoundWithActor(parts: Participant[], order: string[], actorId: string
   return s;
 }
 
-function getConditions(state: SessionState, participantId: string): ConditionInstance[] {
-  return state.activeEncounter?.participants.find((p) => p.id === participantId)?.conditions ?? [];
+function getConditions(state: CampaignState, participantId: string): ConditionInstance[] {
+  return state.encounter?.participants.find((p) => p.id === participantId)?.conditions ?? [];
 }
 
 // ============================================================================
@@ -247,7 +247,7 @@ describe('reducer hooks — Bleeding on RollPower', () => {
 // ============================================================================
 
 describe('reducer hooks — Dazed action gate', () => {
-  function dazedAttackerScenario(): { s: SessionState; attackerId: string; targetId: string } {
+  function dazedAttackerScenario(): { s: CampaignState; attackerId: string; targetId: string } {
     const attacker = pc({
       conditions: [
         {
@@ -390,7 +390,7 @@ describe('reducer hooks — Dazed action gate', () => {
 // ============================================================================
 
 describe('reducer hooks — edge/bane contributions on RollPower', () => {
-  function rollWith(state: SessionState, attackerId: string, targetId: string) {
+  function rollWith(state: CampaignState, attackerId: string, targetId: string) {
     return applyIntent(
       state,
       intent('RollPower', {
@@ -644,7 +644,7 @@ describe('reducer hooks — edge/bane contributions on RollPower', () => {
 // ============================================================================
 
 describe('reducer hooks — EndTurn auto-fires RollResistance', () => {
-  function turnEndsWithSaves(saveEndsCount: number): { s: SessionState; actorId: string } {
+  function turnEndsWithSaves(saveEndsCount: number): { s: CampaignState; actorId: string } {
     const conditions: ConditionInstance[] = [];
     for (let i = 0; i < saveEndsCount; i++) {
       conditions.push({

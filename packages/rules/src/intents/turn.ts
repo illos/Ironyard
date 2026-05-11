@@ -9,20 +9,20 @@ import {
 import { requireCanon } from '../require-canon';
 import type {
   ActiveEncounter,
+  CampaignState,
   DerivedIntent,
   IntentResult,
   LogEntry,
-  SessionState,
   StampedIntent,
 } from '../types';
 
 // Shared guard — every turn intent requires an active encounter.
 function requireEncounter(
-  state: SessionState,
+  state: CampaignState,
   intent: StampedIntent,
   label: string,
 ): { ok: true; encounter: ActiveEncounter } | { ok: false; result: IntentResult } {
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       ok: false,
       result: {
@@ -33,10 +33,10 @@ function requireEncounter(
       },
     };
   }
-  return { ok: true, encounter: state.activeEncounter };
+  return { ok: true, encounter: state.encounter };
 }
 
-export function applyStartRound(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyStartRound(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = StartRoundPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -62,7 +62,7 @@ export function applyStartRound(state: SessionState, intent: StampedIntent): Int
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
+      encounter: {
         ...guard.encounter,
         currentRound: round,
         activeParticipantId: firstId,
@@ -73,7 +73,7 @@ export function applyStartRound(state: SessionState, intent: StampedIntent): Int
   };
 }
 
-export function applyEndRound(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyEndRound(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = EndRoundPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -100,7 +100,7 @@ export function applyEndRound(state: SessionState, intent: StampedIntent): Inten
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
+      encounter: {
         ...guard.encounter,
         activeParticipantId: null,
       },
@@ -116,7 +116,7 @@ export function applyEndRound(state: SessionState, intent: StampedIntent): Inten
   };
 }
 
-export function applyStartTurn(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyStartTurn(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = StartTurnPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -159,7 +159,7 @@ export function applyStartTurn(state: SessionState, intent: StampedIntent): Inte
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
+      encounter: {
         ...guard.encounter,
         activeParticipantId: participantId,
         turnState: nextTurnState,
@@ -170,7 +170,7 @@ export function applyStartTurn(state: SessionState, intent: StampedIntent): Inte
   };
 }
 
-export function applyEndTurn(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyEndTurn(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = EndTurnPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -290,7 +290,7 @@ export function applyEndTurn(state: SessionState, intent: StampedIntent): Intent
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
+      encounter: {
         ...guard.encounter,
         activeParticipantId: nextId,
         turnState: remainingTurnState,
@@ -301,7 +301,7 @@ export function applyEndTurn(state: SessionState, intent: StampedIntent): Intent
   };
 }
 
-export function applySetInitiative(state: SessionState, intent: StampedIntent): IntentResult {
+export function applySetInitiative(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = SetInitiativePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -364,7 +364,7 @@ export function applySetInitiative(state: SessionState, intent: StampedIntent): 
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
+      encounter: {
         ...guard.encounter,
         turnOrder: [...order],
       },

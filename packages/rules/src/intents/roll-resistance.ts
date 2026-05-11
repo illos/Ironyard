@@ -1,12 +1,12 @@
 import { type Participant, RollResistancePayloadSchema } from '@ironyard/shared';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 // Saving throw: 1d10, >= 6 ends the matching `save_ends` condition
 // (rules-canon.md §3.3, Q9). NOT a power roll. Slice 5 fires only on explicit
 // dispatch; slice 6 auto-fires this at end-of-turn for each save_ends instance.
 const SAVE_THRESHOLD = 6;
 
-export function applyRollResistance(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyRollResistance(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = RollResistancePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -23,7 +23,7 @@ export function applyRollResistance(state: SessionState, intent: StampedIntent):
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -33,7 +33,7 @@ export function applyRollResistance(state: SessionState, intent: StampedIntent):
   }
 
   const { characterId, effectId, rolls } = parsed.data;
-  const target = state.activeEncounter.participants.find((p) => p.id === characterId);
+  const target = state.encounter.participants.find((p) => p.id === characterId);
   if (!target) {
     return {
       state,
@@ -93,7 +93,7 @@ export function applyRollResistance(state: SessionState, intent: StampedIntent):
   });
 
   const updatedTarget: Participant = { ...target, conditions: nextConditions };
-  const updatedParticipants = state.activeEncounter.participants.map((p) =>
+  const updatedParticipants = state.encounter.participants.map((p) =>
     p.id === characterId ? updatedTarget : p,
   );
 
@@ -101,8 +101,8 @@ export function applyRollResistance(state: SessionState, intent: StampedIntent):
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
-        ...state.activeEncounter,
+      encounter: {
+        ...state.encounter,
         participants: updatedParticipants,
       },
     },

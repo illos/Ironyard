@@ -101,7 +101,7 @@ export function EncounterBuilder() {
       const startPayload: StartEncounterPayload = { encounterId: ulid() };
       dispatch(
         buildIntent({
-          sessionId,
+          campaignId: sessionId,
           type: IntentTypes.StartEncounter,
           payload: startPayload,
           actor,
@@ -112,7 +112,7 @@ export function EncounterBuilder() {
     const bringPayload: BringCharacterIntoEncounterPayload = { participant };
     dispatch(
       buildIntent({
-        sessionId,
+        campaignId: sessionId,
         type: IntentTypes.BringCharacterIntoEncounter,
         payload: bringPayload,
         actor,
@@ -125,7 +125,7 @@ export function EncounterBuilder() {
       const startPayload: StartEncounterPayload = { encounterId: ulid() };
       dispatch(
         buildIntent({
-          sessionId,
+          campaignId: sessionId,
           type: IntentTypes.StartEncounter,
           payload: startPayload,
           actor,
@@ -135,7 +135,7 @@ export function EncounterBuilder() {
     const bringPayload: BringCharacterIntoEncounterPayload = { participant };
     dispatch(
       buildIntent({
-        sessionId,
+        campaignId: sessionId,
         type: IntentTypes.BringCharacterIntoEncounter,
         payload: bringPayload,
         actor,
@@ -148,7 +148,7 @@ export function EncounterBuilder() {
     const payload: StartRoundPayload = {};
     const ok = dispatch(
       buildIntent({
-        sessionId,
+        campaignId: sessionId,
         type: IntentTypes.StartRound,
         payload,
         actor,

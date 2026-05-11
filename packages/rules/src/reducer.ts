@@ -8,8 +8,8 @@ import {
   applyEndTurn,
   applyGainMalice,
   applyGainResource,
-  applyJoinSession,
-  applyLeaveSession,
+  applyJoinLobby,
+  applyLeaveLobby,
   applyNote,
   applyRemoveCondition,
   applyRollPower,
@@ -27,18 +27,18 @@ import {
   applyStartTurn,
   applyUndo,
 } from './intents';
-import type { IntentResult, SessionState, StampedIntent } from './types';
+import type { CampaignState, IntentResult, StampedIntent } from './types';
 
 // The pure reducer. No Date.now(), no Math.random(). The DO stamps timestamp
 // and assigns seq before calling. Each handler returns a new state via
 // immutable spread — no mutation. Derived intents are emitted without
-// id/timestamp/sessionId; the DO fills those in before recursively applying.
-export function applyIntent(state: SessionState, intent: StampedIntent): IntentResult {
+// id/timestamp/campaignId; the DO fills those in before recursively applying.
+export function applyIntent(state: CampaignState, intent: StampedIntent): IntentResult {
   switch (intent.type) {
-    case IntentTypes.JoinSession:
-      return applyJoinSession(state, intent);
-    case IntentTypes.LeaveSession:
-      return applyLeaveSession(state, intent);
+    case IntentTypes.JoinLobby:
+      return applyJoinLobby(state, intent);
+    case IntentTypes.LeaveLobby:
+      return applyLeaveLobby(state, intent);
     case IntentTypes.Note:
       return applyNote(state, intent);
     case IntentTypes.StartEncounter:

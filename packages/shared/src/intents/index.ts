@@ -19,10 +19,10 @@ export { GainMalicePayloadSchema } from './gain-malice';
 export type { GainMalicePayload } from './gain-malice';
 export { GainResourcePayloadSchema } from './gain-resource';
 export type { GainResourcePayload } from './gain-resource';
-export { JoinSessionPayloadSchema } from './join-session';
-export type { JoinSessionPayload } from './join-session';
-export { LeaveSessionPayloadSchema } from './leave-session';
-export type { LeaveSessionPayload } from './leave-session';
+export { JoinLobbyPayloadSchema } from './join-lobby';
+export type { JoinLobbyPayload } from './join-lobby';
+export { LeaveLobbyPayloadSchema } from './leave-lobby';
+export type { LeaveLobbyPayload } from './leave-lobby';
 export { NotePayloadSchema } from './note';
 export type { NotePayload } from './note';
 export { RemoveConditionPayloadSchema } from './remove-condition';
@@ -75,8 +75,8 @@ export const IntentTypes = {
   EndTurn: 'EndTurn',
   GainMalice: 'GainMalice',
   GainResource: 'GainResource',
-  JoinSession: 'JoinSession',
-  LeaveSession: 'LeaveSession',
+  JoinLobby: 'JoinLobby',
+  LeaveLobby: 'LeaveLobby',
   Note: 'Note',
   RemoveCondition: 'RemoveCondition',
   RollPower: 'RollPower',

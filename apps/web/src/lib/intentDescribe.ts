@@ -107,8 +107,8 @@ export function findLatestUndoable(log: MirrorIntent[]): MirrorIntent | null {
     if (entry.causedBy) continue; // derived; the parent is the undo target
     if (entry.seq <= lastEndRoundSeq) continue;
     if (entry.type === IntentTypes.Undo) continue;
-    if (entry.type === IntentTypes.JoinSession) continue;
-    if (entry.type === IntentTypes.LeaveSession) continue;
+    if (entry.type === IntentTypes.JoinLobby) continue;
+    if (entry.type === IntentTypes.LeaveLobby) continue;
     return entry;
   }
   return null;

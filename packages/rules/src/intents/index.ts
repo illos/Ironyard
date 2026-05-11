@@ -4,8 +4,8 @@ export { applyBringCharacterIntoEncounter } from './bring-character-into-encount
 export { applyEndEncounter } from './end-encounter';
 export { applyGainMalice } from './gain-malice';
 export { applyGainResource } from './gain-resource';
-export { applyJoinSession } from './join-session';
-export { applyLeaveSession } from './leave-session';
+export { applyJoinLobby } from './join-lobby';
+export { applyLeaveLobby } from './leave-lobby';
 export { applyNote } from './note';
 export { applyRemoveCondition } from './remove-condition';
 export { applyRollPower } from './roll-power';

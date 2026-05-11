@@ -1,12 +1,12 @@
 import { IntentTypes, SpendRecoveryPayloadSchema } from '@ironyard/shared';
 import { requireCanon } from '../require-canon';
-import type { DerivedIntent, IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 
 // Slice 7: pay 1 recovery and dispatch a derived ApplyHeal for `recoveryValue`
 // HP (canon §2.13). Recoveries are encounter-spanning (not reset per turn);
 // the dispatcher / character sheet sets `recoveryValue` (typically
 // maxStamina/3 rounded down) on character creation.
-export function applySpendRecovery(state: SessionState, intent: StampedIntent): IntentResult {
+export function applySpendRecovery(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = SpendRecoveryPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -23,7 +23,7 @@ export function applySpendRecovery(state: SessionState, intent: StampedIntent): 
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -33,7 +33,7 @@ export function applySpendRecovery(state: SessionState, intent: StampedIntent): 
   }
 
   const { participantId } = parsed.data;
-  const target = state.activeEncounter.participants.find((p) => p.id === participantId);
+  const target = state.encounter.participants.find((p) => p.id === participantId);
   if (!target) {
     return {
       state,
@@ -62,7 +62,7 @@ export function applySpendRecovery(state: SessionState, intent: StampedIntent): 
     ...target,
     recoveries: { ...target.recoveries, current: target.recoveries.current - 1 },
   };
-  const updatedParticipants = state.activeEncounter.participants.map((p) =>
+  const updatedParticipants = state.encounter.participants.map((p) =>
     p.id === participantId ? updatedTarget : p,
   );
 
@@ -85,7 +85,7 @@ export function applySpendRecovery(state: SessionState, intent: StampedIntent): 
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: { ...state.activeEncounter, participants: updatedParticipants },
+      encounter: { ...state.encounter, participants: updatedParticipants },
     },
     derived,
     log: [

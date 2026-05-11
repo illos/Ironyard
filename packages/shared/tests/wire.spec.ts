@@ -3,7 +3,7 @@ import { ClientMsgSchema, type Intent, ServerMsgSchema } from '../src/index';
 
 const validIntent: Intent = {
   id: '01HXYZ',
-  sessionId: 'session_1',
+  campaignId: 'campaign_1',
   actor: { userId: 'user_abc', role: 'player' },
   source: 'manual',
   type: 'RollPower',

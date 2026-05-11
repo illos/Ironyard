@@ -5,8 +5,8 @@ import type { Intent, MaliceState, Member, Participant } from '@ironyard/shared'
 export type StampedIntent = Intent & { timestamp: number };
 
 // Handlers return DerivedIntent[] for any cascade (e.g. RollPower → ApplyDamage).
-// The DO fills in id / timestamp / sessionId before recursively applying.
-export type DerivedIntent = Omit<Intent, 'id' | 'timestamp' | 'sessionId'>;
+// The DO fills in id / timestamp / campaignId before recursively applying.
+export type DerivedIntent = Omit<Intent, 'id' | 'timestamp' | 'campaignId'>;
 
 export type NoteEntry = {
   intentId: string;
@@ -43,12 +43,12 @@ export type ActiveEncounter = {
   malice: MaliceState;
 };
 
-export type SessionState = {
-  sessionId: string;
+export type CampaignState = {
+  campaignId: string;
   seq: number; // last applied intent seq
   connectedMembers: Member[];
   notes: NoteEntry[];
-  activeEncounter: ActiveEncounter | null;
+  encounter: ActiveEncounter | null;
 };
 
 export type LogEntry = {
@@ -60,18 +60,18 @@ export type LogEntry = {
 export type ValidationError = { code: string; message: string };
 
 export type IntentResult = {
-  state: SessionState;
+  state: CampaignState;
   derived: DerivedIntent[];
   log: LogEntry[];
   errors?: ValidationError[];
 };
 
-export function emptySessionState(sessionId: string): SessionState {
+export function emptyCampaignState(campaignId: string): CampaignState {
   return {
-    sessionId,
+    campaignId,
     seq: 0,
     connectedMembers: [],
     notes: [],
-    activeEncounter: null,
+    encounter: null,
   };
 }
