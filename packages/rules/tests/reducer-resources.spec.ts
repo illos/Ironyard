@@ -400,12 +400,18 @@ describe('applyIntent — Director Malice intents', () => {
   });
 
   it('GainMalice rejects with no_active_encounter when no encounter', () => {
-    const r = applyIntent(emptyCampaignState(campaignId, 'user-owner'), intent('GainMalice', { amount: 3 }));
+    const r = applyIntent(
+      emptyCampaignState(campaignId, 'user-owner'),
+      intent('GainMalice', { amount: 3 }),
+    );
     expect(r.errors?.[0]?.code).toBe('no_active_encounter');
   });
 
   it('SpendMalice rejects with no_active_encounter when no encounter', () => {
-    const r = applyIntent(emptyCampaignState(campaignId, 'user-owner'), intent('SpendMalice', { amount: 3 }));
+    const r = applyIntent(
+      emptyCampaignState(campaignId, 'user-owner'),
+      intent('SpendMalice', { amount: 3 }),
+    );
     expect(r.errors?.[0]?.code).toBe('no_active_encounter');
   });
 

@@ -7,12 +7,20 @@
 // The blanket IntentSchema.payload stays z.unknown() until enough types exist
 // to warrant a discriminated union.
 
+export { AddMonsterPayloadSchema } from './add-monster';
+export type { AddMonsterPayload } from './add-monster';
+export { ApproveCharacterPayloadSchema } from './approve-character';
+export type { ApproveCharacterPayload } from './approve-character';
 export { ApplyDamagePayloadSchema } from './apply-damage';
 export type { ApplyDamagePayload } from './apply-damage';
 export { ApplyHealPayloadSchema } from './apply-heal';
 export type { ApplyHealPayload } from './apply-heal';
 export { BringCharacterIntoEncounterPayloadSchema } from './bring-character-into-encounter';
 export type { BringCharacterIntoEncounterPayload } from './bring-character-into-encounter';
+export { ClearLobbyPayloadSchema } from './clear-lobby';
+export type { ClearLobbyPayload } from './clear-lobby';
+export { DenyCharacterPayloadSchema } from './deny-character';
+export type { DenyCharacterPayload } from './deny-character';
 export { EndEncounterPayloadSchema } from './end-encounter';
 export type { EndEncounterPayload } from './end-encounter';
 export { GainMalicePayloadSchema } from './gain-malice';
@@ -21,12 +29,30 @@ export { GainResourcePayloadSchema } from './gain-resource';
 export type { GainResourcePayload } from './gain-resource';
 export { JoinLobbyPayloadSchema } from './join-lobby';
 export type { JoinLobbyPayload } from './join-lobby';
+export { JumpBehindScreenPayloadSchema } from './jump-behind-screen';
+export type { JumpBehindScreenPayload } from './jump-behind-screen';
+export { KickPlayerPayloadSchema } from './kick-player';
+export type { KickPlayerPayload } from './kick-player';
 export { LeaveLobbyPayloadSchema } from './leave-lobby';
 export type { LeaveLobbyPayload } from './leave-lobby';
+export {
+  LoadEncounterTemplateClientPayloadSchema,
+  LoadEncounterTemplatePayloadSchema,
+  LoadEncounterTemplateResolvedEntrySchema,
+} from './load-encounter-template';
+export type {
+  LoadEncounterTemplateClientPayload,
+  LoadEncounterTemplatePayload,
+  LoadEncounterTemplateResolvedEntry,
+} from './load-encounter-template';
 export { NotePayloadSchema } from './note';
 export type { NotePayload } from './note';
+export { RemoveApprovedCharacterPayloadSchema } from './remove-approved-character';
+export type { RemoveApprovedCharacterPayload } from './remove-approved-character';
 export { RemoveConditionPayloadSchema } from './remove-condition';
 export type { RemoveConditionPayload } from './remove-condition';
+export { RemoveParticipantPayloadSchema } from './remove-participant';
+export type { RemoveParticipantPayload } from './remove-participant';
 export { RollPowerPayloadSchema } from './roll-power';
 export type { RollPowerPayload } from './roll-power';
 export { RollResistancePayloadSchema } from './roll-resistance';
@@ -63,22 +89,33 @@ export type {
   StartTurnPayload,
 } from './turn';
 
+export { SubmitCharacterPayloadSchema } from './submit-character';
+export type { SubmitCharacterPayload } from './submit-character';
 export { UndoPayloadSchema } from './undo';
 export type { UndoPayload } from './undo';
 
 export const IntentTypes = {
+  AddMonster: 'AddMonster',
   ApplyDamage: 'ApplyDamage',
   ApplyHeal: 'ApplyHeal',
+  ApproveCharacter: 'ApproveCharacter',
   BringCharacterIntoEncounter: 'BringCharacterIntoEncounter',
+  ClearLobby: 'ClearLobby',
+  DenyCharacter: 'DenyCharacter',
   EndEncounter: 'EndEncounter',
   EndRound: 'EndRound',
   EndTurn: 'EndTurn',
   GainMalice: 'GainMalice',
   GainResource: 'GainResource',
   JoinLobby: 'JoinLobby',
+  JumpBehindScreen: 'JumpBehindScreen',
+  KickPlayer: 'KickPlayer',
   LeaveLobby: 'LeaveLobby',
+  LoadEncounterTemplate: 'LoadEncounterTemplate',
   Note: 'Note',
+  RemoveApprovedCharacter: 'RemoveApprovedCharacter',
   RemoveCondition: 'RemoveCondition',
+  RemoveParticipant: 'RemoveParticipant',
   RollPower: 'RollPower',
   RollResistance: 'RollResistance',
   SetCondition: 'SetCondition',
@@ -92,6 +129,7 @@ export const IntentTypes = {
   StartEncounter: 'StartEncounter',
   StartRound: 'StartRound',
   StartTurn: 'StartTurn',
+  SubmitCharacter: 'SubmitCharacter',
   Undo: 'Undo',
 } as const;
 export type KnownIntentType = (typeof IntentTypes)[keyof typeof IntentTypes];

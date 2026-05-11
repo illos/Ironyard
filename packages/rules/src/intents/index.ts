@@ -1,13 +1,22 @@
+export { applyAddMonster, participantFromMonster } from './add-monster';
 export { applyApplyDamage } from './apply-damage';
 export { applyApplyHeal } from './apply-heal';
+export { applyApproveCharacter } from './approve-character';
 export { applyBringCharacterIntoEncounter } from './bring-character-into-encounter';
+export { applyClearLobby } from './clear-lobby';
+export { applyDenyCharacter } from './deny-character';
 export { applyEndEncounter } from './end-encounter';
 export { applyGainMalice } from './gain-malice';
 export { applyGainResource } from './gain-resource';
 export { applyJoinLobby } from './join-lobby';
+export { applyJumpBehindScreen } from './jump-behind-screen';
+export { applyKickPlayer } from './kick-player';
 export { applyLeaveLobby } from './leave-lobby';
+export { applyLoadEncounterTemplate } from './load-encounter-template';
 export { applyNote } from './note';
+export { applyRemoveApprovedCharacter } from './remove-approved-character';
 export { applyRemoveCondition } from './remove-condition';
+export { applyRemoveParticipant } from './remove-participant';
 export { applyRollPower } from './roll-power';
 export { applyRollResistance } from './roll-resistance';
 export { applySetCondition } from './set-condition';
@@ -18,6 +27,7 @@ export { applySpendRecovery } from './spend-recovery';
 export { applySpendResource } from './spend-resource';
 export { applySpendSurge } from './spend-surge';
 export { applyStartEncounter } from './start-encounter';
+export { applySubmitCharacter } from './submit-character';
 export {
   applyEndRound,
   applyEndTurn,

@@ -95,7 +95,10 @@ describe('applyIntent — StartEncounter', () => {
   });
 
   it('engages empty roster (zero participants) without error', () => {
-    const r = applyIntent(emptyCampaignState(campaignId, 'user-owner'), intent('StartEncounter', {}));
+    const r = applyIntent(
+      emptyCampaignState(campaignId, 'user-owner'),
+      intent('StartEncounter', {}),
+    );
     expect(r.errors).toBeUndefined();
     expect(r.state.encounter?.turnOrder).toHaveLength(0);
     expect(r.state.participants).toHaveLength(0);

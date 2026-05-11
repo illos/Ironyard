@@ -31,7 +31,10 @@ describe('applyUndo (reducer-side)', () => {
   });
 
   it('rejects an empty intentId', () => {
-    const r = applyIntent(emptyCampaignState(campaignId, 'user-owner'), intent('Undo', { intentId: '' }));
+    const r = applyIntent(
+      emptyCampaignState(campaignId, 'user-owner'),
+      intent('Undo', { intentId: '' }),
+    );
     expect(r.errors?.[0]?.code).toBe('invalid_payload');
   });
 
