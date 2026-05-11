@@ -201,3 +201,73 @@ export {
   CampaignCharacterStatusSchema,
 } from './schemas/campaign-character';
 export type { CampaignCharacter, CampaignCharacterStatus } from './schemas/campaign-character';
+
+// ── Static reference data schemas ─────────────────────────────────────────────
+
+export {
+  AncestryFileSchema,
+  AncestrySchema,
+  AncestryTraitSchema,
+} from './data/ancestry';
+export type { Ancestry, AncestryFile, AncestryTrait } from './data/ancestry';
+
+export {
+  CareerFileSchema,
+  CareerSchema,
+  IncitingIncidentSchema,
+  PerkTypeSchema,
+  SkillGrantSchema,
+} from './data/career';
+export type {
+  Career,
+  CareerFile,
+  IncitingIncident,
+  PerkType,
+  SkillGrant,
+} from './data/career';
+
+export {
+  ComplicationFileSchema,
+  ComplicationSchema,
+} from './data/complication';
+export type { Complication, ComplicationFile } from './data/complication';
+
+export {
+  AbilitySlotSchema,
+  CharacteristicArraySchema,
+  ClassFileSchema,
+  ClassLevelSchema,
+  ClassSchema,
+  SubclassSchema,
+} from './data/class';
+export type {
+  AbilitySlot,
+  CharacteristicArray,
+  ClassFile,
+  ClassLevel,
+  HeroClass,
+  Subclass,
+} from './data/class';
+
+// ── Character blob schemas ─────────────────────────────────────────────────────
+
+export {
+  CharacterCultureSchema,
+  CharacterCareerChoicesSchema,
+  CharacterDetailsSchema,
+  CharacterResponseSchema,
+  CharacterSchema,
+  CreateCharacterRequestSchema,
+  LevelChoicesSchema,
+  UpdateCharacterRequestSchema,
+} from './character';
+export type {
+  Character,
+  CharacterCareerChoices,
+  CharacterCulture,
+  CharacterDetails,
+  CharacterResponse,
+  CreateCharacterRequest,
+  LevelChoices,
+  UpdateCharacterRequest,
+} from './character';

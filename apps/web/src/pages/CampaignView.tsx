@@ -12,13 +12,19 @@ import { IntentTypes, ulid } from '@ironyard/shared';
 import { Link, useParams } from '@tanstack/react-router';
 import { useState } from 'react';
 import { buildIntent } from '../api/dispatch';
-import { useCreateCharacter } from '../api/mutations';
+import {
+  useCreateCharacter,
+  useDeleteEncounterTemplate,
+  useGrantDirectorPermission,
+  useRevokeDirectorPermission,
+} from '../api/mutations';
 import {
   type CampaignMember,
   type OwnedCharacter,
   useCampaign,
   useCampaignCharacters,
   useCampaignMembers,
+  useEncounterTemplates,
   useMe,
   useMyCharacters,
 } from '../api/queries';
@@ -188,6 +194,9 @@ export function CampaignView() {
         isDirector={campaign.data.isDirector}
       />
 
+      {/* Saved encounter templates */}
+      {campaign.data.isDirector && <SavedTemplatesPanel campaignId={id} />}
+
       {/* Owner admin: manage director permissions + kick */}
       {campaign.data.isOwner && (
         <OwnerAdminPanel
@@ -200,6 +209,68 @@ export function CampaignView() {
         />
       )}
     </main>
+  );
+}
+
+// ─── Saved Templates Panel ─────────────────────────────────────────────────────
+
+function SavedTemplatesPanel({ campaignId }: { campaignId: string }) {
+  const templates = useEncounterTemplates(campaignId);
+  const deleteTpl = useDeleteEncounterTemplate(campaignId);
+
+  if (templates.isLoading) return null;
+  const items = templates.data ?? [];
+
+  return (
+    <section className="rounded-lg border border-neutral-800 p-4 space-y-3">
+      <header className="flex items-baseline justify-between">
+        <h2 className="font-semibold text-sm">Saved encounter templates</h2>
+        <Link
+          to="/campaigns/$id/build"
+          params={{ id: campaignId }}
+          className="text-xs text-neutral-400 hover:text-neutral-200 underline"
+        >
+          Builder →
+        </Link>
+      </header>
+      {items.length === 0 ? (
+        <p className="text-sm text-neutral-500">
+          No templates yet. Compose a monster lineup in the encounter builder, then save it as a
+          template to load it again in any future session.
+        </p>
+      ) : (
+        <ul className="space-y-1">
+          {items.map((t) => {
+            const total = t.data.monsters.reduce((acc, m) => acc + m.quantity, 0);
+            return (
+              <li
+                key={t.id}
+                className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
+              >
+                <span className="flex-1">
+                  <span className="font-medium">{t.name}</span>
+                  <span className="ml-2 text-xs text-neutral-500">
+                    {total} monster{total === 1 ? '' : 's'} · {t.data.monsters.length} entr
+                    {t.data.monsters.length === 1 ? 'y' : 'ies'}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!confirm(`Delete template "${t.name}"?`)) return;
+                    deleteTpl.mutate(t.id);
+                  }}
+                  disabled={deleteTpl.isPending}
+                  className="min-h-11 px-3 rounded-md border border-rose-800 text-rose-300 text-xs hover:bg-rose-900/40 disabled:opacity-50"
+                >
+                  Delete
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
   );
 }
 
@@ -585,11 +656,21 @@ function OwnerAdminPanel({
   wsOpen: boolean;
 }) {
   const members = useCampaignMembers(campaignId);
+  const grant = useGrantDirectorPermission(campaignId);
+  const revoke = useRevokeDirectorPermission(campaignId);
 
   const handleKick = (userId: string) => {
     // DO stamps { participantIdsToRemove } — client sends only userId.
     const payload = { userId } as unknown as KickPlayerPayload;
     dispatch(buildIntent({ campaignId, type: IntentTypes.KickPlayer, payload, actor }));
+  };
+
+  const handleToggleDirector = (userId: string, isDirector: boolean) => {
+    if (isDirector) {
+      revoke.mutate(userId);
+    } else {
+      grant.mutate(userId);
+    }
   };
 
   if (members.isLoading) return null;
@@ -611,14 +692,24 @@ function OwnerAdminPanel({
                 {m.isDirector && <span className="ml-2 text-xs text-amber-400">director</span>}
               </span>
               {!isMe && (
-                <button
-                  type="button"
-                  onClick={() => handleKick(m.userId)}
-                  disabled={!wsOpen}
-                  className="min-h-11 px-3 rounded-md border border-rose-800 text-rose-300 text-xs hover:bg-rose-900/40 disabled:opacity-50"
-                >
-                  Kick
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleDirector(m.userId, m.isDirector)}
+                    disabled={grant.isPending || revoke.isPending}
+                    className="min-h-11 px-3 rounded-md border border-neutral-700 text-neutral-200 text-xs hover:bg-neutral-800 disabled:opacity-50"
+                  >
+                    {m.isDirector ? 'Revoke director' : 'Make director'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleKick(m.userId)}
+                    disabled={!wsOpen}
+                    className="min-h-11 px-3 rounded-md border border-rose-800 text-rose-300 text-xs hover:bg-rose-900/40 disabled:opacity-50"
+                  >
+                    Kick
+                  </button>
+                </>
               )}
             </li>
           );

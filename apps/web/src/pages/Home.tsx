@@ -1,7 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useCreateCampaign, useDevLogin, useJoinCampaign, useLogout } from '../api/mutations';
-import { useMe } from '../api/queries';
+import { useMe, useMyCampaigns } from '../api/queries';
 
 export function Home() {
   const me = useMe();
@@ -76,6 +76,7 @@ function CampaignsPanel({ user }: { user: { displayName: string; email: string }
   const logout = useLogout();
   const createCampaign = useCreateCampaign();
   const joinCampaign = useJoinCampaign();
+  const myCampaigns = useMyCampaigns();
   const [campaignName, setCampaignName] = useState('');
   const [inviteCode, setInviteCode] = useState('');
 
@@ -101,6 +102,38 @@ function CampaignsPanel({ user }: { user: { displayName: string; email: string }
           </button>
         </div>
       </header>
+
+      <section className="rounded-lg border border-neutral-800 p-5">
+        <h2 className="font-semibold">Your campaigns</h2>
+        {myCampaigns.isLoading ? (
+          <p className="mt-3 text-sm text-neutral-500">Loading…</p>
+        ) : !myCampaigns.data || myCampaigns.data.length === 0 ? (
+          <p className="mt-3 text-sm text-neutral-500">
+            You're not in any campaigns yet. Start one or join with an invite code below.
+          </p>
+        ) : (
+          <ul className="mt-3 space-y-2">
+            {myCampaigns.data.map((c) => (
+              <li key={c.id}>
+                <Link
+                  to="/campaigns/$id"
+                  params={{ id: c.id }}
+                  className="flex items-center gap-3 rounded-md bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 px-4 py-3 min-h-11"
+                >
+                  <span className="flex-1">
+                    <span className="font-medium">{c.name}</span>
+                    {c.isOwner && <span className="ml-2 text-xs text-amber-400">owner</span>}
+                    {c.isDirector && !c.isOwner && (
+                      <span className="ml-2 text-xs text-amber-400">director</span>
+                    )}
+                  </span>
+                  <span className="text-xs text-neutral-500 tracking-widest">{c.inviteCode}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className="rounded-lg border border-neutral-800 p-5">
         <h2 className="font-semibold">Start a campaign</h2>

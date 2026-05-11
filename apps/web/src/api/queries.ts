@@ -17,6 +17,21 @@ export type CampaignDetail = {
   activeDirectorId: string;
 };
 
+export type CampaignSummary = {
+  id: string;
+  name: string;
+  inviteCode: string;
+  isOwner: boolean;
+  isDirector: boolean;
+};
+
+export function useMyCampaigns() {
+  return useQuery<CampaignSummary[]>({
+    queryKey: ['my-campaigns'],
+    queryFn: () => api.get<CampaignSummary[]>('/api/campaigns'),
+  });
+}
+
 export function useMe() {
   return useQuery<{ user: CurrentUser } | null>({
     queryKey: ['me'],
