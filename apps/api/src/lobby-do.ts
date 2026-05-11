@@ -7,7 +7,12 @@ import { type CampaignState, applyIntent, emptyCampaignState } from '@ironyard/r
 import { ClientMsgSchema, type Intent, type Member, type ServerMsg, ulid } from '@ironyard/shared';
 import { and, desc, eq, gt } from 'drizzle-orm';
 import { db } from './db';
-import { campaignSnapshots, intents as intentsTable } from './db/schema';
+import {
+  campaignMemberships,
+  campaignSnapshots,
+  campaigns,
+  intents as intentsTable,
+} from './db/schema';
 import { buildServerStampedIntent } from './lobby-do-build-intent';
 import type { Bindings } from './types';
 
@@ -20,7 +25,8 @@ import type { Bindings } from './types';
 
 const HEADER_USER_ID = 'x-user-id';
 const HEADER_USER_DISPLAY_NAME = 'x-user-display-name';
-const HEADER_USER_ROLE = 'x-user-role';
+// x-user-role is no longer read from the client-forwarded headers; role is
+// derived from campaign_memberships.is_director during WS upgrade (D5).
 const HEADER_CAMPAIGN_ID = 'x-campaign-id';
 
 const SNAPSHOT_EVERY = 50;
@@ -75,7 +81,18 @@ export class LobbyDO implements DurableObject {
       this.lastSnapshotSeq = snapshot.seq;
       this.lastSnapshotAt = snapshot.savedAt;
     } else {
-      state = emptyCampaignState(campaignId);
+      // D5: fetch the campaign owner so fresh state has ownerId + activeDirectorId
+      // FIXME(phase-c): emptyCampaignState second arg (ownerId) lands when Phase C merges.
+      // Until then, the call below may produce a type error on the signature.
+      const campaign = await conn
+        .select({ ownerId: campaigns.ownerId })
+        .from(campaigns)
+        .where(eq(campaigns.id, campaignId))
+        .get();
+      const ownerId = campaign?.ownerId ?? campaignId; // fallback: use campaignId as sentinel
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore FIXME(phase-c): second arg lands when Phase C merges
+      state = emptyCampaignState(campaignId, ownerId);
     }
 
     // Replay non-voided rows only — voided intents are the bookkeeping that
@@ -120,23 +137,43 @@ export class LobbyDO implements DurableObject {
   }
 
   async fetch(request: Request): Promise<Response> {
+    // D5: internal /revoke-director endpoint for the director-revoke route (D1).
+    // The DO handler body lands in D6; accept the request here so the route's
+    // fire-and-forget fetch doesn't error on a 426 response.
+    const url = new URL(request.url);
+    if (url.pathname === '/revoke-director') {
+      // D6 will implement the actual logic (close WS, broadcast demotion).
+      return new Response(null, { status: 200 });
+    }
+
     if (request.headers.get('upgrade')?.toLowerCase() !== 'websocket') {
       return new Response('expected websocket upgrade', { status: 426 });
     }
 
     const userId = request.headers.get(HEADER_USER_ID);
     const displayName = request.headers.get(HEADER_USER_DISPLAY_NAME);
-    const roleHeader = request.headers.get(HEADER_USER_ROLE);
     const campaignId = request.headers.get(HEADER_CAMPAIGN_ID);
-    if (
-      !userId ||
-      !displayName ||
-      !campaignId ||
-      (roleHeader !== 'director' && roleHeader !== 'player')
-    ) {
-      return new Response('missing or invalid user headers', { status: 401 });
+    if (!userId || !displayName || !campaignId) {
+      return new Response('missing user headers', { status: 401 });
     }
-    const role: Role = roleHeader;
+
+    // D5: derive role from DB membership instead of trusting the x-user-role header.
+    // The routes.ts socket handler already validated membership before forwarding;
+    // we re-query here so the actor role stamped onto intents is authoritative.
+    const conn = db(this.env.DB);
+    const membership = await conn
+      .select({ isDirector: campaignMemberships.isDirector })
+      .from(campaignMemberships)
+      .where(
+        and(eq(campaignMemberships.campaignId, campaignId), eq(campaignMemberships.userId, userId)),
+      )
+      .get();
+    // If no membership row exists the user was removed after the HTTP auth check;
+    // reject the upgrade.
+    if (!membership) {
+      return new Response('not a member', { status: 403 });
+    }
+    const role: Role = membership.isDirector === 1 ? 'director' : 'player';
 
     // Cold-start load. blockConcurrencyWhile prevents handler races during init.
     if (!this.campaignState || this.campaignId !== campaignId) {

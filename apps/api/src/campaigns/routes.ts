@@ -9,14 +9,46 @@ import { and, eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { requireAuth } from '../auth/middleware';
 import { db } from '../db';
-import { campaignMemberships, campaigns } from '../db/schema';
+import { campaignMemberships, campaignSnapshots, campaigns } from '../db/schema';
 import type { AppEnv } from '../types';
+import { characterRoutes } from './characters';
+import { directorRoutes } from './director';
+import { templateRoutes } from './templates';
 
 export const campaignRoutes = new Hono<AppEnv>();
 
 campaignRoutes.use('*', requireAuth);
 
-// POST /api/campaigns — create a campaign; caller becomes director.
+// D4: GET /api/campaigns — list campaigns the caller is a member of.
+campaignRoutes.get('/', async (c) => {
+  const user = c.get('user');
+  const conn = db(c.env.DB);
+
+  const rows = await conn
+    .select({
+      id: campaigns.id,
+      name: campaigns.name,
+      inviteCode: campaigns.inviteCode,
+      ownerId: campaigns.ownerId,
+      isDirector: campaignMemberships.isDirector,
+    })
+    .from(campaignMemberships)
+    .innerJoin(campaigns, eq(campaignMemberships.campaignId, campaigns.id))
+    .where(eq(campaignMemberships.userId, user.id))
+    .all();
+
+  return c.json(
+    rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      inviteCode: r.inviteCode,
+      isOwner: r.ownerId === user.id,
+      isDirector: r.isDirector === 1,
+    })),
+  );
+});
+
+// POST /api/campaigns — create a campaign; caller becomes owner and director.
 campaignRoutes.post('/', zValidator('json', CreateCampaignRequestSchema), async (c) => {
   const user = c.get('user');
   const { name } = c.req.valid('json');
@@ -40,10 +72,10 @@ campaignRoutes.post('/', zValidator('json', CreateCampaignRequestSchema), async 
     joinedAt: now,
   });
 
-  return c.json({ id, name, inviteCode, isDirector: true });
+  return c.json({ id, name, inviteCode, isOwner: true, isDirector: true });
 });
 
-// POST /api/campaigns/join — redeem an invite code; caller joins as player.
+// POST /api/campaigns/join — redeem an invite code; caller joins as player (is_director = 0).
 campaignRoutes.post('/join', zValidator('json', JoinCampaignRequestSchema), async (c) => {
   const user = c.get('user');
   const { inviteCode } = c.req.valid('json');
@@ -77,11 +109,13 @@ campaignRoutes.post('/join', zValidator('json', JoinCampaignRequestSchema), asyn
     id: campaign.id,
     name: campaign.name,
     inviteCode: campaign.inviteCode,
+    isOwner: campaign.ownerId === user.id,
     isDirector: (existing?.isDirector ?? 0) === 1,
   });
 });
 
-// GET /api/campaigns/:id — metadata for a campaign the caller belongs to.
+// D4: GET /api/campaigns/:id — metadata for a campaign the caller belongs to.
+// Returns isOwner, isDirector, and activeDirectorId (from snapshot or owner fallback).
 campaignRoutes.get('/:id', async (c) => {
   const id = c.req.param('id');
   const user = c.get('user');
@@ -97,11 +131,32 @@ campaignRoutes.get('/:id', async (c) => {
   const campaign = await conn.select().from(campaigns).where(eq(campaigns.id, id)).get();
   if (!campaign) return c.json({ error: 'not found' }, 404);
 
+  // Derive activeDirectorId: read from the DO snapshot if it exists, fall back
+  // to ownerId. Corrupt snapshot state must not 500 the metadata call.
+  let activeDirectorId: string = campaign.ownerId;
+  try {
+    const snapshot = await conn
+      .select()
+      .from(campaignSnapshots)
+      .where(eq(campaignSnapshots.campaignId, id))
+      .get();
+    if (snapshot) {
+      const parsed = JSON.parse(snapshot.state) as { activeDirectorId?: string };
+      if (typeof parsed.activeDirectorId === 'string') {
+        activeDirectorId = parsed.activeDirectorId;
+      }
+    }
+  } catch {
+    // Corrupt snapshot JSON must not fail the metadata call; keep owner fallback.
+  }
+
   return c.json({
     id: campaign.id,
     name: campaign.name,
     inviteCode: campaign.inviteCode,
+    isOwner: campaign.ownerId === user.id,
     isDirector: membership.isDirector === 1,
+    activeDirectorId,
   });
 });
 
@@ -133,3 +188,8 @@ campaignRoutes.get('/:id/socket', async (c) => {
 
   return stub.fetch(upgradeReq) as unknown as Response;
 });
+
+// Mount sub-routers (D1, D2, D3)
+campaignRoutes.route('/:id/members', directorRoutes);
+campaignRoutes.route('/:id/templates', templateRoutes);
+campaignRoutes.route('/:id/characters', characterRoutes);
