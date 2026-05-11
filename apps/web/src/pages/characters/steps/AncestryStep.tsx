@@ -25,12 +25,7 @@ export function AncestryStep({
               onClick={() =>
                 onPatch({ ancestryId: a.id, ancestryChoices: { traitIds: [] } })
               }
-              className={
-                'text-left rounded-md border px-4 py-3 min-h-11 ' +
-                (isSelected
-                  ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                  : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
-              }
+              className={`text-left rounded-md border px-4 py-3 min-h-11 ${isSelected ? 'bg-neutral-100 text-neutral-900 border-neutral-100' : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'}`}
             >
               <div className="font-medium">{a.name}</div>
               {a.description && <div className="text-xs opacity-80 mt-1">{a.description}</div>}
@@ -72,12 +67,7 @@ function TraitsPicker({
             <button
               type="button"
               onClick={() => toggle(t.id)}
-              className={
-                'w-full text-left rounded-md border px-3 py-2 min-h-11 ' +
-                (selected.includes(t.id)
-                  ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                  : 'bg-neutral-900 border-neutral-800 hover:border-neutral-600')
-              }
+              className={`w-full text-left rounded-md border px-3 py-2 min-h-11 ${selected.includes(t.id) ? 'bg-neutral-100 text-neutral-900 border-neutral-100' : 'bg-neutral-900 border-neutral-800 hover:border-neutral-600'}`}
             >
               <span className="font-medium">{t.name}</span>
               <span className="text-xs ml-2 opacity-70">cost {t.cost}</span>

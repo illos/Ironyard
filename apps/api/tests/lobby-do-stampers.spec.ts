@@ -287,6 +287,7 @@ describe('stampKickPlayer', () => {
           recoveries: { current: 3, max: 3 },
           recoveryValue: 10,
           ownerId: null as string | null,
+          characterId: null as string | null,
         },
         {
           id: 'monster-xyz',
@@ -305,6 +306,7 @@ describe('stampKickPlayer', () => {
           recoveries: { current: 0, max: 0 },
           recoveryValue: 0,
           ownerId: null as string | null,
+          characterId: null as string | null,
         },
       ],
     });
@@ -373,6 +375,7 @@ describe('stampKickPlayer', () => {
           recoveries: { current: 3, max: 3 },
           recoveryValue: 10,
           ownerId: null as string | null,
+          characterId: null as string | null,
         },
         // pc-placeholder for char-placeholder-2 (not yet materialized)
         { kind: 'pc-placeholder', characterId: 'char-placeholder-2', ownerId: 'user-alice', position: 1 },

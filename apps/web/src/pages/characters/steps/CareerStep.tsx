@@ -29,12 +29,7 @@ export function CareerStep({
                   careerChoices: { skills: [], languages: [], incitingIncidentId: null, perkId: null },
                 })
               }
-              className={
-                'text-left rounded-md border px-4 py-3 min-h-11 ' +
-                (isSelected
-                  ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                  : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
-              }
+              className={`text-left rounded-md border px-4 py-3 min-h-11 ${isSelected ? 'bg-neutral-100 text-neutral-900 border-neutral-100' : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'}`}
             >
               <div className="font-medium">{c.name}</div>
               {c.description && <div className="text-xs opacity-80 mt-1">{c.description}</div>}
@@ -78,12 +73,7 @@ function CareerChoices({
                 key={ii.id}
                 type="button"
                 onClick={() => onChange({ incitingIncidentId: ii.id })}
-                className={
-                  'min-h-11 px-3 py-2 rounded-md border text-sm ' +
-                  (choices.incitingIncidentId === ii.id
-                    ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                    : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
-                }
+                className={`min-h-11 px-3 py-2 rounded-md border text-sm ${choices.incitingIncidentId === ii.id ? 'bg-neutral-100 text-neutral-900 border-neutral-100' : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'}`}
               >
                 {ii.title}
               </button>
