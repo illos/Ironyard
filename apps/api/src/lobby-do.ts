@@ -183,6 +183,130 @@ export class LobbyDO implements DurableObject {
       });
     }
 
+    // /server-dispatch — accepts server-originated intents (from HTTP route
+    // handlers) and runs them through the normal intent pipeline. The caller
+    // must supply { type, actor: { userId }, payload, source: 'server' }.
+    if (url.pathname === '/server-dispatch' && request.method === 'POST') {
+      let body: unknown;
+      try {
+        body = await request.json();
+      } catch {
+        return new Response(JSON.stringify({ ok: false, error: 'invalid json' }), { status: 400 });
+      }
+      if (
+        !body ||
+        typeof body !== 'object' ||
+        typeof (body as Record<string, unknown>).type !== 'string' ||
+        typeof (body as Record<string, unknown>).actor !== 'object' ||
+        typeof ((body as Record<string, unknown>).actor as Record<string, unknown>).userId !==
+          'string'
+      ) {
+        return new Response(
+          JSON.stringify({ ok: false, error: 'type and actor.userId required' }),
+          { status: 400 },
+        );
+      }
+      const typedBody = body as {
+        type: string;
+        actor: { userId: string };
+        payload: Record<string, unknown>;
+        source?: string;
+      };
+
+      // Ensure the DO is initialised before dispatching. server-dispatch callers
+      // must supply campaignId in the actor context; we derive it from the DO name.
+      // The campaignId is already baked into the DO at idFromName() time — we can
+      // read it from the in-flight state after load().
+      if (!this.campaignState) {
+        // The DO wasn't warm — we need a campaignId to load. We look it up from
+        // the request URL query param or fall back to the body's payload.campaignId.
+        const qCampaignId =
+          url.searchParams.get('campaignId') ??
+          (typeof typedBody.payload?.campaignId === 'string' ? typedBody.payload.campaignId : null);
+        if (!qCampaignId) {
+          return new Response(
+            JSON.stringify({ ok: false, error: 'DO not initialised; pass campaignId' }),
+            { status: 400 },
+          );
+        }
+        await this.state.blockConcurrencyWhile(() => this.load(qCampaignId));
+      }
+
+      const intent: Intent & { timestamp: number } = {
+        id: ulid(),
+        campaignId: this.campaignId,
+        actor: { userId: typedBody.actor.userId, role: 'player' as const },
+        timestamp: Date.now(),
+        source: (typedBody.source as 'server') ?? 'server',
+        type: typedBody.type,
+        payload: typedBody.payload ?? {},
+      };
+
+      // Run the stamping pipeline — same as the WS handleDispatch path.
+      // Stampers mutate intent.payload in-place and may return a rejection reason.
+      if (this.campaignState) {
+        const stampRejection = await stampIntent(intent, this.campaignState, this.env);
+        if (stampRejection !== null) {
+          return new Response(JSON.stringify({ ok: false, error: stampRejection }), {
+            status: 400,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+      }
+
+      let dispatchError: string | null = null;
+      await this.serialize(async () => {
+        if (!this.campaignState) return;
+        const stateBefore = this.campaignState;
+        const result = applyIntent(this.campaignState, intent);
+        if (result.errors && result.errors.length > 0) {
+          dispatchError = result.errors.map((e) => e.message).join('; ');
+          return;
+        }
+        this.campaignState = result.state;
+        const seq = result.state.seq;
+        const conn = db(this.env.DB);
+        await conn.insert(intentsTable).values({
+          id: intent.id,
+          campaignId: this.campaignId,
+          seq,
+          actorId: intent.actor.userId,
+          payload: JSON.stringify(intent),
+          voided: 0,
+          createdAt: intent.timestamp,
+        });
+        const now = Date.now();
+        if (
+          seq - this.lastSnapshotSeq >= SNAPSHOT_EVERY ||
+          now - this.lastSnapshotAt >= SNAPSHOT_INTERVAL_MS
+        ) {
+          await this.persistSnapshot(now);
+        }
+        this.broadcast({ kind: 'applied', intent, seq });
+        await handleSideEffect(intent, this.campaignId, this.env, stateBefore);
+        for (const derived of result.derived) {
+          const stampedDerived: Intent & { timestamp: number } = {
+            ...derived,
+            id: ulid(),
+            campaignId: this.campaignId,
+            timestamp: Date.now(),
+          };
+          await this._applyOne(stampedDerived);
+        }
+      });
+
+      if (dispatchError) {
+        return new Response(JSON.stringify({ ok: false, error: dispatchError }), {
+          status: 400,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
     if (request.headers.get('upgrade')?.toLowerCase() !== 'websocket') {
       return new Response('expected websocket upgrade', { status: 426 });
     }
