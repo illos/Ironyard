@@ -4,6 +4,8 @@ import { CombatRun } from './pages/CombatRun';
 import { EncounterBuilder } from './pages/EncounterBuilder';
 import { Home } from './pages/Home';
 import { MonsterBrowser } from './pages/MonsterBrowser';
+import { Wizard } from './pages/characters/Wizard';
+import { Sheet } from './pages/characters/Sheet';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -43,12 +45,36 @@ const monsterCodexRoute = createRoute({
   component: MonsterBrowser,
 });
 
+const wizardNewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/characters/new',
+  component: Wizard,
+  validateSearch: (search: Record<string, unknown>) => ({
+    code: typeof search['code'] === 'string' ? search['code'] : undefined,
+  }),
+});
+
+const wizardEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/characters/$id/edit',
+  component: Wizard,
+});
+
+const sheetRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/characters/$id',
+  component: Sheet,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   campaignRoute,
   encounterBuilderRoute,
   combatRunRoute,
   monsterCodexRoute,
+  wizardNewRoute,
+  wizardEditRoute,
+  sheetRoute,
 ]);
 
 export const router = createRouter({ routeTree });
