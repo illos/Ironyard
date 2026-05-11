@@ -38,7 +38,11 @@ export function applyStartEncounter(state: CampaignState, intent: StampedIntent)
     };
   }
 
-  const encounterId = ulid();
+  // Use the client-suggested encounterId if provided (useful for optimistic
+  // local state and integration tests that need to reference the encounter
+  // by ID in follow-up intents like EndEncounter). The server-generated ulid()
+  // is the fallback.
+  const encounterId = parsed.data.encounterId ?? ulid();
   const encounter: EncounterPhase = {
     id: encounterId,
     currentRound: 1,
