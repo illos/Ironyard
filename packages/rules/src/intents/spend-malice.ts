@@ -1,10 +1,10 @@
 import { SpendMalicePayloadSchema } from '@ironyard/shared';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 // Slice 7: subtract from the Director's Malice counter (canon §5.5). No
 // `insufficient_malice` rejection — canon explicitly permits going negative
 // ("Negative Malice. Some abilities can drive Malice below 0...").
-export function applySpendMalice(state: SessionState, intent: StampedIntent): IntentResult {
+export function applySpendMalice(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = SpendMalicePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -21,7 +21,7 @@ export function applySpendMalice(state: SessionState, intent: StampedIntent): In
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -31,16 +31,16 @@ export function applySpendMalice(state: SessionState, intent: StampedIntent): In
   }
 
   const { amount, reason } = parsed.data;
-  const before = state.activeEncounter.malice.current;
+  const before = state.encounter.malice.current;
   const after = before - amount;
 
   return {
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
-        ...state.activeEncounter,
-        malice: { ...state.activeEncounter.malice, current: after },
+      encounter: {
+        ...state.encounter,
+        malice: { ...state.encounter.malice, current: after },
       },
     },
     derived: [],

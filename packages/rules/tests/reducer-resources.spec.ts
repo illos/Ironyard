@@ -1,19 +1,19 @@
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
-  type SessionState,
+  type CampaignState,
   type StampedIntent,
   applyIntent,
-  emptySessionState,
+  emptyCampaignState,
 } from '../src/index';
 
 const T = 1_700_000_000_000;
-const sessionId = 'sess_test';
+const campaignId = 'sess_test';
 
 function intent(type: string, payload: unknown, overrides: Partial<Intent> = {}): StampedIntent {
   return {
     id: overrides.id ?? `i_${Math.random().toString(36).slice(2)}`,
-    sessionId: overrides.sessionId ?? sessionId,
+    campaignId: overrides.campaignId ?? campaignId,
     actor: overrides.actor ?? { userId: 'alice', role: 'director' },
     timestamp: overrides.timestamp ?? T,
     source: overrides.source ?? 'manual',
@@ -65,22 +65,22 @@ function monster(over: Partial<Participant> = {}): Participant {
   };
 }
 
-function ready(extra?: Partial<Participant>): SessionState {
-  let s = emptySessionState(sessionId);
-  s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
+function ready(extra?: Partial<Participant>): CampaignState {
+  let s = emptyCampaignState(campaignId, 'user-owner');
   s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc(extra) })).state;
   s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+  s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
 
-function getParticipant(state: SessionState, id: string): Participant | undefined {
-  return state.activeEncounter?.participants.find((p) => p.id === id);
+function getParticipant(state: CampaignState, id: string): Participant | undefined {
+  return state.participants.find((p) => p.id === id);
 }
 
 describe('applyIntent — StartEncounter (malice init, slice 7)', () => {
   it('initializes encounter.malice to { current: 0, lastMaliciousStrikeRound: null }', () => {
     const s = ready();
-    expect(s.activeEncounter?.malice).toEqual({
+    expect(s.encounter?.malice).toEqual({
       current: 0,
       lastMaliciousStrikeRound: null,
     });
@@ -150,7 +150,7 @@ describe('applyIntent — GainResource', () => {
 
   it('rejects with no_active_encounter when there is no active encounter', () => {
     const r = applyIntent(
-      emptySessionState(sessionId),
+      emptyCampaignState(campaignId, 'user-owner'),
       intent('GainResource', { participantId: 'pc_talent', name: 'clarity', amount: 1 }),
     );
     expect(r.errors?.[0]?.code).toBe('no_active_encounter');
@@ -380,7 +380,7 @@ describe('applyIntent — Director Malice intents', () => {
     const s = ready();
     const r = applyIntent(s, intent('GainMalice', { amount: 9 }));
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter?.malice.current).toBe(9);
+    expect(r.state.encounter?.malice.current).toBe(9);
   });
 
   it('GainMalice with negative amount is permitted (canon §5.5)', () => {
@@ -388,7 +388,7 @@ describe('applyIntent — Director Malice intents', () => {
     s = applyIntent(s, intent('GainMalice', { amount: 9 })).state;
     const r = applyIntent(s, intent('GainMalice', { amount: -2 }));
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter?.malice.current).toBe(7);
+    expect(r.state.encounter?.malice.current).toBe(7);
   });
 
   it('SpendMalice subtracts and can drive current negative (canon §5.5 — no floor)', () => {
@@ -396,16 +396,22 @@ describe('applyIntent — Director Malice intents', () => {
     s = applyIntent(s, intent('GainMalice', { amount: 2 })).state;
     const r = applyIntent(s, intent('SpendMalice', { amount: 5, reason: 'Sap Strength' }));
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter?.malice.current).toBe(-3);
+    expect(r.state.encounter?.malice.current).toBe(-3);
   });
 
   it('GainMalice rejects with no_active_encounter when no encounter', () => {
-    const r = applyIntent(emptySessionState(sessionId), intent('GainMalice', { amount: 3 }));
+    const r = applyIntent(
+      emptyCampaignState(campaignId, 'user-owner'),
+      intent('GainMalice', { amount: 3 }),
+    );
     expect(r.errors?.[0]?.code).toBe('no_active_encounter');
   });
 
   it('SpendMalice rejects with no_active_encounter when no encounter', () => {
-    const r = applyIntent(emptySessionState(sessionId), intent('SpendMalice', { amount: 3 }));
+    const r = applyIntent(
+      emptyCampaignState(campaignId, 'user-owner'),
+      intent('SpendMalice', { amount: 3 }),
+    );
     expect(r.errors?.[0]?.code).toBe('no_active_encounter');
   });
 
@@ -416,11 +422,11 @@ describe('applyIntent — Director Malice intents', () => {
 });
 
 describe('applyIntent — EndTurn Talent Clarity EoT damage hook', () => {
-  function readyForTalent(over?: Partial<Participant>): SessionState {
-    let s = emptySessionState(sessionId);
-    s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
+  function readyForTalent(over?: Partial<Participant>): CampaignState {
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc(over) })).state;
     s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+    s = applyIntent(s, intent('StartEncounter', {})).state;
     s = applyIntent(s, intent('SetInitiative', { order: ['pc_talent', 'm_goblin'] })).state;
     s = applyIntent(s, intent('StartRound', {})).state;
     s = applyIntent(s, intent('StartTurn', { participantId: 'pc_talent' })).state;

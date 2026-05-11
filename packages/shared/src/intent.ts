@@ -14,7 +14,7 @@ export type IntentType = z.infer<typeof IntentTypeSchema>;
 // stricter wire-side `IntentDispatchSchema` if the asymmetry starts to bite.
 export const IntentSchema = z.object({
   id: z.string().min(1), // ULID, generated client-side
-  sessionId: z.string().min(1),
+  campaignId: z.string().min(1),
   actor: ActorSchema,
   timestamp: z.number().int().nonnegative().optional(),
   source: IntentSourceSchema,

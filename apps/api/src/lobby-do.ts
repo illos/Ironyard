@@ -3,15 +3,22 @@ import type {
   DurableObject,
   DurableObjectState,
 } from '@cloudflare/workers-types';
-import { type SessionState, applyIntent, emptySessionState } from '@ironyard/rules';
+import { type CampaignState, applyIntent, emptyCampaignState } from '@ironyard/rules';
 import { ClientMsgSchema, type Intent, type Member, type ServerMsg, ulid } from '@ironyard/shared';
 import { and, desc, eq, gt } from 'drizzle-orm';
 import { db } from './db';
-import { intents as intentsTable, sessionSnapshots } from './db/schema';
-import { buildServerStampedIntent } from './session-do-build-intent';
+import {
+  campaignMemberships,
+  campaignSnapshots,
+  campaigns,
+  intents as intentsTable,
+} from './db/schema';
+import { buildServerStampedIntent } from './lobby-do-build-intent';
+import { handleSideEffect } from './lobby-do-side-effects';
+import { stampIntent } from './lobby-do-stampers';
 import type { Bindings } from './types';
 
-// SessionDO: per-session authoritative state machine. Phase 1 slice 1 wires
+// LobbyDO: per-campaign authoritative state machine. Phase 1 slice 1 wires
 // the reducer in via @ironyard/rules, persists each applied intent to D1, and
 // replays from D1 on cold start. The Phase 0 lobby envelopes (member_*) stay
 // alongside the new `applied` envelopes so the web app keeps working without
@@ -20,8 +27,9 @@ import type { Bindings } from './types';
 
 const HEADER_USER_ID = 'x-user-id';
 const HEADER_USER_DISPLAY_NAME = 'x-user-display-name';
-const HEADER_USER_ROLE = 'x-user-role';
-const HEADER_SESSION_ID = 'x-session-id';
+// x-user-role is no longer read from the client-forwarded headers; role is
+// derived from campaign_memberships.is_director during WS upgrade (D5).
+const HEADER_CAMPAIGN_ID = 'x-campaign-id';
 
 const SNAPSHOT_EVERY = 50;
 const SNAPSHOT_INTERVAL_MS = 30_000;
@@ -31,13 +39,13 @@ type Attached = { userId: string; displayName: string; role: Role };
 
 declare const WebSocketPair: { new (): { 0: CFWebSocket; 1: CFWebSocket } };
 
-export class SessionDO implements DurableObject {
+export class LobbyDO implements DurableObject {
   private readonly sockets = new Map<CFWebSocket, Attached>();
   private readonly state: DurableObjectState;
   private readonly env: Bindings;
 
-  private sessionState: SessionState | null = null;
-  private sessionId = '';
+  private campaignState: CampaignState | null = null;
+  private campaignId = '';
   private lastSnapshotSeq = 0;
   private lastSnapshotAt = 0;
 
@@ -59,23 +67,34 @@ export class SessionDO implements DurableObject {
     return result;
   }
 
-  private async load(sessionId: string) {
+  private async load(campaignId: string) {
     const conn = db(this.env.DB);
     const snapshot = await conn
       .select()
-      .from(sessionSnapshots)
-      .where(eq(sessionSnapshots.sessionId, sessionId))
+      .from(campaignSnapshots)
+      .where(eq(campaignSnapshots.campaignId, campaignId))
       .get();
 
-    let state: SessionState;
+    let state: CampaignState;
     let fromSeq = 0;
     if (snapshot) {
-      state = JSON.parse(snapshot.state) as SessionState;
+      state = JSON.parse(snapshot.state) as CampaignState;
       fromSeq = snapshot.seq;
       this.lastSnapshotSeq = snapshot.seq;
       this.lastSnapshotAt = snapshot.savedAt;
     } else {
-      state = emptySessionState(sessionId);
+      // D5: fetch the campaign owner so fresh state has ownerId + activeDirectorId
+      // FIXME(phase-c): emptyCampaignState second arg (ownerId) lands when Phase C merges.
+      // Until then, the call below may produce a type error on the signature.
+      const campaign = await conn
+        .select({ ownerId: campaigns.ownerId })
+        .from(campaigns)
+        .where(eq(campaigns.id, campaignId))
+        .get();
+      const ownerId = campaign?.ownerId ?? campaignId; // fallback: use campaignId as sentinel
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore FIXME(phase-c): second arg lands when Phase C merges
+      state = emptyCampaignState(campaignId, ownerId);
     }
 
     // Replay non-voided rows only — voided intents are the bookkeeping that
@@ -85,7 +104,7 @@ export class SessionDO implements DurableObject {
       .from(intentsTable)
       .where(
         and(
-          eq(intentsTable.sessionId, sessionId),
+          eq(intentsTable.campaignId, campaignId),
           gt(intentsTable.seq, fromSeq),
           eq(intentsTable.voided, 0),
         ),
@@ -104,7 +123,7 @@ export class SessionDO implements DurableObject {
     const maxRow = await conn
       .select({ seq: intentsTable.seq })
       .from(intentsTable)
-      .where(eq(intentsTable.sessionId, sessionId))
+      .where(eq(intentsTable.campaignId, campaignId))
       .orderBy(desc(intentsTable.seq))
       .limit(1)
       .get();
@@ -112,35 +131,90 @@ export class SessionDO implements DurableObject {
 
     // After replay, connectedMembers reflects historical events, not current
     // sockets (which are all gone on cold start). Clear it; reconnecting
-    // clients will re-emit JoinSession via the WS connect path.
+    // clients will re-emit JoinLobby via the WS connect path.
     state = { ...state, connectedMembers: [] };
 
-    this.sessionId = sessionId;
-    this.sessionState = state;
+    this.campaignId = campaignId;
+    this.campaignState = state;
   }
 
   async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+
+    // D6.3: /revoke-director — called by the revoke HTTP route after it updates
+    // campaign_memberships.is_director = 0. If the revoked user is currently the
+    // active director, emit a synthetic JumpBehindScreen from the owner so the
+    // screen moves back atomically and all clients are broadcast the change.
+    if (url.pathname === '/revoke-director' && request.method === 'POST') {
+      let body: unknown;
+      try {
+        body = await request.json();
+      } catch {
+        return new Response(JSON.stringify({ ok: false, error: 'invalid json' }), { status: 400 });
+      }
+      const revokedUserId =
+        body && typeof body === 'object' && 'revokedUserId' in body
+          ? (body as { revokedUserId: unknown }).revokedUserId
+          : null;
+      if (typeof revokedUserId !== 'string') {
+        return new Response(JSON.stringify({ ok: false, error: 'revokedUserId required' }), {
+          status: 400,
+        });
+      }
+
+      // Only emit the synthetic intent if the revoked user is currently behind the screen.
+      if (this.campaignState && this.campaignState.activeDirectorId === revokedUserId) {
+        const state = this.campaignState;
+        const synthetic: Intent & { timestamp: number } = {
+          id: ulid(),
+          campaignId: state.campaignId,
+          actor: { userId: state.ownerId, role: 'director' },
+          timestamp: Date.now(),
+          source: 'auto', // 'server' not in IntentSourceSchema; 'auto' is the closest — it's DO-emitted, not user-typed
+          type: 'JumpBehindScreen',
+          payload: { permitted: true },
+        };
+        void this.serialize(() => this.applyAndBroadcast(synthetic));
+      }
+
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
     if (request.headers.get('upgrade')?.toLowerCase() !== 'websocket') {
       return new Response('expected websocket upgrade', { status: 426 });
     }
 
     const userId = request.headers.get(HEADER_USER_ID);
     const displayName = request.headers.get(HEADER_USER_DISPLAY_NAME);
-    const roleHeader = request.headers.get(HEADER_USER_ROLE);
-    const sessionId = request.headers.get(HEADER_SESSION_ID);
-    if (
-      !userId ||
-      !displayName ||
-      !sessionId ||
-      (roleHeader !== 'director' && roleHeader !== 'player')
-    ) {
-      return new Response('missing or invalid user headers', { status: 401 });
+    const campaignId = request.headers.get(HEADER_CAMPAIGN_ID);
+    if (!userId || !displayName || !campaignId) {
+      return new Response('missing user headers', { status: 401 });
     }
-    const role: Role = roleHeader;
+
+    // D5: derive role from DB membership instead of trusting the x-user-role header.
+    // The routes.ts socket handler already validated membership before forwarding;
+    // we re-query here so the actor role stamped onto intents is authoritative.
+    const conn = db(this.env.DB);
+    const membership = await conn
+      .select({ isDirector: campaignMemberships.isDirector })
+      .from(campaignMemberships)
+      .where(
+        and(eq(campaignMemberships.campaignId, campaignId), eq(campaignMemberships.userId, userId)),
+      )
+      .get();
+    // If no membership row exists the user was removed after the HTTP auth check;
+    // reject the upgrade.
+    if (!membership) {
+      return new Response('not a member', { status: 403 });
+    }
+    const role: Role = membership.isDirector === 1 ? 'director' : 'player';
 
     // Cold-start load. blockConcurrencyWhile prevents handler races during init.
-    if (!this.sessionState || this.sessionId !== sessionId) {
-      await this.state.blockConcurrencyWhile(() => this.load(sessionId));
+    if (!this.campaignState || this.campaignId !== campaignId) {
+      await this.state.blockConcurrencyWhile(() => this.load(campaignId));
     }
 
     const pair = new WebSocketPair();
@@ -155,15 +229,15 @@ export class SessionDO implements DurableObject {
     this.sendTo(server, { kind: 'member_list', members: this.snapshotMembers() });
     this.broadcastExcept({ kind: 'member_joined', member: { userId, displayName } }, server);
 
-    // Auto-emit JoinSession through the full pipeline (validate → persist → broadcast applied).
+    // Auto-emit JoinLobby through the full pipeline (validate → persist → broadcast applied).
     void this.serialize(() =>
       this.applyAndBroadcast({
         id: ulid(),
-        sessionId: this.sessionId,
+        campaignId: this.campaignId,
         actor: { userId, role },
         timestamp: Date.now(),
         source: 'auto',
-        type: 'JoinSession',
+        type: 'JoinLobby',
         payload: { userId, displayName },
       }),
     );
@@ -183,11 +257,11 @@ export class SessionDO implements DurableObject {
       void this.serialize(() =>
         this.applyAndBroadcast({
           id: ulid(),
-          sessionId: this.sessionId,
+          campaignId: this.campaignId,
           actor: { userId: att.userId, role: att.role },
           timestamp: Date.now(),
           source: 'auto',
-          type: 'LeaveSession',
+          type: 'LeaveLobby',
           payload: { userId: att.userId },
         }),
       );
@@ -229,12 +303,13 @@ export class SessionDO implements DurableObject {
   }
 
   // Intents the client can never dispatch directly. These are emitted by the
-  // DO (session lifecycle) or by the reducer as derived intents (apply damage).
-  private readonly SERVER_ONLY_INTENTS = new Set(['JoinSession', 'LeaveSession', 'ApplyDamage']);
+  // DO (campaign lifecycle) or by the reducer as derived intents (apply damage).
+  // D6.4: confirmed names post-rename (JoinSession/LeaveSession → JoinLobby/LeaveLobby).
+  private readonly SERVER_ONLY_INTENTS = new Set(['JoinLobby', 'LeaveLobby', 'ApplyDamage']);
 
   private async handleDispatch(socket: CFWebSocket, clientIntent: Intent) {
     const attached = this.sockets.get(socket);
-    if (!attached || !this.sessionState) return;
+    if (!attached || !this.campaignState) return;
 
     if (this.SERVER_ONLY_INTENTS.has(clientIntent.type)) {
       this.sendTo(socket, {
@@ -245,20 +320,35 @@ export class SessionDO implements DurableObject {
       return;
     }
 
-    // Server-stamp actor + timestamp + sessionId. Client-supplied id is
+    // Server-stamp actor + timestamp + campaignId. Client-supplied id is
     // preserved (it's the dedupe key). `source` is preserved from the client
     // — slice 11's "rolled auto vs typed manually" attribution depends on
     // honoring the client-supplied value.
     const intent: Intent & { timestamp: number } = buildServerStampedIntent(
       clientIntent,
       attached,
-      this.sessionId,
+      this.campaignId,
       Date.now(),
     );
 
     if (intent.type === 'Undo') {
       await this.handleUndoDispatch(socket, intent);
       return;
+    }
+
+    // D6.1: Stamping pipeline — runs before applyAndBroadcast.
+    // Stampers may mutate intent.payload (adding server-derived fields) or
+    // return a rejection reason if server-side validation fails.
+    if (this.campaignState) {
+      const stampRejection = await stampIntent(intent, this.campaignState, this.env);
+      if (stampRejection !== null) {
+        this.sendTo(socket, {
+          kind: 'rejected',
+          intentId: intent.id,
+          reason: stampRejection,
+        });
+        return;
+      }
     }
 
     await this.applyAndBroadcast(intent, socket);
@@ -285,7 +375,7 @@ export class SessionDO implements DurableObject {
     const allRows = await conn
       .select()
       .from(intentsTable)
-      .where(eq(intentsTable.sessionId, this.sessionId))
+      .where(eq(intentsTable.campaignId, this.campaignId))
       .all();
 
     const target = allRows.find((r) => r.id === targetId);
@@ -348,18 +438,18 @@ export class SessionDO implements DurableObject {
     // snapshot would also have included voided intents' effects. Replaying
     // from seq 0 with voided rows skipped is correct and cheap at Phase 1
     // volumes; later slices can do finer-grained snapshot invalidation.
-    await conn.delete(sessionSnapshots).where(eq(sessionSnapshots.sessionId, this.sessionId));
+    await conn.delete(campaignSnapshots).where(eq(campaignSnapshots.campaignId, this.campaignId));
     this.lastSnapshotSeq = 0;
     this.lastSnapshotAt = 0;
 
     // Reload the in-memory state from D1 (skipping voided rows) and broadcast
     // a fresh snapshot so all clients converge.
-    await this.load(this.sessionId);
-    if (this.sessionState) {
+    await this.load(this.campaignId);
+    if (this.campaignState) {
       this.broadcast({
         kind: 'snapshot',
-        state: this.sessionState,
-        seq: this.sessionState.seq,
+        state: this.campaignState,
+        seq: this.campaignState.seq,
       });
     }
   }
@@ -375,9 +465,9 @@ export class SessionDO implements DurableObject {
   }
 
   private async _applyOne(intent: Intent & { timestamp: number }, originSocket?: CFWebSocket) {
-    if (!this.sessionState) return;
+    if (!this.campaignState) return;
 
-    const result = applyIntent(this.sessionState, intent);
+    const result = applyIntent(this.campaignState, intent);
     if (result.errors && result.errors.length > 0) {
       const reason = result.errors.map((e) => e.message).join('; ');
       if (originSocket) {
@@ -386,13 +476,13 @@ export class SessionDO implements DurableObject {
       return;
     }
 
-    this.sessionState = result.state;
+    this.campaignState = result.state;
     const seq = result.state.seq;
 
     const conn = db(this.env.DB);
     await conn.insert(intentsTable).values({
       id: intent.id,
-      sessionId: this.sessionId,
+      campaignId: this.campaignId,
       seq,
       actorId: intent.actor.userId,
       payload: JSON.stringify(intent),
@@ -410,14 +500,19 @@ export class SessionDO implements DurableObject {
 
     this.broadcast({ kind: 'applied', intent, seq });
 
-    // Derived intents inherit sessionId and run through the same pipeline. They
+    // D6.2: Post-reducer D1 side-effect writes (SubmitCharacter, ApproveCharacter,
+    // DenyCharacter, RemoveApprovedCharacter, KickPlayer). Failures are logged but
+    // do not re-throw — in-memory state has advanced, recovery is re-dispatch.
+    await handleSideEffect(intent, this.campaignId, this.env);
+
+    // Derived intents inherit campaignId and run through the same pipeline. They
     // get their own ids/timestamps and a fresh seq. Recursive cascades stay
     // bounded — slice 3's derived is one ApplyDamage per target, no further chain.
     for (const derived of result.derived) {
       const stampedDerived: Intent & { timestamp: number } = {
         ...derived,
         id: ulid(),
-        sessionId: this.sessionId,
+        campaignId: this.campaignId,
         timestamp: Date.now(),
       };
       await this._applyOne(stampedDerived);
@@ -425,12 +520,12 @@ export class SessionDO implements DurableObject {
   }
 
   private async handleSync(socket: CFWebSocket, sinceSeq: number) {
-    if (!this.sessionId) return;
+    if (!this.campaignId) return;
     const conn = db(this.env.DB);
     const rows = await conn
       .select()
       .from(intentsTable)
-      .where(and(eq(intentsTable.sessionId, this.sessionId), gt(intentsTable.seq, sinceSeq)))
+      .where(and(eq(intentsTable.campaignId, this.campaignId), gt(intentsTable.seq, sinceSeq)))
       .orderBy(intentsTable.seq)
       .all();
 
@@ -441,20 +536,20 @@ export class SessionDO implements DurableObject {
   }
 
   private async persistSnapshot(now: number) {
-    if (!this.sessionState) return;
+    if (!this.campaignState) return;
     const conn = db(this.env.DB);
-    const stateJson = JSON.stringify(this.sessionState);
-    const seq = this.sessionState.seq;
+    const stateJson = JSON.stringify(this.campaignState);
+    const seq = this.campaignState.seq;
     await conn
-      .insert(sessionSnapshots)
+      .insert(campaignSnapshots)
       .values({
-        sessionId: this.sessionId,
+        campaignId: this.campaignId,
         state: stateJson,
         seq,
         savedAt: now,
       })
       .onConflictDoUpdate({
-        target: sessionSnapshots.sessionId,
+        target: campaignSnapshots.campaignId,
         set: { state: stateJson, seq, savedAt: now },
       });
     this.lastSnapshotSeq = seq;

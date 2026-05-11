@@ -25,7 +25,7 @@ import {
 import { Link, useParams } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildIntent } from '../api/dispatch';
-import { useMe, useMonsters, useSession } from '../api/queries';
+import { useCampaign, useMe, useMonsters } from '../api/queries';
 import { describeIntent, findLatestUndoable } from '../lib/intentDescribe';
 import { type MirrorIntent, useSessionSocket } from '../ws/useSessionSocket';
 import { DetailPane } from './combat/DetailPane';
@@ -36,9 +36,9 @@ const TOAST_DISMISS_MS = 6000;
 const MAX_TOASTS = 3;
 
 export function CombatRun() {
-  const { id: sessionId } = useParams({ from: '/sessions/$id/play' });
+  const { id: sessionId } = useParams({ from: '/campaigns/$id/play' });
   const me = useMe();
-  const session = useSession(sessionId);
+  const session = useCampaign(sessionId);
   const monsters = useMonsters();
   const { status, activeEncounter, dispatch, intentLog } = useSessionSocket(sessionId);
 
@@ -76,8 +76,8 @@ export function CombatRun() {
     for (const entry of newEntries) {
       // Only toast types worth seeing. JoinSession / LeaveSession spam the
       // log on every connect and never need an undo affordance.
-      if (entry.type === IntentTypes.JoinSession) continue;
-      if (entry.type === IntentTypes.LeaveSession) continue;
+      if (entry.type === IntentTypes.JoinLobby) continue;
+      if (entry.type === IntentTypes.LeaveLobby) continue;
       // Derived intents inherit attribution from their parent — surface the
       // parent's text but make Undo target the parent id (the DO voids the
       // whole chain via the parent).
@@ -194,7 +194,9 @@ export function CombatRun() {
   if (session.error || !session.data) {
     return (
       <main className="mx-auto max-w-6xl p-6 space-y-2">
-        <p className="text-rose-400">{(session.error as Error)?.message ?? 'Session not found.'}</p>
+        <p className="text-rose-400">
+          {(session.error as Error)?.message ?? 'Campaign not found.'}
+        </p>
         <Link to="/" className="underline text-neutral-300">
           Back home
         </Link>
@@ -202,7 +204,10 @@ export function CombatRun() {
     );
   }
 
-  const actor = { userId: me.data.user.id, role: session.data.role };
+  const actor = {
+    userId: me.data.user.id,
+    role: (session.data.isDirector ? 'director' : 'player') as 'director' | 'player',
+  };
   const participants = activeEncounter?.participants ?? [];
   const focused = participants.find((p) => p.id === focusedId) ?? null;
   const isAtTurnEnd =
@@ -212,7 +217,7 @@ export function CombatRun() {
   const undoable = findLatestUndoable(intentLog);
 
   const send = (type: string, payload: unknown): boolean =>
-    dispatch(buildIntent({ sessionId, type, payload, actor }));
+    dispatch(buildIntent({ campaignId: sessionId, type, payload, actor }));
 
   const handleStartRound = () => {
     const payload: StartRoundPayload = {};
@@ -274,7 +279,7 @@ export function CombatRun() {
     // TODO: lobby for the DO to honour client `source`, or extend the wire
     // protocol with a `source: 'manual' | 'auto'` field independent of trust.
     const intent: Intent = buildIntent({
-      sessionId,
+      campaignId: sessionId,
       type: IntentTypes.RollPower,
       payload,
       actor,
@@ -367,7 +372,7 @@ export function CombatRun() {
           <p className="text-xs text-neutral-500 mt-1">
             Build one first —{' '}
             <Link
-              to="/sessions/$id/build"
+              to="/campaigns/$id/build"
               params={{ id: sessionId }}
               className="underline text-neutral-300 hover:text-neutral-100"
             >
@@ -498,7 +503,7 @@ function Header({
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <Link
-          to="/sessions/$id"
+          to="/campaigns/$id"
           params={{ id: sessionId }}
           className="text-sm text-neutral-400 hover:text-neutral-200 min-h-11 px-2 inline-flex items-center"
         >

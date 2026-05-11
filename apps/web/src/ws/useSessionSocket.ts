@@ -67,8 +67,11 @@ function reflect(
 ): ActiveEncounter | null {
   if (type === IntentTypes.StartEncounter) {
     const { encounterId } = payload as StartEncounterPayload;
+    // The reducer generates the canonical id; client-side mirror uses the
+    // optimistic suggestion if present, otherwise empty until the snapshot
+    // catches up.
     return {
-      encounterId,
+      encounterId: encounterId ?? '',
       participants: [],
       currentRound: null,
       turnOrder: [],
@@ -351,23 +354,40 @@ function upsertResource(
 // Coerce a server-broadcast snapshot (`unknown` on the wire per wire.ts) into
 // an ActiveEncounter, with light shape validation. Returns null on any shape
 // mismatch — caller treats null as "no encounter to restore."
+//
+// New CampaignState shape: participants are at the top level, encounter is a
+// separate phase object (or null when no encounter is active).
 function snapshotToEncounter(state: unknown): ActiveEncounter | null {
   if (!state || typeof state !== 'object') return null;
-  const s = state as { activeEncounter?: unknown };
-  const e = s.activeEncounter;
+  const s = state as {
+    encounter?: unknown;
+    participants?: Participant[];
+  };
+
+  // Top-level participants (new shape)
+  const topParticipants = Array.isArray(s.participants) ? (s.participants as Participant[]) : null;
+
+  const e = s.encounter;
   if (!e || typeof e !== 'object') return null;
+
   const enc = e as {
     id?: string;
+    // Old shape had participants on encounter; new shape has them at top level.
     participants?: Participant[];
     currentRound?: number | null;
     turnOrder?: string[];
     activeParticipantId?: string | null;
     malice?: MaliceState;
   };
-  if (typeof enc.id !== 'string' || !Array.isArray(enc.participants)) return null;
+
+  if (typeof enc.id !== 'string') return null;
+
+  // Prefer top-level participants (new shape), fall back to encounter-embedded (old shape).
+  const participants = topParticipants ?? enc.participants ?? [];
+
   return {
     encounterId: enc.id,
-    participants: enc.participants,
+    participants,
     currentRound: enc.currentRound ?? null,
     turnOrder: enc.turnOrder ?? [],
     activeParticipantId: enc.activeParticipantId ?? null,
@@ -386,7 +406,7 @@ export function useSessionSocket(sessionId: string | undefined) {
   useEffect(() => {
     if (!sessionId) return;
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${proto}//${window.location.host}/api/sessions/${sessionId}/socket`);
+    const ws = new WebSocket(`${proto}//${window.location.host}/api/campaigns/${sessionId}/socket`);
     wsRef.current = ws;
     setStatus('connecting');
     setActiveEncounter(null);

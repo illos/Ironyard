@@ -1,6 +1,6 @@
 # Rules engine (`packages/rules`)
 
-The rules engine is the heart of the app. It's a pure, stateless TypeScript module that takes the current session state and an intent and returns a new state plus any derived intents. Same code runs in the Durable Object (authoritative) and in the client (optimistic).
+The rules engine is the heart of the app. It's a pure, stateless TypeScript module that takes the current campaign state and an intent and returns a new state plus any derived intents. Same code runs in the lobby DO (authoritative) and in the client (optimistic).
 
 This is the genuinely hard part of the project. Plumbing (Cloudflare, React, DOs) is well-trodden territory. Modeling Draw Steel's mechanics correctly enough that the table doesn't constantly need to override the engine is where most of the engineering goes.
 
@@ -10,27 +10,72 @@ This is the genuinely hard part of the project. Plumbing (Cloudflare, React, DOs
 // packages/rules/src/index.ts
 
 export function applyIntent(
-  state: SessionState,
+  state: CampaignState,
   intent: Intent,
 ): IntentResult;
 
 export function inverse(
   intent: Intent,
-  stateBefore: SessionState,
+  stateBefore: CampaignState,
 ): Intent;
 
 export function canDispatch(
   intent: Intent,
   actor: Actor,
-  state: SessionState,
+  state: CampaignState,
 ): { ok: true } | { ok: false; reason: string };
 
-export type SessionState = { ... };
+export type CampaignState = { ... };
 export type Intent = { ... };
-export type IntentResult = { state: SessionState; derived: Intent[]; log: LogEntry[] };
+export type IntentResult = { state: CampaignState; derived: Intent[]; log: LogEntry[] };
 ```
 
 Nothing else is exported. The rules engine never imports from `apps/web`, `apps/api`, or any side-effectful module. It runs identically in node, the browser, and a Worker.
+
+## `CampaignState` shape
+
+```ts
+export type CampaignState = {
+  campaignId: string;
+  // Immutable per campaign (v1). Cached from campaigns.owner_id at DO load().
+  // Used by the reducer to authorise owner-only intents without a D1 round-trip.
+  ownerId: string;
+  // The user currently behind the screen. Defaults to ownerId on creation.
+  // Mutated by JumpBehindScreen. All operational "director-only" intents
+  // gate on actor.userId === activeDirectorId.
+  activeDirectorId: string;
+  seq: number;
+  connectedMembers: Member[];
+  notes: NoteEntry[];
+  // Lobby-persistent roster. Heroes and monsters added to the lobby.
+  // Survives EndEncounter; cleared only by RemoveParticipant or ClearLobby.
+  participants: Participant[];
+  // Encounter phase. null when there is no active encounter.
+  // EndEncounter sets this to null and scrubs participants' end-of-encounter conditions.
+  encounter: EncounterPhase | null;
+};
+
+export type EncounterPhase = {
+  id: string;                              // ULID, assigned at StartEncounter
+  currentRound: number | null;
+  turnOrder: string[];                     // participant ids
+  activeParticipantId: string | null;
+  turnState: Record<string, TurnState>;
+  malice: MaliceState;
+};
+```
+
+**Three-tier permission model.** The reducer uses three authority levels derived from `CampaignState`:
+
+1. **Owner** — `actor.userId === state.ownerId`. Can do everything an active director can, plus grant/revoke director permission. Cannot be kicked or demoted.
+2. **Director-permitted** — DO stamps `permitted: boolean` from `campaign_memberships.is_director` onto intents that need it (currently only `JumpBehindScreen`). Owner unconditionally bypasses.
+3. **Active Director** — `actor.userId === state.activeDirectorId`. Gate for all operational combat / lobby management intents.
+
+**`emptyCampaignState(campaignId, ownerId)`** (two arguments) returns:
+```ts
+{ campaignId, ownerId, activeDirectorId: ownerId, seq: 0, connectedMembers: [], notes: [], participants: [], encounter: null }
+```
+The DO must know the campaign's owner at `load()` time — it reads `campaigns.owner_id` once during cold start and passes it as the second argument.
 
 ## Canon-gated automation
 
@@ -284,7 +329,7 @@ packages/rules/
 │   ├── turn-state.ts             # § 4.10 state machine
 │   ├── permissions.ts            # canDispatch
 │   ├── inverses.ts               # inverse functions for undo
-│   └── types.ts                  # SessionState, Participant, etc.
+│   └── types.ts                  # CampaignState, EncounterPhase, Participant, etc.
 ├── scripts/
 │   └── gen-canon-status.ts       # parses rules-canon.md → registry
 └── tests/

@@ -1,14 +1,14 @@
 import type { Intent } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
-import { type StampedIntent, applyIntent, emptySessionState } from '../src/index';
+import { type StampedIntent, applyIntent, emptyCampaignState } from '../src/index';
 
 const T = 1_700_000_000_000;
-const sessionId = 'sess_test';
+const campaignId = 'sess_test';
 
 function intent(type: string, payload: unknown, overrides: Partial<Intent> = {}): StampedIntent {
   return {
     id: overrides.id ?? `i_${Math.random().toString(36).slice(2)}`,
-    sessionId: overrides.sessionId ?? sessionId,
+    campaignId: overrides.campaignId ?? campaignId,
     actor: overrides.actor ?? { userId: 'alice', role: 'director' },
     timestamp: overrides.timestamp ?? T,
     source: overrides.source ?? 'manual',
@@ -20,7 +20,7 @@ function intent(type: string, payload: unknown, overrides: Partial<Intent> = {})
 
 describe('applyUndo (reducer-side)', () => {
   it('is a no-op on state apart from seq + log (state revert happens at the DO via replay)', () => {
-    let s = emptySessionState(sessionId);
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(s, intent('Note', { text: 'first' })).state;
     const before = s;
     const r = applyIntent(s, intent('Undo', { intentId: 'some-id' }));
@@ -31,12 +31,15 @@ describe('applyUndo (reducer-side)', () => {
   });
 
   it('rejects an empty intentId', () => {
-    const r = applyIntent(emptySessionState(sessionId), intent('Undo', { intentId: '' }));
+    const r = applyIntent(
+      emptyCampaignState(campaignId, 'user-owner'),
+      intent('Undo', { intentId: '' }),
+    );
     expect(r.errors?.[0]?.code).toBe('invalid_payload');
   });
 
   it('rejects a missing intentId', () => {
-    const r = applyIntent(emptySessionState(sessionId), intent('Undo', {}));
+    const r = applyIntent(emptyCampaignState(campaignId, 'user-owner'), intent('Undo', {}));
     expect(r.errors?.[0]?.code).toBe('invalid_payload');
   });
 });

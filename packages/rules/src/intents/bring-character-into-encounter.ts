@@ -1,8 +1,8 @@
 import { BringCharacterIntoEncounterPayloadSchema } from '@ironyard/shared';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 export function applyBringCharacterIntoEncounter(
-  state: SessionState,
+  state: CampaignState,
   intent: StampedIntent,
 ): IntentResult {
   const parsed = BringCharacterIntoEncounterPayloadSchema.safeParse(intent.payload);
@@ -21,30 +21,15 @@ export function applyBringCharacterIntoEncounter(
     };
   }
 
-  if (!state.activeEncounter) {
-    return {
-      state,
-      derived: [],
-      log: [
-        {
-          kind: 'error',
-          text: 'no active encounter to bring a character into',
-          intentId: intent.id,
-        },
-      ],
-      errors: [{ code: 'no_active_encounter', message: 'no active encounter' }],
-    };
-  }
-
   const { participant } = parsed.data;
-  if (state.activeEncounter.participants.some((p) => p.id === participant.id)) {
+  if (state.participants.some((p) => p.id === participant.id)) {
     return {
       state,
       derived: [],
       log: [
         {
           kind: 'error',
-          text: `participant ${participant.id} already in encounter`,
+          text: `participant ${participant.id} already in roster`,
           intentId: intent.id,
         },
       ],
@@ -56,10 +41,7 @@ export function applyBringCharacterIntoEncounter(
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
-        ...state.activeEncounter,
-        participants: [...state.activeEncounter.participants, participant],
-      },
+      participants: [...state.participants, participant],
     },
     derived: [],
     log: [

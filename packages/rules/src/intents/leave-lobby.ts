@@ -1,8 +1,8 @@
-import { LeaveSessionPayloadSchema } from '@ironyard/shared';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import { LeaveLobbyPayloadSchema } from '@ironyard/shared';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
-export function applyLeaveSession(state: SessionState, intent: StampedIntent): IntentResult {
-  const parsed = LeaveSessionPayloadSchema.safeParse(intent.payload);
+export function applyLeaveLobby(state: CampaignState, intent: StampedIntent): IntentResult {
+  const parsed = LeaveLobbyPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
       state,
@@ -10,7 +10,7 @@ export function applyLeaveSession(state: SessionState, intent: StampedIntent): I
       log: [
         {
           kind: 'error',
-          text: `LeaveSession rejected: ${parsed.error.message}`,
+          text: `LeaveLobby rejected: ${parsed.error.message}`,
           intentId: intent.id,
         },
       ],

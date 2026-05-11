@@ -1,10 +1,10 @@
 import type { Intent } from '@ironyard/shared';
 
-// Pure helper extracted from SessionDO so the source-preservation contract is
+// Pure helper extracted from LobbyDO so the source-preservation contract is
 // testable in isolation without a Durable Object harness.
 //
 // What it does: takes a client-dispatched Intent, swaps in the server-stamped
-// fields (actor from WS attached headers, timestamp from Date.now(), sessionId
+// fields (actor from WS attached headers, timestamp from Date.now(), campaignId
 // from the DO), and returns the stamped intent ready for `applyIntent`.
 //
 // Why it exists: pre-fix, the DO unconditionally overwrote
@@ -16,14 +16,14 @@ import type { Intent } from '@ironyard/shared';
 export function buildServerStampedIntent(
   clientIntent: Intent,
   attached: { userId: string; role: 'director' | 'player' },
-  sessionId: string,
+  campaignId: string,
   now: number,
 ): Intent & { timestamp: number } {
   return {
     ...clientIntent,
     actor: { userId: attached.userId, role: attached.role },
     timestamp: now,
-    sessionId,
+    campaignId,
     // source: NOT overridden — the client says whether they auto-rolled or
     // manually entered the result; the engine treats it as informational
     // metadata for the log. The wire-level Zod validation already constrains

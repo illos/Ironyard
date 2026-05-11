@@ -7,9 +7,9 @@ import {
 } from '../condition-hooks';
 import { resolvePowerRoll } from '../power-roll';
 import { requireCanon } from '../require-canon';
-import type { DerivedIntent, IntentResult, LogEntry, SessionState, StampedIntent } from '../types';
+import type { CampaignState, DerivedIntent, IntentResult, LogEntry, StampedIntent } from '../types';
 
-export function applyRollPower(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyRollPower(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = RollPowerPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -26,7 +26,7 @@ export function applyRollPower(state: SessionState, intent: StampedIntent): Inte
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -47,7 +47,7 @@ export function applyRollPower(state: SessionState, intent: StampedIntent): Inte
     bleedingD6,
   } = parsed.data;
 
-  const attacker = state.activeEncounter.participants.find((p) => p.id === attackerId);
+  const attacker = state.participants.find((p) => p.id === attackerId);
   if (!attacker) {
     return {
       state,
@@ -59,7 +59,7 @@ export function applyRollPower(state: SessionState, intent: StampedIntent): Inte
 
   const defenders = [];
   for (const id of targetIds) {
-    const target = state.activeEncounter.participants.find((p) => p.id === id);
+    const target = state.participants.find((p) => p.id === id);
     if (!target) {
       return {
         state,
@@ -75,7 +75,7 @@ export function applyRollPower(state: SessionState, intent: StampedIntent): Inte
   // maneuver, move} per turn). `RollPower` represents the main-action surface
   // in slice 6; maneuver/move intents adopt the same helper in slice 7.
   if (requireCanon('action-economy.condition-interactions-with-action-economy')) {
-    const turnState = state.activeEncounter.turnState[attackerId] ?? {
+    const turnState = state.encounter.turnState[attackerId] ?? {
       dazeActionUsedThisTurn: false,
     };
     const gate = gateActionForDazed(turnState, attacker, 'main_action');
@@ -193,20 +193,20 @@ export function applyRollPower(state: SessionState, intent: StampedIntent): Inte
   // Slice 6: mark the Dazed-tracking flag if the attacker is Dazed. (Always
   // set; non-Dazed actors aren't gated.) The flag is keyed per-attacker on the
   // encounter's turnState; StartTurn resets it.
-  const wasFlagSet = state.activeEncounter.turnState[attackerId]?.dazeActionUsedThisTurn ?? false;
+  const wasFlagSet = state.encounter.turnState[attackerId]?.dazeActionUsedThisTurn ?? false;
   const nextTurnState = !wasFlagSet
     ? {
-        ...state.activeEncounter.turnState,
+        ...state.encounter.turnState,
         [attackerId]: { dazeActionUsedThisTurn: true },
       }
-    : state.activeEncounter.turnState;
+    : state.encounter.turnState;
 
   return {
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
-        ...state.activeEncounter,
+      encounter: {
+        ...state.encounter,
         turnState: nextTurnState,
       },
     },

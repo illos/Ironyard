@@ -1,13 +1,13 @@
 import { GainResourcePayloadSchema, type Participant } from '@ironyard/shared';
 import { refLabel, resolveResource, updateExtra, updateHeroic } from '../resources';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 // Slice 7: increment a heroic / extras resource on a participant. `amount` is
 // signed — negative values are allowed but rejected with `floor_breach` if
 // `value + amount < floor`. The reducer never silently allocates a missing
 // resource (use SetResource with `initialize` for that — keeps a Conduit from
 // accidentally gaining a Wrath pool).
-export function applyGainResource(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyGainResource(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = GainResourcePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -24,7 +24,7 @@ export function applyGainResource(state: SessionState, intent: StampedIntent): I
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -34,7 +34,7 @@ export function applyGainResource(state: SessionState, intent: StampedIntent): I
   }
 
   const { participantId, name, amount } = parsed.data;
-  const target = state.activeEncounter.participants.find((p) => p.id === participantId);
+  const target = state.participants.find((p) => p.id === participantId);
   if (!target) {
     return {
       state,
@@ -96,7 +96,7 @@ export function applyGainResource(state: SessionState, intent: StampedIntent): I
       name: resolved.instance.name,
     });
   }
-  const updatedParticipants = state.activeEncounter.participants.map((p) =>
+  const updatedParticipants = state.participants.map((p) =>
     p.id === participantId ? updatedTarget : p,
   );
 
@@ -104,7 +104,7 @@ export function applyGainResource(state: SessionState, intent: StampedIntent): I
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: { ...state.activeEncounter, participants: updatedParticipants },
+      participants: updatedParticipants,
     },
     derived: [],
     log: [

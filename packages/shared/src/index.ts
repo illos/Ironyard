@@ -27,26 +27,37 @@ export {
 export type { CurrentUser, DevLoginRequest, MagicLinkRequest } from './auth';
 
 export {
-  CreateSessionRequestSchema,
-  JoinSessionRequestSchema,
+  CreateCampaignRequestSchema,
+  JoinCampaignRequestSchema,
   generateInviteCode,
-} from './session';
-export type { CreateSessionRequest, JoinSessionRequest } from './session';
+} from './campaign';
+export type { CreateCampaignRequest, JoinCampaignRequest } from './campaign';
 
 export {
+  AddMonsterPayloadSchema,
+  ApproveCharacterPayloadSchema,
   ApplyDamagePayloadSchema,
   ApplyHealPayloadSchema,
   BringCharacterIntoEncounterPayloadSchema,
+  ClearLobbyPayloadSchema,
+  DenyCharacterPayloadSchema,
   EndEncounterPayloadSchema,
   EndRoundPayloadSchema,
   EndTurnPayloadSchema,
   GainMalicePayloadSchema,
   GainResourcePayloadSchema,
   IntentTypes,
-  JoinSessionPayloadSchema,
-  LeaveSessionPayloadSchema,
+  JoinLobbyPayloadSchema,
+  JumpBehindScreenPayloadSchema,
+  KickPlayerPayloadSchema,
+  LeaveLobbyPayloadSchema,
+  LoadEncounterTemplateClientPayloadSchema,
+  LoadEncounterTemplatePayloadSchema,
+  LoadEncounterTemplateResolvedEntrySchema,
   NotePayloadSchema,
+  RemoveApprovedCharacterPayloadSchema,
   RemoveConditionPayloadSchema,
+  RemoveParticipantPayloadSchema,
   RollPowerPayloadSchema,
   RollResistancePayloadSchema,
   SetConditionPayloadSchema,
@@ -60,22 +71,34 @@ export {
   StartEncounterPayloadSchema,
   StartRoundPayloadSchema,
   StartTurnPayloadSchema,
+  SubmitCharacterPayloadSchema,
   UndoPayloadSchema,
 } from './intents';
 export type {
+  AddMonsterPayload,
+  ApproveCharacterPayload,
   ApplyDamagePayload,
   ApplyHealPayload,
   BringCharacterIntoEncounterPayload,
+  ClearLobbyPayload,
+  DenyCharacterPayload,
   EndEncounterPayload,
   EndRoundPayload,
   EndTurnPayload,
   GainMalicePayload,
   GainResourcePayload,
-  JoinSessionPayload,
+  JoinLobbyPayload,
+  JumpBehindScreenPayload,
+  KickPlayerPayload,
   KnownIntentType,
-  LeaveSessionPayload,
+  LeaveLobbyPayload,
+  LoadEncounterTemplateClientPayload,
+  LoadEncounterTemplatePayload,
+  LoadEncounterTemplateResolvedEntry,
   NotePayload,
+  RemoveApprovedCharacterPayload,
   RemoveConditionPayload,
+  RemoveParticipantPayload,
   RollPowerPayload,
   RollResistancePayload,
   SetConditionPayload,
@@ -89,6 +112,7 @@ export type {
   StartEncounterPayload,
   StartRoundPayload,
   StartTurnPayload,
+  SubmitCharacterPayload,
   UndoPayload,
 } from './intents';
 
@@ -160,3 +184,90 @@ export type { MaliceState } from './malice';
 
 export { ParticipantSchema } from './participant';
 export type { Participant } from './participant';
+
+export {
+  EncounterTemplateDataSchema,
+  EncounterTemplateEntrySchema,
+  EncounterTemplateSchema,
+} from './schemas/encounter-template';
+export type {
+  EncounterTemplate,
+  EncounterTemplateData,
+  EncounterTemplateEntry,
+} from './schemas/encounter-template';
+
+export {
+  CampaignCharacterSchema,
+  CampaignCharacterStatusSchema,
+} from './schemas/campaign-character';
+export type { CampaignCharacter, CampaignCharacterStatus } from './schemas/campaign-character';
+
+// ── Static reference data schemas ─────────────────────────────────────────────
+
+export {
+  AncestryFileSchema,
+  AncestrySchema,
+  AncestryTraitSchema,
+} from './data/ancestry';
+export type { Ancestry, AncestryFile, AncestryTrait } from './data/ancestry';
+
+export {
+  CareerFileSchema,
+  CareerSchema,
+  IncitingIncidentSchema,
+  PerkTypeSchema,
+  SkillGrantSchema,
+} from './data/career';
+export type {
+  Career,
+  CareerFile,
+  IncitingIncident,
+  PerkType,
+  SkillGrant,
+} from './data/career';
+
+export {
+  ComplicationFileSchema,
+  ComplicationSchema,
+} from './data/complication';
+export type { Complication, ComplicationFile } from './data/complication';
+
+export {
+  AbilitySlotSchema,
+  CharacteristicArraySchema,
+  ClassFileSchema,
+  ClassLevelSchema,
+  ClassSchema,
+  SubclassSchema,
+} from './data/class';
+export type {
+  AbilitySlot,
+  CharacteristicArray,
+  ClassFile,
+  ClassLevel,
+  HeroClass,
+  Subclass,
+} from './data/class';
+
+// ── Character blob schemas ─────────────────────────────────────────────────────
+
+export {
+  CharacterCultureSchema,
+  CharacterCareerChoicesSchema,
+  CharacterDetailsSchema,
+  CharacterResponseSchema,
+  CharacterSchema,
+  CreateCharacterRequestSchema,
+  LevelChoicesSchema,
+  UpdateCharacterRequestSchema,
+} from './character';
+export type {
+  Character,
+  CharacterCareerChoices,
+  CharacterCulture,
+  CharacterDetails,
+  CharacterResponse,
+  CreateCharacterRequest,
+  LevelChoices,
+  UpdateCharacterRequest,
+} from './character';

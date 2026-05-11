@@ -9,20 +9,20 @@ import {
 import { requireCanon } from '../require-canon';
 import type {
   ActiveEncounter,
+  CampaignState,
   DerivedIntent,
   IntentResult,
   LogEntry,
-  SessionState,
   StampedIntent,
 } from '../types';
 
 // Shared guard — every turn intent requires an active encounter.
 function requireEncounter(
-  state: SessionState,
+  state: CampaignState,
   intent: StampedIntent,
   label: string,
 ): { ok: true; encounter: ActiveEncounter } | { ok: false; result: IntentResult } {
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       ok: false,
       result: {
@@ -33,10 +33,10 @@ function requireEncounter(
       },
     };
   }
-  return { ok: true, encounter: state.activeEncounter };
+  return { ok: true, encounter: state.encounter };
 }
 
-export function applyStartRound(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyStartRound(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = StartRoundPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -62,7 +62,7 @@ export function applyStartRound(state: SessionState, intent: StampedIntent): Int
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
+      encounter: {
         ...guard.encounter,
         currentRound: round,
         activeParticipantId: firstId,
@@ -73,7 +73,7 @@ export function applyStartRound(state: SessionState, intent: StampedIntent): Int
   };
 }
 
-export function applyEndRound(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyEndRound(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = EndRoundPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -100,7 +100,7 @@ export function applyEndRound(state: SessionState, intent: StampedIntent): Inten
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
+      encounter: {
         ...guard.encounter,
         activeParticipantId: null,
       },
@@ -116,7 +116,7 @@ export function applyEndRound(state: SessionState, intent: StampedIntent): Inten
   };
 }
 
-export function applyStartTurn(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyStartTurn(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = StartTurnPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -132,18 +132,18 @@ export function applyStartTurn(state: SessionState, intent: StampedIntent): Inte
   if (!guard.ok) return guard.result;
 
   const { participantId } = parsed.data;
-  if (!guard.encounter.participants.some((p) => p.id === participantId)) {
+  if (!state.participants.some((p) => p.id === participantId)) {
     return {
       state,
       derived: [],
       log: [
         {
           kind: 'error',
-          text: `participant ${participantId} not in encounter`,
+          text: `participant ${participantId} not in roster`,
           intentId: intent.id,
         },
       ],
-      errors: [{ code: 'participant_missing', message: `${participantId} not in encounter` }],
+      errors: [{ code: 'participant_missing', message: `${participantId} not in roster` }],
     };
   }
 
@@ -159,7 +159,7 @@ export function applyStartTurn(state: SessionState, intent: StampedIntent): Inte
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
+      encounter: {
         ...guard.encounter,
         activeParticipantId: participantId,
         turnState: nextTurnState,
@@ -170,7 +170,7 @@ export function applyStartTurn(state: SessionState, intent: StampedIntent): Inte
   };
 }
 
-export function applyEndTurn(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyEndTurn(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = EndTurnPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -216,7 +216,7 @@ export function applyEndTurn(state: SessionState, intent: StampedIntent): Intent
   ];
 
   if (currentId !== null && requireCanon('conditions.saving-throws')) {
-    const ending = guard.encounter.participants.find((p) => p.id === currentId);
+    const ending = state.participants.find((p) => p.id === currentId);
     if (ending) {
       const saveEndsConditions = ending.conditions
         .filter((c) => c.duration.kind === 'save_ends' && c.removable)
@@ -261,7 +261,7 @@ export function applyEndTurn(state: SessionState, intent: StampedIntent): Intent
   // `|clarity|` untyped. Effortless Mind (10th-level toggle) suppression is
   // deferred to Phase 2 (character sheet).
   if (currentId !== null && requireCanon('heroic-resources-and-surges.talent-clarity')) {
-    const ending = guard.encounter.participants.find((p) => p.id === currentId);
+    const ending = state.participants.find((p) => p.id === currentId);
     if (ending) {
       const clarity = ending.heroicResources.find((r) => r.name === 'clarity');
       if (clarity && clarity.value < 0) {
@@ -290,7 +290,7 @@ export function applyEndTurn(state: SessionState, intent: StampedIntent): Intent
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
+      encounter: {
         ...guard.encounter,
         activeParticipantId: nextId,
         turnState: remainingTurnState,
@@ -301,7 +301,7 @@ export function applyEndTurn(state: SessionState, intent: StampedIntent): Intent
   };
 }
 
-export function applySetInitiative(state: SessionState, intent: StampedIntent): IntentResult {
+export function applySetInitiative(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = SetInitiativePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -321,7 +321,7 @@ export function applySetInitiative(state: SessionState, intent: StampedIntent): 
   if (!guard.ok) return guard.result;
 
   const { order } = parsed.data;
-  const participantIds = new Set(guard.encounter.participants.map((p) => p.id));
+  const participantIds = new Set(state.participants.map((p) => p.id));
   const proposedIds = new Set(order);
 
   if (order.length !== participantIds.size || proposedIds.size !== order.length) {
@@ -364,7 +364,7 @@ export function applySetInitiative(state: SessionState, intent: StampedIntent): 
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: {
+      encounter: {
         ...guard.encounter,
         turnOrder: [...order],
       },

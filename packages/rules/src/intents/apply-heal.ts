@@ -1,12 +1,12 @@
 import { ApplyHealPayloadSchema } from '@ironyard/shared';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 // Slice 7: restore HP up to maxStamina. Used as the derived intent emitted by
 // SpendRecovery; future heal abilities reuse this dispatch path. A
 // dying-but-alive PC (currentStamina < 0 per canon §2.8) climbs from their
 // negative value when healed — the cap is `maxStamina`, the floor is the
 // existing currentStamina (we never *reduce* via ApplyHeal).
-export function applyApplyHeal(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyApplyHeal(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = ApplyHealPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -23,7 +23,7 @@ export function applyApplyHeal(state: SessionState, intent: StampedIntent): Inte
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -33,7 +33,7 @@ export function applyApplyHeal(state: SessionState, intent: StampedIntent): Inte
   }
 
   const { targetId, amount } = parsed.data;
-  const target = state.activeEncounter.participants.find((p) => p.id === targetId);
+  const target = state.participants.find((p) => p.id === targetId);
   if (!target) {
     return {
       state,
@@ -47,7 +47,7 @@ export function applyApplyHeal(state: SessionState, intent: StampedIntent): Inte
   const after = Math.min(before + amount, target.maxStamina);
   const delivered = after - before;
   const updatedTarget = { ...target, currentStamina: after };
-  const updatedParticipants = state.activeEncounter.participants.map((p) =>
+  const updatedParticipants = state.participants.map((p) =>
     p.id === targetId ? updatedTarget : p,
   );
 
@@ -55,7 +55,7 @@ export function applyApplyHeal(state: SessionState, intent: StampedIntent): Inte
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: { ...state.activeEncounter, participants: updatedParticipants },
+      participants: updatedParticipants,
     },
     derived: [],
     log: [

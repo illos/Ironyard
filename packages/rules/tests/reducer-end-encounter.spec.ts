@@ -1,10 +1,10 @@
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
-  type SessionState,
+  type CampaignState,
   type StampedIntent,
   applyIntent,
-  emptySessionState,
+  emptyCampaignState,
 } from '../src/index';
 import { resetParticipantForEndOfEncounter } from '../src/intents/end-encounter';
 
@@ -14,12 +14,12 @@ import { resetParticipantForEndOfEncounter } from '../src/intents/end-encounter'
 // `duration.kind === 'end_of_encounter'` are filtered from every participant.
 
 const T = 1_700_000_000_000;
-const sessionId = 'sess_test';
+const campaignId = 'sess_test';
 
 function intent(type: string, payload: unknown, overrides: Partial<Intent> = {}): StampedIntent {
   return {
     id: overrides.id ?? `i_${Math.random().toString(36).slice(2)}`,
-    sessionId: overrides.sessionId ?? sessionId,
+    campaignId: overrides.campaignId ?? campaignId,
     actor: overrides.actor ?? { userId: 'alice', role: 'director' },
     timestamp: overrides.timestamp ?? T,
     source: overrides.source ?? 'manual',
@@ -71,47 +71,67 @@ function monster(over: Partial<Participant> = {}): Participant {
   };
 }
 
-function withEncounter(): SessionState {
-  let s = emptySessionState(sessionId);
-  s = applyIntent(s, intent('StartEncounter', { encounterId: 'enc_1' })).state;
+// Helper: start an encounter and return state (participants empty by default)
+function withEncounter(): CampaignState {
+  let s = emptyCampaignState(campaignId, 'user-owner');
+  s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
 
-function firstParticipant(s: SessionState): Participant {
-  const p = s.activeEncounter?.participants[0];
+// Helper: end the currently active encounter using the encounter id from state
+function endEncounter(s: CampaignState) {
+  const encounterId = s.encounter?.id;
+  if (!encounterId) throw new Error('no active encounter');
+  return applyIntent(s, intent('EndEncounter', { encounterId }));
+}
+
+function firstParticipant(s: CampaignState): Participant {
+  const p = s.participants[0];
   if (!p) throw new Error('no participants');
   return p;
 }
 
-function findParticipant(s: SessionState, id: string): Participant {
-  const p = s.activeEncounter?.participants.find((x) => x.id === id);
+function findParticipant(s: CampaignState, id: string): Participant {
+  const p = s.participants.find((x) => x.id === id);
   if (!p) throw new Error(`participant ${id} not found`);
   return p;
 }
 
 describe('applyIntent — EndEncounter', () => {
   it('is a no-op when no encounter is active', () => {
-    const s0 = emptySessionState(sessionId);
+    const s0 = emptyCampaignState(campaignId, 'user-owner');
     const r = applyIntent(s0, intent('EndEncounter', { encounterId: 'enc_1' }));
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter).toBeNull();
+    expect(r.state.encounter).toBeNull();
     expect(r.state.seq).toBe(s0.seq + 1);
     expect(r.log[0]?.text).toMatch(/no active encounter/i);
   });
 
   it('rejects when the supplied encounterId does not match the active encounter', () => {
     const s = withEncounter();
+    const encounterId = s.encounter?.id ?? '';
     const r = applyIntent(s, intent('EndEncounter', { encounterId: 'enc_other' }));
     expect(r.errors?.[0]?.code).toBe('wrong_encounter');
-    expect(r.state.activeEncounter?.id).toBe('enc_1'); // unchanged
+    expect(r.state.encounter?.id).toBe(encounterId); // unchanged
   });
 
-  it('drops activeEncounter to null on the happy path', () => {
+  it('drops encounter to null on the happy path', () => {
     const s = withEncounter();
-    const r = applyIntent(s, intent('EndEncounter', { encounterId: 'enc_1' }));
+    const r = endEncounter(s);
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter).toBeNull();
+    expect(r.state.encounter).toBeNull();
     expect(r.state.seq).toBe(s.seq + 1);
+  });
+
+  it('preserves participants in the roster after ending the encounter', () => {
+    let s = emptyCampaignState(campaignId, 'user-owner');
+    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: pc() })).state;
+    s = applyIntent(s, intent('BringCharacterIntoEncounter', { participant: monster() })).state;
+    s = applyIntent(s, intent('StartEncounter', {})).state;
+    const r = endEncounter(s);
+    expect(r.errors).toBeUndefined();
+    expect(r.state.encounter).toBeNull();
+    expect(r.state.participants).toHaveLength(2);
   });
 
   it('rejects invalid payload', () => {
@@ -121,7 +141,7 @@ describe('applyIntent — EndEncounter', () => {
   });
 
   it('resets every participant heroicResources value to 0 while preserving name/floor/max', () => {
-    let s = withEncounter();
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(
       s,
       intent('BringCharacterIntoEncounter', {
@@ -142,8 +162,9 @@ describe('applyIntent — EndEncounter', () => {
         }),
       }),
     ).state;
+    s = applyIntent(s, intent('StartEncounter', {})).state;
 
-    // Snapshot the participant before EndEncounter wipes activeEncounter.
+    // Snapshot the participant before EndEncounter.
     const talent = findParticipant(s, 'pc_talent');
     const censor = findParticipant(s, 'pc_censor');
     expect(talent.heroicResources[0]?.value).toBe(-2);
@@ -156,14 +177,18 @@ describe('applyIntent — EndEncounter', () => {
     const clearedCensor = resetParticipantForEndOfEncounter(censor);
     expect(clearedCensor.heroicResources[0]?.value).toBe(0);
 
-    // And after the full EndEncounter dispatch, activeEncounter is null.
-    const r = applyIntent(s, intent('EndEncounter', { encounterId: 'enc_1' }));
+    // After the full EndEncounter dispatch, encounter is null, participants survive.
+    const r = endEncounter(s);
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter).toBeNull();
+    expect(r.state.encounter).toBeNull();
+    expect(r.state.participants).toHaveLength(2);
+    expect(r.state.participants.find((p) => p.id === 'pc_talent')?.heroicResources[0]?.value).toBe(
+      0,
+    );
   });
 
   it('resets extras values to 0 on every participant', () => {
-    let s = withEncounter();
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(
       s,
       intent('BringCharacterIntoEncounter', {
@@ -172,6 +197,7 @@ describe('applyIntent — EndEncounter', () => {
         }),
       }),
     ).state;
+    s = applyIntent(s, intent('StartEncounter', {})).state;
 
     const cleared = resetParticipantForEndOfEncounter(firstParticipant(s));
     expect(cleared.extras[0]?.value).toBe(0);
@@ -179,7 +205,7 @@ describe('applyIntent — EndEncounter', () => {
   });
 
   it('resets surges to 0 on every participant', () => {
-    let s = withEncounter();
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(
       s,
       intent('BringCharacterIntoEncounter', {
@@ -192,8 +218,9 @@ describe('applyIntent — EndEncounter', () => {
         participant: monster({ surges: 1 }),
       }),
     ).state;
+    s = applyIntent(s, intent('StartEncounter', {})).state;
 
-    const before = s.activeEncounter?.participants ?? [];
+    const before = s.participants ?? [];
     expect(before).toHaveLength(2);
     for (const p of before) {
       expect(resetParticipantForEndOfEncounter(p).surges).toBe(0);
@@ -201,13 +228,14 @@ describe('applyIntent — EndEncounter', () => {
   });
 
   it('does NOT reset recoveries.current (canon §2.13: respite only)', () => {
-    let s = withEncounter();
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(
       s,
       intent('BringCharacterIntoEncounter', {
         participant: pc({ recoveries: { current: 5, max: 8 } }),
       }),
     ).state;
+    s = applyIntent(s, intent('StartEncounter', {})).state;
 
     const cleared = resetParticipantForEndOfEncounter(firstParticipant(s));
     expect(cleared.recoveries.current).toBe(5);
@@ -215,7 +243,7 @@ describe('applyIntent — EndEncounter', () => {
   });
 
   it('clears only end_of_encounter-duration conditions', () => {
-    let s = withEncounter();
+    let s = emptyCampaignState(campaignId, 'user-owner');
     s = applyIntent(
       s,
       intent('BringCharacterIntoEncounter', {
@@ -246,28 +274,33 @@ describe('applyIntent — EndEncounter', () => {
         }),
       }),
     ).state;
-
-    const cleared = resetParticipantForEndOfEncounter(firstParticipant(s));
-    const types = cleared.conditions.map((c) => c.type);
+    s = applyIntent(s, intent('StartEncounter', {})).state;
+    const r = endEncounter(s);
+    expect(r.errors).toBeUndefined();
+    const types = (r.state.participants[0]?.conditions ?? []).map((c) => c.type);
     expect(types).toContain('Bleeding');
     expect(types).toContain('Grabbed');
     expect(types).not.toContain('Frightened');
+
+    // Also verify via helper on the pre-end participant
+    const cleared = resetParticipantForEndOfEncounter(firstParticipant(s));
+    expect(cleared.conditions.map((c) => c.type)).not.toContain('Frightened');
   });
 
   it('resets malice to fresh state (current 0, lastMaliciousStrikeRound null)', () => {
-    let s = withEncounter();
-    s = applyIntent(s, intent('GainMalice', { amount: 12 })).state;
-    expect(s.activeEncounter?.malice.current).toBe(12);
+    const s = withEncounter();
+    const withMalice = applyIntent(s, intent('GainMalice', { amount: 12 })).state;
+    expect(withMalice.encounter?.malice.current).toBe(12);
 
-    const r = applyIntent(s, intent('EndEncounter', { encounterId: 'enc_1' }));
+    const r = endEncounter(withMalice);
     expect(r.errors).toBeUndefined();
-    expect(r.state.activeEncounter).toBeNull();
+    expect(r.state.encounter).toBeNull();
 
     // Re-start a new encounter and confirm malice was wiped (StartEncounter inits
     // to 0 on its own — this is a sanity check that EndEncounter doesn't leak
     // prior state into a freshly-started encounter via the seq increment).
-    const r2 = applyIntent(r.state, intent('StartEncounter', { encounterId: 'enc_2' }));
-    expect(r2.state.activeEncounter?.malice).toEqual({
+    const r2 = applyIntent(r.state, intent('StartEncounter', {}));
+    expect(r2.state.encounter?.malice).toEqual({
       current: 0,
       lastMaliciousStrikeRound: null,
     });
@@ -275,7 +308,7 @@ describe('applyIntent — EndEncounter', () => {
 
   it('emits no derived intents', () => {
     const s = withEncounter();
-    const r = applyIntent(s, intent('EndEncounter', { encounterId: 'enc_1' }));
+    const r = endEncounter(s);
     expect(r.derived).toEqual([]);
   });
 });

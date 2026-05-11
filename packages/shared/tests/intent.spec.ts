@@ -5,7 +5,7 @@ const validActor = { userId: 'user_abc', role: 'director' as const };
 
 const baseIntent: Intent = {
   id: '01HXYZ',
-  sessionId: 'session_1',
+  campaignId: 'campaign_1',
   actor: validActor,
   source: 'manual',
   type: 'StartEncounter',

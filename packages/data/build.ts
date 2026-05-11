@@ -1,7 +1,22 @@
 import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Monster, MonsterFile } from '@ironyard/shared';
+import type {
+  Ancestry,
+  AncestryFile,
+  Career,
+  CareerFile,
+  ClassFile,
+  Complication,
+  ComplicationFile,
+  HeroClass,
+  Monster,
+  MonsterFile,
+} from '@ironyard/shared';
+import { parseAncestryMarkdown } from './src/parse-ancestry';
+import { parseCareerMarkdown } from './src/parse-career';
+import { parseClassMarkdown } from './src/parse-class';
+import { parseComplicationMarkdown } from './src/parse-complication';
 import { parseMonsterMarkdown } from './src/parse-monster';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -11,8 +26,16 @@ const REPO_ROOT = resolve(here, '../..');
 // CI will need a tarball-fetch step once the build moves off local-only — see
 // docs/data-pipeline.md for the planned shape.
 const DATA_MD = process.env.DATA_MD_PATH ?? join(REPO_ROOT, '.reference/data-md');
+const RULES_DIR = join(DATA_MD, 'Rules');
 const MONSTERS_DIR = join(DATA_MD, 'Bestiary/Monsters/Monsters');
 const OUT_PATH = join(REPO_ROOT, 'apps/web/public/data/monsters.json');
+// Also emit a copy for the API Worker so it can look up monsters at stamping time.
+const API_OUT_PATH = join(REPO_ROOT, 'apps/api/src/data/monsters.json');
+
+const ANCESTRIES_OUT = join(REPO_ROOT, 'apps/web/public/data/ancestries.json');
+const CAREERS_OUT = join(REPO_ROOT, 'apps/web/public/data/careers.json');
+const COMPLICATIONS_OUT = join(REPO_ROOT, 'apps/web/public/data/complications.json');
+const CLASSES_OUT = join(REPO_ROOT, 'apps/web/public/data/classes.json');
 
 function* walkStatblockFiles(root: string): Generator<string> {
   let entries: string[];
@@ -45,6 +68,15 @@ function pct(n: number, d: number): string {
 }
 
 function main() {
+  const version = loadSourcesPin();
+
+  // ── Rules data (character creation) ────────────────────────────────────
+  buildAncestries(version);
+  buildCareers(version);
+  buildComplications(version);
+  buildClasses(version);
+
+  // ── Monsters ────────────────────────────────────────────────────────────
   try {
     statSync(MONSTERS_DIR);
   } catch {
@@ -137,7 +169,7 @@ function main() {
   };
 
   const out: MonsterFile = {
-    version: loadSourcesPin(),
+    version,
     generatedAt: Date.now(),
     count: deduped.length,
     monsters: deduped,
@@ -147,9 +179,14 @@ function main() {
   mkdirSync(dirname(OUT_PATH), { recursive: true });
   writeFileSync(OUT_PATH, `${JSON.stringify(out, null, 2)}\n`);
 
+  // Mirror to the API Worker data directory so the stamping pipeline can load monsters.
+  mkdirSync(dirname(API_OUT_PATH), { recursive: true });
+  writeFileSync(API_OUT_PATH, `${JSON.stringify(out, null, 2)}\n`);
+
   console.log(
     `build:data — wrote ${deduped.length} monsters to apps/web/public/data/monsters.json`,
   );
+  console.log('             mirrored to apps/api/src/data/monsters.json');
   console.log(`  version pin: ${out.version}`);
   console.log(`  source files scanned: ${totalFiles}`);
   console.log(`  parsed monsters:      ${deduped.length}  (${pct(deduped.length, totalFiles)})`);
@@ -186,6 +223,191 @@ function main() {
       console.warn(`    ${e.file.replace(REPO_ROOT, '.')}: ${e.reason}`);
     }
     if (errors.length > 20) console.warn(`    … and ${errors.length - 20} more`);
+  }
+}
+
+// ── Ancestry build ────────────────────────────────────────────────────────────
+
+function buildAncestries(version: string): void {
+  const dir = join(RULES_DIR, 'Ancestries');
+  const ancestries: Ancestry[] = [];
+  const errors: Array<{ file: string; reason: string }> = [];
+
+  let entries: string[];
+  try {
+    entries = readdirSync(dir).filter((f) => f.endsWith('.md') && !f.startsWith('_'));
+  } catch {
+    console.error(`build:data — ancestries dir not found at ${dir}`);
+    return;
+  }
+
+  for (const entry of entries) {
+    const file = join(dir, entry);
+    const content = readFileSync(file, 'utf-8');
+    const result = parseAncestryMarkdown(content);
+    if (!result.ok) {
+      errors.push({ file: entry, reason: result.reason });
+    } else {
+      ancestries.push(result.ancestry);
+    }
+  }
+
+  ancestries.sort((a, b) => a.name.localeCompare(b.name));
+
+  const out: AncestryFile = {
+    version,
+    generatedAt: Date.now(),
+    count: ancestries.length,
+    ancestries,
+  };
+  mkdirSync(dirname(ANCESTRIES_OUT), { recursive: true });
+  writeFileSync(ANCESTRIES_OUT, `${JSON.stringify(out, null, 2)}\n`);
+  console.log(
+    `build:data — wrote ${ancestries.length} ancestries to apps/web/public/data/ancestries.json`,
+  );
+  if (errors.length > 0) {
+    for (const e of errors) console.warn(`  skipped ${e.file}: ${e.reason}`);
+  }
+}
+
+// ── Career build ──────────────────────────────────────────────────────────────
+
+function buildCareers(version: string): void {
+  const dir = join(RULES_DIR, 'Careers');
+  const careers: Career[] = [];
+  const errors: Array<{ file: string; reason: string }> = [];
+
+  let entries: string[];
+  try {
+    entries = readdirSync(dir).filter((f) => f.endsWith('.md') && !f.startsWith('_'));
+  } catch {
+    console.error(`build:data — careers dir not found at ${dir}`);
+    return;
+  }
+
+  for (const entry of entries) {
+    const file = join(dir, entry);
+    const content = readFileSync(file, 'utf-8');
+    const result = parseCareerMarkdown(content);
+    if (!result.ok) {
+      errors.push({ file: entry, reason: result.reason });
+    } else {
+      careers.push(result.career);
+    }
+  }
+
+  careers.sort((a, b) => a.name.localeCompare(b.name));
+
+  const out: CareerFile = { version, generatedAt: Date.now(), count: careers.length, careers };
+  mkdirSync(dirname(CAREERS_OUT), { recursive: true });
+  writeFileSync(CAREERS_OUT, `${JSON.stringify(out, null, 2)}\n`);
+  console.log(`build:data — wrote ${careers.length} careers to apps/web/public/data/careers.json`);
+  if (errors.length > 0) {
+    for (const e of errors) console.warn(`  skipped ${e.file}: ${e.reason}`);
+  }
+}
+
+// ── Complication build ────────────────────────────────────────────────────────
+
+function buildComplications(version: string): void {
+  const dir = join(RULES_DIR, 'Complications');
+  const complications: Complication[] = [];
+  const errors: Array<{ file: string; reason: string }> = [];
+
+  let entries: string[];
+  try {
+    entries = readdirSync(dir).filter((f) => f.endsWith('.md') && !f.startsWith('_'));
+  } catch {
+    console.error(`build:data — complications dir not found at ${dir}`);
+    return;
+  }
+
+  for (const entry of entries) {
+    const file = join(dir, entry);
+    const content = readFileSync(file, 'utf-8');
+    const result = parseComplicationMarkdown(content);
+    if (!result.ok) {
+      errors.push({ file: entry, reason: result.reason });
+    } else {
+      complications.push(result.complication);
+    }
+  }
+
+  complications.sort((a, b) => a.name.localeCompare(b.name));
+
+  const out: ComplicationFile = {
+    version,
+    generatedAt: Date.now(),
+    count: complications.length,
+    complications,
+  };
+  mkdirSync(dirname(COMPLICATIONS_OUT), { recursive: true });
+  writeFileSync(COMPLICATIONS_OUT, `${JSON.stringify(out, null, 2)}\n`);
+  console.log(
+    `build:data — wrote ${complications.length} complications to apps/web/public/data/complications.json`,
+  );
+  if (errors.length > 0) {
+    console.warn(`  ${errors.length} complication(s) skipped:`);
+    for (const e of errors.slice(0, 10)) console.warn(`    ${e.file}: ${e.reason}`);
+    if (errors.length > 10) console.warn(`    … and ${errors.length - 10} more`);
+  }
+}
+
+// ── Class build ───────────────────────────────────────────────────────────────
+
+const CLASS_NAMES = [
+  'Censor',
+  'Conduit',
+  'Elementalist',
+  'Fury',
+  'Null',
+  'Shadow',
+  'Tactician',
+  'Talent',
+  'Troubadour',
+] as const;
+
+function buildClasses(version: string): void {
+  const classesDir = join(RULES_DIR, 'Classes');
+  const byLevelDir = join(RULES_DIR, 'Classes By Level');
+  const heroClasses: HeroClass[] = [];
+  const errors: Array<{ file: string; reason: string }> = [];
+
+  for (const className of CLASS_NAMES) {
+    const classFile = join(classesDir, `${className}.md`);
+    const basicsFile = join(byLevelDir, className, 'Basics.md');
+    let classContent: string;
+    let basicsContent: string;
+    try {
+      classContent = readFileSync(classFile, 'utf-8');
+      basicsContent = readFileSync(basicsFile, 'utf-8');
+    } catch (e) {
+      errors.push({ file: className, reason: `read failed: ${(e as Error).message}` });
+      continue;
+    }
+    const result = parseClassMarkdown(classContent, basicsContent);
+    if (!result.ok) {
+      errors.push({ file: className, reason: result.reason });
+    } else {
+      heroClasses.push(result.heroClass);
+    }
+  }
+
+  heroClasses.sort((a, b) => a.name.localeCompare(b.name));
+
+  const out: ClassFile = {
+    version,
+    generatedAt: Date.now(),
+    count: heroClasses.length,
+    classes: heroClasses,
+  };
+  mkdirSync(dirname(CLASSES_OUT), { recursive: true });
+  writeFileSync(CLASSES_OUT, `${JSON.stringify(out, null, 2)}\n`);
+  console.log(
+    `build:data — wrote ${heroClasses.length} classes to apps/web/public/data/classes.json`,
+  );
+  if (errors.length > 0) {
+    for (const e of errors) console.warn(`  skipped ${e.file}: ${e.reason}`);
   }
 }
 

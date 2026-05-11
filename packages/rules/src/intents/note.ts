@@ -1,7 +1,7 @@
 import { NotePayloadSchema } from '@ironyard/shared';
-import type { IntentResult, NoteEntry, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, NoteEntry, StampedIntent } from '../types';
 
-export function applyNote(state: SessionState, intent: StampedIntent): IntentResult {
+export function applyNote(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = NotePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {

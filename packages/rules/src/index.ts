@@ -1,19 +1,20 @@
 // The rules engine. Pure, stateless. Same code runs in the DO (authoritative)
 // and — eventually — the client (optimistic). Phase 1 slice 1 ships three
-// intent types (JoinSession, LeaveSession, Note); subsequent slices add rolls,
+// intent types (JoinLobby, LeaveLobby, Note); subsequent slices add rolls,
 // damage, conditions, resources, undo.
 
 export const PACKAGE = '@ironyard/rules' as const;
 
 export { applyIntent } from './reducer';
-export { emptySessionState } from './types';
+export { emptyCampaignState } from './types';
 export type {
   ActiveEncounter,
+  CampaignState,
   DerivedIntent,
+  EncounterPhase,
   IntentResult,
   LogEntry,
   NoteEntry,
-  SessionState,
   StampedIntent,
   ValidationError,
 } from './types';

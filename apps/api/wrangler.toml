@@ -15,12 +15,12 @@ database_name = "ironyard"
 database_id = "00000000-0000-0000-0000-000000000000"
 migrations_dir = "drizzle"
 
-# Durable Object — one SessionDO per game session. Phase 0 handles WebSocket
+# Durable Object — one LobbyDO per campaign. Phase 0 handles WebSocket
 # ping/pong + member-list broadcasts; Phase 1 lights up the intent log.
 [[durable_objects.bindings]]
-name = "SESSION_DO"
-class_name = "SessionDO"
+name = "LOBBY_DO"
+class_name = "LobbyDO"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["SessionDO"]
+new_classes = ["LobbyDO"]

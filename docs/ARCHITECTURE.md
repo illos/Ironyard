@@ -2,7 +2,7 @@
 
 ## Goals
 
-1. **Multi-user from day one.** Players own characters, director owns monsters, both share a session.
+1. **Multi-user from day one.** Players own characters, the active director owns monsters, both share a campaign.
 2. **Authoritative-with-override rules engine.** App auto-applies effects; UI surfaces what happened with Undo/Edit.
 3. **Touch-first UX.** iPad-landscape is the sweet spot; phone and desktop also first-class.
 4. **Cheap to run for a friend group; able to scale to a small player base** without a rewrite.
@@ -10,7 +10,7 @@
 
 ## The two kinds of data
 
-The single most load-bearing architectural decision: split static reference data from dynamic session data.
+The single most load-bearing architectural decision: split static reference data from dynamic campaign data.
 
 ### Static reference data — bundled at build time
 
@@ -20,19 +20,19 @@ Rules text, ancestries, classes, careers, complications, inciting incidents, mon
 - **Why not in D1:** querying static data over a Worker → D1 hop adds latency for no gain. A few MB of JSON loads instantly from the edge cache, search is fast in-memory.
 - **Update cadence:** pin to a SteelCompendium release tag; bump deliberately. Surface the data version in the UI footer so directors know which printing of the rules they're playing.
 
-### Dynamic session data — D1 + Durable Objects
+### Dynamic campaign data — D1 + Durable Objects
 
-Users, sessions, characters, encounters, intent logs, chat. Read-write, multi-user, occasionally needs realtime sync.
+Users, campaigns, characters, encounter templates, intent logs, chat. Read-write, multi-user, occasionally needs realtime sync.
 
-- **Lives in:** D1 (canonical, durable) + the per-session Durable Object (hot, in-memory, broadcasts)
-- **Why both:** D1 is the source of truth across restarts; the DO holds the live combat state and pushes intents to connected clients without a D1 round-trip per change.
+- **Lives in:** D1 (canonical, durable) + the per-campaign Durable Object (hot, in-memory, broadcasts)
+- **Why both:** D1 is the source of truth across restarts; the lobby DO holds the live campaign state and pushes intents to connected clients without a D1 round-trip per change.
 
 ## System diagram
 
 ```
 ┌────────────────┐     WebSocket (intents)    ┌─────────────────────────┐
-│  React client  │ ◄───────────────────────► │ Durable Object          │
-│  (Pages)       │                            │  per Session            │
+│  React client  │ ◄───────────────────────► │ LobbyDO                 │
+│  (Pages)       │                            │  per Campaign           │
 │                │     HTTP (queries, auth)   │  - in-memory state      │
 │                │ ─────────────────────────► │  - intent log           │
 └────────────────┘                            │  - broadcasts to peers  │
@@ -47,22 +47,24 @@ Users, sessions, characters, encounters, intent logs, chat. Read-write, multi-us
    (rules, monsters, classes)
 ```
 
+**D1 tables:** `campaigns`, `campaign_memberships`, `campaign_characters`, `encounter_templates`, `campaign_snapshots`, `intents`, `characters`, `users`, `auth_tokens`, `auth_sessions`. See [`data-pipeline.md`](data-pipeline.md) for the full schema.
+
 ## Major modules
 
 ### `apps/web` — the React client
 
-- Routes: `/`, `/login`, `/sessions`, `/sessions/:id` (lobby), `/sessions/:id/run` (combat tracker), `/characters`, `/characters/:id` (sheet), `/characters/new` (creator), `/codex` (browse rules/monsters)
-- One WebSocket connection per active session, owned by a top-level provider
+- Routes: `/`, `/login`, `/campaigns`, `/campaigns/:id` (lobby), `/campaigns/:id/run` (combat tracker), `/characters`, `/characters/:id` (sheet), `/characters/new` (creator), `/codex` (browse rules/monsters)
+- One WebSocket connection per active campaign lobby, owned by a top-level provider
 - Intents are dispatched through a hook (`useDispatch`) that:
   1. Optimistically applies the intent to the local Zustand store via the rules reducer
-  2. Sends the intent over the WebSocket to the DO
+  2. Sends the intent over the WebSocket to the lobby DO
   3. Reconciles when the DO broadcasts the canonical result
 - Local-first: intents queue in IndexedDB if the WS is down and replay on reconnect
 
 ### `apps/api` — Hono Worker + Durable Objects
 
-- HTTP routes for queries that don't need a session connection (login, list characters, list sessions, fetch a session snapshot)
-- One Durable Object class: `SessionDO`. Routes for `WS /api/sessions/:id/socket` upgrade to a DO-backed WebSocket
+- HTTP routes for queries that don't need a lobby connection (login, list characters, list campaigns, fetch a campaign snapshot, encounter-template CRUD)
+- One Durable Object class: `LobbyDO`. Route `WS /api/campaigns/:id/socket` upgrades to a DO-backed WebSocket
 - D1 binding for all persistent reads/writes
 - Drizzle for SQL
 
@@ -71,14 +73,14 @@ Users, sessions, characters, encounters, intent logs, chat. Read-write, multi-us
 A pure, stateless reducer:
 
 ```ts
-function applyIntent(state: SessionState, intent: Intent): {
-  state: SessionState;
+function applyIntent(state: CampaignState, intent: Intent): {
+  state: CampaignState;
   derived: Intent[];   // intents the engine emits in response (e.g. damage from a hit)
   log: LogEntry[];     // human-readable log for the UI
 };
 ```
 
-- Same code runs in the DO (authoritative) and the client (optimistic)
+- Same code runs in the lobby DO (authoritative) and the client (optimistic)
 - Each intent type has a corresponding inverse for undo
 - Comprehensive test suite using fixture scenarios
 
@@ -108,23 +110,30 @@ For dev: a "skip auth" toggle bound to `IRONYARD_DEV_SKIP_AUTH=1` lets us run lo
 
 ## Permission model
 
-Encoded in the DO and double-checked on the API:
+Three tiers, encoded in the lobby DO and enforced by the reducer:
 
-| Action | Director | Player (own char) | Player (other) |
+| Tier | Who | How identified |
+|---|---|---|
+| **Owner** | Singular user who created the campaign | `campaigns.owner_id`; mirrored as `CampaignState.ownerId` |
+| **Director permission** | Any member the owner has granted `is_director = 1` | `campaign_memberships.is_director`; DO stamps a `permitted` field on relevant intents |
+| **Active Director** | The one member currently behind the screen | `CampaignState.activeDirectorId`; mutated by `JumpBehindScreen` |
+
+| Action | Active Director | Player (own char) | Player (other) |
 |---|---|---|---|
 | Dispatch intent affecting own character | yes | yes | — |
 | Dispatch intent affecting another character | yes | no | no |
 | Dispatch intent affecting a monster | yes | yes (attack) | yes (attack) |
-| Edit encounter composition | yes | no | no |
-| Override any stat | yes | yes (own only) | no |
-| Read session state | yes | yes | yes |
+| Add monsters / load templates | yes | no | no |
+| Approve / deny / kick | yes | no | no |
+| Grant / revoke director permission | owner only | no | no |
+| Read campaign state | yes | yes | yes |
 
-The DO's intent handler runs a permission check using the connected user's identity before applying.
+The DO's intent handler runs a permission check — and in some cases a D1 lookup — before applying. Operational intents are gated on `actor.userId === state.activeDirectorId`. The owner trivially satisfies this because the screen defaults to them and they can always jump back.
 
 ## Error handling and recovery
 
-- The DO snapshots state to D1 every N intents (or every 30s, whichever first)
-- On DO restart: load the latest snapshot, replay any intents in the log past the snapshot
+- The lobby DO snapshots state to D1 every N intents (or every 30s, whichever first)
+- On DO restart: load the latest `campaign_snapshots` row, replay any intents in the log past the snapshot sequence number
 - If the WS drops: client queues intents in IndexedDB; on reconnect, sends a `sync { sinceSeq }` and the DO replays missed intents in seq order
 - Conflict resolution: the DO is the single writer. Optimistic client state is reconciled to whatever the DO says — see "Optimistic UI" in [`intent-protocol.md`](intent-protocol.md) for the per-envelope reconciliation rules.
 

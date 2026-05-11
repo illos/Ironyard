@@ -12,13 +12,13 @@ import {
   updateExtra,
   updateHeroic,
 } from '../resources';
-import type { IntentResult, SessionState, StampedIntent } from '../types';
+import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 // Slice 7: manual override path for resources. Ignores floor and ceiling
 // (Director-typed integer fits in any integer). If the resource isn't yet
 // allocated, `initialize` provides max/floor — Talent dispatchers pass
 // `initialize.floor = -(1 + Reason)`.
-export function applySetResource(state: SessionState, intent: StampedIntent): IntentResult {
+export function applySetResource(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = SetResourcePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -35,7 +35,7 @@ export function applySetResource(state: SessionState, intent: StampedIntent): In
     };
   }
 
-  if (!state.activeEncounter) {
+  if (!state.encounter) {
     return {
       state,
       derived: [],
@@ -45,7 +45,7 @@ export function applySetResource(state: SessionState, intent: StampedIntent): In
   }
 
   const { participantId, name, value, initialize } = parsed.data;
-  const target = state.activeEncounter.participants.find((p) => p.id === participantId);
+  const target = state.participants.find((p) => p.id === participantId);
   if (!target) {
     return {
       state,
@@ -105,7 +105,7 @@ export function applySetResource(state: SessionState, intent: StampedIntent): In
     }
   }
 
-  const updatedParticipants = state.activeEncounter.participants.map((p) =>
+  const updatedParticipants = state.participants.map((p) =>
     p.id === participantId ? updatedTarget : p,
   );
 
@@ -113,7 +113,7 @@ export function applySetResource(state: SessionState, intent: StampedIntent): In
     state: {
       ...state,
       seq: state.seq + 1,
-      activeEncounter: { ...state.activeEncounter, participants: updatedParticipants },
+      participants: updatedParticipants,
     },
     derived: [],
     log: [

@@ -84,7 +84,7 @@ export const MonsterSchema = z.object({
 
 ## D1 schema (dynamic data)
 
-D1 stores user-owned and session-owned data. Schema lives in `apps/api/src/db/schema.ts` (Drizzle).
+D1 stores user-owned and campaign-owned data. Schema lives in `apps/api/src/db/schema.ts` (Drizzle).
 
 ### Tables
 
@@ -106,7 +106,7 @@ CREATE TABLE auth_tokens (
   consumed_at INTEGER
 );
 
--- session cookies
+-- auth cookies
 CREATE TABLE auth_sessions (
   id          TEXT PRIMARY KEY,
   user_id     TEXT NOT NULL REFERENCES users(id),
@@ -115,25 +115,28 @@ CREATE TABLE auth_sessions (
   created_at  INTEGER NOT NULL
 );
 
--- a "Game" / campaign session
-CREATE TABLE sessions (
-  id          TEXT PRIMARY KEY,
+-- a long-lived campaign; owned by a single user
+CREATE TABLE campaigns (
+  id          TEXT PRIMARY KEY,            -- ULID
   name        TEXT NOT NULL,
-  director_id TEXT NOT NULL REFERENCES users(id),
+  owner_id    TEXT NOT NULL REFERENCES users(id),  -- permanent owner (not mutable in v1)
   invite_code TEXT NOT NULL UNIQUE,        -- 6-char human-friendly
   created_at  INTEGER NOT NULL,
   updated_at  INTEGER NOT NULL
 );
 
-CREATE TABLE memberships (
-  session_id  TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+-- campaign membership; is_director = 1 means the member can jump behind the screen
+CREATE TABLE campaign_memberships (
+  campaign_id TEXT NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
   user_id     TEXT NOT NULL REFERENCES users(id),
-  role        TEXT NOT NULL CHECK (role IN ('director', 'player')),
+  is_director INTEGER NOT NULL DEFAULT 0,  -- 1 = has director permission; owner implicitly has it
   joined_at   INTEGER NOT NULL,
-  PRIMARY KEY (session_id, user_id)
+  PRIMARY KEY (campaign_id, user_id)
 );
 
--- player characters (owned by a user, can be brought into many sessions over time)
+CREATE INDEX idx_campaign_memberships_user ON campaign_memberships(user_id);
+
+-- player characters (owned by a user, no campaign FK)
 CREATE TABLE characters (
   id         TEXT PRIMARY KEY,
   owner_id   TEXT NOT NULL REFERENCES users(id),
@@ -143,46 +146,78 @@ CREATE TABLE characters (
   updated_at INTEGER NOT NULL
 );
 
--- encounters live inside a session
-CREATE TABLE encounters (
-  id         TEXT PRIMARY KEY,
-  session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-  name       TEXT NOT NULL,
-  data       TEXT NOT NULL,                -- JSON blob; monster instances + terrain
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL
+CREATE INDEX idx_characters_owner ON characters(owner_id);
+
+-- per-campaign character roster; active-director-approved before playable
+CREATE TABLE campaign_characters (
+  campaign_id  TEXT NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+  character_id TEXT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+  status       TEXT NOT NULL CHECK (status IN ('pending', 'approved')),
+  submitted_at INTEGER NOT NULL,
+  decided_at   INTEGER,
+  decided_by   TEXT REFERENCES users(id),  -- director who approved; null while pending
+  PRIMARY KEY (campaign_id, character_id)
 );
 
--- the canonical state snapshot for a session, written by the DO
-CREATE TABLE session_snapshots (
-  session_id TEXT PRIMARY KEY REFERENCES sessions(id) ON DELETE CASCADE,
-  state      TEXT NOT NULL,                -- JSON blob of SessionState
-  seq        INTEGER NOT NULL,             -- last applied intent seq
-  saved_at   INTEGER NOT NULL
+CREATE INDEX idx_campaign_characters_campaign ON campaign_characters(campaign_id);
+
+-- saved monster lineups; additive when loaded into the lobby
+CREATE TABLE encounter_templates (
+  id          TEXT PRIMARY KEY,
+  campaign_id TEXT NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,
+  data        TEXT NOT NULL,               -- JSON blob; EncounterTemplateDataSchema in shared
+  created_at  INTEGER NOT NULL,
+  updated_at  INTEGER NOT NULL
+);
+
+CREATE INDEX idx_encounter_templates_campaign ON encounter_templates(campaign_id);
+
+-- canonical LobbyDO state snapshot, written by the DO
+CREATE TABLE campaign_snapshots (
+  campaign_id TEXT PRIMARY KEY REFERENCES campaigns(id) ON DELETE CASCADE,
+  state       TEXT NOT NULL,               -- JSON blob of CampaignState
+  seq         INTEGER NOT NULL,            -- last applied intent seq
+  saved_at    INTEGER NOT NULL
 );
 
 -- intent log; primary use is replay-on-restart and audit
 CREATE TABLE intents (
-  id         TEXT PRIMARY KEY,             -- ULID
-  session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-  seq        INTEGER NOT NULL,
-  actor_id   TEXT NOT NULL REFERENCES users(id),
-  payload    TEXT NOT NULL,                -- full Intent JSON
-  voided     INTEGER NOT NULL DEFAULT 0,   -- 1 if undone
-  created_at INTEGER NOT NULL,
-  UNIQUE (session_id, seq)
+  id          TEXT PRIMARY KEY,            -- ULID
+  campaign_id TEXT NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+  seq         INTEGER NOT NULL,
+  actor_id    TEXT NOT NULL REFERENCES users(id),
+  payload     TEXT NOT NULL,               -- full Intent JSON
+  voided      INTEGER NOT NULL DEFAULT 0,  -- 1 if undone
+  created_at  INTEGER NOT NULL,
+  UNIQUE (campaign_id, seq)
 );
 
-CREATE INDEX idx_intents_session_seq ON intents(session_id, seq);
-CREATE INDEX idx_characters_owner ON characters(owner_id);
-CREATE INDEX idx_memberships_user ON memberships(user_id);
+CREATE INDEX idx_intents_campaign_seq ON intents(campaign_id, seq);
 ```
 
-### Why JSON blobs for character / encounter / state?
+### `EncounterTemplateDataSchema`
 
-D1 query patterns for these are always "load one record by id, write one record by id." The schema-inside-the-blob is huge (full character sheet) and changes as we evolve features. Putting it in columns means a migration every time we add a class feature toggle. JSON blobs validated by Zod on read/write give us schema flexibility without sacrificing type safety.
+The `data` column of `encounter_templates` is a JSON blob validated by `EncounterTemplateDataSchema` in `packages/shared`:
 
-The trade-off is no SQL-side filtering of inner fields. We don't need it — the queries we run are by id, by owner, by session.
+```ts
+EncounterTemplateDataSchema = z.object({
+  monsters: z.array(z.object({
+    monsterId:    z.string(),            // matches a SteelCompendium monster id
+    quantity:     z.number().int().min(1).max(50),
+    nameOverride: z.string().optional(), // applied as suffix on each instance if quantity > 1
+  })),
+  notes: z.string().optional(),          // free-form director notes / terrain prose
+});
+```
+
+Templates are **monsters only** — heroes are added separately via `BringCharacterIntoEncounter`. Loading a template mid-combat is additive (new monsters land at the end of the turn order for the next round).
+
+### Why JSON blobs for character / snapshot / intent?
+
+D1 query patterns for these are always "load one record by id, write one record by id." The schema-inside-the-blob is large (full character sheet, full campaign state) and changes as features evolve. Putting it in columns means a migration for every class feature toggle. JSON blobs validated by Zod on read/write give us schema flexibility without sacrificing type safety.
+
+The trade-off is no SQL-side filtering of inner fields. We don't need it — the queries we run are by id, by owner, by campaign.
 
 ## Treasure and title ingest
 
