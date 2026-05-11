@@ -233,6 +233,14 @@ characterRoutes.post('/:id/attach', async (c) => {
   if (!campaign) return c.json({ error: 'campaign_not_found' }, 404);
   const campaignId = campaign.id;
 
+  // Parse current character data so we can check for a conflicting attachment.
+  const currentData = CharacterSchema.parse(JSON.parse(row.data));
+
+  // Conflict guard: reject if already attached to a *different* campaign.
+  if (currentData.campaignId !== null && currentData.campaignId !== campaignId) {
+    return c.json({ error: 'already_attached' }, 409);
+  }
+
   // Idempotent membership upsert.
   const existing = await conn
     .select()
@@ -254,7 +262,6 @@ characterRoutes.post('/:id/attach', async (c) => {
   }
 
   // Update character data to set campaignId.
-  const currentData = CharacterSchema.parse(JSON.parse(row.data));
   const updatedData = { ...currentData, campaignId };
   const now = Date.now();
   await conn

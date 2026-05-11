@@ -254,6 +254,88 @@ describe('POST /characters/:id/attach', () => {
     expect(found?.status).toBe('pending');
   });
 
+  it('returns 409 if character is already attached to a different campaign', async () => {
+    const { cookie: ownerACookie } = await devLogin(
+      worker,
+      'attach-conflict-owner-a@test.local',
+      'AttachConflictOwnerA',
+    );
+    const { cookie: ownerBCookie } = await devLogin(
+      worker,
+      'attach-conflict-owner-b@test.local',
+      'AttachConflictOwnerB',
+    );
+    const { cookie: playerCookie } = await devLogin(
+      worker,
+      'attach-conflict-player@test.local',
+      'AttachConflictPlayer',
+    );
+
+    const campaignA = await createCampaign(worker, ownerACookie, 'Conflict Campaign A');
+    const campaignB = await createCampaign(worker, ownerBCookie, 'Conflict Campaign B');
+
+    // Create the character already attached to campaign A.
+    const res = await authedFetch(worker, playerCookie, '/api/characters', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'AlreadyAttached', campaignCode: campaignA.inviteCode }),
+    });
+    expect(res.status).toBe(200);
+    const char = (await res.json()) as CharacterResponse;
+    expect(char.data.campaignId).toBe(campaignA.id);
+
+    // Attempt to attach to campaign B — should get 409.
+    const attachRes = await authedFetch(worker, playerCookie, `/api/characters/${char.id}/attach`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ campaignCode: campaignB.inviteCode }),
+    });
+    expect(attachRes.status).toBe(409);
+    const attachBody = (await attachRes.json()) as { error: string };
+    expect(attachBody.error).toBe('already_attached');
+
+    // Verify campaignId is unchanged — still campaign A.
+    const charRes = await authedFetch(worker, playerCookie, `/api/characters/${char.id}`);
+    expect(charRes.status).toBe(200);
+    const charBody = (await charRes.json()) as CharacterResponse;
+    expect(charBody.data.campaignId).toBe(campaignA.id);
+  });
+
+  it('is a no-op when re-attaching to the same campaign', async () => {
+    const { cookie: ownerCookie } = await devLogin(
+      worker,
+      'attach-same-owner@test.local',
+      'AttachSameOwner',
+    );
+    const { cookie: playerCookie } = await devLogin(
+      worker,
+      'attach-same-player@test.local',
+      'AttachSamePlayer',
+    );
+
+    const campaign = await createCampaign(worker, ownerCookie, 'Same Campaign Re-Attach');
+
+    // Create character already attached to this campaign.
+    const res = await authedFetch(worker, playerCookie, '/api/characters', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'SameCampaignHero', campaignCode: campaign.inviteCode }),
+    });
+    expect(res.status).toBe(200);
+    const char = (await res.json()) as CharacterResponse;
+    expect(char.data.campaignId).toBe(campaign.id);
+
+    // Re-attach to the same campaign — should be a clean 200 no-op.
+    const attachRes = await authedFetch(worker, playerCookie, `/api/characters/${char.id}/attach`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ campaignCode: campaign.inviteCode }),
+    });
+    expect(attachRes.status).toBe(200);
+    const attachBody = (await attachRes.json()) as CharacterResponse;
+    expect(attachBody.data.campaignId).toBe(campaign.id);
+  });
+
   it('does not auto-submit when data is incomplete', async () => {
     const { cookie: ownerCookie } = await devLogin(
       worker,
