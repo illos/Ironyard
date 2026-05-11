@@ -11,6 +11,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@ironyard/rules": "workspace:*",
     "@ironyard/shared": "workspace:*",
     "@tanstack/react-query": "^5.62.7",
     "@tanstack/react-router": "^1.95.5",

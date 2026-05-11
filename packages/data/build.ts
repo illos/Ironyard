@@ -36,6 +36,9 @@ const ANCESTRIES_OUT = join(REPO_ROOT, 'apps/web/public/data/ancestries.json');
 const CAREERS_OUT = join(REPO_ROOT, 'apps/web/public/data/careers.json');
 const COMPLICATIONS_OUT = join(REPO_ROOT, 'apps/web/public/data/complications.json');
 const CLASSES_OUT = join(REPO_ROOT, 'apps/web/public/data/classes.json');
+// kits.json: Phase 2 Epic 2 adds kit ingestion; until then emit a [] placeholder
+// so the web client's useKits hook can fetch and parse it without a 404.
+const KITS_OUT = join(REPO_ROOT, 'apps/web/public/data/kits.json');
 
 // API Worker data — flat arrays (no wrapper) so getStaticDataBundle() can
 // iterate and parse them with their individual schemas. Mirroring the
@@ -43,7 +46,6 @@ const CLASSES_OUT = join(REPO_ROOT, 'apps/web/public/data/classes.json');
 const API_ANCESTRIES_OUT = join(REPO_ROOT, 'apps/api/src/data/ancestries.json');
 const API_CAREERS_OUT = join(REPO_ROOT, 'apps/api/src/data/careers.json');
 const API_CLASSES_OUT = join(REPO_ROOT, 'apps/api/src/data/classes.json');
-// kits.json: Phase 2 Epic 2 adds kit ingestion; until then the placeholder [] stays.
 
 function* walkStatblockFiles(root: string): Generator<string> {
   let entries: string[];
@@ -83,6 +85,11 @@ function main() {
   buildCareers(version);
   buildComplications(version);
   buildClasses(version);
+
+  // ── Kit placeholder (Phase 2 Epic 2 will replace with real ingestion) ──
+  mkdirSync(dirname(KITS_OUT), { recursive: true });
+  writeFileSync(KITS_OUT, '[]\n');
+  console.log('build:data — wrote kits.json placeholder ([]) to apps/web/public/data/kits.json');
 
   // ── Monsters ────────────────────────────────────────────────────────────
   try {

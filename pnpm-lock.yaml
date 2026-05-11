@@ -66,6 +66,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@ironyard/rules':
+        specifier: workspace:*
+        version: link:../../packages/rules
       '@ironyard/shared':
         specifier: workspace:*
         version: link:../../packages/shared
