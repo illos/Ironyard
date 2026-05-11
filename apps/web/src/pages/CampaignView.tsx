@@ -10,7 +10,7 @@ import type {
 } from '@ironyard/shared';
 import { IntentTypes, ulid } from '@ironyard/shared';
 import { Link, useParams } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { buildIntent } from '../api/dispatch';
 import {
   useCreateCharacter,
@@ -34,7 +34,13 @@ export function CampaignView() {
   const { id } = useParams({ from: '/campaigns/$id' });
   const me = useMe();
   const campaign = useCampaign(id);
-  const { members, status, activeEncounter, dispatch } = useSessionSocket(id);
+  const {
+    members,
+    status,
+    activeEncounter,
+    dispatch,
+    activeDirectorId: liveActiveDirectorId,
+  } = useSessionSocket(id);
 
   if (me.isLoading || campaign.isLoading) {
     return (
@@ -114,9 +120,10 @@ export function CampaignView() {
         </div>
       </header>
 
-      {/* Active director banner */}
+      {/* Active director banner — prefer the live WS-tracked id (updates on
+          JumpBehindScreen/snapshot) over the HTTP-cached initial value. */}
       <ActiveDirectorBanner
-        activeDirectorId={campaign.data.activeDirectorId}
+        activeDirectorId={liveActiveDirectorId ?? campaign.data.activeDirectorId}
         members={members}
         meId={meId}
         isDirectorPermitted={campaign.data.isDirector}
@@ -300,7 +307,16 @@ function ActiveDirectorBanner({
   const iAmDirector = meId === activeDirectorId;
   const canJump = isDirectorPermitted && !iAmDirector && wsOpen;
 
+  // Guard against double-fire from onPointerUp + onClick on devices that emit
+  // both. Reset asynchronously so a follow-up tap (e.g. someone else took the
+  // chair and you want to take it back) isn't permanently blocked.
+  const firingRef = useRef(false);
   const handleJump = () => {
+    if (firingRef.current) return;
+    firingRef.current = true;
+    setTimeout(() => {
+      firingRef.current = false;
+    }, 250);
     // DO stamps { permitted } — client sends empty object.
     // Cast via unknown because the shared type includes the DO-stamped field.
     const payload = {} as unknown as JumpBehindScreenPayload;
@@ -322,8 +338,12 @@ function ActiveDirectorBanner({
       {canJump && (
         <button
           type="button"
+          // onClick alone was unreliable on touch (only firing after a long
+          // press) — adding onPointerUp gives a first-tap fallback. firingRef
+          // prevents the duplicate when both fire on the same tap.
           onClick={handleJump}
-          className="min-h-11 px-3 rounded-md bg-amber-700 text-neutral-950 font-medium hover:bg-amber-600 text-xs"
+          onPointerUp={handleJump}
+          className="min-h-11 px-3 rounded-md bg-amber-700 text-neutral-950 font-medium hover:bg-amber-600 active:bg-amber-500 text-xs touch-manipulation select-none cursor-pointer"
         >
           Jump behind the screen
         </button>

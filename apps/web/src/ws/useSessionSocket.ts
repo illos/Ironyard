@@ -401,6 +401,10 @@ export function useSessionSocket(sessionId: string | undefined) {
   const [activeEncounter, setActiveEncounter] = useState<ActiveEncounter | null>(null);
   const [intentLog, setIntentLog] = useState<MirrorIntent[]>([]);
   const [lastSeq, setLastSeq] = useState<number>(0);
+  // Mirror of state.activeDirectorId — updated on every JumpBehindScreen applied
+  // and replaced wholesale on snapshot. `null` until the first signal arrives;
+  // callers should fall back to the HTTP-fetched campaign metadata.
+  const [activeDirectorId, setActiveDirectorId] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -412,6 +416,7 @@ export function useSessionSocket(sessionId: string | undefined) {
     setActiveEncounter(null);
     setIntentLog([]);
     setLastSeq(0);
+    setActiveDirectorId(null);
 
     ws.onopen = () => {
       setStatus('open');
@@ -444,6 +449,11 @@ export function useSessionSocket(sessionId: string | undefined) {
         setMembers((prev) => prev.filter((m) => m.userId !== msg.member.userId));
       } else if (msg.kind === 'applied') {
         setActiveEncounter((prev) => reflect(prev, msg.intent.type, msg.intent.payload));
+        // JumpBehindScreen mutates state.activeDirectorId; mirror it locally so
+        // the banner updates without a round-trip to the HTTP metadata endpoint.
+        if (msg.intent.type === IntentTypes.JumpBehindScreen) {
+          setActiveDirectorId(msg.intent.actor.userId);
+        }
         setIntentLog((prev) => [
           ...prev,
           {
@@ -463,6 +473,11 @@ export function useSessionSocket(sessionId: string | undefined) {
         // the mirror wholesale rather than reconciling per-intent.
         setActiveEncounter(snapshotToEncounter(msg.state));
         setLastSeq(msg.seq);
+        // Pull activeDirectorId off the snapshot when present.
+        const s = msg.state as { activeDirectorId?: unknown } | undefined;
+        if (s && typeof s.activeDirectorId === 'string') {
+          setActiveDirectorId(s.activeDirectorId);
+        }
         // The intent log can't be perfectly reconstructed from a snapshot,
         // but we can mark everything past the snapshot seq as voided so the
         // Undo button + toasts don't try to undo a now-voided intent.
@@ -483,5 +498,5 @@ export function useSessionSocket(sessionId: string | undefined) {
     return true;
   }, []);
 
-  return { members, status, activeEncounter, dispatch, intentLog, lastSeq };
+  return { members, status, activeEncounter, dispatch, intentLog, lastSeq, activeDirectorId };
 }
