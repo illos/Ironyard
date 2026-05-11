@@ -78,6 +78,7 @@ export function applyStartEncounter(
       id: `pc:${entry.characterId}`, // stable id derived from characterId
       name: stamped.name, // from characters.name column (stamped by DO)
       kind: 'pc',
+      ownerId: stamped.ownerId,
       level: stamped.character.level,
       currentStamina:
         preservedStamina !== null

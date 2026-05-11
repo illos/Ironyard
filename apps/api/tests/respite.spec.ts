@@ -98,6 +98,7 @@ function makePcParticipant(id: string) {
     surges: 0,
     recoveries: { current: 3, max: 8 },
     recoveryValue: 10,
+    ownerId: null as string | null,
   };
 }
 
@@ -194,6 +195,7 @@ describe('handleSideEffect Respite', () => {
           surges: 0,
           recoveries: { current: 0, max: 0 },
           recoveryValue: 0,
+          ownerId: null as string | null,
         },
       ],
     });

@@ -47,6 +47,7 @@ export function makeHeroParticipant(id: string, overrides: Partial<Participant> 
     surges: 0,
     recoveries: { current: 3, max: 3 },
     recoveryValue: 10,
+    ownerId: null,
     ...overrides,
   };
 }
@@ -71,6 +72,7 @@ export function makeMonsterParticipant(
     surges: 0,
     recoveries: { current: 0, max: 0 },
     recoveryValue: 0,
+    ownerId: null,
     ...overrides,
   };
 }

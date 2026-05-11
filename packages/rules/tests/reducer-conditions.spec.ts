@@ -41,6 +41,7 @@ function pc(over: Partial<Participant> = {}): Participant {
     surges: 0,
     recoveries: { current: 0, max: 0 },
     recoveryValue: 0,
+    ownerId: null,
     ...over,
   };
 }
@@ -62,6 +63,7 @@ function monster(over: Partial<Participant> = {}): Participant {
     surges: 0,
     recoveries: { current: 0, max: 0 },
     recoveryValue: 0,
+    ownerId: null,
     ...over,
   };
 }

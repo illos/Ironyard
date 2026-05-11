@@ -11,6 +11,11 @@ export const ParticipantSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   kind: z.enum(['pc', 'monster']),
+  // Phase 2 Epic 1: PC participants carry the owning user's id so the web
+  // client can identify "the viewer's own participant" for the in-encounter
+  // sheet panel. Monsters are owner-less (null). Nullable + default null
+  // keeps older snapshots parseable.
+  ownerId: z.string().nullable().default(null),
   // Slice 6: `level` feeds Bleeding's `1d6 + level` damage (rules-canon §3.5.1)
   // and other level-scaled effects. Range mirrors MonsterSchema (0..20) so the
   // PC and monster shapes share one source of truth. Defaults to 1 so existing
