@@ -23,6 +23,8 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 
 **Goal:** "We can run a real fight at the table tonight, with players on their phones."
 
+**UI quality bar:** prototype-grade — functional, dark theme, 44pt touch targets, no embarrassing wrong-feeling moments. **Not** a finished product. The visual / interaction / motion / brand pass happens in **Phase 5 (UI rebuild)**. Don't over-invest in polish, refactors, design-system extraction, or animation here.
+
 - `packages/rules` reducer with the core intents: combat lifecycle, rolls, damage, conditions, resources, undo
 - Monster browser at `/codex/monsters` (read-only)
 - Encounter builder: pick monsters, set quantities, scale by victories
@@ -74,6 +76,25 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 - Performance pass on iPad: bundle splitting, image optimization, animation tuning
 
 **Acceptance:** an external playtester not in the original friend group can sign up, build a character, join a session, and play without help.
+
+## Phase 5 — UI rebuild
+
+**Goal:** "The app looks and feels like a finished product, not a prototype."
+
+All UI shipped in Phases 1–4 is intentionally scaffolding — built to validate that the engine, data pipeline, intent protocol, realtime, and feature logic actually work end-to-end. The quality bar is "functional, dark theme, touch-first, no embarrassing wrong-feeling moments" — not "considered, distinctive, finished."
+
+Once everything from Phases 1–4 is shipping and stable, the UI gets stripped to the floorboards and rebuilt:
+
+- Considered visual language: typography system, palette, spacing scale, iconography, motion principles
+- Layout-first redesign of every screen (lobby, builder, run, codex, sheet, settings) — not a re-skin
+- Real interaction design: drag affordances, target-picking gestures, status-at-a-glance, attention management for the active turn
+- Component library extracted properly (or chosen properly, if we move off Radix)
+- Sound and haptic feedback designed alongside the visual pass, not bolted on
+- Brand identity (name, logo, marketing site) lands in this phase, not earlier
+
+**Constraint:** the engine and data layers are **not** rebuilt in this phase. The UI rebuild must consume the existing intent protocol and reducer surface as a stable contract. If a screen needs an intent that doesn't exist, that goes back to the engine phase backlog, not invented at the UI layer.
+
+**Acceptance:** the app feels like something you'd ship publicly — friends-of-friends ask "what is this," not "what's wrong with this."
 
 ## Out of scope (until decided otherwise)
 
