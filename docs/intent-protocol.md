@@ -62,7 +62,7 @@ Why the dice live in the payload: the reducer is pure (see below), so randomness
 
 ### Character-runtime
 
-- `SwapKit { characterId, newKitId }` — side-effect intent. Mutates `characters.data.kitId` in D1. Rejected if `state.encounter !== null`. Authority: character owner OR active director. Next `StartEncounter` re-derives with the new kit.
+- `SwapKit { characterId, newKitId, ownerId }` — side-effect intent. `ownerId` is stamped by the DO from D1 (mirrors `BringCharacterIntoEncounter`). Mutates `characters.data.kitId` in D1. Rejected if `state.encounter !== null`. Authority: character owner OR active director. Next `StartEncounter` re-derives with the new kit.
 - `Respite` — hybrid intent (state-mutating AND D1 side-effect). State: refills `recoveries.current = max` on every PC participant; drains `state.partyVictories` to 0. D1: increments each PC's character `data.xp` by `partyVictories` (1:1 conversion). Rejected if `state.encounter !== null`. Not undoable.
 
 ### Manual override

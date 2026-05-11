@@ -63,6 +63,16 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 
 **Acceptance:** a player can build a character from scratch in the app, bring it into the campaign lobby, and play a full encounter using only the sheet (no rulebook open). A player can equip a magic item and see its abilities on their sheet; a player can activate a consumable during combat and see the effect applied.
 
+### Phase 2 Epic 1 — shipping
+
+The first epic of Phase 2 (character creator + sheet, bring-to-lobby flow, Respite) is now shipping — both the backend ([plan](superpowers/plans/2026-05-11-phase-2-epic-1-backend.md)) and the frontend ([design spec](superpowers/specs/2026-05-11-phase-2-epic-1-frontend-design.md), [plan](superpowers/plans/2026-05-11-phase-2-epic-1-frontend.md)).
+
+Known Epic 1 limitations deferred to Epic 2:
+
+- **PC ability rolling** (`PlayerSheetPanel`) renders ability ids as plain text, not interactive cards — requires PC ability data ingest (class abilities JSON, Epic 2).
+- **Kit picker** (`KitStep`) shows an empty-state placeholder for kit-using classes — kit data ingest is also Epic 2.
+- **Culture skill/language pools** (`CultureStep`) are hardcoded placeholder lists — Phase 5 will replace with real compendium data.
+
 ## Phase 3 — Collaborative campaign capabilities
 
 **Goal:** "The campaign feels like a place, and people can share characters and entities with each other."
