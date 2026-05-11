@@ -8,6 +8,7 @@ import {
   type RemoveConditionPayload,
   type RollPowerPayload,
   type SetConditionPayload,
+  type SetStaminaPayload,
 } from '@ironyard/shared';
 import { useEffect, useMemo, useState } from 'react';
 import { pcFreeStrike } from '../../data/monsterAbilities';
@@ -47,6 +48,7 @@ type Props = {
   }) => void;
   dispatchSetCondition: (payload: SetConditionPayload) => void;
   dispatchRemoveCondition: (payload: RemoveConditionPayload) => void;
+  dispatchSetStamina: (payload: SetStaminaPayload) => void;
 };
 
 export function DetailPane({
@@ -58,6 +60,7 @@ export function DetailPane({
   dispatchRoll,
   dispatchSetCondition,
   dispatchRemoveCondition,
+  dispatchSetStamina,
 }: Props) {
   if (!focused) {
     return (
@@ -77,6 +80,7 @@ export function DetailPane({
       dispatchRoll={dispatchRoll}
       dispatchSetCondition={dispatchSetCondition}
       dispatchRemoveCondition={dispatchRemoveCondition}
+      dispatchSetStamina={dispatchSetStamina}
     />
   );
 }
@@ -92,6 +96,7 @@ function DetailBody({
   dispatchRoll,
   dispatchSetCondition,
   dispatchRemoveCondition,
+  dispatchSetStamina,
 }: Props & { focused: Participant }) {
   const candidates = useMemo(
     () => participants.filter((p) => p.id !== focused.id),
@@ -175,30 +180,14 @@ function DetailBody({
         </div>
         <HpBar current={focused.currentStamina} max={focused.maxStamina} size="lg" />
         {hpEditOpen && (
-          <div className="mt-3 rounded-md border border-neutral-800 bg-neutral-950 p-3 text-sm">
-            <p className="text-neutral-300">
-              Direct stamina edit isn't wired yet — the engine doesn't expose a client-dispatchable
-              mutation for HP outside of an <code className="text-amber-300">ApplyDamage</code>{' '}
-              (which is server-only).
-            </p>
-            <p className="text-neutral-500 text-xs mt-1">
-              See{' '}
-              <code className="text-neutral-300">
-                docs/superpowers/specs/2026-05-10-phase-1-slice-11-combat-run-design.md
-              </code>{' '}
-              — slice 11's gap on SetStat / Heal. Use Manual… on an ability card meanwhile to land
-              an exact damage amount.
-            </p>
-            <div className="mt-2 text-right">
-              <button
-                type="button"
-                onClick={() => setHpEditOpen(false)}
-                className="min-h-11 px-3 rounded-md bg-neutral-800 text-neutral-200 text-sm"
-              >
-                Close
-              </button>
-            </div>
-          </div>
+          <StaminaEdit
+            participantId={focused.id}
+            current={focused.currentStamina}
+            max={focused.maxStamina}
+            disabled={disabled}
+            onApply={dispatchSetStamina}
+            onClose={() => setHpEditOpen(false)}
+          />
         )}
       </section>
 
@@ -316,6 +305,90 @@ function DetailBody({
   );
 }
 
+function StaminaEdit({
+  participantId,
+  current,
+  max,
+  disabled,
+  onApply,
+  onClose,
+}: {
+  participantId: string;
+  current: number;
+  max: number;
+  disabled: boolean;
+  onApply: (payload: SetStaminaPayload) => void;
+  onClose: () => void;
+}) {
+  const [currentInput, setCurrentInput] = useState(String(current));
+  const [maxInput, setMaxInput] = useState(String(max));
+  const parsedCurrent = Number.parseInt(currentInput, 10);
+  const parsedMax = Number.parseInt(maxInput, 10);
+  const validMax = Number.isFinite(parsedMax) && parsedMax >= 1;
+  const effectiveMax = validMax ? parsedMax : max;
+  const validCurrent =
+    Number.isFinite(parsedCurrent) && parsedCurrent >= 0 && parsedCurrent <= effectiveMax;
+  const canApply = !disabled && validMax && validCurrent;
+
+  return (
+    <div className="mt-3 rounded-md border border-neutral-800 bg-neutral-950 p-3 text-sm">
+      <div className="flex gap-3 items-end flex-wrap">
+        <label className="flex flex-col text-xs text-neutral-400">
+          Current
+          <input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            max={effectiveMax}
+            value={currentInput}
+            onChange={(e) => setCurrentInput(e.target.value)}
+            className="mt-1 w-24 min-h-11 rounded-md bg-neutral-900 border border-neutral-800 px-2 py-1 text-base font-mono tabular-nums"
+          />
+        </label>
+        <label className="flex flex-col text-xs text-neutral-400">
+          Max
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            value={maxInput}
+            onChange={(e) => setMaxInput(e.target.value)}
+            className="mt-1 w-24 min-h-11 rounded-md bg-neutral-900 border border-neutral-800 px-2 py-1 text-base font-mono tabular-nums"
+          />
+        </label>
+        <div className="ml-auto flex gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="min-h-11 px-3 rounded-md bg-neutral-800 text-neutral-200"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={!canApply}
+            onClick={() => {
+              onApply({
+                participantId,
+                currentStamina: parsedCurrent,
+                maxStamina: parsedMax,
+              });
+              onClose();
+            }}
+            className="min-h-11 px-3 rounded-md bg-emerald-700 text-emerald-50 disabled:bg-neutral-800 disabled:text-neutral-500"
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+      {!validCurrent && (
+        <p className="mt-2 text-xs text-rose-400">Current must be between 0 and Max.</p>
+      )}
+      {!validMax && <p className="mt-2 text-xs text-rose-400">Max must be at least 1.</p>}
+    </div>
+  );
+}
+
 // Re-exporting the intent type identifiers used by the parent helps callers
 // build the SetCondition / RemoveCondition payloads without re-importing from
 // shared. Keep the import path stable.
@@ -323,5 +396,6 @@ export const COMBAT_INTENT_TYPES = {
   SetCondition: IntentTypes.SetCondition,
   RemoveCondition: IntentTypes.RemoveCondition,
   RollPower: IntentTypes.RollPower,
+  SetStamina: IntentTypes.SetStamina,
 } as const;
 export type { RollPowerPayload };

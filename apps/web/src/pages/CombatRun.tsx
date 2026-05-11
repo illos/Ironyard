@@ -11,6 +11,7 @@ import {
   type RemoveConditionPayload,
   type RollPowerPayload,
   type SetConditionPayload,
+  type SetStaminaPayload,
   type StartRoundPayload,
   type TierOutcome,
   type UndoPayload,
@@ -290,6 +291,11 @@ export function CombatRun() {
     send(IntentTypes.RemoveCondition, payload);
   };
 
+  const dispatchSetStamina = (payload: SetStaminaPayload) => {
+    setParticipantSnapshotBefore(participants);
+    send(IntentTypes.SetStamina, payload);
+  };
+
   const handleFocus = useCallback((id: string) => setFocusedId(id), []);
 
   const wsClosed = status !== 'open';
@@ -369,6 +375,7 @@ export function CombatRun() {
               dispatchRoll={dispatchRoll}
               dispatchSetCondition={dispatchSetCondition}
               dispatchRemoveCondition={dispatchRemoveCondition}
+              dispatchSetStamina={dispatchSetStamina}
             />
           </section>
         </div>
