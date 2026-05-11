@@ -13,6 +13,8 @@ export { ApplyHealPayloadSchema } from './apply-heal';
 export type { ApplyHealPayload } from './apply-heal';
 export { BringCharacterIntoEncounterPayloadSchema } from './bring-character-into-encounter';
 export type { BringCharacterIntoEncounterPayload } from './bring-character-into-encounter';
+export { EndEncounterPayloadSchema } from './end-encounter';
+export type { EndEncounterPayload } from './end-encounter';
 export { GainMalicePayloadSchema } from './gain-malice';
 export type { GainMalicePayload } from './gain-malice';
 export { GainResourcePayloadSchema } from './gain-resource';
@@ -33,6 +35,8 @@ export { SetConditionPayloadSchema } from './set-condition';
 export type { SetConditionPayload } from './set-condition';
 export { SetResourcePayloadSchema } from './set-resource';
 export type { SetResourcePayload } from './set-resource';
+export { SetStaminaPayloadSchema } from './set-stamina';
+export type { SetStaminaPayload } from './set-stamina';
 export { SpendMalicePayloadSchema } from './spend-malice';
 export type { SpendMalicePayload } from './spend-malice';
 export { SpendRecoveryPayloadSchema } from './spend-recovery';
@@ -66,6 +70,7 @@ export const IntentTypes = {
   ApplyDamage: 'ApplyDamage',
   ApplyHeal: 'ApplyHeal',
   BringCharacterIntoEncounter: 'BringCharacterIntoEncounter',
+  EndEncounter: 'EndEncounter',
   EndRound: 'EndRound',
   EndTurn: 'EndTurn',
   GainMalice: 'GainMalice',
@@ -79,6 +84,7 @@ export const IntentTypes = {
   SetCondition: 'SetCondition',
   SetInitiative: 'SetInitiative',
   SetResource: 'SetResource',
+  SetStamina: 'SetStamina',
   SpendMalice: 'SpendMalice',
   SpendRecovery: 'SpendRecovery',
   SpendResource: 'SpendResource',

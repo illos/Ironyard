@@ -8,6 +8,7 @@ import { ClientMsgSchema, type Intent, type Member, type ServerMsg, ulid } from 
 import { and, desc, eq, gt } from 'drizzle-orm';
 import { db } from './db';
 import { intents as intentsTable, sessionSnapshots } from './db/schema';
+import { buildServerStampedIntent } from './session-do-build-intent';
 import type { Bindings } from './types';
 
 // SessionDO: per-session authoritative state machine. Phase 1 slice 1 wires
@@ -244,15 +245,16 @@ export class SessionDO implements DurableObject {
       return;
     }
 
-    // Override actor + timestamp + sessionId + source. Client-supplied id is preserved
-    // (it's the dedupe key) but everything that could be spoofed is server-stamped.
-    const intent: Intent & { timestamp: number } = {
-      ...clientIntent,
-      actor: { userId: attached.userId, role: attached.role },
-      timestamp: Date.now(),
-      sessionId: this.sessionId,
-      source: 'manual',
-    };
+    // Server-stamp actor + timestamp + sessionId. Client-supplied id is
+    // preserved (it's the dedupe key). `source` is preserved from the client
+    // — slice 11's "rolled auto vs typed manually" attribution depends on
+    // honoring the client-supplied value.
+    const intent: Intent & { timestamp: number } = buildServerStampedIntent(
+      clientIntent,
+      attached,
+      this.sessionId,
+      Date.now(),
+    );
 
     if (intent.type === 'Undo') {
       await this.handleUndoDispatch(socket, intent);

@@ -3,6 +3,7 @@ import {
   applyApplyDamage,
   applyApplyHeal,
   applyBringCharacterIntoEncounter,
+  applyEndEncounter,
   applyEndRound,
   applyEndTurn,
   applyGainMalice,
@@ -16,6 +17,7 @@ import {
   applySetCondition,
   applySetInitiative,
   applySetResource,
+  applySetStamina,
   applySpendMalice,
   applySpendRecovery,
   applySpendResource,
@@ -41,6 +43,8 @@ export function applyIntent(state: SessionState, intent: StampedIntent): IntentR
       return applyNote(state, intent);
     case IntentTypes.StartEncounter:
       return applyStartEncounter(state, intent);
+    case IntentTypes.EndEncounter:
+      return applyEndEncounter(state, intent);
     case IntentTypes.BringCharacterIntoEncounter:
       return applyBringCharacterIntoEncounter(state, intent);
     case IntentTypes.RollPower:
@@ -69,6 +73,8 @@ export function applyIntent(state: SessionState, intent: StampedIntent): IntentR
       return applySpendResource(state, intent);
     case IntentTypes.SetResource:
       return applySetResource(state, intent);
+    case IntentTypes.SetStamina:
+      return applySetStamina(state, intent);
     case IntentTypes.SpendSurge:
       return applySpendSurge(state, intent);
     case IntentTypes.SpendRecovery:
