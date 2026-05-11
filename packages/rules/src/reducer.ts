@@ -1,9 +1,12 @@
 import { IntentTypes } from '@ironyard/shared';
 import {
   applyApplyDamage,
+  applyApplyHeal,
   applyBringCharacterIntoEncounter,
   applyEndRound,
   applyEndTurn,
+  applyGainMalice,
+  applyGainResource,
   applyJoinSession,
   applyLeaveSession,
   applyNote,
@@ -12,6 +15,11 @@ import {
   applyRollResistance,
   applySetCondition,
   applySetInitiative,
+  applySetResource,
+  applySpendMalice,
+  applySpendRecovery,
+  applySpendResource,
+  applySpendSurge,
   applyStartEncounter,
   applyStartRound,
   applyStartTurn,
@@ -55,6 +63,22 @@ export function applyIntent(state: SessionState, intent: StampedIntent): IntentR
       return applyRemoveCondition(state, intent);
     case IntentTypes.RollResistance:
       return applyRollResistance(state, intent);
+    case IntentTypes.GainResource:
+      return applyGainResource(state, intent);
+    case IntentTypes.SpendResource:
+      return applySpendResource(state, intent);
+    case IntentTypes.SetResource:
+      return applySetResource(state, intent);
+    case IntentTypes.SpendSurge:
+      return applySpendSurge(state, intent);
+    case IntentTypes.SpendRecovery:
+      return applySpendRecovery(state, intent);
+    case IntentTypes.ApplyHeal:
+      return applyApplyHeal(state, intent);
+    case IntentTypes.GainMalice:
+      return applyGainMalice(state, intent);
+    case IntentTypes.SpendMalice:
+      return applySpendMalice(state, intent);
     case IntentTypes.Undo:
       return applyUndo(state, intent);
     default:

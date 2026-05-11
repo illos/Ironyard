@@ -61,6 +61,9 @@ export function applyStartEncounter(state: SessionState, intent: StampedIntent):
         turnOrder: [],
         activeParticipantId: null,
         turnState: {},
+        // Slice 7: Director's Malice starts at 0 with no Malicious Strike
+        // history (canon §5.5). Per-round generation is dispatcher-driven.
+        malice: { current: 0, lastMaliciousStrikeRound: null },
       },
     },
     derived: [],

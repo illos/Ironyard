@@ -41,6 +41,11 @@ function pc(over: Partial<Participant> = {}): Participant {
     immunities: [],
     weaknesses: [],
     conditions: [],
+    heroicResources: [],
+    extras: [],
+    surges: 0,
+    recoveries: { current: 0, max: 0 },
+    recoveryValue: 0,
     ...over,
   };
 }
@@ -57,6 +62,11 @@ function monster(over: Partial<Participant> = {}): Participant {
     immunities: [],
     weaknesses: [],
     conditions: [],
+    heroicResources: [],
+    extras: [],
+    surges: 0,
+    recoveries: { current: 0, max: 0 },
+    recoveryValue: 0,
     ...over,
   };
 }
@@ -75,6 +85,9 @@ describe('applyIntent — StartEncounter', () => {
       turnOrder: [],
       activeParticipantId: null,
       turnState: {},
+      // Slice 7: Director's Malice initialized to 0 with no Malicious Strike
+      // history (canon §5.5).
+      malice: { current: 0, lastMaliciousStrikeRound: null },
     });
   });
 

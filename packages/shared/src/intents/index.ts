@@ -2,13 +2,21 @@
 // slice 1: JoinSession, LeaveSession, Note. Slice 3: StartEncounter,
 // BringCharacterIntoEncounter, RollPower, ApplyDamage. Slice 4: StartRound,
 // EndRound, StartTurn, EndTurn, SetInitiative. Slice 5: SetCondition,
-// RemoveCondition, RollResistance. The blanket IntentSchema.payload stays
-// z.unknown() until enough types exist to warrant a discriminated union.
+// RemoveCondition, RollResistance. Slice 7: GainResource, SpendResource,
+// SetResource, SpendSurge, SpendRecovery, ApplyHeal, GainMalice, SpendMalice.
+// The blanket IntentSchema.payload stays z.unknown() until enough types exist
+// to warrant a discriminated union.
 
 export { ApplyDamagePayloadSchema } from './apply-damage';
 export type { ApplyDamagePayload } from './apply-damage';
+export { ApplyHealPayloadSchema } from './apply-heal';
+export type { ApplyHealPayload } from './apply-heal';
 export { BringCharacterIntoEncounterPayloadSchema } from './bring-character-into-encounter';
 export type { BringCharacterIntoEncounterPayload } from './bring-character-into-encounter';
+export { GainMalicePayloadSchema } from './gain-malice';
+export type { GainMalicePayload } from './gain-malice';
+export { GainResourcePayloadSchema } from './gain-resource';
+export type { GainResourcePayload } from './gain-resource';
 export { JoinSessionPayloadSchema } from './join-session';
 export type { JoinSessionPayload } from './join-session';
 export { LeaveSessionPayloadSchema } from './leave-session';
@@ -23,6 +31,16 @@ export { RollResistancePayloadSchema } from './roll-resistance';
 export type { RollResistancePayload } from './roll-resistance';
 export { SetConditionPayloadSchema } from './set-condition';
 export type { SetConditionPayload } from './set-condition';
+export { SetResourcePayloadSchema } from './set-resource';
+export type { SetResourcePayload } from './set-resource';
+export { SpendMalicePayloadSchema } from './spend-malice';
+export type { SpendMalicePayload } from './spend-malice';
+export { SpendRecoveryPayloadSchema } from './spend-recovery';
+export type { SpendRecoveryPayload } from './spend-recovery';
+export { SpendResourcePayloadSchema } from './spend-resource';
+export type { SpendResourcePayload } from './spend-resource';
+export { SpendSurgePayloadSchema } from './spend-surge';
+export type { SpendSurgePayload } from './spend-surge';
 export { StartEncounterPayloadSchema } from './start-encounter';
 export type { StartEncounterPayload } from './start-encounter';
 
@@ -46,9 +64,12 @@ export type { UndoPayload } from './undo';
 
 export const IntentTypes = {
   ApplyDamage: 'ApplyDamage',
+  ApplyHeal: 'ApplyHeal',
   BringCharacterIntoEncounter: 'BringCharacterIntoEncounter',
   EndRound: 'EndRound',
   EndTurn: 'EndTurn',
+  GainMalice: 'GainMalice',
+  GainResource: 'GainResource',
   JoinSession: 'JoinSession',
   LeaveSession: 'LeaveSession',
   Note: 'Note',
@@ -57,6 +78,11 @@ export const IntentTypes = {
   RollResistance: 'RollResistance',
   SetCondition: 'SetCondition',
   SetInitiative: 'SetInitiative',
+  SetResource: 'SetResource',
+  SpendMalice: 'SpendMalice',
+  SpendRecovery: 'SpendRecovery',
+  SpendResource: 'SpendResource',
+  SpendSurge: 'SpendSurge',
   StartEncounter: 'StartEncounter',
   StartRound: 'StartRound',
   StartTurn: 'StartTurn',

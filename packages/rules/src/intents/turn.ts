@@ -255,6 +255,37 @@ export function applyEndTurn(state: SessionState, intent: StampedIntent): Intent
     }
   }
 
+  // Slice 7: Talent Clarity end-of-turn damage hook (canon §5.3). When the
+  // ending creature is "strained" (clarity < 0; rule-questions Q2 — engine
+  // status not a Draw Steel condition), dispatch a derived ApplyDamage of
+  // `|clarity|` untyped. Effortless Mind (10th-level toggle) suppression is
+  // deferred to Phase 2 (character sheet).
+  if (currentId !== null && requireCanon('heroic-resources-and-surges.talent-clarity')) {
+    const ending = guard.encounter.participants.find((p) => p.id === currentId);
+    if (ending) {
+      const clarity = ending.heroicResources.find((r) => r.name === 'clarity');
+      if (clarity && clarity.value < 0) {
+        const damage = Math.abs(clarity.value);
+        derived.push({
+          actor: intent.actor,
+          source: 'auto' as const,
+          type: IntentTypes.ApplyDamage,
+          payload: {
+            targetId: currentId,
+            amount: damage,
+            damageType: 'untyped',
+          },
+          causedBy: intent.id,
+        });
+        log.push({
+          kind: 'info',
+          text: `${ending.name} takes ${damage} damage from negative clarity (strained)`,
+          intentId: intent.id,
+        });
+      }
+    }
+  }
+
   return {
     state: {
       ...state,

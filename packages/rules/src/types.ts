@@ -1,4 +1,4 @@
-import type { Intent, Member, Participant } from '@ironyard/shared';
+import type { Intent, MaliceState, Member, Participant } from '@ironyard/shared';
 
 // The DO stamps `timestamp` before calling applyIntent — the reducer signature
 // uses StampedIntent so handlers don't need to second-guess that contract.
@@ -36,6 +36,11 @@ export type ActiveEncounter = {
   // Slice 6: per-actor turn-state flags. `StartTurn` resets the entry for the
   // starting participant; `EndTurn` clears it. Empty by default.
   turnState: Record<string, TurnState>;
+  // Slice 7: Director's Malice (canon §5.5). Encounter-scoped pool. Initialized
+  // by `StartEncounter`. `current` may be negative (canon explicitly permits).
+  // `lastMaliciousStrikeRound` is reserved for the canon §5.5 "not two rounds
+  // in a row" rule; slice 7 only initializes it to null.
+  malice: MaliceState;
 };
 
 export type SessionState = {
