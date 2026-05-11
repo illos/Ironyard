@@ -1,6 +1,8 @@
 import { type Participant, IntentTypes } from '@ironyard/shared';
+import { deriveCharacterRuntime, type StaticDataBundle } from '@ironyard/rules';
 import { buildIntent } from '../../api/dispatch';
-import { useMe } from '../../api/queries';
+import { useCharacter, useMe } from '../../api/queries';
+import { useWizardStaticData } from '../../api/static-data';
 import { useSessionSocket } from '../../ws/useSessionSocket';
 import { HpBar } from './HpBar';
 import { ConditionChip } from './ConditionChip';
@@ -162,13 +164,15 @@ function RecoveryButton({
   );
 }
 
-// Abilities stub for F1. The materialized participant carries no characterId on
-// ParticipantSchema yet — ability rendering is deferred to F2 which adds
-// characterId to ParticipantSchema, populates it at StartEncounter
-// materialization, then calls useCharacter(participant.characterId) +
-// deriveCharacterRuntime to resolve the ability ids.
+// Abilities: look up the character by characterId, derive the runtime, and
+// render the character's ability ids. CharacterRuntime.abilityIds is string[]
+// (ids from levelChoices), not full Ability objects — there is no ability
+// lookup table by id in Epic 1. AbilityCard requires a full Ability object with
+// parsed powerRoll tiers, so we render a plain list here.
+// TODO(Epic 2): when a class-abilities JSON ships with full Ability objects
+// keyed by id, wire AbilityCard here so players can auto-roll from the panel.
 function Abilities({
-  participant: _participant,
+  participant,
   campaignId: _campaignId,
   userId: _userId,
 }: {
@@ -176,9 +180,52 @@ function Abilities({
   campaignId: string;
   userId: string;
 }) {
+  const ch = useCharacter(participant.characterId ?? undefined);
+  const staticData = useWizardStaticData();
+
+  if (!participant.characterId) {
+    return (
+      <div className="text-xs text-neutral-500">
+        No character attached — ability list unavailable.
+      </div>
+    );
+  }
+
+  if (!ch.data || !staticData) {
+    return <div className="text-xs text-neutral-500">Loading abilities…</div>;
+  }
+
+  const bundle: StaticDataBundle = {
+    ancestries: staticData.ancestries as StaticDataBundle['ancestries'],
+    careers: staticData.careers as StaticDataBundle['careers'],
+    classes: staticData.classes as StaticDataBundle['classes'],
+    kits: staticData.kits as StaticDataBundle['kits'],
+  };
+  const runtime = deriveCharacterRuntime(ch.data.data, bundle);
+
+  if (runtime.abilityIds.length === 0) {
+    return (
+      <div className="text-xs text-neutral-500">
+        No abilities recorded — complete level choices in the wizard.
+      </div>
+    );
+  }
+
   return (
-    <div className="text-xs text-neutral-500">
-      Ability roll affordances surface in F2 via deriveCharacterRuntime (characterId pending).
+    <div className="space-y-2">
+      <h3 className="text-sm font-medium">Abilities</h3>
+      {/* Ability id list — full roll affordances require full Ability objects
+          (Epic 2, class-abilities JSON ingestion). */}
+      <ul className="space-y-1">
+        {runtime.abilityIds.map((id) => (
+          <li
+            key={id}
+            className="rounded-md border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-xs font-mono text-neutral-300"
+          >
+            {id}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

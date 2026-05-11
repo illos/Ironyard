@@ -79,6 +79,7 @@ export function applyStartEncounter(
       name: stamped.name, // from characters.name column (stamped by DO)
       kind: 'pc',
       ownerId: stamped.ownerId,
+      characterId: entry.characterId,
       level: stamped.character.level,
       currentStamina:
         preservedStamina !== null

@@ -16,6 +16,10 @@ export const ParticipantSchema = z.object({
   // sheet panel. Monsters are owner-less (null). Nullable + default null
   // keeps older snapshots parseable.
   ownerId: z.string().nullable().default(null),
+  // Phase 2 Epic 1 (Task F2): PC participants carry the originating character
+  // id so PlayerSheetPanel can call useCharacter(characterId) → deriveRuntime
+  // → render abilities. Nullable + default null keeps older snapshots parseable.
+  characterId: z.string().nullable().default(null),
   // Slice 6: `level` feeds Bleeding's `1d6 + level` damage (rules-canon §3.5.1)
   // and other level-scaled effects. Range mirrors MonsterSchema (0..20) so the
   // PC and monster shapes share one source of truth. Defaults to 1 so existing

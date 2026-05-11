@@ -56,6 +56,34 @@ describe('applyStartEncounter — materialization / ownerId', () => {
     expect(pc?.ownerId).toBe('user-1');
   });
 
+  it('materialized PC carries characterId from the placeholder', () => {
+    const character = buildFuryL1Fixture();
+    const ctx: ReducerContext = { staticData: buildBundleWithFury() };
+    const placeholder: PcPlaceholder = {
+      kind: 'pc-placeholder',
+      characterId: 'c1',
+      ownerId: 'user-1',
+      position: 0,
+    };
+    let s: CampaignState = emptyCampaignState(campaignId, 'user-owner');
+    s = { ...s, participants: [placeholder] };
+
+    const result = applyIntent(
+      s,
+      intent('StartEncounter', {
+        stampedPcs: [{ characterId: 'c1', name: 'Hero', ownerId: 'user-1', character }],
+      }),
+      ctx,
+    );
+
+    expect(result.errors).toBeUndefined();
+    const pc = result.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'pc',
+    );
+    expect(pc).toBeDefined();
+    expect(pc?.characterId).toBe('c1');
+  });
+
   it('monsters carry ownerId: null', () => {
     // Monsters are constructed with ownerId: null (the schema default).
     // This test verifies the field is present on the Participant type.

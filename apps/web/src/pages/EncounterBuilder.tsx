@@ -582,6 +582,7 @@ function QuickPcForm({
       recoveries: { current: 0, max: 0 },
       recoveryValue: 0,
       ownerId: null,
+      characterId: null,
     };
 
     onAdd(participant);
