@@ -1,5 +1,6 @@
 import { Outlet, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 import { Home } from './pages/Home';
+import { MonsterBrowser } from './pages/MonsterBrowser';
 import { SessionView } from './pages/SessionView';
 
 const rootRoute = createRootRoute({
@@ -22,6 +23,12 @@ const sessionRoute = createRoute({
   component: SessionView,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, sessionRoute]);
+const monsterCodexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/codex/monsters',
+  component: MonsterBrowser,
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, sessionRoute, monsterCodexRoute]);
 
 export const router = createRouter({ routeTree });

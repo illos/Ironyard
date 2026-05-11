@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useCreateSession, useDevLogin, useJoinSession, useLogout } from '../api/mutations';
 import { useMe } from '../api/queries';
@@ -26,6 +26,13 @@ function LoginPanel() {
     <main className="mx-auto max-w-md p-6">
       <h1 className="text-3xl font-semibold">Ironyard</h1>
       <p className="mt-1 text-neutral-400">Sign in to start or join a session.</p>
+
+      <Link
+        to="/codex/monsters"
+        className="mt-3 inline-block text-sm text-neutral-400 underline hover:text-neutral-200"
+      >
+        Or browse the monster codex →
+      </Link>
 
       <form
         className="mt-6 space-y-3"
@@ -81,13 +88,18 @@ function SessionsPanel({ user }: { user: { displayName: string; email: string } 
             Signed in as <span className="text-neutral-200">{user.displayName}</span>
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => logout.mutate()}
-          className="text-sm text-neutral-400 hover:text-neutral-200"
-        >
-          Sign out
-        </button>
+        <div className="flex items-center gap-4">
+          <Link to="/codex/monsters" className="text-sm text-neutral-400 hover:text-neutral-200">
+            Codex
+          </Link>
+          <button
+            type="button"
+            onClick={() => logout.mutate()}
+            className="text-sm text-neutral-400 hover:text-neutral-200"
+          >
+            Sign out
+          </button>
+        </div>
       </header>
 
       <section className="rounded-lg border border-neutral-800 p-5">
