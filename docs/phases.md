@@ -90,14 +90,23 @@ Shipped counts: kits 21, items 98 (3 artifacts + 35 consumables + 35 leveled + 2
 
 Slice 3's optional freebie (switching PlayerSheetPanel from id-list to interactive `AbilityCard`s) was deferred to 2B — the wizard's level-pick stub stores placeholder ability ids that don't yet map to `abilities.json` entries. Prerequisites for the wiring to be cheap: add a stable `id` field to `AbilitySchema`, update the wizard's level picker to store real ability ids.
 
-**Sub-epic 2B — `CharacterAttachment` activation engine** (not yet specced)
+**Sub-epic 2B — `CharacterAttachment` activation engine** — **shipping**
 
-Define the `CharacterAttachment` type; build the reducer pass that folds attachment effects (ancestry traits + class features + ability picks + magic items + kit keywords + titles) into derived character runtime. Populate the override files in `packages/data/overrides/` with hand-authored entries for items / abilities / kits / titles whose effects aren't structurally exposed in the markdown — coverage is incremental.
+Six slices landed: `CharacterAttachment` schema in shared; activation engine in `packages/rules/src/attachments/` (collectors + applier with canon-gated `requireCanonSlug` + condition gates + recoveryValue-after-maxStamina ordering); ancestry/kit derivation refactored through the engine; ancestry-trait override file populated for every flat-stat purchased trait the markdown structurally exposes (~10 entries); canonical-example item + title overrides (Lightning Treads, Color Cloak Yellow, Knight, Zombie Slayer) wired end-to-end; and `docs/rules-canon.md` Section 10 documents every attachment effect-category (🚧 — Gate 1 only).
+
+**Pending user action:** Gate 2 manual review of Section 10 entries against the printed Heroes Book. Once each sub-section's status flips ✅, the collectors can retro-add `requireCanonSlug` references — today they intentionally omit it so attachments continue to apply, preserving Slice 4/5 behavior.
+
+Carry-overs deferred to 2C (or later):
+- **Per-echelon stat scaling** — Dwarf *Spark Off Your Skin* +6 Stamina with 4th/7th/10th echelon bumps; current `stat-mod.delta` is a flat integer.
+- **Level + N immunity offsets** — Polder *Corruption Immunity* (level + 2); `immunity.value` is `number | 'level'`, no `'level + N'` form.
+- **Conditional / triggered attachments** — Devil *Wings* (only-while-flying), Color Cloak triggered weakness conversion, Encepter aura effects; current `AttachmentCondition` only models `kit-has-keyword` / `item-equipped`.
+- **Class-feature overrides** — none authored. Draw Steel class features are split between per-level ability picks (no static stat-mods) and inline class prose (Conduit prayers, domain blessings) that the parser doesn't surface as ability ids; pipeline gap, not an engine gap.
+- **Kit-keyword leveled-treasure bonuses** — `KIT_OVERRIDES` ships empty. The Slice 4 sweep found no kit-side flat-bonus pattern of this shape in SteelCompendium markdown; the analogous rules (weapon-bonus / armor-bonus conditional gating) live on the *treasure* side as conditions.
 
 Deferred from earlier work that lands here:
-- **PC ability rolling** on PlayerSheetPanel — switch from id list to interactive `AbilityCard`s. If Sub-epic 2A's Slice 3 catches this as a freebie, it ships there; otherwise here.
-- **Class-D ancestry signature abilities** on the sheet — `AncestrySchema.signatureAbilityId` is already wired (Epic 1.1 Slice 5); `collectAbilityIds()` in derivation needs to read it after PC ability data is ingested in 2A.
-- **Kit-keyword matching gate** for weapon/armor leveled-treasure bonuses (kit `keywords` field is parsed in 2A Slice 1).
+- **PC ability rolling** on PlayerSheetPanel — switch from id list to interactive `AbilityCard`s. Still deferred — needs the wizard-side picker to store real ability ids first.
+- **Class-D ancestry signature abilities** on the sheet — now wired through `collectFromAncestry`'s `attachment.ancestry-signature-ability` path (the schema field had been in place since Epic 1.1 Slice 5).
+- **Kit-keyword matching gate** for weapon/armor leveled-treasure bonuses — gate plumbing exists (`condition.kit-has-keyword`); per-treasure authoring is 2C territory.
 
 **Sub-epic 2C — interactive UI + runtime intents** (not yet specced)
 
