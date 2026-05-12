@@ -10,6 +10,8 @@ import type {
   Complication,
   ComplicationFile,
   HeroClass,
+  Kit,
+  KitFile,
   Monster,
   MonsterFile,
 } from '@ironyard/shared';
@@ -18,6 +20,7 @@ import { parseAncestryMarkdown } from './src/parse-ancestry';
 import { parseCareerMarkdown } from './src/parse-career';
 import { parseClassMarkdown } from './src/parse-class';
 import { parseComplicationMarkdown } from './src/parse-complication';
+import { parseKitMarkdown } from './src/parse-kit';
 import { parseMonsterMarkdown } from './src/parse-monster';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -37,9 +40,9 @@ const ANCESTRIES_OUT = join(REPO_ROOT, 'apps/web/public/data/ancestries.json');
 const CAREERS_OUT = join(REPO_ROOT, 'apps/web/public/data/careers.json');
 const COMPLICATIONS_OUT = join(REPO_ROOT, 'apps/web/public/data/complications.json');
 const CLASSES_OUT = join(REPO_ROOT, 'apps/web/public/data/classes.json');
-// kits.json: Phase 2 Epic 2 adds kit ingestion; until then emit a [] placeholder
-// so the web client's useKits hook can fetch and parse it without a 404.
+// kits.json: populated by Phase 2 Epic 2 kit ingestion.
 const KITS_OUT = join(REPO_ROOT, 'apps/web/public/data/kits.json');
+const API_KITS_OUT = join(REPO_ROOT, 'apps/api/src/data/kits.json');
 
 // API Worker data — flat arrays (no wrapper) so getStaticDataBundle() can
 // iterate and parse them with their individual schemas. Mirroring the
@@ -87,10 +90,8 @@ function main() {
   buildComplications(version);
   buildClasses(version);
 
-  // ── Kit placeholder (Phase 2 Epic 2 will replace with real ingestion) ──
-  mkdirSync(dirname(KITS_OUT), { recursive: true });
-  writeFileSync(KITS_OUT, '[]\n');
-  console.log('build:data — wrote kits.json placeholder ([]) to apps/web/public/data/kits.json');
+  // ── Kits ─────────────────────────────────────────────────────────────────
+  buildKits(version);
 
   // ── Monsters ────────────────────────────────────────────────────────────
   try {
@@ -388,6 +389,51 @@ function buildComplications(version: string): void {
     console.warn(`  ${errors.length} complication(s) skipped:`);
     for (const e of errors.slice(0, 10)) console.warn(`    ${e.file}: ${e.reason}`);
     if (errors.length > 10) console.warn(`    … and ${errors.length - 10} more`);
+  }
+}
+
+// ── Kit build ─────────────────────────────────────────────────────────────────
+
+function buildKits(version: string): void {
+  const dir = join(RULES_DIR, 'Kits');
+  const kits: Kit[] = [];
+  const errors: Array<{ file: string; reason: string }> = [];
+
+  let entries: string[];
+  try {
+    entries = readdirSync(dir).filter((f) => f.endsWith('.md'));
+  } catch {
+    console.error(`build:data — kits dir not found at ${dir}`);
+    return;
+  }
+
+  for (const entry of entries) {
+    const file = join(dir, entry);
+    const content = readFileSync(file, 'utf-8');
+    const k = parseKitMarkdown(content);
+    if (k) {
+      kits.push(k);
+    }
+    // Non-kit pages (Kits Table, _Index) return null — silently skip, not errors.
+  }
+
+  kits.sort((a, b) => a.id.localeCompare(b.id));
+
+  const out: KitFile = {
+    version,
+    generatedAt: Date.now(),
+    count: kits.length,
+    kits,
+  };
+  mkdirSync(dirname(KITS_OUT), { recursive: true });
+  writeFileSync(KITS_OUT, `${JSON.stringify(out, null, 2)}\n`);
+  // Mirror flat array to API Worker data directory.
+  mkdirSync(dirname(API_KITS_OUT), { recursive: true });
+  writeFileSync(API_KITS_OUT, `${JSON.stringify(kits, null, 2)}\n`);
+  console.log(`build:data — wrote ${kits.length} kits to apps/web/public/data/kits.json`);
+  console.log('             mirrored to apps/api/src/data/kits.json');
+  if (errors.length > 0) {
+    for (const e of errors) console.warn(`  skipped ${e.file}: ${e.reason}`);
   }
 }
 
