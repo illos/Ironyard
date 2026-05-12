@@ -3,9 +3,27 @@ import type { StaticDataBundle } from '../../static-data';
 import type { CharacterAttachment } from '../types';
 
 export function collectFromAncestry(
-  _character: Character,
-  _staticData: StaticDataBundle,
+  character: Character,
+  staticData: StaticDataBundle,
 ): CharacterAttachment[] {
-  // Populated in Slice 3.
-  return [];
+  if (character.ancestryId === null) return [];
+
+  // Revenant does not inherit former-ancestry immunities (canon).
+  const ancestry = staticData.ancestries.get(character.ancestryId);
+  if (!ancestry) return [];
+
+  const out: CharacterAttachment[] = [];
+
+  // requireCanonSlug omitted — Slice 6 adds canon entries for this category.
+  for (const entry of ancestry.grantedImmunities ?? []) {
+    out.push({
+      source: {
+        kind: 'ancestry-trait',
+        id: `${character.ancestryId}.granted-immunity.${entry.kind}`,
+      },
+      effect: { kind: 'immunity', damageKind: entry.kind, value: entry.value },
+    });
+  }
+
+  return out;
 }

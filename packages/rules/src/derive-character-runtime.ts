@@ -128,27 +128,10 @@ function deriveBaseRuntime(
   }
 
   // ── Ancestry immunities ────────────────────────────────────────────────────
-  // Collect grantedImmunities from the character's own ancestry. Revenant
-  // does NOT inherit immunities from the former ancestry (canon: "unless you
-  // select a Previous Life trait you don't receive any other ancestral traits
-  // from your original ancestry"). Previous Life traits are Slice 7's concern.
-  if (ancestry !== null && ancestry !== undefined) {
-    for (const entry of ancestry.grantedImmunities) {
-      const resolvedValue = entry.value === 'level' ? character.level : entry.value;
-      immunities.push({ kind: entry.kind, value: resolvedValue });
-    }
-  }
+  // grantedImmunities (and Dragon Knight Wyrmplate / Prismatic Scales) now
+  // flow through the attachment pass via collectFromAncestry. The `immunities`
+  // local is initialised empty here and populated by the attachment applier.
 
-  // ── Dragon Knight Wyrmplate / Prismatic Scales immunities ─────────────────
-  if (character.ancestryId === 'dragon-knight') {
-    const { wyrmplateType, prismaticScalesType } = character.ancestryChoices;
-    if (wyrmplateType !== null) {
-      immunities.push({ kind: wyrmplateType, value: character.level });
-    }
-    if (prismaticScalesType !== null) {
-      immunities.push({ kind: prismaticScalesType, value: character.level });
-    }
-  }
   const stability = kit?.stabilityBonus ?? 0;
   const freeStrikeDamage = (kit?.meleeDamageBonus ?? 0) + 2; // canon: free-strike base 2
 
