@@ -176,6 +176,10 @@ export const CharacterSchema = z.object({
   // References complications.json by id. Null if the player opted out.
   complicationId: z.string().nullable().default(null),
 
+  // ── Title (optional) ──────────────────────────────────────────────────
+  // References titles.json by id. Null until the player picks/earns a title.
+  titleId: z.string().nullable().default(null),
+
   // ── Inventory ─────────────────────────────────────────────────────────────
   // Items the character owns. Empty default for fresh characters.
   inventory: z.array(InventoryEntrySchema).default([]),

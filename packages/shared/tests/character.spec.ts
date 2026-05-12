@@ -296,6 +296,18 @@ describe('CharacterSchema.inventory', () => {
   });
 });
 
+describe('CharacterSchema.titleId', () => {
+  it('defaults to null', () => {
+    const c = CharacterSchema.parse({});
+    expect(c.titleId).toBeNull();
+  });
+
+  it('accepts a titleId', () => {
+    const c = CharacterSchema.parse({ titleId: 'monster-killer' });
+    expect(c.titleId).toBe('monster-killer');
+  });
+});
+
 describe('CreateCharacterRequestSchema', () => {
   it('accepts name only', () => {
     expect(CreateCharacterRequestSchema.parse({ name: 'Ash' })).toBeDefined();
