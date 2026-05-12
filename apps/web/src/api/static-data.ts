@@ -1,4 +1,5 @@
 import {
+  AbilityFileSchema,
   AncestryFileSchema,
   AncestrySchema,
   CareerFileSchema,
@@ -7,9 +8,10 @@ import {
   ClassSchema,
   ComplicationFileSchema,
   ComplicationSchema,
+  ItemFileSchema,
+  KitFileSchema,
+  TitleFileSchema,
 } from '@ironyard/shared';
-import { ResolvedKitSchema } from '@ironyard/rules';
-import type { ResolvedKit } from '@ironyard/rules';
 import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { ApiError } from './client';
@@ -77,7 +79,43 @@ export function useComplications() {
 export function useKits() {
   return useQuery({
     queryKey: ['data', 'kits'],
-    queryFn: () => fetchData('kits.json', z.array(ResolvedKitSchema)),
+    queryFn: async () => {
+      const file = await fetchData('kits.json', KitFileSchema);
+      return file.kits;
+    },
+    ...STATIC,
+  });
+}
+
+export function useAbilities() {
+  return useQuery({
+    queryKey: ['data', 'abilities'],
+    queryFn: async () => {
+      const file = await fetchData('abilities.json', AbilityFileSchema);
+      return file.abilities;
+    },
+    ...STATIC,
+  });
+}
+
+export function useItems() {
+  return useQuery({
+    queryKey: ['data', 'items'],
+    queryFn: async () => {
+      const file = await fetchData('items.json', ItemFileSchema);
+      return file.items;
+    },
+    ...STATIC,
+  });
+}
+
+export function useTitles() {
+  return useQuery({
+    queryKey: ['data', 'titles'],
+    queryFn: async () => {
+      const file = await fetchData('titles.json', TitleFileSchema);
+      return file.titles;
+    },
     ...STATIC,
   });
 }
@@ -95,6 +133,9 @@ type CareerItem = NonNullable<ReturnType<typeof useCareers>['data']>[number];
 type ClassItem = NonNullable<ReturnType<typeof useClasses>['data']>[number];
 type ComplicationItem = NonNullable<ReturnType<typeof useComplications>['data']>[number];
 type KitItem = NonNullable<ReturnType<typeof useKits>['data']>[number];
+type AbilityItem = NonNullable<ReturnType<typeof useAbilities>['data']>[number];
+type ItemEntry = NonNullable<ReturnType<typeof useItems>['data']>[number];
+type TitleItem = NonNullable<ReturnType<typeof useTitles>['data']>[number];
 
 export type WizardStaticData = {
   ancestries: ReadonlyMap<string, AncestryItem>;
@@ -102,6 +143,9 @@ export type WizardStaticData = {
   classes: ReadonlyMap<string, ClassItem>;
   complications: ReadonlyMap<string, ComplicationItem>;
   kits: ReadonlyMap<string, KitItem>;
+  abilities: ReadonlyMap<string, AbilityItem>;
+  items: ReadonlyMap<string, ItemEntry>;
+  titles: ReadonlyMap<string, TitleItem>;
 };
 
 export function useWizardStaticData(): WizardStaticData | null {
@@ -110,8 +154,13 @@ export function useWizardStaticData(): WizardStaticData | null {
   const cl = useClasses();
   const co = useComplications();
   const k = useKits();
+  const ab = useAbilities();
+  const it = useItems();
+  const ti = useTitles();
 
-  if (!a.data || !ca.data || !cl.data || !co.data || !k.data) return null;
+  if (!a.data || !ca.data || !cl.data || !co.data || !k.data || !ab.data || !it.data || !ti.data) {
+    return null;
+  }
 
   return {
     ancestries: new Map(a.data.map((x) => [x.id, x])),
@@ -119,5 +168,8 @@ export function useWizardStaticData(): WizardStaticData | null {
     classes: new Map(cl.data.map((x) => [x.id, x])),
     complications: new Map(co.data.map((x) => [x.id, x])),
     kits: new Map(k.data.map((x) => [x.id, x])),
+    abilities: new Map(ab.data.map((x) => [x.id, x])),
+    items: new Map(it.data.map((x) => [x.id, x])),
+    titles: new Map(ti.data.map((x) => [x.id, x])),
   };
 }
