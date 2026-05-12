@@ -1,4 +1,4 @@
-import type { Character, HeroClass } from '@ironyard/shared';
+import type { Ancestry, Character, HeroClass } from '@ironyard/shared';
 import type { ResolvedKit, StaticDataBundle } from '../../src/static-data';
 
 // ── Character fixture ─────────────────────────────────────────────────────────
@@ -134,4 +134,46 @@ export function buildBundleWithFury(): StaticDataBundle {
   } satisfies ResolvedKit);
 
   return bundle;
+}
+
+// ── Ancestry fixture helpers ──────────────────────────────────────────────────
+
+/**
+ * Build a minimal Ancestry object with sane defaults.
+ * Pass only the fields you care about; the rest are filled in.
+ */
+export function buildAncestry(overrides: Partial<Ancestry> & { id: string }): Ancestry {
+  return {
+    id: overrides.id,
+    name: overrides.name ?? overrides.id,
+    description: overrides.description ?? '',
+    signatureTrait: overrides.signatureTrait ?? { name: 'Test Trait', description: '' },
+    purchasedTraits: overrides.purchasedTraits ?? [],
+    ancestryPoints: overrides.ancestryPoints ?? 3,
+    defaultSize: overrides.defaultSize ?? '1M',
+    defaultSpeed: overrides.defaultSpeed ?? 5,
+    grantedImmunities: overrides.grantedImmunities ?? [],
+    signatureAbilityId: overrides.signatureAbilityId ?? null,
+  };
+}
+
+/**
+ * Build a StaticDataBundle pre-populated with the given ancestry list.
+ * No class or kit is added — the derivation falls back safely.
+ */
+export function buildBundleWith(ancestries: Ancestry[]): StaticDataBundle {
+  const bundle = buildEmptyBundle();
+  for (const a of ancestries) {
+    bundle.ancestries.set(a.id, a);
+  }
+  return bundle;
+}
+
+/**
+ * Build a character with the fury fixture as the base, accepting partial
+ * overrides. Useful for ancestry-focused tests that don't care about class.
+ */
+export function buildCharacter(overrides: Partial<Character> = {}): Character {
+  const base = buildFuryL1Fixture(overrides);
+  return { ...base, ...overrides };
 }

@@ -88,12 +88,55 @@ export function deriveCharacterRuntime(
   const immunities: CharacterRuntime['immunities'] = [];
   const weaknesses: CharacterRuntime['weaknesses'] = [];
 
-  // NOTE: AncestrySchema does not include speed, size, or stability fields.
-  // These fall back to game defaults. If the schema is extended, update here.
-  // `ancestry` is accessed to prevent an unused-variable warning.
-  void ancestry;
-  const speed = 5; // Draw Steel default
-  const size = '1M'; // Draw Steel default
+  // ── Size derivation ────────────────────────────────────────────────────────
+  // Revenant inherits size from its former ancestry; all others read
+  // defaultSize from their own ancestry entry. Falls back to '1M'.
+  let size = '1M';
+  if (character.ancestryId !== null) {
+    if (character.ancestryId === 'revenant') {
+      const formerAncestryId = character.ancestryChoices.formerAncestryId;
+      if (formerAncestryId !== null) {
+        const formerAncestry = staticData.ancestries.get(formerAncestryId);
+        size = formerAncestry?.defaultSize ?? '1M';
+      }
+      // If formerAncestryId is null, keep '1M' (former life not yet chosen).
+    } else {
+      size = ancestry?.defaultSize ?? '1M';
+    }
+  }
+
+  // ── Speed derivation ───────────────────────────────────────────────────────
+  // Revenant speed is always 5 per canon, regardless of former ancestry.
+  // Others read defaultSpeed from their ancestry. Falls back to 5.
+  let speed: number;
+  if (character.ancestryId === null || character.ancestryId === 'revenant') {
+    speed = 5;
+  } else {
+    speed = ancestry?.defaultSpeed ?? 5;
+  }
+
+  // ── Ancestry immunities ────────────────────────────────────────────────────
+  // Collect grantedImmunities from the character's own ancestry. Revenant
+  // does NOT inherit immunities from the former ancestry (canon: "unless you
+  // select a Previous Life trait you don't receive any other ancestral traits
+  // from your original ancestry"). Previous Life traits are Slice 7's concern.
+  if (ancestry !== null && ancestry !== undefined) {
+    for (const entry of ancestry.grantedImmunities) {
+      const resolvedValue = entry.value === 'level' ? character.level : entry.value;
+      immunities.push({ kind: entry.kind, value: resolvedValue });
+    }
+  }
+
+  // ── Dragon Knight Wyrmplate / Prismatic Scales immunities ─────────────────
+  if (character.ancestryId === 'dragon-knight') {
+    const { wyrmplateType, prismaticScalesType } = character.ancestryChoices;
+    if (wyrmplateType !== null) {
+      immunities.push({ kind: wyrmplateType, value: character.level });
+    }
+    if (prismaticScalesType !== null) {
+      immunities.push({ kind: prismaticScalesType, value: character.level });
+    }
+  }
   const stability = kit?.stabilityBonus ?? 0;
   const freeStrikeDamage = (kit?.meleeDamageBonus ?? 0) + 2; // canon: free-strike base 2
 
