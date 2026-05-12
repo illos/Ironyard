@@ -20,6 +20,7 @@ import { AbilityTypeSchema, PowerRollSchema } from './power-roll';
 //   sourceClassId — slug of the hero class that owns this ability (e.g. "fury").
 
 export const AbilitySchema = z.object({
+  id: z.string().min(1),
   // ── Existing fields (verbatim from monster.ts, costLabel renamed from cost) ──
   name: z.string().min(1),
   type: AbilityTypeSchema,
