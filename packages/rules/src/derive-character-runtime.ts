@@ -93,7 +93,7 @@ function deriveBaseRuntime(
     floor: 0,
   };
 
-  const abilityIds = collectAbilityIds(character);
+  const abilityIds: string[] = [];
   const skills = collectSkills(character);
   const languages = collectLanguages(character);
 
@@ -183,24 +183,6 @@ function deriveMaxStamina(
   const base = cls.startingStamina ?? 0;
   const perLevel = (cls.staminaPerLevel ?? 0) * Math.max(0, character.level - 1);
   return base + perLevel;
-}
-
-function collectAbilityIds(character: Character): string[] {
-  const out: string[] = [];
-  for (const lvl of Object.keys(character.levelChoices)) {
-    const choices = character.levelChoices[lvl];
-    if (choices) {
-      out.push(...choices.abilityIds);
-      out.push(...choices.subclassAbilityIds);
-    }
-  }
-  // Class-D ancestry signature abilities (Human's Detect the Supernatural,
-  // Orc's Relentless, Dwarf's Runic Carving) live on AncestrySchema.signatureAbilityId.
-  // Surfacing them on the character sheet is deferred to Epic 2 alongside PC
-  // ability data ingest — without ability detail records there's no AbilityCard
-  // to render. Re-enable by pushing ancestry.signatureAbilityId here once the
-  // ingest lands.
-  return out;
 }
 
 function collectSkills(character: Character): string[] {
