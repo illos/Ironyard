@@ -143,6 +143,9 @@ importers:
 
   packages/rules:
     dependencies:
+      '@ironyard/data':
+        specifier: workspace:*
+        version: link:../data
       '@ironyard/shared':
         specifier: workspace:*
         version: link:../shared

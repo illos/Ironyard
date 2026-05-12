@@ -292,6 +292,15 @@ export type {
 
 export { TitleSchema, TitleFileSchema, type Title, type TitleFile } from './data/title';
 
+export type {
+  AttachmentCondition,
+  AttachmentEffect,
+  AttachmentSource,
+  CharacterAttachment,
+  StatModField,
+  StatReplaceField,
+} from './data/attachment';
+
 // ── Character blob schemas ─────────────────────────────────────────────────────
 
 export {
