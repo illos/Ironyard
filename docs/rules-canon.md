@@ -1863,7 +1863,7 @@ armor leveled-treasure attachments authored in the future MUST set
 per § 10.10's kit-keyword gate. Body-slot items (Feet, Neck, Head,
 etc.) apply unconditionally as today's entries do.
 
-### 10.13 Title-grant attachments 🚧
+### 10.13 Title-grant attachments ✅
 <!-- Generated slug: character-attachment-activation.title-grant-attachments -->
 
 When `character.titleId` is set, the collector consults
@@ -1886,14 +1886,20 @@ and the collector switches to a benefit-id lookup; until then, only
 canonical-example overrides ship.
 
 **Source.**
-- `.reference/data-md/Rules/Titles/2nd Echelon/Knight.md` line 25
-  ("Knightly Aegis: Your Stamina maximum increases by 6.")
-- `.reference/data-md/Rules/Titles/1st Echelon/Zombie Slayer.md`
+- SteelCompendium —
+  `.reference/data-md/Rules/Titles/2nd Echelon/Knight.md` line 25
+  ("Knightly Aegis: Your Stamina maximum increases by 6.") and
+  `.reference/data-md/Rules/Titles/1st Echelon/Zombie Slayer.md`
   lines 26–29 ("Holy Terror: You have the following ability, which
-  can be paid for using the Heroic Resource of your class.")
+  can be paid for using the Heroic Resource of your class.").
+- Printed Heroes Book — *Rewards → Titles* chapter, Knight and Zombie
+  Slayer entries. Confirmed verbatim 2026-05-12 against
+  `.reference/core-rules/Draw_Steel_Heroes_v1.01.pdf`.
 
 **Override authoring.** `TITLE_OVERRIDES` in
-`packages/data/overrides/titles.ts`, keyed by `title.id`.
+`packages/data/overrides/titles.ts`, keyed by `title.id`. The
+multi-choice schema gap (no `titleBenefitId` slot) is documented as
+a § 10.16 carry-over.
 
 ### 10.14 Level-pick attachments
 
@@ -2013,3 +2019,12 @@ skipped entry with `SKIPPED-DEFERRED` for traceability.
   only adds to melee abilities if your kit has a melee damage bonus."
   Downstream gate on the (also-deferred) weapon-damage-bonus effect
   variant from § 10.8. No engine impact today.
+- **Title benefit-choice slot.** Most v1 titles offer a 2-of-3 or
+  3-of-3 "choose one of the following benefits" menu (Knight = Heraldic
+  Fame / Knightly Aegis / Knightly Challenge; Zombie Slayer = Blessed
+  Weapons / Divine Health / Holy Terror; etc.). `CharacterSchema.titleId`
+  records which title was earned but not which benefit was picked. § 10.13
+  overrides assume the modeled benefit; a Knight player who picked
+  Heraldic Fame would incorrectly get +6 Stamina today. Fix needs a
+  `titleBenefitId` slot on `CharacterSchema` and an override map keyed
+  on `{titleId}.{benefitId}` instead of plain `{titleId}`.

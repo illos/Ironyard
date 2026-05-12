@@ -101,7 +101,7 @@ export const canonStatus = {
   'character-attachment-activation.kit-keyword-condition': 'verified',
   'character-attachment-activation.class-feature-attachments': 'verified',
   'character-attachment-activation.item-grant-attachments': 'verified',
-  'character-attachment-activation.title-grant-attachments': 'drafted',
+  'character-attachment-activation.title-grant-attachments': 'verified',
   'character-attachment-activation.level-pick-attachments': 'drafted',
   'character-attachment-activation.engine-apply-order-and-gating': 'drafted',
   'character-attachment-activation.carry-overs-and-known-shape-gaps': 'drafted',
