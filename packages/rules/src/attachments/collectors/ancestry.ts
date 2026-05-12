@@ -25,5 +25,27 @@ export function collectFromAncestry(
     });
   }
 
+  if (character.ancestryId === 'dragon-knight') {
+    const { wyrmplateType, prismaticScalesType } = character.ancestryChoices;
+    if (wyrmplateType !== null) {
+      out.push({
+        source: {
+          kind: 'ancestry-trait',
+          id: 'dragon-knight.wyrmplate',
+        },
+        effect: { kind: 'immunity', damageKind: wyrmplateType, value: 'level' },
+      });
+    }
+    if (prismaticScalesType !== null) {
+      out.push({
+        source: {
+          kind: 'ancestry-trait',
+          id: 'dragon-knight.prismatic-scales',
+        },
+        effect: { kind: 'immunity', damageKind: prismaticScalesType, value: 'level' },
+      });
+    }
+  }
+
   return out;
 }
