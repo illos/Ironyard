@@ -1448,7 +1448,8 @@ Until then, every collector in `packages/rules/src/attachments/collectors/`
 deliberately omits `requireCanonSlug` so attachments continue to apply —
 preserving Slice 4/5 behavior.
 
-### 10.1 Ancestry granted-immunity attachments 🚧 (`attachment.ancestry-granted-immunity`)
+### 10.1 Ancestry granted-immunity attachments 🚧
+<!-- Generated slug: character-attachment-activation.ancestry-granted-immunity-attachments -->
 
 For each entry in `ancestry.grantedImmunities`, emit an `immunity`
 attachment with the resolved damage kind and level-scaled value. The
@@ -1468,7 +1469,8 @@ ancestry record, augmented in `packages/data/overrides/ancestries.ts`
 (`ANCESTRY_OVERRIDES.<ancestryId>.grantedImmunities`) where the markdown
 isn't structurally exposed (e.g. Time Raider, Revenant).
 
-### 10.2 Ancestry signature-ability attachments 🚧 (`attachment.ancestry-signature-ability`)
+### 10.2 Ancestry signature-ability attachments 🚧
+<!-- Generated slug: character-attachment-activation.ancestry-signature-ability-attachments -->
 
 When an ancestry has `signatureAbilityId`, emit a `grant-ability`
 attachment so the ability id appears on the character's derived
@@ -1488,7 +1490,8 @@ in `packages/data/overrides/ancestries.ts`. The collector
 (`collectFromAncestry`) reads the resolved value off the static-data
 bundle.
 
-### 10.3 Dragon Knight Wyrmplate attachment 🚧 (`attachment.dragon-knight-wyrmplate`)
+### 10.3 Dragon Knight Wyrmplate attachment 🚧
+<!-- Generated slug: character-attachment-activation.dragon-knight-wyrmplate-attachment -->
 
 The Dragon Knight signature trait *Wyrmplate* grants damage immunity
 equal to level to one of six damage types (acid, cold, corruption, fire,
@@ -1505,7 +1508,8 @@ attachment with `damageKind` taken from
 the character record (`character.ancestryChoices.wyrmplateType`) and
 read directly by `collectFromAncestry`.
 
-### 10.4 Dragon Knight Prismatic Scales attachment 🚧 (`attachment.dragon-knight-prismatic-scales`)
+### 10.4 Dragon Knight Prismatic Scales attachment 🚧
+<!-- Generated slug: character-attachment-activation.dragon-knight-prismatic-scales-attachment -->
 
 The purchased trait *Prismatic Scales* grants a second always-on damage
 immunity equal to level, chosen from the same list as Wyrmplate. Same
@@ -1520,7 +1524,8 @@ emission shape as 10.3, sourced from
 
 **Override authoring.** No override required — see 10.3.
 
-### 10.5 Ancestry purchased-trait attachments 🚧 (`attachment.ancestry-purchased-trait`)
+### 10.5 Ancestry purchased-trait attachments 🚧
+<!-- Generated slug: character-attachment-activation.ancestry-purchased-trait-attachments -->
 
 For each id in `character.ancestryChoices.traitIds`, the collector
 consults `ANCESTRY_TRAIT_OVERRIDES[`${ancestryId}.${traitId}`]` and
@@ -1567,7 +1572,8 @@ so the campaign log shows the correct origin.
 `packages/data/overrides/ancestry-traits.ts`, keyed
 `${ancestryId}.${traitId}`.
 
-### 10.6 Kit stamina-bonus attachment 🚧 (`attachment.kit-stamina-bonus`)
+### 10.6 Kit stamina-bonus attachment 🚧
+<!-- Generated slug: character-attachment-activation.kit-stamina-bonus-attachment -->
 
 For each kit whose parsed record carries a non-zero `staminaBonus`,
 emit a `stat-mod maxStamina +N` attachment. The kit parser reads the
@@ -1584,7 +1590,8 @@ every kit markdown file under `.reference/data-md/Rules/Kits/`. Example:
 kit. Engine plumbing lives in
 `packages/rules/src/attachments/collectors/kit.ts`.
 
-### 10.7 Kit stability-bonus attachment 🚧 (`attachment.kit-stability-bonus`)
+### 10.7 Kit stability-bonus attachment 🚧
+<!-- Generated slug: character-attachment-activation.kit-stability-bonus-attachment -->
 
 For each kit with non-zero `stabilityBonus`, emit a
 `stat-mod stability +N` attachment. Flat (not per-echelon).
@@ -1595,7 +1602,8 @@ Example:
 
 **Override authoring.** None — structural read.
 
-### 10.8 Kit melee-damage-bonus attachment 🚧 (`attachment.kit-melee-damage-bonus`)
+### 10.8 Kit melee-damage-bonus attachment 🚧
+<!-- Generated slug: character-attachment-activation.kit-melee-damage-bonus-attachment -->
 
 For each kit with a non-zero resolved `meleeDamageBonus`, emit a
 `free-strike-damage +N` attachment. The kit markdown encodes a
@@ -1612,7 +1620,8 @@ Example:
 
 **Override authoring.** None — structural read.
 
-### 10.9 Kit speed-bonus attachment 🚧 (`attachment.kit-speed-bonus`)
+### 10.9 Kit speed-bonus attachment 🚧
+<!-- Generated slug: character-attachment-activation.kit-speed-bonus-attachment -->
 
 For each kit with non-zero `speedBonus`, emit a `stat-mod speed +N`
 attachment. Flat (not per-echelon).
@@ -1623,7 +1632,8 @@ Example:
 
 **Override authoring.** None — structural read.
 
-### 10.10 Kit-keyword bonus attachments 🚧 (`attachment.kit-keyword-bonus`)
+### 10.10 Kit-keyword bonus attachments 🚧
+<!-- Generated slug: character-attachment-activation.kit-keyword-bonus-attachments -->
 
 Structural placeholder for kit-level effects the parser can't capture
 from kit markdown body — typically conditional ("while wielding a kit
@@ -1643,7 +1653,8 @@ Chapters/Kits.md`, `Rules/Chapters/Rewards.md`, and all of
 kept as the structural seam for any future homebrew/expansion that
 adds a kit-side keyword-conditional bonus.
 
-### 10.11 Class-feature attachments 🚧 (`attachment.class-feature`)
+### 10.11 Class-feature attachments 🚧
+<!-- Generated slug: character-attachment-activation.class-feature-attachments -->
 
 For each ability id in `character.levelChoices[lvl].abilityIds` and
 `subclassAbilityIds`, the collector consults
@@ -1671,7 +1682,8 @@ effect in v1.
 **Override authoring.** `ABILITY_OVERRIDES` in
 `packages/data/overrides/abilities.ts` — intentionally empty today.
 
-### 10.12 Item-grant attachments 🚧 (`attachment.item-grant`)
+### 10.12 Item-grant attachments 🚧
+<!-- Generated slug: character-attachment-activation.item-grant-attachments -->
 
 For each equipped entry in `character.inventory` (`entry.equipped === true`),
 the collector consults `ITEM_OVERRIDES[entry.itemId]` and folds in any
@@ -1709,7 +1721,8 @@ not as equipped attachments).
 **Override authoring.** `ITEM_OVERRIDES` in
 `packages/data/overrides/items.ts`, keyed by `item.id`.
 
-### 10.13 Title-grant attachments 🚧 (`attachment.title-grant`)
+### 10.13 Title-grant attachments 🚧
+<!-- Generated slug: character-attachment-activation.title-grant-attachments -->
 
 When `character.titleId` is set, the collector consults
 `TITLE_OVERRIDES[titleId]` and folds in any attachments. Coverage
