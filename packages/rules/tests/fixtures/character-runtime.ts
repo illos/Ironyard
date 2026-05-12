@@ -135,6 +135,7 @@ export function buildBundleWithFury(): StaticDataBundle {
     stabilityBonus: 0,
     meleeDamageBonus: 1,
     rangedDamageBonus: 0,
+    keywords: [],
   } satisfies ResolvedKit);
 
   return bundle;

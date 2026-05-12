@@ -22,6 +22,7 @@ export const ResolvedKitSchema = z.object({
   meleeDamageBonus: z.number().int().default(0),
   rangedDamageBonus: z.number().int().default(0),
   signatureAbilityId: z.string().optional(),
+  keywords: z.array(z.string()).default([]),
 });
 export type ResolvedKit = z.infer<typeof ResolvedKitSchema>;
 
