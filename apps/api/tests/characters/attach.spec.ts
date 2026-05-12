@@ -52,7 +52,8 @@ function buildCompleteCharacterFixture() {
       perkId: null,
     },
     classId: 'fury',
-    characteristicArray: [2, 2, 1, 1, 0],
+    characteristicArray: [2, -1, -1],
+    characteristicSlots: { agility: 2, reason: -1, intuition: -1 },
     subclassId: null,
     levelChoices: {
       '1': { abilityIds: [], subclassAbilityIds: [], perkId: null, skillId: null },
