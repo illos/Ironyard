@@ -78,6 +78,27 @@ Known Epic 1 limitations deferred to Epic 2:
 
 Follow-up to Epic 1 covering: name/level required + reordered details, ancestry trait-point cap, characteristic array drag-drop (dnd-kit), ancestry size/speed/immunity derivation (fixed the silent "1M for all" bug), and per-ancestry sub-pickers for the three Class-C ancestries (Devil → Silver Tongue skill; Dragon Knight → Wyrmplate + conditional Prismatic Scales; Revenant → Former Life ancestry + Previous Life trait sub-picker, including the +1 budget for Size 1S former life). The ancestry custom-logic review notes are at [`superpowers/notes/2026-05-11-ancestry-custom-logic-review.md`](superpowers/notes/2026-05-11-ancestry-custom-logic-review.md).
 
+### Phase 2 Epic 2 — items + inventory + `CharacterAttachment` activation
+
+Decomposed into three sub-epics. Each gets its own spec → plan → implementation cycle.
+
+**Sub-epic 2A — data ingest + inventory schema** ([design spec](superpowers/specs/2026-05-11-phase-2-epic-2a-data-ingest-design.md))
+
+Parsers + structured JSON outputs for items (treasures, 4 categories), kits, abilities, titles. Schema additions for `CharacterSchema.inventory`. Empty override file scaffolds at `packages/data/overrides/`. No activation logic, no UI changes beyond the wizard's KitStep naturally lighting up when `kits.json` populates.
+
+**Sub-epic 2B — `CharacterAttachment` activation engine** (not yet specced)
+
+Define the `CharacterAttachment` type; build the reducer pass that folds attachment effects (ancestry traits + class features + ability picks + magic items + kit keywords + titles) into derived character runtime. Populate the override files in `packages/data/overrides/` with hand-authored entries for items / abilities / kits / titles whose effects aren't structurally exposed in the markdown — coverage is incremental.
+
+Deferred from earlier work that lands here:
+- **PC ability rolling** on PlayerSheetPanel — switch from id list to interactive `AbilityCard`s. If Sub-epic 2A's Slice 3 catches this as a freebie, it ships there; otherwise here.
+- **Class-D ancestry signature abilities** on the sheet — `AncestrySchema.signatureAbilityId` is already wired (Epic 1.1 Slice 5); `collectAbilityIds()` in derivation needs to read it after PC ability data is ingested in 2A.
+- **Kit-keyword matching gate** for weapon/armor leveled-treasure bonuses (kit `keywords` field is parsed in 2A Slice 1).
+
+**Sub-epic 2C — interactive UI + runtime intents** (not yet specced)
+
+Inventory display on the character sheet; equip/unequip affordances; `UseConsumable` intent + UI; director "push item to player" affordance; per-category UX rules (3-safely-carry warning for leveled treasures, body-slot conflicts for trinkets); previewable character sheet (the polished structural view we deferred). Also home for Sheet's SwapKit picker UI if it didn't land as 2A Slice 1 stretch goal.
+
 ## Phase 3 — Collaborative campaign capabilities
 
 **Goal:** "The campaign feels like a place, and people can share characters and entities with each other."
