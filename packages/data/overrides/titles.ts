@@ -37,4 +37,24 @@ export const TITLE_OVERRIDES: Record<string, TitleOverride> = {
       },
     ],
   },
+
+  // ── grant-ability ──────────────────────────────────────────────────────
+  // "Zombie Slayer" (1st echelon), "Holy Terror" benefit:
+  //   "You have the following ability, which can be paid for using the
+  //    Heroic Resource of your class." (Holy Terror — 3 Heroic Resource.)
+  // The other two benefits — "Blessed Weapons" (weapon-ability damage-type
+  // swap) and "Divine Health" (corruption immunity = highest characteristic
+  // score, a level-conditional immunity shape we don't yet model) — are NOT
+  // emitted by this entry. See the multi-choice caveat above.
+  //
+  // The ability id matches the slug emitted by the title parser into
+  // titles.json (`grantsAbilityId: 'zombie-slayer-holy-terror'`).
+  'zombie-slayer': {
+    attachments: [
+      {
+        source: { kind: 'title', id: 'zombie-slayer' },
+        effect: { kind: 'grant-ability', abilityId: 'zombie-slayer-holy-terror' },
+      },
+    ],
+  },
 };

@@ -34,3 +34,18 @@ describe('collectFromTitle — stat-mod (knight)', () => {
     expect(out).toEqual([]);
   });
 });
+
+describe('collectFromTitle — grant-ability (zombie-slayer)', () => {
+  it('emits a grant-ability attachment when titleId = "zombie-slayer"', () => {
+    const char = CharacterSchema.parse({ titleId: 'zombie-slayer' });
+    const out = collectFromTitle(char, BUNDLE_STUB);
+    expect(out).toHaveLength(1);
+    const att = out[0]!;
+    expect(att.source.kind).toBe('title');
+    expect(att.source.id).toBe('zombie-slayer');
+    expect(att.effect).toEqual({
+      kind: 'grant-ability',
+      abilityId: 'zombie-slayer-holy-terror',
+    });
+  });
+});
