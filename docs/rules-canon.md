@@ -34,6 +34,7 @@ Every entry passes two gates before it is in canon. A rule is **not** authoritat
 | 7 | Saves, resistances, tests | ✅ |
 | 8 | Encounter math (victories, EV) | ✅ |
 | 9 | Character derivation (Phase 2) | ✅ |
+| 10 | Character attachment activation (Phase 2 Epic 2B) | 🚧 |
 
 ---
 
@@ -1430,3 +1431,380 @@ how Recoveries are spent. Epic 1 derivation reads `class.recoveries` only.
 Some abilities/items grant "recovery value plus a little extra" — those
 flow through their dispatch payload's `amount` field (an `ApplyHeal` intent
 derived from `SpendRecovery`), not through the base derivation.
+
+## 10. Character attachment activation (Phase 2 Epic 2B) 🚧
+
+The `CharacterAttachment` engine folds runtime modifications from ancestry,
+class, kit, items, and titles into the derived character runtime. Each
+attachment category corresponds to a canonical effect mechanic; the engine
+applies them via `packages/rules/src/attachments/apply.ts` and assembles
+them via the collectors in `packages/rules/src/attachments/collectors/`.
+Hand-authored entries live in `packages/data/overrides/`.
+
+Status note: this section as a whole is 🚧 (drafted) until Gate 2 review.
+Once reviewed, individual sub-section status emoji are flipped to ✅ and
+the collectors can then opt into `requireCanonSlug` gating per category.
+Until then, every collector in `packages/rules/src/attachments/collectors/`
+deliberately omits `requireCanonSlug` so attachments continue to apply —
+preserving Slice 4/5 behavior.
+
+### 10.1 Ancestry granted-immunity attachments 🚧 (`attachment.ancestry-granted-immunity`)
+
+For each entry in `ancestry.grantedImmunities`, emit an `immunity`
+attachment with the resolved damage kind and level-scaled value. The
+`value` field is either a literal non-negative integer or the symbolic
+`'level'` resolved against the character's level at apply time.
+
+**Source.**
+- `.reference/data-md/Rules/Ancestries/Time Raider.md` lines 113–115
+  ("Signature Trait: Psychic Scar — psychic immunity equal to your
+  level.")
+- `.reference/data-md/Rules/Ancestries/Revenant.md` line 89
+  ("Tough But Withered — immunity to cold, corruption, lightning, and
+  poison damage equal to your level…")
+
+**Override authoring.** Granted-immunity values come from the parsed
+ancestry record, augmented in `packages/data/overrides/ancestries.ts`
+(`ANCESTRY_OVERRIDES.<ancestryId>.grantedImmunities`) where the markdown
+isn't structurally exposed (e.g. Time Raider, Revenant).
+
+### 10.2 Ancestry signature-ability attachments 🚧 (`attachment.ancestry-signature-ability`)
+
+When an ancestry has `signatureAbilityId`, emit a `grant-ability`
+attachment so the ability id appears on the character's derived
+`abilityIds`. Used for the three Class-D ancestries that grant a
+signature ability (Human, Orc, Dwarf).
+
+**Source.**
+- `.reference/data-md/Rules/Ancestries/Human.md` line 61
+  ("Signature Trait: Detect the Supernatural")
+- `.reference/data-md/Rules/Ancestries/Orc.md` line 143
+  ("Signature Trait: Relentless")
+- `.reference/data-md/Rules/Ancestries/Dwarf.md` line 123
+  ("Signature Trait: Runic Carving")
+
+**Override authoring.** `ANCESTRY_OVERRIDES.<ancestryId>.signatureAbilityId`
+in `packages/data/overrides/ancestries.ts`. The collector
+(`collectFromAncestry`) reads the resolved value off the static-data
+bundle.
+
+### 10.3 Dragon Knight Wyrmplate attachment 🚧 (`attachment.dragon-knight-wyrmplate`)
+
+The Dragon Knight signature trait *Wyrmplate* grants damage immunity
+equal to level to one of six damage types (acid, cold, corruption, fire,
+lightning, poison), chosen at character creation. Emit an `immunity`
+attachment with `damageKind` taken from
+`ancestryChoices.wyrmplateType` and `value: 'level'`.
+
+**Source.**
+- `.reference/data-md/Rules/Ancestries/Dragon Knight.md` line 107
+  ("Your hardened scales grant you damage immunity equal to your level
+  to one of the following damage types…")
+
+**Override authoring.** No override required — the choice is stored on
+the character record (`character.ancestryChoices.wyrmplateType`) and
+read directly by `collectFromAncestry`.
+
+### 10.4 Dragon Knight Prismatic Scales attachment 🚧 (`attachment.dragon-knight-prismatic-scales`)
+
+The purchased trait *Prismatic Scales* grants a second always-on damage
+immunity equal to level, chosen from the same list as Wyrmplate. Same
+emission shape as 10.3, sourced from
+`ancestryChoices.prismaticScalesType`.
+
+**Source.**
+- `.reference/data-md/Rules/Ancestries/Dragon Knight.md` line 157
+  ("Select one damage immunity granted by your Wyrmplate trait. You
+  always have this immunity, in addition to the immunity granted by
+  Wyrmplate.")
+
+**Override authoring.** No override required — see 10.3.
+
+### 10.5 Ancestry purchased-trait attachments 🚧 (`attachment.ancestry-purchased-trait`)
+
+For each id in `character.ancestryChoices.traitIds`, the collector
+consults `ANCESTRY_TRAIT_OVERRIDES[`${ancestryId}.${traitId}`]` and
+folds in any attachments it finds. Coverage is incremental: only traits
+whose effects map cleanly onto current `AttachmentEffect` variants are
+authored; conditional / triggered / level-keyed shapes are skipped per
+the policy comments in
+`packages/data/overrides/ancestry-traits.ts`.
+
+Currently authored (Slice 4 sweep):
+- `human.staying-power` → `stat-mod recoveriesMax +2`
+- `devil.beast-legs` → `stat-mod speed +1`
+- `dwarf.grounded`, `orc.grounded` → `stat-mod stability +1`
+- `dwarf.spark-off-your-skin` → `stat-mod maxStamina +6` (level-scaling
+  partial — 4th/7th/10th echelon bumps deferred)
+- `memonek.lightning-nimbleness` → `stat-mod speed +2`
+- `polder.corruption-immunity` → `immunity corruption value: 'level'`
+  (level+2 offset deferred — see schema gap note in 10.11)
+- `wode-elf.swift` → `stat-mod speed +1`
+
+Revenant's *Previous Life* purchased traits resolve to the FORMER
+ancestry's trait id and are looked up against the same map keyed by
+`${formerAncestryId}.${traitId}`; the emitted attachment's `source.id`
+is re-attributed as `revenant.previous-life.<formerAncestryId>.<traitId>`
+so the campaign log shows the correct origin.
+
+**Source.**
+- `.reference/data-md/Rules/Ancestries/Human.md` lines 67–85
+  ("3 ancestry points… Staying Power (2 Points)…")
+- `.reference/data-md/Rules/Ancestries/Devil.md` lines 131–137
+  ("Beast Legs (1 Point)…")
+- `.reference/data-md/Rules/Ancestries/Dwarf.md` lines 137–147
+  ("Grounded (1 Point)… Spark Off Your Skin (2 Points)…")
+- `.reference/data-md/Rules/Ancestries/Memonek.md` lines 119–129
+  ("Lightning Nimbleness (2 Points)…")
+- `.reference/data-md/Rules/Ancestries/Orc.md` lines 149–159
+  ("Grounded (1 Point)…")
+- `.reference/data-md/Rules/Ancestries/Polder.md` lines 157–159
+  ("Corruption Immunity (1 Point)…")
+- `.reference/data-md/Rules/Ancestries/Wode Elf.md` lines 109–127
+  ("Swift (1 Point)…")
+
+**Override authoring.** `ANCESTRY_TRAIT_OVERRIDES` in
+`packages/data/overrides/ancestry-traits.ts`, keyed
+`${ancestryId}.${traitId}`.
+
+### 10.6 Kit stamina-bonus attachment 🚧 (`attachment.kit-stamina-bonus`)
+
+For each kit whose parsed record carries a non-zero `staminaBonus`,
+emit a `stat-mod maxStamina +N` attachment. The kit parser reads the
+"**Stamina Bonus:** +N per echelon" line from the kit markdown body and
+applies the per-echelon scaling at parse time (final structural field
+is the level-1 baseline + per-echelon increments resolved against the
+character's level).
+
+**Source.** "Stamina Bonus" sub-field of the *Kit Bonuses* block in
+every kit markdown file under `.reference/data-md/Rules/Kits/`. Example:
+- `Rules/Kits/Mountain.md` line 25 (**Stamina Bonus:** +9 per echelon)
+
+**Override authoring.** None — this is a structural read off the parsed
+kit. Engine plumbing lives in
+`packages/rules/src/attachments/collectors/kit.ts`.
+
+### 10.7 Kit stability-bonus attachment 🚧 (`attachment.kit-stability-bonus`)
+
+For each kit with non-zero `stabilityBonus`, emit a
+`stat-mod stability +N` attachment. Flat (not per-echelon).
+
+**Source.** "Stability Bonus" sub-field of the *Kit Bonuses* block.
+Example:
+- `Rules/Kits/Mountain.md` line 27 (**Stability Bonus:** +2)
+
+**Override authoring.** None — structural read.
+
+### 10.8 Kit melee-damage-bonus attachment 🚧 (`attachment.kit-melee-damage-bonus`)
+
+For each kit with a non-zero resolved `meleeDamageBonus`, emit a
+`free-strike-damage +N` attachment. The kit markdown encodes a
+three-echelon ladder ("+0/+0/+4") which the parser resolves to a
+single integer for the character's current level. This is the bonus
+that lands on the kit's *free strikes* — the wider rule
+("a weapon's damage bonus only adds to melee abilities if your kit has
+a melee damage bonus" — `Rules/Chapters/Rewards.md`) is a separate
+gate that lives on leveled-treasure attachments, not here.
+
+**Source.** "Melee Damage Bonus" sub-field of the *Kit Bonuses* block.
+Example:
+- `Rules/Kits/Mountain.md` line 29 (**Melee Damage Bonus:** +0/+0/+4)
+
+**Override authoring.** None — structural read.
+
+### 10.9 Kit speed-bonus attachment 🚧 (`attachment.kit-speed-bonus`)
+
+For each kit with non-zero `speedBonus`, emit a `stat-mod speed +N`
+attachment. Flat (not per-echelon).
+
+**Source.** "Speed Bonus" sub-field of the *Kit Bonuses* block.
+Example:
+- `Rules/Kits/Panther.md` line 27 (**Speed Bonus:** +1)
+
+**Override authoring.** None — structural read.
+
+### 10.10 Kit-keyword bonus attachments 🚧 (`attachment.kit-keyword-bonus`)
+
+Structural placeholder for kit-level effects the parser can't capture
+from kit markdown body — typically conditional ("while wielding a kit
+with the `<keyword>` keyword, +N <stat>") attachments emitted via
+`KIT_OVERRIDES` in `packages/data/overrides/kits.ts`. After the Slice 4
+sweep of `Rules/Chapters/Kits.md`, `Rules/Chapters/Rewards.md`, and
+every leveled-treasure file, NO kit-side flat-bonus pattern of this
+shape exists in the SteelCompendium markdown — the analogous rules
+(weapon-bonus / armor-bonus conditional gating) live on the
+*leveled-treasure* side as conditions, not on the kit side as bonuses.
+
+**Source.** Negative-result sweep: searched `.reference/data-md/Rules/
+Chapters/Kits.md`, `Rules/Chapters/Rewards.md`, and all of
+`Rules/Treasures/Leveled Treasures/`. No matching rule found.
+
+**Override authoring.** `KIT_OVERRIDES` is intentionally empty today;
+kept as the structural seam for any future homebrew/expansion that
+adds a kit-side keyword-conditional bonus.
+
+### 10.11 Class-feature attachments 🚧 (`attachment.class-feature`)
+
+For each ability id in `character.levelChoices[lvl].abilityIds` and
+`subclassAbilityIds`, the collector consults
+`ABILITY_OVERRIDES[abilityId]` and folds in any attachments. This is
+the seam for class features that modify static runtime stats.
+
+After the Slice 4 sweep of `.reference/data-md/Rules/Abilities/` and
+`Rules/Classes By Level/`, NO ability shipping in v1 grants a static
+runtime stat: the per-level *ability* records all describe combat
+actions (power rolls, conditions, triggered movement) whose effects
+fire WITHIN an encounter, not statically on the sheet. Stat-touching
+*class features* exist as inline prose in `Rules/Classes By Level/`
+(Conduit prayers / domain blessings, Censor judgments) but they are
+NOT addressable as ability ids — the parser doesn't emit them as
+individual Ability records and `LevelChoicesSchema` has no slot for
+them. When the pipeline grows a "blessing/prayer/domain feature"
+pick slot, those entries will land here (or in a parallel override
+map).
+
+**Source.** Negative-result sweep: searched `.reference/data-md/Rules/
+Abilities/<class>/` and `Rules/Classes By Level/<class>/`. No
+ability-keyed entry produces a static stat-mod / immunity / grant-skill
+effect in v1.
+
+**Override authoring.** `ABILITY_OVERRIDES` in
+`packages/data/overrides/abilities.ts` — intentionally empty today.
+
+### 10.12 Item-grant attachments 🚧 (`attachment.item-grant`)
+
+For each equipped entry in `character.inventory` (`entry.equipped === true`),
+the collector consults `ITEM_OVERRIDES[entry.itemId]` and folds in any
+attachments it finds. Coverage policy (Slice 5): one canonical example
+per applicable item category — leveled treasure, trinket — to prove
+the items collector path works end-to-end. Comprehensive item population
+is deferred to Epic 2C.
+
+Currently authored:
+- `lightning-treads` → `stat-mod speed +2` (1st-level Other Leveled
+  Treasure). The lightning-damage rider on unarmed strikes is an
+  ability-keyword-conditional damage bonus not yet modellable; 5th/9th
+  level scaling deferred.
+- `color-cloak-yellow` → `immunity lightning value: 'level'` (1st
+  Echelon Trinket). The triggered "Additionally…" clause that converts
+  the immunity to a one-round weakness after a lightning hit is a
+  triggered-action shape we don't yet model.
+
+Artifacts are skipped-deferred — the three v1 artifacts (Blade of a
+Thousand Years, Encepter, Mortal Coil) have only
+conditional/area-effect/triggered mechanics that don't map onto current
+`AttachmentEffect` variants; see header comment in
+`packages/data/overrides/items.ts` for the per-artifact breakdown.
+Consumables are out of scope (they apply through intents at use-time,
+not as equipped attachments).
+
+**Source.**
+- `.reference/data-md/Rules/Treasures/Leveled Treasures/Other Leveled
+  Treasures/Lightning Treads.md` line 31 ("While you wear these boots,
+  … you gain a +2 bonus to speed.")
+- `.reference/data-md/Rules/Treasures/Trinkets/1st Echelon Trinkets/
+  Color Cloak.md` line 31 ("While worn, a yellow Color Cloak grants
+  you lightning immunity equal to your level.")
+
+**Override authoring.** `ITEM_OVERRIDES` in
+`packages/data/overrides/items.ts`, keyed by `item.id`.
+
+### 10.13 Title-grant attachments 🚧 (`attachment.title-grant`)
+
+When `character.titleId` is set, the collector consults
+`TITLE_OVERRIDES[titleId]` and folds in any attachments. Coverage
+policy (Slice 5): one canonical example per applicable effect category
+— `stat-mod` and `grant-ability`.
+
+Currently authored:
+- `knight` → `stat-mod maxStamina +6` (2nd echelon, "Knightly Aegis"
+  benefit)
+- `zombie-slayer` → `grant-ability zombie-slayer-holy-terror` (1st
+  echelon, "Holy Terror" benefit)
+
+Multi-choice caveat: most v1 titles offer a "choose one of the
+following benefits" menu, and the character schema currently stores
+only `titleId` — there is no per-title benefit-selection field. The
+authored entries implicitly assume the player picked the modeled
+benefit. A future schema slice will add `titleBenefitId` (or similar)
+and the collector switches to a benefit-id lookup; until then, only
+canonical-example overrides ship.
+
+**Source.**
+- `.reference/data-md/Rules/Titles/2nd Echelon/Knight.md` line 25
+  ("Knightly Aegis: Your Stamina maximum increases by 6.")
+- `.reference/data-md/Rules/Titles/1st Echelon/Zombie Slayer.md`
+  lines 26–29 ("Holy Terror: You have the following ability, which
+  can be paid for using the Heroic Resource of your class.")
+
+**Override authoring.** `TITLE_OVERRIDES` in
+`packages/data/overrides/titles.ts`, keyed by `title.id`.
+
+### 10.14 Level-pick attachments
+
+Level-pick ability grants (`character.levelChoices[lvl].abilityIds` and
+`subclassAbilityIds`) emit `grant-ability` attachments with
+`source.kind: 'level-pick'`. These have no canon slug because the
+attachment is a direct mechanical read of the player's selection
+recorded by the wizard — there is no rule interpretation involved,
+just appending the chosen ability id to the runtime's `abilityIds`.
+Class-feature *overrides* keyed against the same ability ids (see
+10.11) DO need a canon slug; the bare grant does not.
+
+**Engine plumbing.** `collectFromLevelPicks` in
+`packages/rules/src/attachments/collectors/level-picks.ts`. No
+overrides — sources are read directly from the character record.
+
+### 10.15 Engine apply order and gating
+
+`applyAttachments(base, attachments, ctx)` folds each
+`CharacterAttachment` into a structuredClone of the base runtime:
+
+1. Per-attachment **canon gate**: if `source.requireCanonSlug` is set,
+   `requireCanon(slug)` must return true (slug verified ✅). Non-✅
+   slugs cause the attachment to be silently skipped — preserving the
+   two-gate workflow's invariant that the engine only automates
+   verified rules.
+2. Per-attachment **condition gate**: if `condition` is set, evaluate
+   against `ctx` (`kit-has-keyword`, `item-equipped`). False ⇒ skip.
+3. **Effect dispatch.** `stat-mod recoveryValue` is *deferred* (queued)
+   so that all `stat-mod maxStamina` increments land first; the engine
+   then re-derives `recoveryValue = floor(maxStamina / 3)` per §9.4,
+   then applies the deferred `recoveryValue` mods on top of the
+   re-derived baseline.
+4. **Array-field dedupe.** `abilityIds`, `skills`, `languages` are
+   passed through `new Set` at the end so duplicate grants from
+   overlapping sources collapse to one.
+
+**Source.** Engine implementation:
+`packages/rules/src/attachments/apply.ts`. The behavior here matches
+§9.4's derivation rule (recoveryValue is a function of maxStamina) so
+the order matters: maxStamina-touching mods sequence correctly with
+direct recoveryValue overrides.
+
+### 10.16 Carry-overs and known shape gaps 🚧
+
+Effects observed in source material that the current
+`AttachmentEffect` / `AttachmentCondition` schema cannot model. These
+are accepted Slice-6+ deferrals; the override files annotate each
+skipped entry with `SKIPPED-DEFERRED` for traceability.
+
+- **Per-echelon stat scaling.** Dwarf *Spark Off Your Skin* (+6
+  Stamina at 1st echelon, +6 more at 4th/7th/10th). Today's
+  `stat-mod.delta` is a flat integer. Needs an echelon-keyed variant.
+- **Level+N immunity offsets.** Polder *Corruption Immunity* (level + 2).
+  Today's `immunity.value` is `number | 'level'`; no `'level + N'` form.
+- **Conditional / triggered attachments.** Devil *Wings* (only while
+  flying), Orc *Bloodfire Rush* (the round you took damage), Revenant
+  *Bloodless* (saving-throw modifier), Color Cloak triggered weakness
+  conversion. Current `AttachmentCondition` only models
+  `kit-has-keyword` and `item-equipped`; richer encounter-state
+  predicates are out of scope for static derivation.
+- **Power-roll floors and turn-economy modifiers.** Encepter's
+  "tier-3 floor on Presence rolls", Mortal Coil's "+1 main action per
+  turn". Need new `AttachmentEffect` variants.
+- **Class-feature overrides via inline class prose.** Conduit prayers
+  / blessings, Censor judgments. No ability id to key against;
+  pipeline gap (see 10.11).
+- **Kit-keyword leveled-treasure bonuses.** None present in
+  SteelCompendium markdown (see 10.10).

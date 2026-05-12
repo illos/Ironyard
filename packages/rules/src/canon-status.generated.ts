@@ -88,6 +88,23 @@ export const canonStatus = {
   'character-derivation.max-stamina': 'verified',
   'character-derivation.recoveries': 'verified',
   'character-derivation.recovery-value': 'verified',
+  'character-attachment-activation': 'drafted',
+  'character-attachment-activation.ancestry-granted-immunity-attachments': 'drafted',
+  'character-attachment-activation.ancestry-signature-ability-attachments': 'drafted',
+  'character-attachment-activation.dragon-knight-wyrmplate-attachment': 'drafted',
+  'character-attachment-activation.dragon-knight-prismatic-scales-attachment': 'drafted',
+  'character-attachment-activation.ancestry-purchased-trait-attachments': 'drafted',
+  'character-attachment-activation.kit-stamina-bonus-attachment': 'drafted',
+  'character-attachment-activation.kit-stability-bonus-attachment': 'drafted',
+  'character-attachment-activation.kit-melee-damage-bonus-attachment': 'drafted',
+  'character-attachment-activation.kit-speed-bonus-attachment': 'drafted',
+  'character-attachment-activation.kit-keyword-bonus-attachments': 'drafted',
+  'character-attachment-activation.class-feature-attachments': 'drafted',
+  'character-attachment-activation.item-grant-attachments': 'drafted',
+  'character-attachment-activation.title-grant-attachments': 'drafted',
+  'character-attachment-activation.level-pick-attachments': 'drafted',
+  'character-attachment-activation.engine-apply-order-and-gating': 'drafted',
+  'character-attachment-activation.carry-overs-and-known-shape-gaps': 'drafted',
 } as const satisfies Record<string, CanonStatus>;
 
 export type CanonSlug = keyof typeof canonStatus;
