@@ -29,6 +29,19 @@
 //
 // requireCanonSlug intentionally omitted on every entry here — Slice 6 adds
 // canon entries for the effect categories used.
+//
+// ── Kit-keyword gating (weapon/armor leveled treasures) ────────────────────
+// Per the printed Heroes Book *Rewards → Treasures and Kits* (verified
+// in canon § 10.10), a hero only benefits from a weapon or armor leveled
+// treasure if the treasure's weapon/armor keyword appears in the wielder's
+// kit `keywords` field. Authors of weapon/armor treasure attachments MUST
+// gate them with:
+//
+//   condition: { kind: 'kit-has-keyword', keyword: '<weapon-or-armor-kw>' }
+//
+// so the bonus skips for characters whose kit doesn't match. Body-slot
+// magic items (e.g. 'Feet, Magic' on Lightning Treads, 'Head, Magic' on
+// trinkets) are NOT subject to this gate and apply unconditionally.
 
 import type { ItemOverride } from './_types';
 

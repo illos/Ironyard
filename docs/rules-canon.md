@@ -1725,26 +1725,53 @@ attachment. Flat (not per-echelon).
 
 **Override authoring.** None — structural read.
 
-### 10.10 Kit-keyword bonus attachments 🚧
+### 10.10 Kit-keyword condition (treasure-side gate) ✅
 <!-- Generated slug: character-attachment-activation.kit-keyword-bonus-attachments -->
 
-Structural placeholder for kit-level effects the parser can't capture
-from kit markdown body — typically conditional ("while wielding a kit
-with the `<keyword>` keyword, +N <stat>") attachments emitted via
-`KIT_OVERRIDES` in `packages/data/overrides/kits.ts`. After the Slice 4
-sweep of `Rules/Chapters/Kits.md`, `Rules/Chapters/Rewards.md`, and
-every leveled-treasure file, NO kit-side flat-bonus pattern of this
-shape exists in the SteelCompendium markdown — the analogous rules
-(weapon-bonus / armor-bonus conditional gating) live on the
-*leveled-treasure* side as conditions, not on the kit side as bonuses.
+The canonical "kit-keyword interaction" rule is a *gate* on weapon /
+armor leveled-treasure bonuses, not a kit-side bonus. The engine models
+it via `AttachmentCondition: { kind: 'kit-has-keyword', keyword: X }`
+(see `packages/rules/src/attachments/apply.ts`), which the applier
+evaluates at apply time against the character's kit's `keywords` field.
+Any treasure-side attachment that should only apply when the wielder's
+kit declares the matching weapon/armor keyword sets this condition.
 
-**Source.** Negative-result sweep: searched `.reference/data-md/Rules/
-Chapters/Kits.md`, `Rules/Chapters/Rewards.md`, and all of
-`Rules/Treasures/Leveled Treasures/`. No matching rule found.
+**Source.**
+- SteelCompendium — `Rules/Chapters/Rewards.md` "Treasures and Kits"
+  block.
+- Printed Heroes Book — *Rewards → Treasures and Kits*: "To gain the
+  benefits of a weapon or armor treasure, the treasure must have
+  keywords that match the equipment of your kit. For instance, a hero
+  using the Warrior Priest kit can benefit from wearing a heavy armor
+  treasure and wielding light weapon treasures, since those are part
+  of that kit." And further: "A weapon's damage bonus only adds to
+  melee abilities if your kit has a melee damage bonus. A weapon's
+  damage bonus only adds to ranged abilities if your kit has a ranged
+  damage bonus." Confirmed against
+  `.reference/core-rules/Draw_Steel_Heroes_v1.01.pdf` 2026-05-12.
 
-**Override authoring.** `KIT_OVERRIDES` is intentionally empty today;
-kept as the structural seam for any future homebrew/expansion that
-adds a kit-side keyword-conditional bonus.
+**Override authoring.** Lives on the *treasure* side, not the kit
+side. Weapon and armor leveled-treasure entries in `ITEM_OVERRIDES`
+that grant a stat fold MUST set `condition: { kind: 'kit-has-keyword',
+keyword: <weapon-or-armor-keyword> }` so the bonus skips for characters
+whose kit doesn't carry the matching keyword. Body-slot magic items
+(e.g. *Lightning Treads* with `Feet, Magic` keywords — § 10.12's
+canonical example) are NOT gated by this rule and apply unconditionally.
+
+`KIT_OVERRIDES` is intentionally empty — no kit-side bonus pattern of
+this shape exists in canon. The map is kept as a structural seam for
+future homebrew/expansion if a kit ever needs hand-authored attachments
+beyond the four structural bonuses (§ 10.6–10.9).
+
+**Out-of-scope rules deferred to § 10.16:**
+- *Damage-bonus gating:* "weapon's damage bonus only adds to melee
+  abilities if your kit has a melee damage bonus." Engine doesn't yet
+  model this — the kit-damage-bonus engine work (§ 10.8) is itself
+  unfinished, so the downstream gate is moot for now.
+- *Treasure stacking:* "If two treasures give a creature a bonus to
+  their Stamina or a bonus to the rolled damage of their abilities,
+  only the higher bonus applies." Engine sums via `applyEffect`. New
+  shape gap.
 
 ### 10.11 Class-feature attachments 🚧
 <!-- Generated slug: character-attachment-activation.class-feature-attachments -->
@@ -1944,3 +1971,17 @@ skipped entry with `SKIPPED-DEFERRED` for traceability.
 - **Kit disengage bonus.** Extra shift squares on Disengage move action.
   Not currently parsed or modelled. Needs parser extension + an effect
   variant the move-action engine consumes.
+- **Treasure-bonus stacking ("only the higher bonus applies").**
+  Printed Heroes Book *Rewards → Treasures and Kits*: "If two treasures
+  give a creature a bonus to their Stamina or a bonus to the rolled
+  damage of their abilities, only the higher bonus applies." Engine's
+  current `applyEffect` for `stat-mod` is additive across attachments
+  — sums all matching deltas. Modelling this correctly needs either a
+  per-effect-kind reduction rule (max-wins for `stat-mod maxStamina`
+  + `weapon-damage-bonus`; sum for others) or a treasure-scope tag on
+  the attachment so the applier knows which bonuses compete.
+- **Weapon-damage-bonus / kit-damage-bonus dependency.** Printed
+  Heroes Book *Rewards → Treasures and Kits*: "A weapon's damage bonus
+  only adds to melee abilities if your kit has a melee damage bonus."
+  Downstream gate on the (also-deferred) weapon-damage-bonus effect
+  variant from § 10.8. No engine impact today.
