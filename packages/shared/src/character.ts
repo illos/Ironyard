@@ -4,12 +4,14 @@ import { z } from 'zod';
 
 export const CharacterDetailsSchema = z.object({
   pronouns: z.string().default(''),
-  hairColor: z.string().default(''),
-  eyeColor: z.string().default(''),
+  age: z.string().default(''),
   height: z.string().default(''),
   build: z.string().default(''),
-  age: z.string().default(''),
-  backstory: z.string().default(''),
+  eyes: z.string().default(''),
+  hair: z.string().default(''),
+  skinTone: z.string().default(''),
+  physicalFeatures: z.string().default(''),
+  physicalFeaturesTexture: z.string().default(''),
 });
 export type CharacterDetails = z.infer<typeof CharacterDetailsSchema>;
 
@@ -117,6 +119,12 @@ export const CharacterSchema = z.object({
   // Null until the player has made this pick.
   characteristicArray: z.array(z.number().int()).nullable().default(null),
 
+  // The player's drag-and-drop assignment of the chosen array's values to
+  // their unlocked characteristic slots. The two slots locked by the class
+  // don't appear here. Null until the player has assigned all three values.
+  // Example: { agility: 2, presence: -1, reason: -1 }
+  characteristicSlots: z.record(z.string(), z.number().int()).nullable().default(null),
+
   // References the subclass id within classes.json (e.g. an Order, Aspect, etc.).
   subclassId: z.string().nullable().default(null),
 
@@ -199,6 +207,10 @@ export const CompleteCharacterSchema = CharacterSchema.refine((c) => c.ancestryI
   .refine((c) => c.characteristicArray !== null, {
     message: 'characteristic array required',
     path: ['characteristicArray'],
+  })
+  .refine((c) => c.characteristicArray === null || c.characteristicSlots !== null, {
+    message: 'characteristic slot assignment required',
+    path: ['characteristicSlots'],
   })
   .refine(
     (c) => {

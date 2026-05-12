@@ -19,12 +19,14 @@ export function buildFuryL1Fixture(overrides: Partial<Character> = {}): Characte
     level: 1,
     details: {
       pronouns: '',
-      hairColor: '',
-      eyeColor: '',
+      age: '',
       height: '',
       build: '',
-      age: '',
-      backstory: '',
+      eyes: '',
+      hair: '',
+      skinTone: '',
+      physicalFeatures: '',
+      physicalFeaturesTexture: '',
     },
     ancestryId: 'human',
     ancestryChoices: { traitIds: [] },
@@ -52,6 +54,7 @@ export function buildFuryL1Fixture(overrides: Partial<Character> = {}): Characte
     // For the test class: might=2, agility=1 are "locked" (always 2 in real data,
     // but in the fixture class we treat the array positions directly)
     characteristicArray: overrides.characteristicArray ?? [2, 1, -1, 0, 0],
+    characteristicSlots: overrides.characteristicSlots ?? null,
     subclassId: 'berserker',
     levelChoices: overrides.levelChoices ?? {
       '1': { abilityIds: ['fury-rage'], subclassAbilityIds: [], perkId: null, skillId: null },

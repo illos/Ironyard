@@ -38,6 +38,7 @@ describe('CompleteCharacterSchema (submission gate)', () => {
     },
     classId: 'fury',
     characteristicArray: [2, 2, 0, -1, 0],
+    characteristicSlots: { reason: 0, intuition: -1, presence: 0 },
     subclassId: 'berserker',
     levelChoices: {
       '1': { abilityIds: ['fury-rage'], subclassAbilityIds: [], perkId: null, skillId: null },

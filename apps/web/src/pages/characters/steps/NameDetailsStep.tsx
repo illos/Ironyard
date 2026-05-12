@@ -54,10 +54,10 @@ export function NameDetailsStep({
           className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
         />
       </Field>
-      <Field label="Backstory">
+      <Field label="Physical features">
         <textarea
-          value={details.backstory}
-          onChange={(e) => onPatch({ details: { ...details, backstory: e.target.value } })}
+          value={details.physicalFeaturesTexture}
+          onChange={(e) => onPatch({ details: { ...details, physicalFeaturesTexture: e.target.value } })}
           rows={4}
           className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2"
         />

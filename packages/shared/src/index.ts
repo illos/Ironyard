@@ -216,6 +216,11 @@ export {
 export type { Ancestry, AncestryFile, AncestryTrait } from './data/ancestry';
 
 export {
+  ANCESTRY_TRAIT_POINT_BUDGET,
+  getAncestryTraitPointBudget,
+} from './data/ancestry-points';
+
+export {
   CareerFileSchema,
   CareerSchema,
   IncitingIncidentSchema,
