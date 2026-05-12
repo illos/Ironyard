@@ -13,7 +13,7 @@ import {
   TitleFileSchema,
 } from '@ironyard/shared';
 import { useQuery } from '@tanstack/react-query';
-import { z } from 'zod';
+import type { z } from 'zod';
 import { ApiError } from './client';
 
 // Fetch a static JSON file from /data/ and validate it against the provided schema.
