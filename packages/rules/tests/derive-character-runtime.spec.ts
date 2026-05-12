@@ -343,3 +343,220 @@ describe('ancestry signature abilities (Class-D)', () => {
     expect(r.abilityIds).toContain('human-detect-the-supernatural');
   });
 });
+
+describe('ancestry purchased-trait attachments (Slice 4 of Epic 2B)', () => {
+  // The override map is hand-authored in
+  // packages/data/overrides/ancestry-traits.ts and consumed via the
+  // collector. These tests are integration-flavoured — they exercise the
+  // real override data, not synthetic fixtures, to lock in coverage.
+
+  it('Human "Staying Power" grants +2 recoveriesMax', () => {
+    const human = buildAncestry({ id: 'human' });
+    const baseChar = buildCharacter({ ancestryId: 'human' });
+    const baseR = deriveCharacterRuntime(baseChar, buildBundleWith([human]));
+
+    const withTrait = buildCharacter({
+      ancestryId: 'human',
+      ancestryChoices: {
+        traitIds: ['staying-power'],
+        formerAncestryId: null,
+        previousLifeTraitIds: [],
+        freeSkillId: null,
+        wyrmplateType: null,
+        prismaticScalesType: null,
+      },
+    });
+    const r = deriveCharacterRuntime(withTrait, buildBundleWith([human]));
+    expect(r.recoveriesMax).toBe(baseR.recoveriesMax + 2);
+  });
+
+  it('Devil "Beast Legs" grants +1 speed', () => {
+    const devil = buildAncestry({ id: 'devil' });
+    const char = buildCharacter({
+      ancestryId: 'devil',
+      ancestryChoices: {
+        traitIds: ['beast-legs'],
+        formerAncestryId: null,
+        previousLifeTraitIds: [],
+        freeSkillId: null,
+        wyrmplateType: null,
+        prismaticScalesType: null,
+      },
+    });
+    const r = deriveCharacterRuntime(char, buildBundleWith([devil]));
+    expect(r.speed).toBe(6);
+  });
+
+  it('Dwarf "Grounded" grants +1 stability', () => {
+    const dwarf = buildAncestry({ id: 'dwarf' });
+    const char = buildCharacter({
+      ancestryId: 'dwarf',
+      ancestryChoices: {
+        traitIds: ['grounded'],
+        formerAncestryId: null,
+        previousLifeTraitIds: [],
+        freeSkillId: null,
+        wyrmplateType: null,
+        prismaticScalesType: null,
+      },
+    });
+    const r = deriveCharacterRuntime(char, buildBundleWith([dwarf]));
+    expect(r.stability).toBe(1);
+  });
+
+  it('Dwarf "Spark Off Your Skin" grants +6 maxStamina (1st-echelon baseline)', () => {
+    const dwarf = buildAncestry({ id: 'dwarf' });
+    const baseChar = buildCharacter({ ancestryId: 'dwarf' });
+    const baseR = deriveCharacterRuntime(baseChar, buildBundleWith([dwarf]));
+
+    const withTrait = buildCharacter({
+      ancestryId: 'dwarf',
+      ancestryChoices: {
+        traitIds: ['spark-off-your-skin'],
+        formerAncestryId: null,
+        previousLifeTraitIds: [],
+        freeSkillId: null,
+        wyrmplateType: null,
+        prismaticScalesType: null,
+      },
+    });
+    const r = deriveCharacterRuntime(withTrait, buildBundleWith([dwarf]));
+    expect(r.maxStamina).toBe(baseR.maxStamina + 6);
+  });
+
+  it('Memonek "Lightning Nimbleness" grants +2 speed', () => {
+    const memonek = buildAncestry({ id: 'memonek' });
+    const char = buildCharacter({
+      ancestryId: 'memonek',
+      ancestryChoices: {
+        traitIds: ['lightning-nimbleness'],
+        formerAncestryId: null,
+        previousLifeTraitIds: [],
+        freeSkillId: null,
+        wyrmplateType: null,
+        prismaticScalesType: null,
+      },
+    });
+    const r = deriveCharacterRuntime(char, buildBundleWith([memonek]));
+    expect(r.speed).toBe(7);
+  });
+
+  it('Orc "Grounded" grants +1 stability', () => {
+    const orc = buildAncestry({ id: 'orc' });
+    const char = buildCharacter({
+      ancestryId: 'orc',
+      ancestryChoices: {
+        traitIds: ['grounded'],
+        formerAncestryId: null,
+        previousLifeTraitIds: [],
+        freeSkillId: null,
+        wyrmplateType: null,
+        prismaticScalesType: null,
+      },
+    });
+    const r = deriveCharacterRuntime(char, buildBundleWith([orc]));
+    expect(r.stability).toBe(1);
+  });
+
+  it('Polder "Corruption Immunity" grants corruption immunity = level', () => {
+    const polder = buildAncestry({ id: 'polder' });
+    const char = buildCharacter({
+      ancestryId: 'polder',
+      level: 5,
+      ancestryChoices: {
+        traitIds: ['corruption-immunity'],
+        formerAncestryId: null,
+        previousLifeTraitIds: [],
+        freeSkillId: null,
+        wyrmplateType: null,
+        prismaticScalesType: null,
+      },
+    });
+    const r = deriveCharacterRuntime(char, buildBundleWith([polder]));
+    // SKIPPED-DEFERRED-PARTIAL: true value is level + 2; we only encode level.
+    expect(r.immunities).toContainEqual({ kind: 'corruption', value: 5 });
+  });
+
+  it('Wode Elf "Swift" grants +1 speed', () => {
+    const wodeElf = buildAncestry({ id: 'wode-elf' });
+    const char = buildCharacter({
+      ancestryId: 'wode-elf',
+      ancestryChoices: {
+        traitIds: ['swift'],
+        formerAncestryId: null,
+        previousLifeTraitIds: [],
+        freeSkillId: null,
+        wyrmplateType: null,
+        prismaticScalesType: null,
+      },
+    });
+    const r = deriveCharacterRuntime(char, buildBundleWith([wodeElf]));
+    expect(r.speed).toBe(6);
+  });
+
+  it('Revenant inherits a Previous Life trait via former ancestry override key', () => {
+    // Revenant chose Devil as former life; picked a 1-point Previous Life
+    // slot resolving to "beast-legs". Should grant +1 speed from the
+    // devil.beast-legs override key.
+    const devil = buildAncestry({ id: 'devil' });
+    const revenant = buildAncestry({ id: 'revenant', defaultSpeed: 5 });
+    const char = buildCharacter({
+      ancestryId: 'revenant',
+      ancestryChoices: {
+        traitIds: ['previous-life-1-points'],
+        formerAncestryId: 'devil',
+        previousLifeTraitIds: ['beast-legs'],
+        freeSkillId: null,
+        wyrmplateType: null,
+        prismaticScalesType: null,
+      },
+    });
+    const r = deriveCharacterRuntime(char, buildBundleWith([revenant, devil]));
+    expect(r.speed).toBe(6);
+  });
+
+  it('Revenant signature trait grants fire weakness 5', () => {
+    const revenant = buildAncestry({
+      id: 'revenant',
+      defaultSpeed: 5,
+      grantedImmunities: [],
+    });
+    const char = buildCharacter({
+      ancestryId: 'revenant',
+      ancestryChoices: {
+        traitIds: [],
+        formerAncestryId: 'human',
+        previousLifeTraitIds: [],
+        freeSkillId: null,
+        wyrmplateType: null,
+        prismaticScalesType: null,
+      },
+    });
+    const human = buildAncestry({ id: 'human' });
+    const r = deriveCharacterRuntime(char, buildBundleWith([revenant, human]));
+    expect(r.weaknesses).toContainEqual({ kind: 'fire', value: 5 });
+  });
+
+  it('unknown trait id (no override) is a no-op', () => {
+    const human = buildAncestry({ id: 'human' });
+    const baseChar = buildCharacter({ ancestryId: 'human' });
+    const baseR = deriveCharacterRuntime(baseChar, buildBundleWith([human]));
+
+    const withFlavor = buildCharacter({
+      ancestryId: 'human',
+      ancestryChoices: {
+        traitIds: ['perseverance'], // edge-on-Endurance, no static stat-mod
+        formerAncestryId: null,
+        previousLifeTraitIds: [],
+        freeSkillId: null,
+        wyrmplateType: null,
+        prismaticScalesType: null,
+      },
+    });
+    const r = deriveCharacterRuntime(withFlavor, buildBundleWith([human]));
+    expect(r.speed).toBe(baseR.speed);
+    expect(r.maxStamina).toBe(baseR.maxStamina);
+    expect(r.recoveriesMax).toBe(baseR.recoveriesMax);
+    expect(r.stability).toBe(baseR.stability);
+  });
+});
