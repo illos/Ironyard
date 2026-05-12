@@ -82,9 +82,13 @@ Follow-up to Epic 1 covering: name/level required + reordered details, ancestry 
 
 Decomposed into three sub-epics. Each gets its own spec → plan → implementation cycle.
 
-**Sub-epic 2A — data ingest + inventory schema** ([design spec](superpowers/specs/2026-05-11-phase-2-epic-2a-data-ingest-design.md))
+**Sub-epic 2A — data ingest + inventory schema** ([design spec](superpowers/specs/2026-05-11-phase-2-epic-2a-data-ingest-design.md), [plan](superpowers/plans/2026-05-11-phase-2-epic-2a-data-ingest.md)) — **shipping**
 
-Parsers + structured JSON outputs for items (treasures, 4 categories), kits, abilities, titles. Schema additions for `CharacterSchema.inventory`. Empty override file scaffolds at `packages/data/overrides/`. No activation logic, no UI changes beyond the wizard's KitStep naturally lighting up when `kits.json` populates.
+Parsers + structured JSON outputs for items (treasures, 4 categories), kits, abilities, titles. Schema additions for `CharacterSchema.inventory`. Empty override file scaffolds at `packages/data/overrides/`.
+
+Shipped counts: kits 21, items 98 (3 artifacts + 35 consumables + 35 leveled + 25 trinkets), abilities 545 (56% with structured powerRoll — the rest are maneuvers/traits without tier ladders), titles 59. Wizard's KitStep lit up with zero UI changes once `kits.json` populated.
+
+Slice 3's optional freebie (switching PlayerSheetPanel from id-list to interactive `AbilityCard`s) was deferred to 2B — the wizard's level-pick stub stores placeholder ability ids that don't yet map to `abilities.json` entries. Prerequisites for the wiring to be cheap: add a stable `id` field to `AbilitySchema`, update the wizard's level picker to store real ability ids.
 
 **Sub-epic 2B — `CharacterAttachment` activation engine** (not yet specced)
 
