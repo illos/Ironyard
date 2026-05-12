@@ -15,6 +15,7 @@ export { ITEM_OVERRIDES } from '../overrides/items';
 export { KIT_OVERRIDES } from '../overrides/kits';
 export { ABILITY_OVERRIDES } from '../overrides/abilities';
 export { TITLE_OVERRIDES } from '../overrides/titles';
+export { ANCESTRY_TRAIT_OVERRIDES } from '../overrides/ancestry-traits';
 export type {
   ItemOverride,
   KitOverride,

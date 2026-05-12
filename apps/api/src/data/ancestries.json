@@ -498,7 +498,24 @@
     "ancestryPoints": 3,
     "defaultSize": "1M",
     "defaultSpeed": 5,
-    "grantedImmunities": [],
+    "grantedImmunities": [
+      {
+        "kind": "cold",
+        "value": "level"
+      },
+      {
+        "kind": "corruption",
+        "value": "level"
+      },
+      {
+        "kind": "lightning",
+        "value": "level"
+      },
+      {
+        "kind": "poison",
+        "value": "level"
+      }
+    ],
     "signatureAbilityId": null
   },
   {
