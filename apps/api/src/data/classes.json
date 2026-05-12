@@ -1,1 +1,4200 @@
-[]
+[
+  {
+    "id": "censor",
+    "name": "Censor",
+    "description": "Demons and deathless fear you. Criminals run from the sight of your shadow. Agents of chaos, blasphemers, and heretics tremble at the sound of your voice. You carry the power of the gods, armed with wrath and sent out into the world first to seek, then censor those whose actions—or even existence—are anathema to your church. As a censor, you're at your best against the strongest foes. Your judgment terrifies heretics, stops enemies in their tracks, and even hurls them across the battlefield.",
+    "lockedCharacteristics": [
+      "might",
+      "presence"
+    ],
+    "characteristicArrays": [
+      [
+        2,
+        -1,
+        -1,
+        1,
+        -1,
+        0,
+        0
+      ]
+    ],
+    "potencyCharacteristic": "presence",
+    "heroicResource": "wrath",
+    "startingStamina": 21,
+    "staminaPerLevel": 9,
+    "recoveries": 12,
+    "startingSkillsNote": "Choose any two skills from the interpersonal or lore skill groups (see [Skills](#page-268-0) in Chapter 9: Tests).",
+    "startingSkillCount": 2,
+    "startingSkillGroups": [
+      "interpersonal",
+      "lore"
+    ],
+    "subclassLabel": "Order",
+    "subclasses": [
+      {
+        "id": "exorcist",
+        "name": "Exorcist:",
+        "description": "You specialize in hunting your order's hidden enemies, knowing that an open mind is an unguarded fortress. You have the Read Person skill.",
+        "skillGrant": "read-person"
+      },
+      {
+        "id": "oracle",
+        "name": "Oracle:",
+        "description": "Corruption has deep tendrils that can be missed, leading you to specialize in uncovering clandestine threats to your order. You have the Magic skill.",
+        "skillGrant": "magic"
+      },
+      {
+        "id": "paragon",
+        "name": "Paragon:",
+        "description": "Without a strong example and a firm hand, the weak will be corrupted. You specialize in setting an example for your order. You have the Lead skill.",
+        "skillGrant": "lead"
+      }
+    ],
+    "levels": [
+      {
+        "level": 1,
+        "featureNames": [
+          "Censor Order",
+          "Deity and Domains",
+          "Wrath",
+          "Judgment",
+          "Kit",
+          "My Life for Yours",
+          "Domain Feature",
+          "Censor Abilities"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 2,
+        "featureNames": [
+          "Perk",
+          "Order Features",
+          "Order Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 3,
+        "featureNames": [
+          "Look On My Work and Despair",
+          "7-Wrath Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 4,
+        "featureNames": [
+          "Characteristic Increase",
+          "Perk",
+          "Skill",
+          "Wrath Beyond Wrath",
+          "Domain Feature"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 5,
+        "featureNames": [
+          "Order Feature",
+          "9-Wrath Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 6,
+        "featureNames": [
+          "Implement of Wrath",
+          "Perk",
+          "Order Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 7,
+        "featureNames": [
+          "Characteristic Increase",
+          "Domain Feature",
+          "Focused Wrath",
+          "Skill"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 8,
+        "featureNames": [
+          "Perk",
+          "Order Feature",
+          "11-Wrath Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 9,
+        "featureNames": [
+          "Improved Implement of Wrath",
+          "Order Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 10,
+        "featureNames": [
+          "Characteristic Increase",
+          "Perk",
+          "Skill",
+          "Templar",
+          "Virtue",
+          "Wrath of the Gods"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      }
+    ]
+  },
+  {
+    "id": "conduit",
+    "name": "Conduit",
+    "description": "The power of the gods flows through you! As a vessel for divine power, you don't just keep your allies in the fight. You make those allies more effective, even as you rain divine energy down upon your foes. Though the deity or saint you serve might have other faithful and clergy, you are special among worshippers, receiving your abilities from the highest source. **As a conduit, you heal and buff your allies, and debuff your foes while smiting them with divine magic. The spark of divinity within you shines, filling your enemies with awe and making you more worldly and aware.**",
+    "lockedCharacteristics": [
+      "intuition"
+    ],
+    "characteristicArrays": [
+      [
+        2,
+        2,
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0
+      ]
+    ],
+    "potencyCharacteristic": "intuition",
+    "heroicResource": "piety",
+    "startingStamina": 18,
+    "staminaPerLevel": 6,
+    "recoveries": 8,
+    "startingSkillsNote": "Choose any two skills from the interpersonal or lore skill groups (see Skills in Chapter 9: Tests).",
+    "startingSkillCount": 2,
+    "startingSkillGroups": [
+      "interpersonal",
+      "lore"
+    ],
+    "subclassLabel": "Domain",
+    "subclasses": [
+      {
+        "id": "piety",
+        "name": "Piety:",
+        "description": "You gain 2 piety the first time in an encounter that a creature within 10 squares uses an area ability.",
+        "skillGrant": null
+      },
+      {
+        "id": "prayer-effect",
+        "name": "Prayer Effect:",
+        "description": "You summon the forces of creation and create a wall of stone within 10 squares whose size is 5 + your Intuition score. The wall lasts until the end of the encounter.",
+        "skillGrant": null
+      },
+      {
+        "id": "piety",
+        "name": "Piety:",
+        "description": "You gain 2 piety the first time",
+        "skillGrant": null
+      }
+    ],
+    "levels": [
+      {
+        "level": 1,
+        "featureNames": [
+          "Deity and Domains",
+          "Piety",
+          "Domain Feature",
+          "Healing Grace",
+          "Ray of Wrath",
+          "Triggered Action",
+          "Prayer",
+          "Conduit Ward",
+          "Conduit Abilities"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 2,
+        "featureNames": [
+          "The Lists of Heaven",
+          "Perk",
+          "Domain Feature",
+          "Domain Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 3,
+        "featureNames": [
+          "Minor Miracle",
+          "7-Piety Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 4,
+        "featureNames": [
+          "Blessed Domains",
+          "Characteristic Increase",
+          "Domain Feature",
+          "Perk",
+          "Skill Increase"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 5,
+        "featureNames": [
+          "Domain Feature",
+          "9-Piety Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 6,
+        "featureNames": [
+          "Burgeoning Saint",
+          "Perk",
+          "Domain Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 7,
+        "featureNames": [
+          "Characteristic Increase",
+          "Domain Feature",
+          "Faithful's Reward",
+          "Skill Increase"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 8,
+        "featureNames": [
+          "Domain Feature",
+          "Perk",
+          "11-Piety Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 9,
+        "featureNames": [
+          "Domain Ability",
+          "Faith's Sword",
+          "Ordained"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 10,
+        "featureNames": [
+          "Avatar",
+          "Characteristic Increase",
+          "Divine Power",
+          "Most Pious",
+          "Perk",
+          "Skill Increase"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      }
+    ]
+  },
+  {
+    "id": "elementalist",
+    "name": "Elementalist",
+    "description": "Air for movement. Earth for permanence. Fire for destruction. Water for change. Green for growth. Rot for death. Void for the mystery that which cannot be known. Years of study and practice and poring over tomes brought you the revelations that allow you to manipulate these building blocks of reality. Now you use your mastery of the seven elements to destroy, create, and warp the world with magic. **As an elementalist, you can unleash your wrath across a field of foes, debilitate enemies, ward yourself and allies, manipulate terrain, warp space, and more. Your elemental specialization determines which of these talents you excel at.**",
+    "lockedCharacteristics": [
+      "reason"
+    ],
+    "characteristicArrays": [
+      [
+        2,
+        2,
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0
+      ]
+    ],
+    "potencyCharacteristic": "reason",
+    "heroicResource": "essence",
+    "startingStamina": 18,
+    "staminaPerLevel": 6,
+    "recoveries": 8,
+    "startingSkillsNote": "You gain the Magic skill (see Skills in Chapter 9: Tests). Then choose any three skills from the crafting or lore skill groups.",
+    "startingSkillCount": 7,
+    "startingSkillGroups": [
+      "crafting",
+      "lore"
+    ],
+    "subclassLabel": "Specialization",
+    "subclasses": [
+      {
+        "id": "air",
+        "name": "Air",
+        "description": "is the element of movement. Air abilities allow you to manipulate speed, quickness, flight, and breath.",
+        "skillGrant": null
+      },
+      {
+        "id": "earth",
+        "name": "Earth",
+        "description": "is the element of permanence. Earth abilities bolster your body and grant the power to permanently create and shape physical terrain.",
+        "skillGrant": null
+      },
+      {
+        "id": "fire",
+        "name": "Fire",
+        "description": "is the element of destruction. Fire abilities devastate enemies and melt objects to slag.",
+        "skillGrant": null
+      },
+      {
+        "id": "green",
+        "name": "Green",
+        "description": "is the element of creation and growth. Green abilities make and manipulate plants, fungi, and other forms of life to hamper foes and nourish your allies.",
+        "skillGrant": null
+      },
+      {
+        "id": "rot",
+        "name": "Rot",
+        "description": "is the element of decay. Rot abilities harm and debuff enemies.",
+        "skillGrant": null
+      },
+      {
+        "id": "void",
+        "name": "Void",
+        "description": "is the element of the mystery. Void abilities warp space and reality, allowing you to teleport, create illusions, and make things incorporeal.",
+        "skillGrant": null
+      },
+      {
+        "id": "water",
+        "name": "Water",
+        "description": "is the element of change. Water abilities enhance your allies' power, and alter your enemies' power for the worse.",
+        "skillGrant": null
+      }
+    ],
+    "levels": [
+      {
+        "level": 1,
+        "featureNames": [
+          "Elemental Specialization",
+          "Essence",
+          "Hurl Element",
+          "Persistent Magic",
+          "Practical Magic",
+          "Specialization Feature",
+          "Specialization Triggered Action",
+          "Enchantment",
+          "Elementalist Ward",
+          "Elementalist Abilities"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 2,
+        "featureNames": [
+          "Perk",
+          "Specialization Feature",
+          "New 5-Essence Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 3,
+        "featureNames": [
+          "Specialization Feature",
+          "7-Essence Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 4,
+        "featureNames": [
+          "Characteristic Increase",
+          "Font of Essence",
+          "Mantle of Essence",
+          "Perk",
+          "Skill Increase"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 5,
+        "featureNames": [
+          "Specialization Feature",
+          "9-Essence Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 6,
+        "featureNames": [
+          "Perk",
+          "Wyrding",
+          "New 9-Essence Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 7,
+        "featureNames": [
+          "Characteristic Increase",
+          "Mantle of Quintessence",
+          "Surging Essence",
+          "Skill Increase"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 8,
+        "featureNames": [
+          "Perk",
+          "Specialization Feature",
+          "11-Essence Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 9,
+        "featureNames": [
+          "Grand Wyrding",
+          "New 11-Essence Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 10,
+        "featureNames": [
+          "Characteristic Increase",
+          "Breath",
+          "Essential Being",
+          "One",
+          "Perk",
+          "Skill Increase"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      }
+    ]
+  },
+  {
+    "id": "fury",
+    "name": "Fury",
+    "description": "You do not temper the heat of battle within you. You unleash it! Your experience in the wild taught you the secrets of predators, and now, like the raptor, the panther, the wolf, you channel unfettered anger into martial prowess. Primordial Chaos is your ally. Let others use finesse to clean up the wreckage left in your wake. **As a fury, you devastate foes with overwhelming might, hurl yourself and enemies around the battlefield, and grow stronger as your ferocity increases. Nature has no concept of fairness—and neither do you.**",
+    "lockedCharacteristics": [
+      "might",
+      "agility"
+    ],
+    "characteristicArrays": [
+      [
+        2,
+        -1,
+        -1,
+        1,
+        -1,
+        0,
+        0
+      ]
+    ],
+    "potencyCharacteristic": "might",
+    "heroicResource": "ferocity",
+    "startingStamina": 21,
+    "staminaPerLevel": 9,
+    "recoveries": 10,
+    "startingSkillsNote": "You gain the Nature skill (see Skills in Chapter 9: Tests). Then choose any two skills from the exploration or intrigue skill groups.",
+    "startingSkillCount": 5,
+    "startingSkillGroups": [
+      "exploration",
+      "intrigue"
+    ],
+    "subclassLabel": "Aspect",
+    "subclasses": [
+      {
+        "id": "berserker",
+        "name": "Berserker:",
+        "description": "You channel your ferocity into physical might, acting as a living version of the forces that shape the world. You have the Lift skill.",
+        "skillGrant": "lift"
+      },
+      {
+        "id": "reaver",
+        "name": "Reaver:",
+        "description": "You channel your ferocity into instinct and cunning, challenging the order of civilization. You have the Hide skill.",
+        "skillGrant": "hide"
+      },
+      {
+        "id": "stormwight",
+        "name": "Stormwight:",
+        "description": "You channel your ferocity into primordial storms and can take on the form of an animal or an animal hybrid form. You have the Track skill.",
+        "skillGrant": "track"
+      }
+    ],
+    "levels": [
+      {
+        "level": 1,
+        "featureNames": [
+          "Primordial Aspect",
+          "Ferocity",
+          "Growing Ferocity",
+          "Aspect Features",
+          "Aspect Triggered Action",
+          "Mighty Leaps",
+          "Fury Abilities"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 2,
+        "featureNames": [
+          "Perk",
+          "Aspect Feature",
+          "Aspect Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 3,
+        "featureNames": [
+          "Aspect Feature",
+          "7-Ferocity Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 4,
+        "featureNames": [
+          "Characteristic Increase",
+          "Damaging Ferocity",
+          "Growing Ferocity Improvement",
+          "Perk",
+          "Primordial Attunement",
+          "Primordial Strike",
+          "Skill"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 5,
+        "featureNames": [
+          "Aspect Feature",
+          "9-Ferocity Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 6,
+        "featureNames": [
+          "Marauder of the Primordial Chaos",
+          "Perk",
+          "Aspect Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 7,
+        "featureNames": [
+          "Characteristic Increase",
+          "Elemental Form",
+          "Greater Ferocity",
+          "Growing Ferocity Improvement",
+          "Skill"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 8,
+        "featureNames": [
+          "Perk",
+          "Aspect Feature",
+          "11-Ferocity Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 9,
+        "featureNames": [
+          "Harbinger of the Primordial Chaos",
+          "Aspect Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 10,
+        "featureNames": [
+          "Chaos Incarnate",
+          "Characteristic Increase",
+          "Growing Ferocity Improvement",
+          "Perk",
+          "Primordial Ferocity",
+          "Primordial Power",
+          "Skill"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      }
+    ]
+  },
+  {
+    "id": "null",
+    "name": "Null",
+    "description": "The mind is not separate from the body. Perfection of one requires perfection of the other. You strive for perfect discipline, perfect order, mastery over mind and body, becoming an unarmed psionic warrior who dampens and absorbs magic and psionics. You require no weapons, no tools. You suffice. **As a null, you resist the supernatural forces of the universe with composure and confidence. As you strive for perfect order, you are an enemy of the ultimate expression of chaos: the supernatural. Those who break the laws of nature using sorcery or psionics should fear you.**",
+    "lockedCharacteristics": [
+      "agility",
+      "intuition"
+    ],
+    "characteristicArrays": [
+      [
+        2,
+        -1,
+        -1,
+        1,
+        -1,
+        0,
+        0
+      ]
+    ],
+    "potencyCharacteristic": "intuition",
+    "heroicResource": "discipline",
+    "startingStamina": 21,
+    "staminaPerLevel": 9,
+    "recoveries": 8,
+    "startingSkillsNote": "You gain the Psionics skill (see Skills in Chapter 9: Tests). Then choose any two skills from the interpersonal or lore skill groups.",
+    "startingSkillCount": 5,
+    "startingSkillGroups": [
+      "interpersonal",
+      "lore"
+    ],
+    "subclassLabel": "Tradition",
+    "subclasses": [
+      {
+        "id": "chronokinetic",
+        "name": "Chronokinetic:",
+        "description": "Your training unmoors you from temporal reality, allowing you to use the flow of time as another dimension that all things move through. You gain one skill from the lore group.",
+        "skillGrant": "lore"
+      },
+      {
+        "id": "cryokinetic",
+        "name": "Cryokinetic:",
+        "description": "You can tap into absolute cold, the most essential energy of myriad manifolds, and manifest its effects in your body. You gain one skill from the crafting group.",
+        "skillGrant": "crafting"
+      },
+      {
+        "id": "metakinetic",
+        "name": "Metakinetic:",
+        "description": "You learn to see through the illusions of the universe to more fully understand your body and its psionic potential. You gain one skill from the exploration group.",
+        "skillGrant": "exploration"
+      }
+    ],
+    "levels": [
+      {
+        "level": 1,
+        "featureNames": [
+          "Null Tradition",
+          "Discipline",
+          "Null Field",
+          "Inertial Shield",
+          "Discipline Mastery",
+          "Null Speed",
+          "Psionic Augmentation",
+          "Psionic Martial Arts",
+          "Null Abilities"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 2,
+        "featureNames": [
+          "Perk",
+          "Tradition Feature",
+          "Tradition Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 3,
+        "featureNames": [
+          "Psionic Leap",
+          "Reorder",
+          "7-Discipline Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 4,
+        "featureNames": [
+          "Characteristic Increase",
+          "Discipline Mastery Improvement",
+          "Enhanced Null Field",
+          "Perk",
+          "Regenerative Field",
+          "Skill"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 5,
+        "featureNames": [
+          "Tradition Feature",
+          "9-Discipline Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 6,
+        "featureNames": [
+          "Elemental Absorption",
+          "Elemental Buffer",
+          "Perk",
+          "Tradition Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 7,
+        "featureNames": [
+          "Characteristic Increase",
+          "Discipline Mastery Improvement",
+          "Psi Boost",
+          "Improved Body",
+          "Skill"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 8,
+        "featureNames": [
+          "Perk",
+          "Tradition Feature",
+          "11-Discipline Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 9,
+        "featureNames": [
+          "I Am the Weapon",
+          "Tradition Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 10,
+        "featureNames": [
+          "Characteristic Increase",
+          "Discipline Mastery Improvement",
+          "Manifold Body",
+          "Manifold Resonance",
+          "Order",
+          "Perk",
+          "Skill"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      }
+    ]
+  },
+  {
+    "id": "shadow",
+    "name": "Shadow",
+    "description": "Subtlety is your art, the tip of the blade your brush. You studied at a secret college, specializing in alchemy, illusion, or shadow-magics. Your training and knowledge place you among the elite ranks of assassins, spies, and commandos. But more potent than any weapon or sorcery is your insight into your enemies' weaknesses. **As a shadow, you possess abilities that deal significant damage, enable you to move swiftly across the battlefield and evade hazards, and allow you to fade from notice even in the midst of the most intense combat encounters. You also possess more skills than any other hero.** \"Whenever there is doubt, there is no doubt.\" **Motto of the College of Black Ash**",
+    "lockedCharacteristics": [
+      "agility"
+    ],
+    "characteristicArrays": [
+      [
+        2,
+        2,
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0
+      ]
+    ],
+    "potencyCharacteristic": "agility",
+    "heroicResource": "insight",
+    "startingStamina": 18,
+    "staminaPerLevel": 6,
+    "recoveries": 8,
+    "startingSkillsNote": "You gain the Hide and Sneak skills (see Skills in Chapter 9: Tests). Then choose any five skills from Criminal Underworld or the skills of the exploration, interpersonal, or intrigue skill groups.",
+    "startingSkillCount": 12,
+    "startingSkillGroups": [
+      "exploration",
+      "interpersonal",
+      "intrigue"
+    ],
+    "subclassLabel": "College",
+    "subclasses": [
+      {
+        "id": "black-ash",
+        "name": "Black Ash",
+        "description": "",
+        "skillGrant": null
+      },
+      {
+        "id": "caustic-alchemy",
+        "name": "Caustic Alchemy",
+        "description": "",
+        "skillGrant": null
+      },
+      {
+        "id": "harlequin-mask",
+        "name": "Harlequin Mask",
+        "description": "",
+        "skillGrant": null
+      }
+    ],
+    "levels": [
+      {
+        "level": 1,
+        "featureNames": [
+          "Shadow College",
+          "Insight",
+          "College Features",
+          "College Triggered Action",
+          "Hesitation Is Weakness",
+          "Kit",
+          "Shadow Abilities"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 2,
+        "featureNames": [
+          "College Feature",
+          "Perk",
+          "College Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 3,
+        "featureNames": [
+          "Careful Observation",
+          "7-Insight Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 4,
+        "featureNames": [
+          "Characteristic Increase",
+          "Keep It Down",
+          "Night Watch",
+          "Perk",
+          "Skill",
+          "Surge of Insight"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 5,
+        "featureNames": [
+          "College Feature",
+          "9-Insight Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 6,
+        "featureNames": [
+          "Perk",
+          "Umbral Form",
+          "College Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 7,
+        "featureNames": [
+          "Characteristic Increase",
+          "Keen Insight",
+          "Skill",
+          "Careful Observation Improvement",
+          "Ventriloquist"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 8,
+        "featureNames": [
+          "College Feature",
+          "Perk",
+          "11-Insight Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 9,
+        "featureNames": [
+          "Gloom Squad",
+          "College Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 10,
+        "featureNames": [
+          "Characteristic Increase",
+          "Death Pool",
+          "Perk",
+          "Skill",
+          "Careful Observation Improvement",
+          "Improved Umbral Form",
+          "Subterfuge"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      }
+    ]
+  },
+  {
+    "id": "tactician",
+    "name": "Tactician",
+    "description": "Strategist. Defender. Leader. With weapon in hand, you lead allies into the maw of battle, barking out commands that inspire your fellow heroes to move faster and strike more precisely. All the while, you stand between your compatriots and death, taunting the followers of evil to best you if they can. **As a tactician, you have abilities that heal your allies and grant them increased damage, movement, and attacks, even as you leave your enemies struggling to respond.**",
+    "lockedCharacteristics": [
+      "might",
+      "reason"
+    ],
+    "characteristicArrays": [
+      [
+        2,
+        -1,
+        -1,
+        1,
+        -1,
+        0,
+        0
+      ]
+    ],
+    "potencyCharacteristic": "reason",
+    "heroicResource": "focus",
+    "startingStamina": 21,
+    "staminaPerLevel": 9,
+    "recoveries": 10,
+    "startingSkillsNote": "You gain the Lead skill (see Skills in Chapter 9: Tests). Then choose any two skills from Alertness, Architecture, Blacksmithing, Brag, Culture, Empathize, Fletching, Mechanics, Monsters, Search, Strategy, or the skills of the exploration skill group.",
+    "startingSkillCount": 5,
+    "startingSkillGroups": [
+      "exploration"
+    ],
+    "subclassLabel": "Doctrine",
+    "subclasses": [
+      {
+        "id": "insurgent",
+        "name": "Insurgent:",
+        "description": "Doing your duty, playing fair, and dying honorably in battle is your opponent's job. You'll do whatever it takes to keep your allies alive. You gain a skill from the intrigue skill group.",
+        "skillGrant": null
+      },
+      {
+        "id": "mastermind",
+        "name": "Mastermind:",
+        "description": "You have an encyclopedic knowledge of warfare, viewing the battlefield as a game board and seeking victory by thinking steps ahead of your opponents. You gain a skill from the lore skill group.",
+        "skillGrant": null
+      },
+      {
+        "id": "vanguard",
+        "name": "Vanguard:",
+        "description": "You have learned the stratagems of ancient heroes, letting you lead from the front lines and seek victory through sheer force of will and personality. You gain a skill from the interpersonal skill group.",
+        "skillGrant": null
+      }
+    ],
+    "levels": [
+      {
+        "level": 1,
+        "featureNames": [
+          "Tactical Doctrine",
+          "Focus",
+          "Doctrine Feature",
+          "Doctrine Triggered Action",
+          "Field Arsenal",
+          "Mark",
+          "Strike Now",
+          "Tactician Abilities"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 2,
+        "featureNames": [
+          "Perk",
+          "Doctrine Feature",
+          "Doctrine Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 3,
+        "featureNames": [
+          "Out of Position",
+          "7-Focus Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 4,
+        "featureNames": [
+          "Characteristic Increase",
+          "Focus on Their Weakness",
+          "Improved Field Arsenal",
+          "Perk",
+          "Skill"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 5,
+        "featureNames": [
+          "Doctrine Feature",
+          "9-Focus Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 6,
+        "featureNames": [
+          "Master of Arms",
+          "Perk",
+          "Doctrine Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 7,
+        "featureNames": [
+          "Characteristic Increase",
+          "Heightened Focus",
+          "Seize the Initiative",
+          "Skill",
+          "Doctrine Feature"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 8,
+        "featureNames": [
+          "Perk",
+          "Doctrine Feature",
+          "11-Focus Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 9,
+        "featureNames": [
+          "Grandmaster of Arms",
+          "Doctrine Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 10,
+        "featureNames": [
+          "Characteristic Increase",
+          "Command",
+          "Perk",
+          "Skill",
+          "True Focus",
+          "Warmaster"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      }
+    ]
+  },
+  {
+    "id": "talent",
+    "name": "Talent",
+    "description": "Arare few people are born with the potential to harness psionic power, but only those who experience an awakening, a significant event that activates a talent's abilities, can tap into the mind's full potential. You are one of those people—a master of psionics and a source of incredible power created through sheer force of will. You can move and change matter, time, gravity, the laws of physics, or another creature's mind. **As a talent, you are limited only by the strength of your mind. But the ability to wield multiple powers at once and change reality at will involves a gamble. Every manifestation has a chance of harming you, and talents who use too much power too quickly pay a deadly price.**",
+    "lockedCharacteristics": [
+      "reason",
+      "presence"
+    ],
+    "characteristicArrays": [
+      [
+        2,
+        -1,
+        -1,
+        1,
+        -1,
+        0,
+        0
+      ]
+    ],
+    "potencyCharacteristic": "reason",
+    "heroicResource": "clarity",
+    "startingStamina": 18,
+    "staminaPerLevel": 6,
+    "recoveries": 8,
+    "startingSkillsNote": "You gain the Psionics and Read Person skills (see Skills in Chapter 9: Tests). Then choose any two skills from the interpersonal or lore skill groups.",
+    "startingSkillCount": 6,
+    "startingSkillGroups": [
+      "interpersonal",
+      "lore"
+    ],
+    "subclassLabel": "Tradition",
+    "subclasses": [
+      {
+        "id": "animapathy",
+        "name": "Animapathy",
+        "description": "abilities allow you to manipulate, meld, and exchange the souls of living things.",
+        "skillGrant": null
+      },
+      {
+        "id": "chronopathy",
+        "name": "Chronopathy",
+        "description": "abilities allow you to view future and past events, and to manipulate time to aid allies and hinder foes.",
+        "skillGrant": null
+      },
+      {
+        "id": "cryokinesis",
+        "name": "Cryokinesis",
+        "description": "abilities allow you to manifest and manipulate absolute cold to enemies and the environment alike.",
+        "skillGrant": null
+      },
+      {
+        "id": "metamorphosis",
+        "name": "Metamorphosis",
+        "description": "abilities allow you to strengthen and manipulate your body and the bodies of others to perform preternatural exploits.",
+        "skillGrant": null
+      },
+      {
+        "id": "pyrokinesis",
+        "name": "Pyrokinesis",
+        "description": "abilities allow you to create and manipulate fire by interacting with the potential energy found in all things.",
+        "skillGrant": null
+      },
+      {
+        "id": "resopathy",
+        "name": "Resopathy",
+        "description": "abilities allow you to manipulate matter and space to create, alter, or displace your environment and the creatures and objects in it.",
+        "skillGrant": null
+      },
+      {
+        "id": "telekinesis",
+        "name": "Telekinesis",
+        "description": "abilities allow you to physically manipulate creatures and objects.",
+        "skillGrant": null
+      },
+      {
+        "id": "telepathy",
+        "name": "Telepathy",
+        "description": "abilities allow you to communicate with, read, and influence the minds of other creatures.",
+        "skillGrant": null
+      }
+    ],
+    "levels": [
+      {
+        "level": 1,
+        "featureNames": [
+          "Talent Tradition",
+          "Clarity and Strain",
+          "Mind Spike",
+          "Psionic Augmentation",
+          "Talent Ward",
+          "Telepathic Speech",
+          "Tradition Features",
+          "Talent Abilities"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 2,
+        "featureNames": [
+          "Perk",
+          "Tradition Feature",
+          "Tradition Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 3,
+        "featureNames": [
+          "Scan",
+          "7-Clarity Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 4,
+        "featureNames": [
+          "Characteristic Increase",
+          "Mind Projection",
+          "Mind Recovery",
+          "Perk",
+          "Skill Suspensor Field"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 5,
+        "featureNames": [
+          "Tradition Feature",
+          "9-Clarity Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 6,
+        "featureNames": [
+          "Perk",
+          "Psi Boost",
+          "Tradition Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 7,
+        "featureNames": [
+          "Ancestral Memory",
+          "Cascading Strain",
+          "Characteristic Increase",
+          "Lucid Mind",
+          "Skill"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 8,
+        "featureNames": [
+          "Perk",
+          "Tradition Feature",
+          "11-Clarity Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 9,
+        "featureNames": [
+          "Fortress of Perfect Thought",
+          "Tradition Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 10,
+        "featureNames": [
+          "Characteristic Increase",
+          "Clear Mind",
+          "Omnisensory",
+          "Perk",
+          "Psion",
+          "Skill",
+          "Vision"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      }
+    ]
+  },
+  {
+    "id": "troubadour",
+    "name": "Troubadour",
+    "description": "The whole world's a stage, and everyone on it, an actor. No one knows this better than the troubadour. You find energy in the drama of everyday life and know how to draw spectacle forth from even the most mundane of situations. You accent highs and deepen lows in service to whoever might witness your performance. **As a troubadour, you chase drama. The insurmountable dangers of the world might cause many a hero to cower. But you take to that world stage not intending to die, but to find out if you are truly alive.** \"History is a tale. Each of us is just a story we tell ourselves. Change the story, and you change the world.\" **Jackson Bootblack** There is no visible text in the image provided. The image appears to show a decorative or scalloped edge pattern, but contains no recognizable letters, words, or symbols.",
+    "lockedCharacteristics": [
+      "agility",
+      "presence"
+    ],
+    "characteristicArrays": [
+      [
+        2,
+        -1,
+        -1,
+        1,
+        -1,
+        0,
+        0
+      ]
+    ],
+    "potencyCharacteristic": "presence",
+    "heroicResource": "drama",
+    "startingStamina": 18,
+    "staminaPerLevel": 6,
+    "recoveries": 8,
+    "startingSkillsNote": "You gain the Read Person skill (see Skills in Chapter 9: Tests). Then choose two skills from the interpersonal skill group and one skill from the intrigue or lore skill groups.",
+    "startingSkillCount": 1,
+    "startingSkillGroups": [
+      "interpersonal",
+      "intrigue",
+      "lore"
+    ],
+    "subclassLabel": "Act",
+    "subclasses": [
+      {
+        "id": "auteur",
+        "name": "Auteur:",
+        "description": "You seek drama from story and recount, using your magic to manipulate the sequence of events unfolding before you. You have the Brag skill.",
+        "skillGrant": "brag"
+      },
+      {
+        "id": "duelist",
+        "name": "Duelist:",
+        "description": "Drama infuses your every movement done in tandem with another. You perform dances of death, putting trust in your opponent to return your passion in kind. You have the Gymnastics skill.",
+        "skillGrant": "gymnastics"
+      },
+      {
+        "id": "virtuoso",
+        "name": "Virtuoso:",
+        "description": "You find drama in music and song, weaving magic between vibrations and filling the audience with your pathos. You have the Music skill and can play an instrument.",
+        "skillGrant": "music"
+      }
+    ],
+    "levels": [
+      {
+        "level": 1,
+        "featureNames": [
+          "Troubadour Class Act",
+          "Drama",
+          "Kit",
+          "Scene Partner",
+          "Routines",
+          "Class Act Features",
+          "Class Act Triggered Action",
+          "Troubadour Abilities"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 2,
+        "featureNames": [
+          "Appeal to the Muses",
+          "Invocation",
+          "Perk",
+          "Class Act Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 3,
+        "featureNames": [
+          "Class Act Feature",
+          "7-Drama Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 4,
+        "featureNames": [
+          "Characteristic Increase",
+          "Melodrama",
+          "Perk",
+          "Skill",
+          "Zeitgeist"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 5,
+        "featureNames": [
+          "Class Act Feature",
+          "9-Drama Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 6,
+        "featureNames": [
+          "Perk",
+          "Spotlight",
+          "Class Act Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 7,
+        "featureNames": [
+          "Characteristic Increase",
+          "A Muse's Muse",
+          "Equal Billing",
+          "Skill"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      },
+      {
+        "level": 8,
+        "featureNames": [
+          "Perk",
+          "Class Act Feature",
+          "11-Drama Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 9,
+        "featureNames": [
+          "Roar of the Crowd",
+          "Class Act Ability"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": false,
+        "grantsSkill": false,
+        "grantsCharacteristicIncrease": false
+      },
+      {
+        "level": 10,
+        "featureNames": [
+          "Applause",
+          "Characteristic Increase",
+          "Dramaturgy",
+          "Greatest of All Time",
+          "Perk",
+          "Skill"
+        ],
+        "abilitySlots": [
+          {
+            "cost": 0,
+            "isSubclass": false
+          },
+          {
+            "cost": 3,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": false
+          },
+          {
+            "cost": 7,
+            "isSubclass": false
+          },
+          {
+            "cost": 9,
+            "isSubclass": false
+          },
+          {
+            "cost": 11,
+            "isSubclass": false
+          },
+          {
+            "cost": 5,
+            "isSubclass": true
+          },
+          {
+            "cost": 9,
+            "isSubclass": true
+          },
+          {
+            "cost": 11,
+            "isSubclass": true
+          }
+        ],
+        "grantsPerk": true,
+        "grantsSkill": true,
+        "grantsCharacteristicIncrease": true
+      }
+    ]
+  }
+]
