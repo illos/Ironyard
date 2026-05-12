@@ -10,8 +10,8 @@ Interpretive decisions, deferred ambiguities, and source contradictions are logg
 
 Every entry passes two gates before it is in canon. A rule is **not** authoritative until both have cleared.
 
-1. **Gate 1 — Source check.** The drafter (often Claude) reads the cloned source at `.reference/data-md/`, cites the exact file path and line numbers, and quotes or faithfully paraphrases the rulebook. Citations must be reproducible — no "I remember it works this way," no web summarizers, no rulebook reconstruction from class examples alone.
-2. **Gate 2 — Manual review.** A human reads the entry against the rulebook and confirms. Only after that explicit confirmation does the entry's status flip to ✅.
+1. **Gate 1 — Source check.** Three-tier ladder: (a) read the cloned SteelCompendium markdown at `.reference/data-md/` first (well-structured, easy to grep, faithful ~95% of the time); (b) cross-check against the printed-rulebook PDFs at `.reference/core-rules/Draw_Steel_{Heroes,Monsters}_v1.01.pdf` when SteelCompendium is unclear, silent, or suspected of drift (use `pdftotext -layout <file> -` for extraction); (c) if ambiguity survives both, flag for user review. Citations must be reproducible — file path + line numbers (or PDF section headers), no rulebook reconstruction from class examples alone.
+2. **Gate 2 — Manual review.** A human reads the entry against the printed book and confirms. Only after that explicit confirmation does the entry's status flip to ✅. Where Gate 1 found agreement across all sources, Gate 2 is a quick sign-off; where Gate 1 surfaced ambiguity, Gate 2 is the tiebreaker.
 
 **Editing an existing ✅ entry resets it to 🚧 and re-runs gate 2.** Same rules, no shortcuts. A previously-verified rule that gets touched must be re-verified.
 
@@ -1620,63 +1620,108 @@ so the campaign log shows the correct origin.
 `packages/data/overrides/ancestry-traits.ts`, keyed
 `${ancestryId}.${traitId}`.
 
-### 10.6 Kit stamina-bonus attachment 🚧
+### 10.6 Kit stamina-bonus attachment ✅
 <!-- Generated slug: character-attachment-activation.kit-stamina-bonus-attachment -->
 
 For each kit whose parsed record carries a non-zero `staminaBonus`,
-emit a `stat-mod maxStamina +N` attachment. The kit parser reads the
-"**Stamina Bonus:** +N per echelon" line from the kit markdown body and
-applies the per-echelon scaling at parse time (final structural field
-is the level-1 baseline + per-echelon increments resolved against the
-character's level).
+emit a `stat-mod maxStamina +N` attachment.
 
-**Source.** "Stamina Bonus" sub-field of the *Kit Bonuses* block in
-every kit markdown file under `.reference/data-md/Rules/Kits/`. Example:
-- `Rules/Kits/Mountain.md` line 25 (**Stamina Bonus:** +9 per echelon)
+**Source.**
+- SteelCompendium markdown — "Stamina Bonus" sub-field of the *Kit
+  Bonuses* block in every kit file under `.reference/data-md/Rules/Kits/`.
+  Example: `Rules/Kits/Mountain.md` line 25 (**Stamina Bonus:** +9 per
+  echelon). The chapter rule lives at `Rules/Chapters/Kits.md` lines
+  110–112.
+- Printed Heroes Book — *Kit Bonuses and Traits → Stamina Bonus*
+  ("Your kit's Stamina bonus is added to your Stamina maximum and
+  scales with your echelon"). Confirmed against
+  `.reference/core-rules/Draw_Steel_Heroes_v1.01.pdf` 2026-05-12.
 
 **Override authoring.** None — this is a structural read off the parsed
 kit. Engine plumbing lives in
 `packages/rules/src/attachments/collectors/kit.ts`.
 
-### 10.7 Kit stability-bonus attachment 🚧
+**Per-echelon scaling deferred.** The parser at
+`packages/data/src/parse-kit.ts:98-99` extracts only the per-echelon
+*increment* (e.g. `+9` for Mountain) — not the level-scaled total.
+The engine emits this as a flat 1st-echelon `stat-mod` regardless of
+character level, so a level-7 Mountain hero today receives +9 stamina
+when the canon expects +27 (`9 × 3` for echelons 1/2/3). This is the
+same shape gap tracked for Dwarf *Spark Off Your Skin* in § 10.5;
+both resolve when `AttachmentEffect` gains a per-echelon variant.
+Tracked in § 10.16.
+
+### 10.7 Kit stability-bonus attachment ✅
 <!-- Generated slug: character-attachment-activation.kit-stability-bonus-attachment -->
 
 For each kit with non-zero `stabilityBonus`, emit a
 `stat-mod stability +N` attachment. Flat (not per-echelon).
 
-**Source.** "Stability Bonus" sub-field of the *Kit Bonuses* block.
-Example:
-- `Rules/Kits/Mountain.md` line 27 (**Stability Bonus:** +2)
+**Source.**
+- SteelCompendium — "Stability Bonus" sub-field of the *Kit Bonuses*
+  block. Example: `Rules/Kits/Mountain.md` line 27 (**Stability Bonus:**
+  +2). Chapter rule: `Rules/Chapters/Kits.md` lines 118–120.
+- Printed Heroes Book — *Kit Bonuses and Traits → Stability Bonus*
+  ("Your kit's stability bonus is added to your stability"). Confirmed
+  2026-05-12.
 
 **Override authoring.** None — structural read.
 
 ### 10.8 Kit melee-damage-bonus attachment 🚧
 <!-- Generated slug: character-attachment-activation.kit-melee-damage-bonus-attachment -->
 
-For each kit with a non-zero resolved `meleeDamageBonus`, emit a
-`free-strike-damage +N` attachment. The kit markdown encodes a
-three-echelon ladder ("+0/+0/+4") which the parser resolves to a
-single integer for the character's current level. This is the bonus
-that lands on the kit's *free strikes* — the wider rule
-("a weapon's damage bonus only adds to melee abilities if your kit has
-a melee damage bonus" — `Rules/Chapters/Rewards.md`) is a separate
-gate that lives on leveled-treasure attachments, not here.
+For each kit with a non-zero resolved `meleeDamageBonus`, the engine
+emits a `free-strike-damage +N` attachment.
 
-**Source.** "Melee Damage Bonus" sub-field of the *Kit Bonuses* block.
-Example:
-- `Rules/Kits/Mountain.md` line 29 (**Melee Damage Bonus:** +0/+0/+4)
+**Source.**
+- SteelCompendium — "Melee Damage Bonus" sub-field of the *Kit
+  Bonuses* block. Example: `Rules/Kits/Mountain.md` line 29
+  (**Melee Damage Bonus:** +0/+0/+4). Chapter rule: `Rules/Chapters/
+  Kits.md` lines 122–130.
+- Printed Heroes Book — *Kit Bonuses and Traits → Damage Bonuses*
+  ("If a kit has a melee damage bonus, that bonus is added to the
+  rolled damage of any damage-dealing ability with both the Melee and
+  Weapon keywords") and *Bonuses Across Tiers* ("Kit damage bonuses
+  increase based on the tier outcome of the power roll… '+X/+Y/+Z'
+  added to tier 1 / tier 2 / tier 3 outcomes respectively").
 
-**Override authoring.** None — structural read.
+**Engine gaps (status remains 🚧):**
 
-### 10.9 Kit speed-bonus attachment 🚧
+1. **Scope is too narrow.** Canon says the bonus applies to *any*
+   damage-dealing Melee + Weapon ability (which INCLUDES free strikes
+   but isn't limited to them). The engine only adds it to free strikes
+   via `runtime.freeStrikeDamage`. All other melee weapon abilities
+   miss the bonus.
+2. **Tier scaling is collapsed.** The "+X/+Y/+Z" ladder is collapsed
+   by the parser (`parse-kit.ts:109-110` takes the third / highest-echelon
+   value) so `kit.meleeDamageBonus: 4` for Mountain means "the tier-3
+   bonus only" — but the engine applies it as a flat add on every roll
+   regardless of tier outcome. Tier 1 and tier 2 rolls receive an
+   inflated bonus today.
+3. **Effect variant doesn't exist.** Fixing (1)+(2) requires a new
+   `AttachmentEffect` variant — something like `weapon-damage-bonus`
+   with `weaponKeyword: 'melee' | 'ranged'` and tier-keyed deltas — and
+   a power-roll integration point that consumes it at roll time, not
+   at derivation time. Out of scope for Epic 2B.
+
+**Override authoring.** None — structural read. When the engine grows
+the tier-scaled effect variant, the parser will be extended to preserve
+the +X/+Y/+Z tuple and this section will be rewritten + re-verified.
+
+Tracked in § 10.16 carry-overs.
+
+### 10.9 Kit speed-bonus attachment ✅
 <!-- Generated slug: character-attachment-activation.kit-speed-bonus-attachment -->
 
 For each kit with non-zero `speedBonus`, emit a `stat-mod speed +N`
 attachment. Flat (not per-echelon).
 
-**Source.** "Speed Bonus" sub-field of the *Kit Bonuses* block.
-Example:
-- `Rules/Kits/Panther.md` line 27 (**Speed Bonus:** +1)
+**Source.**
+- SteelCompendium — "Speed Bonus" sub-field of the *Kit Bonuses*
+  block. Example: `Rules/Kits/Panther.md` line 27 (**Speed Bonus:** +1).
+  Chapter rule: `Rules/Chapters/Kits.md` lines 114–116.
+- Printed Heroes Book — *Kit Bonuses and Traits → Speed Bonus*
+  ("Your kit's speed bonus is added to your speed"). Confirmed 2026-05-12.
 
 **Override authoring.** None — structural read.
 
@@ -1879,3 +1924,23 @@ skipped entry with `SKIPPED-DEFERRED` for traceability.
   pipeline gap (see 10.11).
 - **Kit-keyword leveled-treasure bonuses.** None present in
   SteelCompendium markdown (see 10.10).
+- **Kit melee/ranged damage bonus — scope + tier scaling.** See § 10.8
+  for the full discussion. Engine treats kit melee bonus as a flat
+  `free-strike-damage` add of the tier-3 value; canon says it scales
+  with tier outcome and applies to all Melee+Weapon abilities (not just
+  free strikes). Needs a new `AttachmentEffect` variant
+  (`weapon-damage-bonus` with `weaponKeyword` + tier-keyed deltas) plus
+  a power-roll integration point.
+- **Kit ranged damage bonus.** Parsed as `kit.rangedDamageBonus` but
+  no collector emission today. Six kits ship with non-zero ranged
+  bonuses (Arcane Archer, Cloak and Dagger, Raider, Ranger, Rapid-Fire,
+  Sniper) — entirely silent in the runtime. Resolves alongside the
+  melee fix.
+- **Kit distance bonus.** Rulebook describes melee and ranged distance
+  bonuses (additional squares of reach / range on Melee+Weapon and
+  Ranged+Weapon abilities). Not currently parsed or modelled. Needs
+  parser extension + an effect variant that the ability targeting layer
+  consumes.
+- **Kit disengage bonus.** Extra shift squares on Disengage move action.
+  Not currently parsed or modelled. Needs parser extension + an effect
+  variant the move-action engine consumes.
