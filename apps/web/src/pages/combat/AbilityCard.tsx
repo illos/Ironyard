@@ -56,9 +56,9 @@ export function AbilityCard({ ability, disabled, onRoll }: Props) {
           >
             {ability.type}
           </span>
-          {ability.cost && (
+          {ability.costLabel && (
             <span className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300">
-              {ability.cost}
+              {ability.costLabel}
             </span>
           )}
         </div>

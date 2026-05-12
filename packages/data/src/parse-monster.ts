@@ -1,5 +1,6 @@
 import {
   type Ability,
+  AbilitySchema,
   type AbilityType,
   CONDITION_TYPES,
   type ConditionApplicationOutcome,
@@ -703,10 +704,13 @@ function parseAbilityBlock(blockText: string): Ability | null {
     if (trailing) finalEffect = trailing;
   }
 
-  return {
+  // Run through AbilitySchema.parse() so Zod fills PC-extension defaults
+  // (cost, tier, isSubclass, sourceClassId → null/false). Monster abilities
+  // never carry those fields; the schema defaults keep the type happy.
+  return AbilitySchema.parse({
     name: header.name,
     type,
-    cost: header.cost,
+    costLabel: header.cost,
     keywords: tableInfo?.keywords ?? [],
     distance: tableInfo?.distance,
     target: tableInfo?.target,
@@ -714,7 +718,7 @@ function parseAbilityBlock(blockText: string): Ability | null {
     effect: finalEffect,
     trigger,
     raw: blockText.trim(),
-  };
+  });
 }
 
 function parseAbilities(body: string): Ability[] {

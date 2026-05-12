@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { CharacteristicsSchema } from '../characteristic';
-import { ConditionApplicationOutcomeSchema } from '../condition';
-import { DamageTypeSchema, TypedResistanceSchema } from '../damage';
+import { TypedResistanceSchema } from '../damage';
+import { AbilitySchema } from './ability';
 
 // Phase 1 slice 7 (monster ingest extension): extended Monster shape with
 // stamina, EV, immunities/weaknesses, characteristics, movement, abilities.
@@ -10,6 +10,19 @@ import { DamageTypeSchema, TypedResistanceSchema } from '../damage';
 // Level range widened from the spec's 1..10 — the source data includes
 // level 0 templates (Noncombatant) and level 11+ bosses (Ajax the Invincible).
 // 0..20 covers what's in the bestiary today with headroom for future content.
+
+// Re-exports from power-roll.ts and ability.ts for backward compatibility.
+// All existing consumers that import from './data/monster' keep working.
+export {
+  ABILITY_TYPES,
+  AbilityTypeSchema,
+  PowerRollSchema,
+  TierOutcomeSchema,
+} from './power-roll';
+export type { AbilityType, PowerRoll, TierOutcome } from './power-roll';
+
+export { AbilitySchema } from './ability';
+export type { Ability, AbilityFile } from './ability';
 
 // Movement modes seen in SteelCompendium statblocks. "walk" is implicit and
 // not included in the table cell; we add it when no other mode is listed.
@@ -37,62 +50,6 @@ export const StaminaSchema = z.object({
   withCaptain: z.number().int().nonnegative().optional(),
 });
 export type Stamina = z.infer<typeof StaminaSchema>;
-
-// Per-tier outcome. `raw` is always preserved verbatim — UI shows it as the
-// source-of-truth fallback. `damage` + `damageType` are structured when the
-// parser could extract a leading damage clause; `effect` captures the rest
-// (push, slide, save targets, condition mentions) as free text.
-export const TierOutcomeSchema = z.object({
-  raw: z.string(),
-  damage: z.number().int().nonnegative().nullable(),
-  damageType: DamageTypeSchema.optional(),
-  effect: z.string().optional(),
-  // Conditions the parser extracted from the effect text. `scope: 'target'`
-  // entries are auto-dispatched by the engine; `scope: 'other'` (multi-target
-  // / unusual qualifier) are surfaced visually but stay manual. See
-  // condition.ts for the schema.
-  conditions: z.array(ConditionApplicationOutcomeSchema).default([]),
-});
-export type TierOutcome = z.infer<typeof TierOutcomeSchema>;
-
-// Power-roll ladder. Each tier carries both the raw markdown string AND a
-// structured parse — the combat UI feeds the structured ladder to RollPower
-// while still rendering the raw text so the director can see exactly what the
-// source said.
-export const PowerRollSchema = z.object({
-  bonus: z.string().min(1), // raw "+2", "+5" — the characteristic add
-  tier1: TierOutcomeSchema, // "≤11" outcome
-  tier2: TierOutcomeSchema, // "12-16" outcome
-  tier3: TierOutcomeSchema, // "17+" outcome
-});
-export type PowerRoll = z.infer<typeof PowerRollSchema>;
-
-// Ability cost / variant — the parenthetical after the name (e.g.
-// "Signature Ability", "2 Malice", "Villain Action 1"). Free text for now.
-export const ABILITY_TYPES = [
-  'action',
-  'maneuver',
-  'triggered',
-  'free-triggered',
-  'villain',
-  'trait',
-] as const;
-export const AbilityTypeSchema = z.enum(ABILITY_TYPES);
-export type AbilityType = z.infer<typeof AbilityTypeSchema>;
-
-export const AbilitySchema = z.object({
-  name: z.string().min(1),
-  type: AbilityTypeSchema,
-  cost: z.string().optional(),
-  keywords: z.array(z.string()).default([]),
-  distance: z.string().optional(),
-  target: z.string().optional(),
-  powerRoll: PowerRollSchema.optional(),
-  effect: z.string().optional(),
-  trigger: z.string().optional(),
-  raw: z.string(), // always-correct fallback for the UI
-});
-export type Ability = z.infer<typeof AbilitySchema>;
 
 export const MonsterSchema = z.object({
   id: z.string().min(1),

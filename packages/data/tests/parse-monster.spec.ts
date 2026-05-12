@@ -491,7 +491,7 @@ describe('parseMonsterMarkdown — abilities', () => {
     expect(spear).toBeDefined();
     if (!spear) return;
     expect(spear.type).toBe('action');
-    expect(spear.cost).toBe('Signature Ability');
+    expect(spear.costLabel).toBe('Signature Ability');
     expect(spear.keywords).toEqual(['Charge', 'Melee', 'Strike', 'Weapon']);
     expect(spear.distance).toBe('Melee 1');
     expect(spear.target).toBe('One creature or object');
@@ -511,7 +511,7 @@ describe('parseMonsterMarkdown — abilities', () => {
     expect(bury).toBeDefined();
     if (!bury) return;
     expect(bury.type).toBe('action');
-    expect(bury.cost).toBe('2 Malice');
+    expect(bury.costLabel).toBe('2 Malice');
     // Tier1 of "Bury the Point": "5 damage; M < 0 bleeding (save ends)" — the
     // Bleeding condition is now extracted into `conditions` (with the potency
     // prefix preserved in `note`), and the leftover residue lands in `effect`.
@@ -567,7 +567,7 @@ describe('parseMonsterMarkdown — abilities', () => {
     expect(villain).toBeDefined();
     if (!villain) return;
     expect(villain.type).toBe('villain');
-    expect(villain.cost).toBe('Villain Action 1');
+    expect(villain.costLabel).toBe('Villain Action 1');
   });
 
   it('parses a trait with no action table (Ajax)', () => {

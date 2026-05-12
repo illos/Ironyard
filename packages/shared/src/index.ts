@@ -121,8 +121,13 @@ export type {
 } from './intents';
 
 export {
-  ABILITY_TYPES,
   AbilitySchema,
+  AbilityFileSchema,
+} from './data/ability';
+export type { Ability, AbilityFile } from './data/ability';
+
+export {
+  ABILITY_TYPES,
   AbilityTypeSchema,
   EvSchema,
   MOVEMENT_MODES,
@@ -134,7 +139,6 @@ export {
   TierOutcomeSchema,
 } from './data/monster';
 export type {
-  Ability,
   AbilityType,
   Ev,
   Monster,

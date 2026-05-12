@@ -1,3 +1,4 @@
+import { AbilitySchema } from '@ironyard/shared';
 import type { Ability } from '@ironyard/shared';
 
 // Phase 1: monsters now read real abilities from `monsters.json` (ingested by
@@ -10,7 +11,9 @@ import type { Ability } from '@ironyard/shared';
 // ladder — a reasonable level-0 baseline that doesn't pretend to be class-
 // specific. Replaced wholesale by the character sheet in Phase 2.
 export function pcFreeStrike(): Ability {
-  return {
+  // AbilitySchema.parse() fills PC-extension defaults (cost, tier, isSubclass,
+  // sourceClassId) so this stub stays valid as the Ability type evolves.
+  return AbilitySchema.parse({
     name: 'Free Strike',
     type: 'action',
     keywords: ['Melee', 'Strike', 'Weapon'],
@@ -23,5 +26,5 @@ export function pcFreeStrike(): Ability {
       tier3: { raw: '8 damage', damage: 8, damageType: 'untyped', conditions: [] },
     },
     raw: 'Free Strike (Phase-2 placeholder)\n\n**Power Roll +0**\n\n- **≤11:** 2 damage\n- **12-16:** 5 damage\n- **17+:** 8 damage',
-  };
+  });
 }
