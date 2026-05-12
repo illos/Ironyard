@@ -152,6 +152,64 @@ describe('applyAttachments — ordering', () => {
   });
 });
 
+describe('applyAttachments — requireCanonSlug gating', () => {
+  it('skips attachment when requireCanonSlug is non-verified (drafted)', () => {
+    // All attachment.* slugs are drafted today; the engine's requireCanon
+    // gate returns false for non-verified slugs and the applier silently
+    // skips the attachment. Slice 6 documents this invariant.
+    const att: CharacterAttachment = {
+      source: {
+        kind: 'ancestry-trait',
+        id: 'test.drafted-slug',
+        requireCanonSlug:
+          'character-attachment-activation.ancestry-granted-immunity-attachments',
+      },
+      effect: { kind: 'stat-mod', stat: 'maxStamina', delta: 999 },
+    };
+    const out = applyAttachments(baseRuntime(), [att], {
+      character: baseCharacter(),
+      ...NOOP_CTX,
+    });
+    expect(out.maxStamina).toBe(18); // unchanged
+  });
+
+  it('applies attachment when requireCanonSlug is verified', () => {
+    // `power-rolls.the-roll` is verified (✅) in canon-status.generated.ts.
+    const att: CharacterAttachment = {
+      source: {
+        kind: 'kit',
+        id: 'test.verified-slug',
+        requireCanonSlug: 'power-rolls.the-roll',
+      },
+      effect: { kind: 'stat-mod', stat: 'maxStamina', delta: 5 },
+    };
+    const out = applyAttachments(baseRuntime(), [att], {
+      character: baseCharacter(),
+      ...NOOP_CTX,
+    });
+    expect(out.maxStamina).toBe(23);
+  });
+
+  it('skips attachment when requireCanonSlug is an unknown string', () => {
+    // Safety check: an unrecognized slug (not in the registry at all) is
+    // also non-verified and must be skipped. The applier casts to CanonSlug
+    // but the runtime check returns false for missing keys.
+    const att: CharacterAttachment = {
+      source: {
+        kind: 'item',
+        id: 'test.unknown-slug',
+        requireCanonSlug: 'this.slug.does.not.exist',
+      },
+      effect: { kind: 'stat-mod', stat: 'maxStamina', delta: 42 },
+    };
+    const out = applyAttachments(baseRuntime(), [att], {
+      character: baseCharacter(),
+      ...NOOP_CTX,
+    });
+    expect(out.maxStamina).toBe(18);
+  });
+});
+
 describe('applyAttachments — condition gating', () => {
   it('skips kit-has-keyword attachment when kit lacks keyword', () => {
     const att: CharacterAttachment = {
