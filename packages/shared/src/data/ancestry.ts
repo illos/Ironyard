@@ -49,12 +49,18 @@ export const AncestrySchema = z.object({
     )
     .default([]),
 
-  // Reference to an Ability id (when the ingest pipeline starts emitting
-  // PC abilities). Used for the 3 Class-D ancestries (human, orc, dwarf).
-  // Always null for Epic 1.1 — Class D ability collection is deferred to
-  // Epic 2's ability ingest pass. The field is added now so the schema
-  // is stable.
-  signatureAbilityId: z.string().nullable().default(null),
+  // Reference to an Ability id for ancestries whose Signature Trait is an
+  // invocable ability (Human *Detect the Supernatural* maneuver; Polder
+  // *Shadowmeld* magic maneuver). Per the printed Heroes Book, ancestries
+  // grant "Signature Traits", not "signature abilities" — that term is a
+  // class concept (Fury / Conduit free-action signature). The field is
+  // named to reflect that distinction. Other Signature Traits route
+  // through different engine paths (size mods, immunities, triggered
+  // passives, test edges); see rules-canon § 10.2 and Q17 for the gap
+  // tracker. Always null in the shipped data today — the corresponding
+  // abilities live in ancestry markdown, not abilities markdown, so the
+  // ingest doesn't yet pick them up.
+  signatureTraitAbilityId: z.string().nullable().default(null),
 });
 export type Ancestry = z.infer<typeof AncestrySchema>;
 

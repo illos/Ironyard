@@ -61,13 +61,13 @@ export function collectFromAncestry(
     }
   }
 
-  if (ancestry.signatureAbilityId) {
+  if (ancestry.signatureTraitAbilityId) {
     out.push({
       source: {
         kind: 'ancestry-signature',
         id: `${character.ancestryId}.signature`,
       },
-      effect: { kind: 'grant-ability', abilityId: ancestry.signatureAbilityId },
+      effect: { kind: 'grant-ability', abilityId: ancestry.signatureTraitAbilityId },
     });
   }
 

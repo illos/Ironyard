@@ -19,7 +19,7 @@ describe('AncestrySchema — new fields from Slice 5', () => {
     expect(parsed.defaultSize).toBe('1M');
     expect(parsed.defaultSpeed).toBe(5);
     expect(parsed.grantedImmunities).toEqual([]);
-    expect(parsed.signatureAbilityId).toBeNull();
+    expect(parsed.signatureTraitAbilityId).toBeNull();
   });
 
   it('accepts a Polder override (defaultSize 1S)', () => {
@@ -63,12 +63,12 @@ describe('AncestrySchema — new fields from Slice 5', () => {
     expect(result.success).toBe(false);
   });
 
-  it('accepts a signatureAbilityId', () => {
+  it('accepts a signatureTraitAbilityId', () => {
     const parsed = AncestrySchema.parse({
       ...BASE_ANCESTRY,
-      signatureAbilityId: 'detect-supernatural',
+      signatureTraitAbilityId: 'detect-supernatural',
     });
-    expect(parsed.signatureAbilityId).toBe('detect-supernatural');
+    expect(parsed.signatureTraitAbilityId).toBe('detect-supernatural');
   });
 
   it('preserves existing ancestryPoints default of 3', () => {

@@ -35,6 +35,7 @@ Anywhere a `rules-canon.md` entry rests on a judgment call rather than a direct 
 | Q14 | Numeric Bleeding rating ("Bleeding 5") — flavor for canon §3.5.1 or per-instance damage? | 🟡 | (parser, not in canon yet) |
 | Q15 | Default duration when a tier outcome names a condition with no marker | 🟡 | (parser, not in canon yet) |
 | Q16 | Revenant Tough But Withered — inert state, fire-while-inert death, 12h Stamina recovery | 🟡 | rules-canon § 10.1 |
+| Q17 | Ancestry signature-trait mechanics not modelled by §10.2 — data + engine gaps | 🟡 | rules-canon § 10.2 |
 
 ---
 
@@ -495,6 +496,34 @@ The distinction matters because hero-tokens (Tests.md:97) let a player re-roll a
 **Status.** 🟡 open. No action required for Epic 2B close; revisit when § 2.7+ (winded/dying transitions) lands.
 
 **To revisit if:** the damage engine grows past its Slice 3 subset to handle winded/dying transitions, OR a Revenant character actually hits negative-winded in a real session and the table needs engine support.
+
+---
+
+## Q17. Ancestry signature-trait mechanics not modelled by § 10.2 🟡
+
+**Cited from:** `rules-canon.md` § 10.2.
+
+**Question.** § 10.2 handles ancestry signature traits whose mechanic is an invocable ability (Human *Detect the Supernatural* maneuver; Polder *Shadowmeld* magic maneuver). The remaining signature traits fall into two categories of gaps:
+
+### A — Data gaps (engine path exists; data missing)
+
+- **Human *Detect the Supernatural*** — needs an `Ability` record in `abilities.json` (or hand-authored entry in `ABILITY_OVERRIDES`) and `ANCESTRY_OVERRIDES.human.signatureTraitAbilityId` populated with its id. The ability text lives in `.reference/data-md/Rules/Ancestries/Human.md` (Signature Trait block), not under `.reference/data-md/Rules/Abilities/`, so the current parser doesn't pick it up.
+- **Polder *Shadowmeld*** — same situation; ability text in `.reference/data-md/Rules/Ancestries/Polder.md` Signature Trait block.
+
+### B — Engine gaps (no current mechanism)
+
+These signature traits use rules patterns the current engine doesn't model:
+
+- **Orc *Relentless*** — "Whenever a creature deals damage to you that leaves you dying, you can make a free strike against any creature. If the creature is reduced to 0 Stamina by your strike, you can spend a Recovery." Triggered-passive on entering `dying` state. Belongs in § 2 damage-pipeline once dying transitions land.
+- **Dwarf *Runic Carving*** — choose one of three rune effects (Detection / Light / Voice) after 10 min of work; changeable. Effectively a choice-of-three sub-abilities, each with non-stat narrative effects. Needs a `runicCarving: 'detection' | 'light' | 'voice' | null` choice on `AncestryChoicesSchema` + an engine path for non-stat narrative abilities.
+- **Wode Elf / High Elf *Glamor*** — both grant edges on specific test types (hide/sneak, Flirt/Persuade) and Wode Elf imposes a bane on enemy searches. Test-time edge modifiers, not runtime stat folds. Needs a "test-edge override" mechanism in the test resolution path (`packages/rules/src/power-roll.ts` or its test-roll cousin).
+- **Devil *Silver Tongue* (edge component)** — "edge on tests when attempting to discover an NPC's motivations and pitfalls during a negotiation." Same shape as Glamor edges — test-time edge modifier.
+
+**Engine implication today.** None of these auto-apply. A player whose character has Orc Relentless must narrate the free strike manually when they hit `dying`. Edges from Glamor / Silver Tongue must be added by the director or player as ad-hoc edge intents at roll time.
+
+**Status.** 🟡 open. No action required for Epic 2B close. The data gaps (A) are small one-line override edits once the abilities are ingested. The engine gaps (B) are larger work that lands in future engine sections (damage pipeline for triggered passives, test-edge override for Glamor-class traits, ancestry-choices schema extension for Dwarf rune system).
+
+**To revisit if:** any of those engine sections grow to cover the relevant mechanic, or a table hits one of these traits in play and wants engine support.
 
 ---
 

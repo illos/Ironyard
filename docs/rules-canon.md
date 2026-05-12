@@ -1479,26 +1479,44 @@ isn't structurally exposed (e.g. Time Raider, Revenant).
   [`rule-questions.md` Q16](rule-questions.md#q16-revenant-tough-but-withered--out-of-scope-mechanics-)
   and the future `§ 2.7+` winded/dying canon section.
 
-### 10.2 Ancestry signature-ability attachments 🚧
-<!-- Generated slug: character-attachment-activation.ancestry-signature-ability-attachments -->
+### 10.2 Ancestry signature-trait ability attachments ✅
+<!-- Generated slug: character-attachment-activation.ancestry-signature-trait-ability-attachments -->
 
-When an ancestry has `signatureAbilityId`, emit a `grant-ability`
+When an ancestry has `signatureTraitAbilityId`, emit a `grant-ability`
 attachment so the ability id appears on the character's derived
-`abilityIds`. Used for the three Class-D ancestries that grant a
-signature ability (Human, Orc, Dwarf).
+`abilityIds`. This engine path applies only to Signature Traits whose
+mechanic IS an invocable ability with an action / maneuver cost.
 
-**Source.**
-- `.reference/data-md/Rules/Ancestries/Human.md` line 61
-  ("Signature Trait: Detect the Supernatural")
-- `.reference/data-md/Rules/Ancestries/Orc.md` line 143
-  ("Signature Trait: Relentless")
-- `.reference/data-md/Rules/Ancestries/Dwarf.md` line 123
-  ("Signature Trait: Runic Carving")
+**Applies to** (per printed Heroes Book, confirmed 2026-05-12 user review):
+- Human — *Detect the Supernatural* (maneuver-action awareness ability)
+- Polder — *Shadowmeld* (magic-maneuver hide ability)
 
-**Override authoring.** `ANCESTRY_OVERRIDES.<ancestryId>.signatureAbilityId`
+**Does NOT apply to** (Signature Traits routed through other sections or deferred):
+- Dragon Knight *Wyrmplate* — immunity-equal-to-level, see § 10.3.
+- Hakaan *Big!* — size 1L, handled via `ANCESTRY_OVERRIDES.hakaan.defaultSize` + base derivation.
+- Polder *Small!* — size 1S, handled via `ANCESTRY_OVERRIDES.polder.defaultSize`.
+- Revenant *Former Life* — size inherits from former ancestry + speed 5, handled in base derivation.
+- Revenant *Tough But Withered* — immunities (§ 10.1) + fire weakness (§ 10.1 footnote) + inert mechanics ([Q16](rule-questions.md#q16)).
+- Time Raider *Psychic Scar* — psychic immunity = level (§ 10.1).
+- Devil *Silver Tongue* (free skill component) — existing `ancestryChoices.freeSkillId` flow.
+- Orc *Relentless* — triggered passive when dying; see [Q17](rule-questions.md#q17).
+- Dwarf *Runic Carving* — multi-rune choose-and-activate system; see [Q17](rule-questions.md#q17).
+- Wode Elf / High Elf *Glamor* — test-time edge modifier; see [Q17](rule-questions.md#q17).
+- Devil *Silver Tongue* (negotiation edge component) — test-time edge modifier; see [Q17](rule-questions.md#q17).
+
+**Source.** `.reference/data-md/Rules/Ancestries/Human.md` Signature Trait
+*Detect the Supernatural*; `.reference/data-md/Rules/Ancestries/Polder.md`
+Signature Trait *Shadowmeld* (printed Heroes Book confirmed by user
+2026-05-12).
+
+**Override authoring.** `ANCESTRY_OVERRIDES.<ancestryId>.signatureTraitAbilityId`
 in `packages/data/overrides/ancestries.ts`. The collector
 (`collectFromAncestry`) reads the resolved value off the static-data
-bundle.
+bundle. **Data gap:** the Human and Polder ancestry records currently
+ship with `signatureTraitAbilityId: null` — the corresponding ability
+data (`human-detect-the-supernatural`, `polder-shadowmeld`) is not yet
+ingested because these abilities are embedded in the ancestry markdown,
+not the abilities markdown. Tracked in [Q17](rule-questions.md#q17).
 
 ### 10.3 Dragon Knight Wyrmplate attachment 🚧
 <!-- Generated slug: character-attachment-activation.dragon-knight-wyrmplate-attachment -->

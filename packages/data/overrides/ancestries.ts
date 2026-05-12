@@ -9,7 +9,7 @@ export type AncestryOverride = {
   defaultSize?: string;
   defaultSpeed?: number;
   grantedImmunities?: Array<{ kind: string; value: number | 'level' }>;
-  signatureAbilityId?: string | null;
+  signatureTraitAbilityId?: string | null;
 };
 
 export const ANCESTRY_OVERRIDES: Record<string, AncestryOverride> = {

@@ -11,7 +11,7 @@
 //     in v1; entry kept for future use)
 //   - Stat bonuses (Stamina, recoveries, speed, stability) → `stat-mod`
 //   - Immunity grants → `immunity`
-//   - Ability grants (signature abilities from traits like Dragon Breath,
+//   - Ability grants (signature trait abilities from traits like Dragon Breath,
 //     Psionic Bolt, etc.) → `grant-ability` — DEFERRED. The wizard's level
 //     picks don't currently surface ability ids for purchasable signature
 //     abilities, and the ability data has no canon slug yet. Re-visit in

@@ -313,7 +313,7 @@ function buildAncestries(version: string): void {
     }
   }
 
-  // Fold in hand-authored override fields (size, speed, immunities, signatureAbilityId).
+  // Fold in hand-authored override fields (size, speed, immunities, signatureTraitAbilityId).
   // Overrides win; schema defaults apply when neither the parser nor the override table
   // provides a value.
   const enrichedAncestries = ancestries.map((a) => {
@@ -323,7 +323,7 @@ function buildAncestries(version: string): void {
       defaultSize: o.defaultSize ?? a.defaultSize ?? '1M',
       defaultSpeed: o.defaultSpeed ?? a.defaultSpeed ?? 5,
       grantedImmunities: o.grantedImmunities ?? a.grantedImmunities ?? [],
-      signatureAbilityId: o.signatureAbilityId !== undefined ? o.signatureAbilityId : (a.signatureAbilityId ?? null),
+      signatureTraitAbilityId: o.signatureTraitAbilityId !== undefined ? o.signatureTraitAbilityId : (a.signatureTraitAbilityId ?? null),
     };
   });
 

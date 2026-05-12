@@ -159,7 +159,7 @@ export function buildAncestry(overrides: Partial<Ancestry> & { id: string }): An
     defaultSize: overrides.defaultSize ?? '1M',
     defaultSpeed: overrides.defaultSpeed ?? 5,
     grantedImmunities: overrides.grantedImmunities ?? [],
-    signatureAbilityId: overrides.signatureAbilityId ?? null,
+    signatureTraitAbilityId: overrides.signatureTraitAbilityId ?? null,
   };
 }
 
