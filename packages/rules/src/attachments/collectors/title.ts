@@ -1,11 +1,14 @@
 import type { Character } from '@ironyard/shared';
+import { TITLE_OVERRIDES } from '@ironyard/data';
 import type { StaticDataBundle } from '../../static-data';
 import type { CharacterAttachment } from '../types';
 
 export function collectFromTitle(
-  _character: Character,
+  character: Character,
   _staticData: StaticDataBundle,
 ): CharacterAttachment[] {
-  // Populated in Slice 3.
-  return [];
+  if (!character.titleId) return [];
+  const override = TITLE_OVERRIDES[character.titleId];
+  if (!override) return [];
+  return override.attachments;
 }
