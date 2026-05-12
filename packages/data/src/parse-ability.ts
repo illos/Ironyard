@@ -2,15 +2,7 @@ import matter from 'gray-matter';
 import type { Ability, AbilityType, PowerRoll } from '@ironyard/shared';
 import { AbilitySchema } from '@ironyard/shared';
 import { parseTierOutcome } from './parse-monster';
-
-// ── Slug helper ────────────────────────────────────────────────────────────────
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
+import { slugify } from './util/slug';
 
 // ── Action type mapping ────────────────────────────────────────────────────────
 

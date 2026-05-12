@@ -17,15 +17,12 @@ import {
   type TypedResistance,
 } from '@ironyard/shared';
 import matter from 'gray-matter';
+import { slugify } from './util/slug';
 
 export type ParseResult = { ok: true; monster: Monster } | { ok: false; reason: string };
 
 export function slugifyMonster(name: string, level: number): string {
-  const base = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-  return `${base}-l${level}`;
+  return `${slugify(name)}-l${level}`;
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -642,7 +639,7 @@ function parseTrigger(blockLines: string[]): string | undefined {
   return undefined;
 }
 
-function parseAbilityBlock(blockText: string): Ability | null {
+function parseAbilityBlock(blockText: string, monsterId: string): Ability | null {
   const lines = blockText.split(/\r?\n/);
   // Find the first non-empty line — that's the header.
   let headerLine: string | null = null;
@@ -704,10 +701,17 @@ function parseAbilityBlock(blockText: string): Ability | null {
     if (trailing) finalEffect = trailing;
   }
 
+  // Monster ability id format: `<monsterId>-<slugified-name>`. The monsterId
+  // prefix disambiguates abilities that share a name across different monsters
+  // (e.g. "Bite"). Uses the same slugify rules as PC abilities (lowercase,
+  // non-alphanumeric runs → `-`, trimmed dashes) via the shared util.
+  const id = `${monsterId}-${slugify(header.name)}`;
+
   // Run through AbilitySchema.parse() so Zod fills PC-extension defaults
   // (cost, tier, isSubclass, sourceClassId → null/false). Monster abilities
   // never carry those fields; the schema defaults keep the type happy.
   return AbilitySchema.parse({
+    id,
     name: header.name,
     type,
     costLabel: header.cost,
@@ -721,7 +725,7 @@ function parseAbilityBlock(blockText: string): Ability | null {
   });
 }
 
-function parseAbilities(body: string): Ability[] {
+function parseAbilities(body: string, monsterId: string): Ability[] {
   // Split the body on `<!-- -->` separators; the first chunk is the stat
   // table (no `>` lines), subsequent chunks are ability blocks (blockquote).
   const chunks = body.split(/^<!-- -->\s*$/m);
@@ -729,7 +733,7 @@ function parseAbilities(body: string): Ability[] {
   for (const chunk of chunks) {
     const looksLikeAbility = /^>\s*\S/m.test(chunk);
     if (!looksLikeAbility) continue;
-    const parsed = parseAbilityBlock(chunk);
+    const parsed = parseAbilityBlock(chunk, monsterId);
     if (parsed) abilities.push(parsed);
   }
   return abilities;
@@ -799,7 +803,7 @@ export function parseMonsterMarkdown(content: string): ParseResult {
   const movement = parseMovement(cells.movement);
 
   // Abilities
-  const abilities = parseAbilities(body);
+  const abilities = parseAbilities(body, id);
 
   const candidate = {
     id,
