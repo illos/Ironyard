@@ -34,4 +34,22 @@ import type { ItemOverride } from './_types';
 
 export const ITEM_OVERRIDES: Record<string, ItemOverride> = {
   // Artifact entries: none — see header note above.
+
+  // ── Leveled treasures ──────────────────────────────────────────────────
+  // "Lightning Treads" (1st-level effect, Other Leveled Treasures):
+  //   "While you wear these boots, ... you gain a +2 bonus to speed."
+  // The lightning-damage rider on unarmed strikes is an ability-keyword-
+  // conditional damage bonus we can't yet express. The +2 speed is a clean
+  // static stat-mod when the boots are equipped.
+  //
+  // SKIPPED-DEFERRED-PARTIAL — extra-lightning-damage-on-unarmed-strike
+  //   rider and 5th/9th-level scaling not yet modellable.
+  'lightning-treads': {
+    attachments: [
+      {
+        source: { kind: 'item', id: 'lightning-treads' },
+        effect: { kind: 'stat-mod', stat: 'speed', delta: 2 },
+      },
+    ],
+  },
 };
