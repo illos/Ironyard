@@ -52,4 +52,23 @@ export const ITEM_OVERRIDES: Record<string, ItemOverride> = {
       },
     ],
   },
+
+  // ── Trinkets ───────────────────────────────────────────────────────────
+  // "Color Cloak (Yellow)" (1st Echelon Trinket):
+  //   "While worn, a yellow Color Cloak grants you lightning immunity equal
+  //    to your level."
+  // The triggered "Additionally..." clause that converts the immunity to a
+  // weakness for one round after a lightning hit is a triggered-action shape
+  // we don't yet model. The base immunity is a clean static effect.
+  //
+  // SKIPPED-DEFERRED-PARTIAL — triggered "lightning immunity → weakness"
+  //   conversion not yet modellable.
+  'color-cloak-yellow': {
+    attachments: [
+      {
+        source: { kind: 'item', id: 'color-cloak-yellow' },
+        effect: { kind: 'immunity', damageKind: 'lightning', value: 'level' },
+      },
+    ],
+  },
 };

@@ -34,3 +34,29 @@ describe('collectFromItems — leveled treasure (lightning-treads)', () => {
     expect(out).toEqual([]);
   });
 });
+
+describe('collectFromItems — trinket (color-cloak-yellow)', () => {
+  it('emits a lightning immunity attachment for an equipped yellow Color Cloak', () => {
+    const char = CharacterSchema.parse({
+      inventory: [{ itemId: 'color-cloak-yellow', quantity: 1, equipped: true }],
+    });
+    const out = collectFromItems(char, BUNDLE_STUB);
+    expect(out).toHaveLength(1);
+    const att = out[0]!;
+    expect(att.source.kind).toBe('item');
+    expect(att.source.id).toBe('color-cloak-yellow');
+    expect(att.effect).toEqual({
+      kind: 'immunity',
+      damageKind: 'lightning',
+      value: 'level',
+    });
+  });
+
+  it('skips attachments when the yellow Color Cloak is in inventory but unequipped', () => {
+    const char = CharacterSchema.parse({
+      inventory: [{ itemId: 'color-cloak-yellow', quantity: 1, equipped: false }],
+    });
+    const out = collectFromItems(char, BUNDLE_STUB);
+    expect(out).toEqual([]);
+  });
+});
