@@ -82,6 +82,9 @@ export function buildEmptyBundle(): StaticDataBundle {
     careers: new Map(),
     classes: new Map(),
     kits: new Map(),
+    abilities: new Map(),
+    items: new Map(),
+    titles: new Map(),
   };
 }
 

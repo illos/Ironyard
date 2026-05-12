@@ -10,13 +10,15 @@ export function RuntimeReadout({
   character: Character;
   staticData: WizardStaticData;
 }) {
-  // deriveCharacterRuntime only reads ancestries/careers/classes/kits.
   const bundle: StaticDataBundle = useMemo(
     () => ({
       ancestries: staticData.ancestries as StaticDataBundle['ancestries'],
       careers: staticData.careers as StaticDataBundle['careers'],
       classes: staticData.classes as StaticDataBundle['classes'],
       kits: staticData.kits as StaticDataBundle['kits'],
+      abilities: staticData.abilities as StaticDataBundle['abilities'],
+      items: staticData.items as StaticDataBundle['items'],
+      titles: staticData.titles as StaticDataBundle['titles'],
     }),
     [staticData],
   );

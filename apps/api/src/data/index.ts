@@ -5,7 +5,16 @@
 // with the full SteelCompendium ingest — see .gitignore for the skip-worktree
 // instructions that suppress those diffs.
 
-import { AncestrySchema, CareerSchema, ClassSchema, type Monster, MonsterFileSchema } from '@ironyard/shared';
+import {
+  AbilitySchema,
+  AncestrySchema,
+  CareerSchema,
+  ClassSchema,
+  ItemSchema,
+  type Monster,
+  MonsterFileSchema,
+  TitleSchema,
+} from '@ironyard/shared';
 import type { StaticDataBundle } from '@ironyard/rules';
 import { ResolvedKitSchema } from '@ironyard/rules';
 import monstersJson from './monsters.json';
@@ -13,6 +22,9 @@ import classesRaw from './classes.json';
 import kitsRaw from './kits.json';
 import ancestriesRaw from './ancestries.json';
 import careersRaw from './careers.json';
+import abilitiesRaw from './abilities.json';
+import itemsRaw from './items.json';
+import titlesRaw from './titles.json';
 
 // ── Monsters ────────────────────────────────────────────────────────────────
 
@@ -80,6 +92,24 @@ export function getStaticDataBundle(): StaticDataBundle {
     if (parsed.success) kits.set(parsed.data.id, parsed.data);
   }
 
-  bundleCache = { ancestries, careers, classes, kits };
+  const abilities: StaticDataBundle['abilities'] = new Map();
+  for (const item of abilitiesRaw as unknown[]) {
+    const parsed = AbilitySchema.safeParse(item);
+    if (parsed.success) abilities.set(parsed.data.id, parsed.data);
+  }
+
+  const items: StaticDataBundle['items'] = new Map();
+  for (const item of itemsRaw as unknown[]) {
+    const parsed = ItemSchema.safeParse(item);
+    if (parsed.success) items.set(parsed.data.id, parsed.data);
+  }
+
+  const titles: StaticDataBundle['titles'] = new Map();
+  for (const item of titlesRaw as unknown[]) {
+    const parsed = TitleSchema.safeParse(item);
+    if (parsed.success) titles.set(parsed.data.id, parsed.data);
+  }
+
+  bundleCache = { ancestries, careers, classes, kits, abilities, items, titles };
   return bundleCache;
 }

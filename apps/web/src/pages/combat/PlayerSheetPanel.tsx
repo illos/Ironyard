@@ -200,6 +200,9 @@ function Abilities({
     careers: staticData.careers as StaticDataBundle['careers'],
     classes: staticData.classes as StaticDataBundle['classes'],
     kits: staticData.kits as StaticDataBundle['kits'],
+    abilities: staticData.abilities as StaticDataBundle['abilities'],
+    items: staticData.items as StaticDataBundle['items'],
+    titles: staticData.titles as StaticDataBundle['titles'],
   };
   const runtime = deriveCharacterRuntime(ch.data.data, bundle);
 

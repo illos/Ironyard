@@ -37,6 +37,9 @@ const furyBundle: ReducerContext['staticData'] = {
     ],
   ]),
   kits: new Map(),
+  abilities: new Map(),
+  items: new Map(),
+  titles: new Map(),
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -179,6 +182,9 @@ describe('StartEncounter PC materialization (ReducerContext wiring)', () => {
       careers: new Map(),
       classes: new Map(),
       kits: new Map(),
+      abilities: new Map(),
+      items: new Map(),
+      titles: new Map(),
     };
 
     const state = makeState({

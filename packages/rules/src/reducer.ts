@@ -48,6 +48,9 @@ const EMPTY_BUNDLE: ReducerContext['staticData'] = {
   careers: new Map(),
   classes: new Map(),
   kits: new Map(),
+  abilities: new Map(),
+  items: new Map(),
+  titles: new Map(),
 };
 
 // The pure reducer. No Date.now(), no Math.random(). The DO stamps timestamp

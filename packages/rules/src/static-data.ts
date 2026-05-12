@@ -2,7 +2,14 @@
 // the web client from /data/*.json and by the API DO from the in-process
 // import. The derivation function reads this — it never fetches.
 
-import type { AncestrySchema, CareerSchema, ClassSchema } from '@ironyard/shared';
+import type {
+  AbilitySchema,
+  AncestrySchema,
+  CareerSchema,
+  ClassSchema,
+  ItemSchema,
+  TitleSchema,
+} from '@ironyard/shared';
 import { z } from 'zod';
 
 // Light shapes — only what derivation reads. Full schemas live in shared/data.
@@ -23,4 +30,7 @@ export type StaticDataBundle = {
   careers: Map<string, z.infer<typeof CareerSchema>>;
   classes: Map<string, z.infer<typeof ClassSchema>>;
   kits: Map<string, ResolvedKit>;
+  abilities: Map<string, z.infer<typeof AbilitySchema>>;
+  items: Map<string, z.infer<typeof ItemSchema>>;
+  titles: Map<string, z.infer<typeof TitleSchema>>;
 };
