@@ -3,6 +3,15 @@ import type { Ability, AbilityType, PowerRoll } from '@ironyard/shared';
 import { AbilitySchema } from '@ironyard/shared';
 import { parseTierOutcome } from './parse-monster';
 
+// ── Slug helper ────────────────────────────────────────────────────────────────
+
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 // ── Action type mapping ────────────────────────────────────────────────────────
 
 const ACTION_TYPE_MAP: Record<string, AbilityType> = {
@@ -216,6 +225,8 @@ export function parseAbilityMarkdown(md: string, filePath = ''): Ability | null 
   const sourceClassId = parseSourceClassId(fm, filePath, typeField);
   const isSubclass = parseIsSubclass(filePath, typeField);
 
+  const id = `${sourceClassId ?? 'unknown'}-${slugify(name)}`;
+
   const distance = typeof fm.distance === 'string' ? fm.distance : undefined;
   const target = typeof fm.target === 'string' ? fm.target : undefined;
   const keywords = Array.isArray(fm.keywords)
@@ -226,6 +237,7 @@ export function parseAbilityMarkdown(md: string, filePath = ''): Ability | null 
 
   // Run through AbilitySchema so Zod applies defaults and validates.
   const result = AbilitySchema.safeParse({
+    id,
     name,
     type,
     keywords,

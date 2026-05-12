@@ -78,3 +78,40 @@ describe('parseAbilityMarkdown', () => {
     expect(a!.sourceClassId).toBe('kits');
   });
 });
+
+describe('parseAbilityMarkdown — id derivation', () => {
+  it('derives id as {sourceClassId}-{slug-of-name}', () => {
+    const md = `---
+item_name: Mind Spike
+type: feature/ability/free
+class: tactician
+action_type: Main action
+---
+`;
+    const a = parseAbilityMarkdown(md, '/abs/Abilities/Tactician/Mind Spike.md');
+    expect(a?.id).toBe('tactician-mind-spike');
+  });
+
+  it('slugifies punctuation in names', () => {
+    const md = `---
+item_name: Run 'em Down!
+type: feature/ability/free
+class: fury
+action_type: Maneuver
+---
+`;
+    const a = parseAbilityMarkdown(md, '/abs/Abilities/Fury/Run em Down.md');
+    expect(a?.id).toBe('fury-run-em-down');
+  });
+
+  it('falls back to ability-source folder when sourceClassId is null', () => {
+    // Common abilities live under Common/; sourceClassId is "common".
+    const md = `---
+item_name: Heal
+type: common-ability/maneuver
+---
+`;
+    const a = parseAbilityMarkdown(md, '/abs/Abilities/Common/Heal.md');
+    expect(a?.id).toBe('common-heal');
+  });
+});
