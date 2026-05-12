@@ -3,7 +3,7 @@ import type { Character, CharacterCulture } from '@ironyard/shared';
 import {
   ARCHETYPICAL_CULTURES,
   CULTURE_ASPECT_DESCRIPTIONS,
-  getTypicalAncestryCulture,
+  TYPICAL_ANCESTRY_CULTURES,
   type ArchetypicalCulture,
   type CultureEnvironment,
   type CultureOrganization,
@@ -38,14 +38,7 @@ export function CultureStep({ draft, onPatch }: { draft: Character; onPatch: (p:
 
   const set = (patch: Partial<CharacterCulture>) => onPatch({ culture: { ...culture, ...patch } });
 
-  const typicalPreset = getTypicalAncestryCulture(draft.ancestryId);
-  const isRevenant = draft.ancestryId === 'revenant';
-
   const selectPath = (chosen: CulturePath) => {
-    if (chosen === 'typical' && typicalPreset) {
-      set({ environment: typicalPreset.environment, organization: typicalPreset.organization,
-            upbringing: typicalPreset.upbringing, language: typicalPreset.language });
-    }
     setPath(chosen);
   };
 
@@ -58,18 +51,11 @@ export function CultureStep({ draft, onPatch }: { draft: Character; onPatch: (p:
     return (
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-neutral-100">Choose how to build your culture</h2>
-        {draft.ancestryId && typicalPreset && (
-          <PathCard
-            title={`Typical for ${ancestryLabel(draft.ancestryId)}`}
-            description="Use the standard culture for heroes raised among their own kind."
-            onClick={() => selectPath('typical')}
-          />
-        )}
-        {isRevenant && (
-          <p className="text-sm text-amber-400 px-1">
-            Revenant doesn&apos;t have a typical ancestry culture — pick Archetypical or Build from scratch.
-          </p>
-        )}
+        <PathCard
+          title="Typical Ancestry Culture"
+          description="Use a preset culture from any ancestry — covers cases like a Human raised by Elves."
+          onClick={() => selectPath('typical')}
+        />
         <PathCard
           title="Archetypical (pick a community)"
           description="Choose from 16 community archetypes — Artisan Guild, Knightly Order, and more."
@@ -90,7 +76,9 @@ export function CultureStep({ draft, onPatch }: { draft: Character; onPatch: (p:
         className="text-sm text-neutral-400 hover:text-neutral-200 underline underline-offset-2">
         ← Change path
       </button>
-      {path === 'typical' && typicalPreset && <TypicalPath culture={culture} preset={typicalPreset} set={set} />}
+      {path === 'typical' && (
+        <TypicalPath culture={culture} suggestedAncestryId={draft.ancestryId} set={set} />
+      )}
       {path === 'archetypical' && <ArchetypicalPath culture={culture} set={set} />}
       {path === 'scratch' && <ScratchPath culture={culture} set={set} />}
     </div>
@@ -111,32 +99,84 @@ function PathCard({ title, description, onClick }: { title: string; description:
 
 // ── Typical path ──────────────────────────────────────────────────────────────
 
-function TypicalPath({ culture, preset, set }: {
+function TypicalPath({ culture, suggestedAncestryId, set }: {
   culture: CharacterCulture;
-  preset: TypicalAncestryCulture;
+  suggestedAncestryId: string | null;
   set: (p: Partial<CharacterCulture>) => void;
 }) {
+  const presets = Object.values(TYPICAL_ANCESTRY_CULTURES);
+  // Surface the player's own ancestry's preset first if there is one.
+  const ordered = suggestedAncestryId
+    ? [
+        ...presets.filter((p) => p.ancestryId === suggestedAncestryId),
+        ...presets.filter((p) => p.ancestryId !== suggestedAncestryId),
+      ]
+    : presets;
+  const [selected, setSelected] = useState<TypicalAncestryCulture | null>(null);
+
+  const pick = (p: TypicalAncestryCulture) => {
+    setSelected(p);
+    set({
+      language: p.language,
+      environment: p.environment,
+      organization: p.organization,
+      upbringing: p.upbringing,
+    });
+  };
+
   return (
     <div className="space-y-5">
-      <PresetSummary rows={[
-        { label: 'Language', value: preset.language },
-        {
-          label: 'Environment',
-          value: preset.environment,
-          description: CULTURE_ASPECT_DESCRIPTIONS.environment[preset.environment],
-        },
-        {
-          label: 'Organization',
-          value: preset.organization,
-          description: CULTURE_ASPECT_DESCRIPTIONS.organization[preset.organization],
-        },
-        {
-          label: 'Upbringing',
-          value: preset.upbringing,
-          description: CULTURE_ASPECT_DESCRIPTIONS.upbringing[preset.upbringing],
-        },
-      ]} />
-      <SkillPickers culture={culture} set={set} />
+      <div>
+        <h3 className="text-sm text-neutral-300 mb-2">Pick an ancestry's typical culture</h3>
+        <p className="text-xs text-neutral-500 mb-2">
+          Defaults to your hero's own ancestry, but pick any to cover cross-ancestry backgrounds.
+        </p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {ordered.map((p) => {
+            const isSelected = selected?.ancestryId === p.ancestryId;
+            const isSuggested = !selected && p.ancestryId === suggestedAncestryId;
+            return (
+              <button key={p.ancestryId} type="button" onClick={() => pick(p)}
+                className={
+                  'min-h-11 px-3 py-2 rounded-md border text-sm text-left transition-colors ' +
+                  (isSelected
+                    ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
+                    : isSuggested
+                      ? 'bg-neutral-900 text-neutral-200 border-emerald-700 hover:border-emerald-500'
+                      : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
+                }>
+                <div className="font-medium">{ancestryLabel(p.ancestryId)}</div>
+                {isSuggested && (
+                  <div className="text-xs text-emerald-400 mt-0.5">Your ancestry</div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      {selected && (
+        <>
+          <PresetSummary rows={[
+            { label: 'Language', value: selected.language },
+            {
+              label: 'Environment',
+              value: selected.environment,
+              description: CULTURE_ASPECT_DESCRIPTIONS.environment[selected.environment],
+            },
+            {
+              label: 'Organization',
+              value: selected.organization,
+              description: CULTURE_ASPECT_DESCRIPTIONS.organization[selected.organization],
+            },
+            {
+              label: 'Upbringing',
+              value: selected.upbringing,
+              description: CULTURE_ASPECT_DESCRIPTIONS.upbringing[selected.upbringing],
+            },
+          ]} />
+          <SkillPickers culture={culture} set={set} />
+        </>
+      )}
     </div>
   );
 }
