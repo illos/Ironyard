@@ -259,6 +259,17 @@ export { KitFileSchema, KitSchema } from './data/kit';
 export type { Kit, KitFile } from './data/kit';
 
 export {
+  ItemSchema,
+  ItemFileSchema,
+  type Item,
+  type ItemFile,
+  type Artifact,
+  type Consumable,
+  type LeveledTreasure,
+  type Trinket,
+} from './data/item';
+
+export {
   AbilitySlotSchema,
   CharacteristicArraySchema,
   ClassFileSchema,
