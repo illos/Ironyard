@@ -36,6 +36,7 @@ Anywhere a `rules-canon.md` entry rests on a judgment call rather than a direct 
 | Q15 | Default duration when a tier outcome names a condition with no marker | 🟡 | (parser, not in canon yet) |
 | Q16 | Revenant Tough But Withered — inert state, fire-while-inert death, 12h Stamina recovery | 🟡 | rules-canon § 10.1 |
 | Q17 | Ancestry signature-trait mechanics not modelled by §10.2 — data + engine gaps | 🟡 | rules-canon § 10.2 |
+| Q18 | Class-feature choice slots (Conduit Prayers/Wards, Censor Domains) — pipeline gap | 🟡 | rules-canon § 10.11 |
 
 ---
 
@@ -524,6 +525,37 @@ These signature traits use rules patterns the current engine doesn't model:
 **Status.** 🟡 open. No action required for Epic 2B close. The data gaps (A) are small one-line override edits once the abilities are ingested. The engine gaps (B) are larger work that lands in future engine sections (damage pipeline for triggered passives, test-edge override for Glamor-class traits, ancestry-choices schema extension for Dwarf rune system).
 
 **To revisit if:** any of those engine sections grow to cover the relevant mechanic, or a table hits one of these traits in play and wants engine support.
+
+---
+
+## Q18. Class-feature choice slots — pipeline gap 🟡
+
+**Cited from:** `rules-canon.md` § 10.11.
+
+**Question.** Several classes have "choose one from a list of class-feature options" structures whose options carry static runtime stats that the engine should fold into the derived character. The current pipeline can't model them because three upstream pieces are missing simultaneously:
+
+1. **Schema slot.** `LevelChoicesSchema` has `abilityIds`, `subclassAbilityIds`, `perkId`, `skillId` — but no `prayerId` / `wardId` / `domainFeatureId` / etc. Players have no way to record which class-feature option they picked.
+2. **Parser path.** These options live as inline prose in `Rules/Classes By Level/<Class>/<Level>.md` (e.g. Conduit's `1st-Level Features` block lists *Prayer of Destruction* / *Distance* / *Soldier's Skill* / *Speed* / *Steel* as in-line h4 sub-blocks). They are NOT shaped like the standard Ability statblock (no action-type, no power roll, no tier ladder) so `parseAbilityMarkdown` returns null for them.
+3. **Override-map shape.** Even with a schema slot and a parser, today's `ABILITY_OVERRIDES` is keyed by ability id — wrong shape for class-feature-choice ids that aren't abilities.
+
+**Known instances** (printed Heroes Book confirmed 2026-05-12):
+
+- **Conduit Prayers** (5 options, all granting static effects): *Prayer of Destruction* (+1 rolled damage with magic abilities), *Prayer of Distance* (+2 distance on ranged magic abilities), *Prayer of Soldier's Skill* (+3 Stamina per echelon, +1 damage with weapon abilities, kit-bypass for light armor/weapons), *Prayer of Speed* (+1 speed, +1 Disengage distance), *Prayer of Steel* (+6 Stamina per echelon, +1 stability).
+- **Conduit Wards** — parallel 5-option block, similar shape (verify when populating).
+- **Censor 1st-Level Domain Features** — choose-one-domain-from-12 with paired feature + skill grants (Creation/Death/Fate/Knowledge/Life/Love/Nature/Protection/Storm/Sun/Trickery/War). E.g. *Blessing of Compassion* (Love domain): "edge on any test made to assist another creature with a test"; *Inner Light* (Sun domain), etc.
+- Likely more across the other 7 classes — fully cataloguing is part of resolving this Q.
+
+**Engine implication today.** A Conduit hero with Prayer of Steel gets +6 Stamina in the rulebook but the engine doesn't apply it. The character is mechanically incorrect on the sheet. Same for every Conduit prayer/ward and every Censor domain feature with a static effect.
+
+**Right shape (sketch).** Three coordinated changes:
+
+1. Extend `LevelChoicesSchema` (or add a top-level `classFeatureChoices: Record<string, string>` slot on `CharacterSchema`) so the picked feature ids can be recorded.
+2. Either (a) extend the parser to emit class-feature *options* as a new shape (`ClassFeatureOption` records) alongside `Ability` records — keyed by `{classId}.{slotName}.{optionId}`, OR (b) hand-author the options in a new override file `packages/data/overrides/class-features.ts` (faster to land, less ambitious).
+3. Add a `collectFromClassFeatureChoices` collector (or extend `collectFromClassFeatures`) to read the choice slots + override map and emit attachments.
+
+**Status.** 🟡 open. No action required for Epic 2B close. The mechanism is well-bounded once the schema slot lands; the long tail of cataloguing every class-feature option is the bulk of the work.
+
+**To revisit if:** a table actually plays a Conduit/Censor/Talent/etc. character and notices the missing stat bonuses, OR a future epic specifically targets class-feature completeness.
 
 ---
 

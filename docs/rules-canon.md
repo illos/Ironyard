@@ -1773,34 +1773,48 @@ beyond the four structural bonuses (§ 10.6–10.9).
   only the higher bonus applies." Engine sums via `applyEffect`. New
   shape gap.
 
-### 10.11 Class-feature attachments 🚧
+### 10.11 Class-feature attachments ✅
 <!-- Generated slug: character-attachment-activation.class-feature-attachments -->
 
 For each ability id in `character.levelChoices[lvl].abilityIds` and
 `subclassAbilityIds`, the collector consults
 `ABILITY_OVERRIDES[abilityId]` and folds in any attachments. This is
-the seam for class features that modify static runtime stats.
+the engine seam for class features that ARE shipped as standard Ability
+records (with action-type + power-roll structure) and need to layer a
+static stat on top of their encounter-time effects.
 
-After the Slice 4 sweep of `.reference/data-md/Rules/Abilities/` and
-`Rules/Classes By Level/`, NO ability shipping in v1 grants a static
-runtime stat: the per-level *ability* records all describe combat
-actions (power rolls, conditions, triggered movement) whose effects
-fire WITHIN an encounter, not statically on the sheet. Stat-touching
-*class features* exist as inline prose in `Rules/Classes By Level/`
-(Conduit prayers / domain blessings, Censor judgments) but they are
-NOT addressable as ability ids — the parser doesn't emit them as
-individual Ability records and `LevelChoicesSchema` has no slot for
-them. When the pipeline grows a "blessing/prayer/domain feature"
-pick slot, those entries will land here (or in a parallel override
-map).
+After the Slice 4 sweep of `.reference/data-md/Rules/Abilities/`, NO
+ability shipping in v1 carries this combination: the per-level ability
+records all describe combat actions (power rolls, conditions, triggered
+movement) whose effects fire WITHIN an encounter, not statically on
+the sheet. So `ABILITY_OVERRIDES` legitimately ships empty.
 
-**Source.** Negative-result sweep: searched `.reference/data-md/Rules/
-Abilities/<class>/` and `Rules/Classes By Level/<class>/`. No
-ability-keyed entry produces a static stat-mod / immunity / grant-skill
-effect in v1.
+**This section's scope is narrow** — it covers ONLY the ability-id-keyed
+override path. Class-feature CHOICES that don't take an Ability shape
+(Conduit Prayers / Wards, Censor Domain features) are a separate
+pipeline that doesn't exist yet: see [Q18](rule-questions.md#q18) for
+the schema-slot + parser + override-map gap that has to land before
+those features can be modelled. The Conduit hero with Prayer of Steel
+SHOULD get +6 Stamina + +1 stability; today the engine has no slot to
+record the choice in the first place.
+
+**Source.**
+- SteelCompendium — `.reference/data-md/Rules/Abilities/<class>/` —
+  every shipping Ability record. None has `feature_type` indicating a
+  static class-feature stat-grant; all are encounter-time.
+- Printed Heroes Book — *Classes* chapter (e.g. Conduit chapter
+  pp. 94+, Censor chapter pp. 78+) confirms that class features with
+  static stat effects (Conduit Prayer of Steel: "+6 Stamina, increases
+  by 6 at 4th/7th/10th"; Prayer of Speed: "+1 speed, +1 Disengage";
+  Censor 1st-Level Domain Features: per-domain skill + feature grants)
+  exist but are shipped as inline class-chapter prose, not as Ability
+  records. Confirmed 2026-05-12.
 
 **Override authoring.** `ABILITY_OVERRIDES` in
 `packages/data/overrides/abilities.ts` — intentionally empty today.
+The seam is preserved for future Ability records that DO carry a
+static stat layer (e.g. a 1st-level passive feature with a power-roll
+trigger AND a stat mod).
 
 ### 10.12 Item-grant attachments 🚧
 <!-- Generated slug: character-attachment-activation.item-grant-attachments -->
@@ -1946,9 +1960,15 @@ skipped entry with `SKIPPED-DEFERRED` for traceability.
 - **Power-roll floors and turn-economy modifiers.** Encepter's
   "tier-3 floor on Presence rolls", Mortal Coil's "+1 main action per
   turn". Need new `AttachmentEffect` variants.
-- **Class-feature overrides via inline class prose.** Conduit prayers
-  / blessings, Censor judgments. No ability id to key against;
-  pipeline gap (see 10.11).
+- **Class-feature choice slots (Conduit Prayers/Wards, Censor Domain
+  features, etc.).** Live as inline class-chapter prose, not Ability
+  records. Three coordinated engine extensions needed: schema slot for
+  the choice id, parser for the inline blocks, override map keyed on
+  the new id. Real stat effects today miss the runtime — e.g. Prayer
+  of Steel's +6 Stamina + +1 stability doesn't apply. Tracked in detail
+  at [Q18](rule-questions.md#q18-class-feature-choice-slots--pipeline-gap-);
+  the § 10.11 seam (`ABILITY_OVERRIDES`) is correctly narrow and not
+  the right home for these.
 - **Kit-keyword leveled-treasure bonuses.** None present in
   SteelCompendium markdown (see 10.10).
 - **Kit melee/ranged damage bonus — scope + tier scaling.** See § 10.8
