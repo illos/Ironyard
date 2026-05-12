@@ -245,6 +245,46 @@ export const CompleteCharacterSchema = CharacterSchema.refine((c) => c.ancestryI
       return true;
     },
     { message: 'levelChoices must cover every level up to `level`', path: ['levelChoices'] },
+  )
+  // Devil: must pick free interpersonal skill via Silver Tongue
+  .refine((c) => c.ancestryId !== 'devil' || c.ancestryChoices.freeSkillId !== null, {
+    message: 'Devil characters must pick a Silver Tongue skill',
+    path: ['ancestryChoices', 'freeSkillId'],
+  })
+  // Dragon Knight: must pick Wyrmplate damage type
+  .refine((c) => c.ancestryId !== 'dragon-knight' || c.ancestryChoices.wyrmplateType !== null, {
+    message: 'Dragon Knight characters must pick a Wyrmplate damage type',
+    path: ['ancestryChoices', 'wyrmplateType'],
+  })
+  // Dragon Knight + Prismatic Scales purchased: must pick second damage type
+  .refine(
+    (c) =>
+      c.ancestryId !== 'dragon-knight' ||
+      !c.ancestryChoices.traitIds.includes('prismatic-scales') ||
+      c.ancestryChoices.prismaticScalesType !== null,
+    {
+      message: 'Prismatic Scales requires a second damage type pick',
+      path: ['ancestryChoices', 'prismaticScalesType'],
+    },
+  )
+  // Revenant: must pick former ancestry
+  .refine((c) => c.ancestryId !== 'revenant' || c.ancestryChoices.formerAncestryId !== null, {
+    message: 'Revenant characters must pick a Former Life ancestry',
+    path: ['ancestryChoices', 'formerAncestryId'],
+  })
+  // Revenant: previousLifeTraitIds length must equal previous-life-* slot count
+  .refine(
+    (c) => {
+      if (c.ancestryId !== 'revenant') return true;
+      const slotCount = c.ancestryChoices.traitIds.filter((id) =>
+        id.startsWith('previous-life-'),
+      ).length;
+      return c.ancestryChoices.previousLifeTraitIds.length === slotCount;
+    },
+    {
+      message: 'Each Previous Life slot must have a chosen trait',
+      path: ['ancestryChoices', 'previousLifeTraitIds'],
+    },
   );
 
 export type CompleteCharacter = z.infer<typeof CompleteCharacterSchema>;
