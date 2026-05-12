@@ -1546,7 +1546,7 @@ see [Q16](rule-questions.md#q16) — and post-respite resource resets).
 Derivation here is correct for any chosen value; the respite gate is
 an intent-layer concern, not a derivation concern.
 
-### 10.4 Dragon Knight Prismatic Scales attachment 🚧
+### 10.4 Dragon Knight Prismatic Scales attachment ✅
 <!-- Generated slug: character-attachment-activation.dragon-knight-prismatic-scales-attachment -->
 
 The purchased trait *Prismatic Scales* grants a second always-on damage
@@ -1561,6 +1561,16 @@ emission shape as 10.3, sourced from
   Wyrmplate.")
 
 **Override authoring.** No override required — see 10.3.
+
+**Same-type edge case.** The schema doesn't forbid picking the same
+damage type for both Wyrmplate and Prismatic Scales — and if the
+player did, `damage.ts`'s `sumMatching` would stack the two immunities
+to 2× level. Canon clearly implies the second pick should be a
+different type ("a second always-on" / "in addition to") but doesn't
+explicitly forbid same-type. Constraint belongs in the wizard's
+character-validation layer (alongside the existing rule that
+`prismaticScalesType` must be non-null when the trait is taken), not
+in derivation.
 
 ### 10.5 Ancestry purchased-trait attachments 🚧
 <!-- Generated slug: character-attachment-activation.ancestry-purchased-trait-attachments -->
