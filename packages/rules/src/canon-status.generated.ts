@@ -89,7 +89,7 @@ export const canonStatus = {
   'character-derivation.recoveries': 'verified',
   'character-derivation.recovery-value': 'verified',
   'character-attachment-activation': 'drafted',
-  'character-attachment-activation.ancestry-granted-immunity-attachments': 'drafted',
+  'character-attachment-activation.ancestry-granted-immunity-attachments': 'verified',
   'character-attachment-activation.ancestry-signature-ability-attachments': 'drafted',
   'character-attachment-activation.dragon-knight-wyrmplate-attachment': 'drafted',
   'character-attachment-activation.dragon-knight-prismatic-scales-attachment': 'drafted',

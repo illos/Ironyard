@@ -1448,7 +1448,7 @@ Until then, every collector in `packages/rules/src/attachments/collectors/`
 deliberately omits `requireCanonSlug` so attachments continue to apply —
 preserving Slice 4/5 behavior.
 
-### 10.1 Ancestry granted-immunity attachments 🚧
+### 10.1 Ancestry granted-immunity attachments ✅
 <!-- Generated slug: character-attachment-activation.ancestry-granted-immunity-attachments -->
 
 For each entry in `ancestry.grantedImmunities`, emit an `immunity`
@@ -1468,6 +1468,16 @@ attachment with the resolved damage kind and level-scaled value. The
 ancestry record, augmented in `packages/data/overrides/ancestries.ts`
 (`ANCESTRY_OVERRIDES.<ancestryId>.grantedImmunities`) where the markdown
 isn't structurally exposed (e.g. Time Raider, Revenant).
+
+**Out-of-scope mechanics deferred to other sections** (cited 2026-05-12 user review):
+- Revenant *Tough But Withered* fire weakness 5 — emitted as a
+  `weakness` attachment in `collectFromAncestry` special-case (covered
+  by this section conceptually, distinct from immunities).
+- Revenant *inert state* (replaces dying at negative-winded), fire-while-
+  inert insta-death, 12-hour Stamina recovery from inert — these are
+  damage / state-transition mechanics, not stat folds; see
+  [`rule-questions.md` Q16](rule-questions.md#q16-revenant-tough-but-withered--out-of-scope-mechanics-)
+  and the future `§ 2.7+` winded/dying canon section.
 
 ### 10.2 Ancestry signature-ability attachments 🚧
 <!-- Generated slug: character-attachment-activation.ancestry-signature-ability-attachments -->

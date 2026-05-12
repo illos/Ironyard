@@ -3,6 +3,11 @@ import type { DamageType, Participant, TypedResistance } from '@ironyard/shared'
 // Slice 3 subset of §2.12. Steps 1-5 in the canon (weakness, then immunity,
 // then stamina). Steps 6+ (winded/dying/dead transitions, temp stamina) land
 // in slice 4+.
+//
+// When winded/dying transitions land: Revenant ancestry replaces "dying" with
+// "inert" at negative-winded; fire damage while inert is insta-death; 12h inert
+// → regain recovery-value stamina. See docs/rule-questions.md Q16 and
+// docs/rules-canon.md §10.1 footnote.
 
 function sumMatching(list: readonly TypedResistance[], type: DamageType): number {
   let total = 0;

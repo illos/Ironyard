@@ -34,6 +34,7 @@ Anywhere a `rules-canon.md` entry rests on a judgment call rather than a direct 
 | Q13 | Opposed power rolls — simultaneous or sequential? | 🟢 | rules-canon § 7.5, § 7.8 |
 | Q14 | Numeric Bleeding rating ("Bleeding 5") — flavor for canon §3.5.1 or per-instance damage? | 🟡 | (parser, not in canon yet) |
 | Q15 | Default duration when a tier outcome names a condition with no marker | 🟡 | (parser, not in canon yet) |
+| Q16 | Revenant Tough But Withered — inert state, fire-while-inert death, 12h Stamina recovery | 🟡 | rules-canon § 10.1 |
 
 ---
 
@@ -467,6 +468,33 @@ The distinction matters because hero-tokens (Tests.md:97) let a player re-roll a
 **Engine implication.** Parser-only — engine reads whatever the parser emits. If revised to B, the parser swaps the default; engine is unchanged. Existing markers (`(save ends)`, `until …`) override the default in all cases.
 
 **To revisit if:** printed-rulebook §3.2 reads explicitly that monster abilities default end_of_encounter, or playtest finds unmarked conditions should stick longer than EoT.
+
+---
+
+## Q16. Revenant Tough But Withered — out-of-scope mechanics 🟡
+
+**Cited from:** `rules-canon.md` § 10.1.
+
+**Question.** Revenant's signature trait *Tough But Withered* (printed Heroes Book) grants four immunities + fire weakness 5 (handled in § 10.1) but ALSO carries several mechanics that don't fit the `CharacterAttachment` shape:
+
+1. **Inert state replaces dying.** When Revenant's Stamina reaches `-winded`, they become **inert** instead of dying. Inert = prone, can't stand, can't speak, no main / maneuver / move / triggered actions; otherwise observes surroundings.
+2. **Fire-while-inert insta-death.** Any fire damage taken while inert destroys the body and kills the Revenant.
+3. **12-hour Stamina recovery from inert.** After 12 hours inert (without dying to fire), regain Stamina equal to recovery value (presumably exiting inert).
+4. **No suffocation / no eat-or-drink.** Narrative; no runtime effect — engine ignores.
+
+**Source.** `.reference/data-md/Rules/Ancestries/Revenant.md` Signature Trait block (printed Heroes Book confirmed by user 2026-05-12).
+
+**Engine implication today.** None of these are auto-applied. The engine's damage pipeline currently stops at "Slice 3 subset" (weakness → immunity → stamina; see `packages/rules/src/damage.ts:3-5`). Winded / dying / dead transitions are deferred to a later slice — and Revenant's *inert* state is a per-ancestry override that has to layer on top of whatever dying transition the engine ends up modeling. Until that lands, a Revenant at negative-winded must be narrated manually.
+
+**Why this isn't a § 10 (CharacterAttachment) concern.** § 10 models stat/effect folding into derived runtime (`maxStamina`, `immunities`, etc.). The Revenant mechanics above are *behavioral changes* to game-mechanic state transitions, not runtime stat mods. Trying to encode "replaces dying with inert" as an `AttachmentEffect` variant would require modeling state machines in attachments, which would be the wrong abstraction.
+
+**Right homes (when those engine sections exist):**
+- Inert / fire-death / 12-h recovery → `rules-canon.md § 2.7-2.9` (winded / dying transitions) once those sections land in the damage engine. Revenant's ancestry id will gate per-character override behavior.
+- Suffocation / no eat-drink → out of scope for the engine; narrative only.
+
+**Status.** 🟡 open. No action required for Epic 2B close; revisit when § 2.7+ (winded/dying transitions) lands.
+
+**To revisit if:** the damage engine grows past its Slice 3 subset to handle winded/dying transitions, OR a Revenant character actually hits negative-winded in a real session and the table needs engine support.
 
 ---
 

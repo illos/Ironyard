@@ -154,15 +154,16 @@ describe('applyAttachments — ordering', () => {
 
 describe('applyAttachments — requireCanonSlug gating', () => {
   it('skips attachment when requireCanonSlug is non-verified (drafted)', () => {
-    // All attachment.* slugs are drafted today; the engine's requireCanon
+    // Most attachment.* slugs are drafted today; the engine's requireCanon
     // gate returns false for non-verified slugs and the applier silently
     // skips the attachment. Slice 6 documents this invariant.
+    // (§10.1 is verified as of Gate-2 walkthrough 2026-05-12 — pick a still-
+    // drafted slug here. Any subsection of § 5 Heroic resources works.)
     const att: CharacterAttachment = {
       source: {
         kind: 'ancestry-trait',
         id: 'test.drafted-slug',
-        requireCanonSlug:
-          'character-attachment-activation.ancestry-granted-immunity-attachments',
+        requireCanonSlug: 'heroic-resources-and-surges',
       },
       effect: { kind: 'stat-mod', stat: 'maxStamina', delta: 999 },
     };
