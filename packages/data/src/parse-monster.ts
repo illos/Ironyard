@@ -576,7 +576,7 @@ export function parseTierOutcome(raw: string): TierOutcome {
   return result;
 }
 
-function parsePowerRoll(blockLines: string[]): PowerRoll | null {
+export function parsePowerRoll(blockLines: string[]): PowerRoll | null {
   const stripped = blockLines.map((l) => l.replace(/^>\s*/, '').trim());
   let bonus: string | null = null;
   let tier1Raw: string | null = null;

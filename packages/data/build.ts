@@ -2,6 +2,7 @@ import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'n
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type {
+  Ability,
   Ancestry,
   AncestryFile,
   Career,
@@ -23,6 +24,7 @@ import { parseClassMarkdown } from './src/parse-class';
 import { parseComplicationMarkdown } from './src/parse-complication';
 import { parseItemMarkdown } from './src/parse-item';
 import { parseKitMarkdown } from './src/parse-kit';
+import { parseAbilityMarkdown } from './src/parse-ability';
 import { parseMonsterMarkdown } from './src/parse-monster';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -49,6 +51,10 @@ const API_KITS_OUT = join(REPO_ROOT, 'apps/api/src/data/kits.json');
 const ITEMS_OUT = join(REPO_ROOT, 'apps/web/public/data/items.json');
 const API_ITEMS_OUT = join(REPO_ROOT, 'apps/api/src/data/items.json');
 const TREASURES_DIR = join(RULES_DIR, 'Treasures');
+// abilities.json: populated by Phase 2 Epic 2A ability ingestion (Slice 3).
+const ABILITIES_OUT = join(REPO_ROOT, 'apps/web/public/data/abilities.json');
+const API_ABILITIES_OUT = join(REPO_ROOT, 'apps/api/src/data/abilities.json');
+const ABILITIES_DIR = join(RULES_DIR, 'Abilities');
 
 // API Worker data — flat arrays (no wrapper) so getStaticDataBundle() can
 // iterate and parse them with their individual schemas. Mirroring the
@@ -101,6 +107,9 @@ function main() {
 
   // ── Items (Treasures) ───────────────────────────────────────────────────
   buildItems();
+
+  // ── PC Abilities ─────────────────────────────────────────────────────────
+  buildAbilities();
 
   // ── Monsters ────────────────────────────────────────────────────────────
   try {
@@ -492,6 +501,60 @@ function buildItems(): void {
   writeFileSync(API_ITEMS_OUT, `${JSON.stringify(items, null, 2)}\n`);
   console.log(`build:data — wrote ${items.length} items to apps/web/public/data/items.json`);
   console.log('             mirrored to apps/api/src/data/items.json');
+}
+
+// ── Ability build ─────────────────────────────────────────────────────────────
+
+function buildAbilities(): void {
+  let abilityFiles: string[];
+  try {
+    abilityFiles = walkMd(ABILITIES_DIR);
+  } catch {
+    console.error(`build:data — abilities dir not found at ${ABILITIES_DIR}`);
+    return;
+  }
+
+  const abilities: Ability[] = [];
+  const abilityFailures: string[] = [];
+
+  for (const path of abilityFiles) {
+    const md = readFileSync(path, 'utf-8');
+    const a = parseAbilityMarkdown(md, path);
+    if (a) abilities.push(a);
+    else abilityFailures.push(path);
+  }
+
+  abilities.sort(
+    (a, b) =>
+      (a.sourceClassId ?? '').localeCompare(b.sourceClassId ?? '') ||
+      a.name.localeCompare(b.name),
+  );
+
+  const abilitiesFile = {
+    version: '1.0',
+    generatedAt: Date.now(),
+    count: abilities.length,
+    abilities,
+  };
+
+  mkdirSync(dirname(ABILITIES_OUT), { recursive: true });
+  writeFileSync(ABILITIES_OUT, `${JSON.stringify(abilitiesFile, null, 2)}\n`);
+  mkdirSync(dirname(API_ABILITIES_OUT), { recursive: true });
+  writeFileSync(API_ABILITIES_OUT, `${JSON.stringify(abilities, null, 2)}\n`);
+
+  const structuredCount = abilities.filter((a) => a.powerRoll).length;
+  const structuredPct = ((structuredCount / Math.max(1, abilities.length)) * 100).toFixed(1);
+
+  console.log(
+    `build:data — wrote ${abilities.length} abilities to apps/web/public/data/abilities.json`,
+  );
+  console.log('             mirrored to apps/api/src/data/abilities.json');
+  console.log(`  abilities with structured powerRoll: ${structuredCount}/${abilities.length} (${structuredPct}%)`);
+
+  if (abilityFailures.length > 0) {
+    console.log(`  abilities.json: ${abilityFailures.length} files yielded null (non-ability stubs or unrecognised type)`);
+    console.log(`  failures (first 10):\n${abilityFailures.slice(0, 10).map((p) => `    ${p.replace(REPO_ROOT, '.')}`).join('\n')}`);
+  }
 }
 
 // ── Class build ───────────────────────────────────────────────────────────────
