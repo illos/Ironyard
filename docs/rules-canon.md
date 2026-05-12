@@ -1816,7 +1816,7 @@ The seam is preserved for future Ability records that DO carry a
 static stat layer (e.g. a 1st-level passive feature with a power-roll
 trigger AND a stat mod).
 
-### 10.12 Item-grant attachments 🚧
+### 10.12 Item-grant attachments ✅
 <!-- Generated slug: character-attachment-activation.item-grant-attachments -->
 
 For each equipped entry in `character.inventory` (`entry.equipped === true`),
@@ -1845,15 +1845,23 @@ Consumables are out of scope (they apply through intents at use-time,
 not as equipped attachments).
 
 **Source.**
-- `.reference/data-md/Rules/Treasures/Leveled Treasures/Other Leveled
+- SteelCompendium —
+  `.reference/data-md/Rules/Treasures/Leveled Treasures/Other Leveled
   Treasures/Lightning Treads.md` line 31 ("While you wear these boots,
-  … you gain a +2 bonus to speed.")
-- `.reference/data-md/Rules/Treasures/Trinkets/1st Echelon Trinkets/
+  … you gain a +2 bonus to speed.") and
+  `.reference/data-md/Rules/Treasures/Trinkets/1st Echelon Trinkets/
   Color Cloak.md` line 31 ("While worn, a yellow Color Cloak grants
   you lightning immunity equal to your level.")
+- Printed Heroes Book — *Rewards → Treasures* chapter, Lightning
+  Treads + Color Cloak (Yellow) entries. Confirmed verbatim 2026-05-12
+  against `.reference/core-rules/Draw_Steel_Heroes_v1.01.pdf`.
 
 **Override authoring.** `ITEM_OVERRIDES` in
-`packages/data/overrides/items.ts`, keyed by `item.id`.
+`packages/data/overrides/items.ts`, keyed by `item.id`. Weapon and
+armor leveled-treasure attachments authored in the future MUST set
+`condition: { kind: 'kit-has-keyword', keyword: <weapon-or-armor-kw> }`
+per § 10.10's kit-keyword gate. Body-slot items (Feet, Neck, Head,
+etc.) apply unconditionally as today's entries do.
 
 ### 10.13 Title-grant attachments 🚧
 <!-- Generated slug: character-attachment-activation.title-grant-attachments -->
