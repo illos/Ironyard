@@ -1518,7 +1518,7 @@ data (`human-detect-the-supernatural`, `polder-shadowmeld`) is not yet
 ingested because these abilities are embedded in the ancestry markdown,
 not the abilities markdown. Tracked in [Q17](rule-questions.md#q17).
 
-### 10.3 Dragon Knight Wyrmplate attachment 🚧
+### 10.3 Dragon Knight Wyrmplate attachment ✅
 <!-- Generated slug: character-attachment-activation.dragon-knight-wyrmplate-attachment -->
 
 The Dragon Knight signature trait *Wyrmplate* grants damage immunity
@@ -1530,11 +1530,21 @@ attachment with `damageKind` taken from
 **Source.**
 - `.reference/data-md/Rules/Ancestries/Dragon Knight.md` line 107
   ("Your hardened scales grant you damage immunity equal to your level
-  to one of the following damage types…")
+  to one of the following damage types… You can change your damage
+  immunity type when you finish a respite.")
 
 **Override authoring.** No override required — the choice is stored on
 the character record (`character.ancestryChoices.wyrmplateType`) and
 read directly by `collectFromAncestry`.
+
+**Respite-gating deferred.** The rulebook gates the *change* of
+damage type on completing a respite. Today the data model allows
+`wyrmplateType` to be edited at any time via the existing character-
+update flow; the respite gate will land alongside the future Respite
+intent (which also needs to handle Revenant 12h Stamina recovery —
+see [Q16](rule-questions.md#q16) — and post-respite resource resets).
+Derivation here is correct for any chosen value; the respite gate is
+an intent-layer concern, not a derivation concern.
 
 ### 10.4 Dragon Knight Prismatic Scales attachment 🚧
 <!-- Generated slug: character-attachment-activation.dragon-knight-prismatic-scales-attachment -->
