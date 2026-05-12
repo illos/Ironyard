@@ -10,6 +10,7 @@ import type {
   Complication,
   ComplicationFile,
   HeroClass,
+  Item,
   Kit,
   KitFile,
   Monster,
@@ -20,6 +21,7 @@ import { parseAncestryMarkdown } from './src/parse-ancestry';
 import { parseCareerMarkdown } from './src/parse-career';
 import { parseClassMarkdown } from './src/parse-class';
 import { parseComplicationMarkdown } from './src/parse-complication';
+import { parseItemMarkdown } from './src/parse-item';
 import { parseKitMarkdown } from './src/parse-kit';
 import { parseMonsterMarkdown } from './src/parse-monster';
 
@@ -43,6 +45,10 @@ const CLASSES_OUT = join(REPO_ROOT, 'apps/web/public/data/classes.json');
 // kits.json: populated by Phase 2 Epic 2 kit ingestion.
 const KITS_OUT = join(REPO_ROOT, 'apps/web/public/data/kits.json');
 const API_KITS_OUT = join(REPO_ROOT, 'apps/api/src/data/kits.json');
+// items.json: populated by Phase 2 Epic 2A item ingestion.
+const ITEMS_OUT = join(REPO_ROOT, 'apps/web/public/data/items.json');
+const API_ITEMS_OUT = join(REPO_ROOT, 'apps/api/src/data/items.json');
+const TREASURES_DIR = join(RULES_DIR, 'Treasures');
 
 // API Worker data — flat arrays (no wrapper) so getStaticDataBundle() can
 // iterate and parse them with their individual schemas. Mirroring the
@@ -92,6 +98,9 @@ function main() {
 
   // ── Kits ─────────────────────────────────────────────────────────────────
   buildKits(version);
+
+  // ── Items (Treasures) ───────────────────────────────────────────────────
+  buildItems();
 
   // ── Monsters ────────────────────────────────────────────────────────────
   try {
@@ -241,6 +250,19 @@ function main() {
     }
     if (errors.length > 20) console.warn(`    … and ${errors.length - 20} more`);
   }
+}
+
+// ── Recursive markdown file walker ───────────────────────────────────────────
+
+function walkMd(dir: string): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir)) {
+    const p = join(dir, entry);
+    const st = statSync(p);
+    if (st.isDirectory()) out.push(...walkMd(p));
+    else if (entry.endsWith('.md') && !entry.startsWith('_')) out.push(p);
+  }
+  return out;
 }
 
 // ── Ancestry build ────────────────────────────────────────────────────────────
@@ -435,6 +457,41 @@ function buildKits(version: string): void {
   if (errors.length > 0) {
     for (const e of errors) console.warn(`  skipped ${e.file}: ${e.reason}`);
   }
+}
+
+// ── Item build ────────────────────────────────────────────────────────────────
+
+function buildItems(): void {
+  let itemFiles: string[];
+  try {
+    itemFiles = walkMd(TREASURES_DIR);
+  } catch {
+    console.error(`build:data — treasures dir not found at ${TREASURES_DIR}`);
+    return;
+  }
+
+  const items: Item[] = [];
+  for (const path of itemFiles) {
+    const md = readFileSync(path, 'utf-8');
+    const it = parseItemMarkdown(md);
+    if (it) items.push(it);
+  }
+
+  items.sort((a, b) => a.id.localeCompare(b.id));
+
+  const itemsFile = {
+    version: '1.0',
+    generatedAt: Date.now(),
+    count: items.length,
+    items,
+  };
+
+  mkdirSync(dirname(ITEMS_OUT), { recursive: true });
+  writeFileSync(ITEMS_OUT, `${JSON.stringify(itemsFile, null, 2)}\n`);
+  mkdirSync(dirname(API_ITEMS_OUT), { recursive: true });
+  writeFileSync(API_ITEMS_OUT, `${JSON.stringify(items, null, 2)}\n`);
+  console.log(`build:data — wrote ${items.length} items to apps/web/public/data/items.json`);
+  console.log('             mirrored to apps/api/src/data/items.json');
 }
 
 // ── Class build ───────────────────────────────────────────────────────────────
