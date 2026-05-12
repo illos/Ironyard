@@ -197,6 +197,12 @@ function collectAbilityIds(character: Character): string[] {
       out.push(...choices.subclassAbilityIds);
     }
   }
+  // Class-D ancestry signature abilities (Human's Detect the Supernatural,
+  // Orc's Relentless, Dwarf's Runic Carving) live on AncestrySchema.signatureAbilityId.
+  // Surfacing them on the character sheet is deferred to Epic 2 alongside PC
+  // ability data ingest — without ability detail records there's no AbilityCard
+  // to render. Re-enable by pushing ancestry.signatureAbilityId here once the
+  // ingest lands.
   return out;
 }
 

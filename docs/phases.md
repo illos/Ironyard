@@ -71,7 +71,12 @@ Known Epic 1 limitations deferred to Epic 2:
 
 - **PC ability rolling** (`PlayerSheetPanel`) renders ability ids as plain text, not interactive cards — requires PC ability data ingest (class abilities JSON, Epic 2).
 - **Kit picker** (`KitStep`) shows an empty-state placeholder for kit-using classes — kit data ingest is also Epic 2.
+- **Class-D ancestry signature abilities** (Human's Detect the Supernatural, Orc's Relentless, Dwarf's Runic Carving) don't yet show on the character sheet. `AncestrySchema.signatureAbilityId` is wired in the schema (Slice 5) but `collectAbilityIds()` doesn't read it because PC ability data ingest is also Epic 2. The three traits exist in the rules text on the ancestry display but have no interactive surface yet.
 - **Culture skill/language pools** (`CultureStep`) are hardcoded placeholder lists — Phase 5 will replace with real compendium data.
+
+### Phase 2 Epic 1.1 — wizard polish (shipping)
+
+Follow-up to Epic 1 covering: name/level required + reordered details, ancestry trait-point cap, characteristic array drag-drop (dnd-kit), ancestry size/speed/immunity derivation (fixed the silent "1M for all" bug), and per-ancestry sub-pickers for the three Class-C ancestries (Devil → Silver Tongue skill; Dragon Knight → Wyrmplate + conditional Prismatic Scales; Revenant → Former Life ancestry + Previous Life trait sub-picker, including the +1 budget for Size 1S former life). The ancestry custom-logic review notes are at [`superpowers/notes/2026-05-11-ancestry-custom-logic-review.md`](superpowers/notes/2026-05-11-ancestry-custom-logic-review.md).
 
 ## Phase 3 — Collaborative campaign capabilities
 
