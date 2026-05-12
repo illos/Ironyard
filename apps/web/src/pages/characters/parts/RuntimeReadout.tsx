@@ -44,9 +44,14 @@ export function RuntimeReadout({
       <div>
         <h4 className="text-neutral-400 text-xs uppercase tracking-wide">Abilities</h4>
         <ul className="mt-1 text-xs space-y-1">
-          {runtime.abilityIds.map((id) => (
-            <li key={id} className="font-mono">{id}</li>
-          ))}
+          {runtime.abilityIds.map((id) => {
+            const ability = bundle.abilities.get(id);
+            return (
+              <li key={id} className="text-xs">
+                {ability ? ability.name : <span className="font-mono text-amber-400">{id} (missing)</span>}
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>
