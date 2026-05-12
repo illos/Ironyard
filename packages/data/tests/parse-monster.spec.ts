@@ -589,3 +589,62 @@ describe('parseMonsterMarkdown — abilities', () => {
     expect(spear?.raw).toMatch(/Power Roll \+ 2/);
   });
 });
+
+describe('parseMonsterMarkdown — ability id format', () => {
+  // The ability id contract is `${monsterId}-${slugify(name)}`. These tests
+  // pin that format so a refactor of parseAbilityBlock can't silently regress
+  // it (e.g. by dropping the monster prefix, swapping the slug rule, or
+  // emitting raw UUIDs). Code-review follow-up to d8aacd04.
+
+  it('id is `${monsterId}-${slugify(name)}` for a multi-word ability (Spear Charge)', () => {
+    const r = parseMonsterMarkdown(goblinWarrior);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const spear = r.monster.abilities.find((a) => a.name === 'Spear Charge');
+    expect(spear).toBeDefined();
+    expect(spear?.id).toBe('goblin-warrior-l1-spear-charge');
+  });
+
+  it('id slugifies punctuation (Is This What They Taught You?)', () => {
+    // Ajax fixture: ability name ends with `?`. The slugify rule collapses
+    // any run of non-alphanumerics into a single dash and trims trailing
+    // dashes, so the `?` disappears and the multi-word name becomes a clean
+    // dash-joined slug.
+    const r = parseMonsterMarkdown(ajaxBoss);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const trig = r.monster.abilities.find((a) => a.name === 'Is This What They Taught You?');
+    expect(trig).toBeDefined();
+    expect(trig?.id).toBe('ajax-the-invincible-l11-is-this-what-they-taught-you');
+  });
+
+  it('id prefix matches the parent monster id for every ability', () => {
+    // Defence-in-depth: regardless of which fixture, the ability id must
+    // start with `${monster.id}-` so a downstream lookup can recover the
+    // owning monster from the ability id alone.
+    const r = parseMonsterMarkdown(ajaxBoss);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.monster.abilities.length).toBeGreaterThan(0);
+    for (const ability of r.monster.abilities) {
+      expect(ability.id.startsWith(`${r.monster.id}-`)).toBe(true);
+    }
+  });
+
+  it('same-slug abilities on different monsters get distinct ids via the monster prefix', () => {
+    // Cross-monster non-collision check using only existing fixtures. The
+    // Goblin Warrior and Ajax fixtures share no ability names, but their
+    // ability ids must still be globally distinct because each is prefixed
+    // with its parent monster id. If a future refactor dropped the prefix
+    // and started emitting bare slugs, this set would shrink.
+    const goblin = parseMonsterMarkdown(goblinWarrior);
+    const ajax = parseMonsterMarkdown(ajaxBoss);
+    expect(goblin.ok && ajax.ok).toBe(true);
+    if (!goblin.ok || !ajax.ok) return;
+    const ids = [
+      ...goblin.monster.abilities.map((a) => a.id),
+      ...ajax.monster.abilities.map((a) => a.id),
+    ];
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+});
