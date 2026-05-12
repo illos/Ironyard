@@ -261,6 +261,7 @@ export type {
 // ── Character blob schemas ─────────────────────────────────────────────────────
 
 export {
+  AncestryChoicesSchema,
   CharacterCultureSchema,
   CharacterCareerChoicesSchema,
   CharacterDetailsSchema,
@@ -272,6 +273,7 @@ export {
   UpdateCharacterRequestSchema,
 } from './character';
 export type {
+  AncestryChoices,
   Character,
   CharacterCareerChoices,
   CharacterCulture,

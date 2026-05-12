@@ -13,6 +13,7 @@ import type {
   Monster,
   MonsterFile,
 } from '@ironyard/shared';
+import { ANCESTRY_OVERRIDES } from './overrides/ancestries';
 import { parseAncestryMarkdown } from './src/parse-ancestry';
 import { parseCareerMarkdown } from './src/parse-career';
 import { parseClassMarkdown } from './src/parse-class';
@@ -267,21 +268,35 @@ function buildAncestries(version: string): void {
     }
   }
 
-  ancestries.sort((a, b) => a.name.localeCompare(b.name));
+  // Fold in hand-authored override fields (size, speed, immunities, signatureAbilityId).
+  // Overrides win; schema defaults apply when neither the parser nor the override table
+  // provides a value.
+  const enrichedAncestries = ancestries.map((a) => {
+    const o = ANCESTRY_OVERRIDES[a.id] ?? {};
+    return {
+      ...a,
+      defaultSize: o.defaultSize ?? a.defaultSize ?? '1M',
+      defaultSpeed: o.defaultSpeed ?? a.defaultSpeed ?? 5,
+      grantedImmunities: o.grantedImmunities ?? a.grantedImmunities ?? [],
+      signatureAbilityId: o.signatureAbilityId !== undefined ? o.signatureAbilityId : (a.signatureAbilityId ?? null),
+    };
+  });
+
+  enrichedAncestries.sort((a, b) => a.name.localeCompare(b.name));
 
   const out: AncestryFile = {
     version,
     generatedAt: Date.now(),
-    count: ancestries.length,
-    ancestries,
+    count: enrichedAncestries.length,
+    ancestries: enrichedAncestries,
   };
   mkdirSync(dirname(ANCESTRIES_OUT), { recursive: true });
   writeFileSync(ANCESTRIES_OUT, `${JSON.stringify(out, null, 2)}\n`);
   // Mirror flat array to API Worker data directory.
   mkdirSync(dirname(API_ANCESTRIES_OUT), { recursive: true });
-  writeFileSync(API_ANCESTRIES_OUT, `${JSON.stringify(ancestries, null, 2)}\n`);
+  writeFileSync(API_ANCESTRIES_OUT, `${JSON.stringify(enrichedAncestries, null, 2)}\n`);
   console.log(
-    `build:data — wrote ${ancestries.length} ancestries to apps/web/public/data/ancestries.json`,
+    `build:data — wrote ${enrichedAncestries.length} ancestries to apps/web/public/data/ancestries.json`,
   );
   console.log('             mirrored to apps/api/src/data/ancestries.json');
   if (errors.length > 0) {

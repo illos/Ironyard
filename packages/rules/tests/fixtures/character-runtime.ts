@@ -29,7 +29,14 @@ export function buildFuryL1Fixture(overrides: Partial<Character> = {}): Characte
       physicalFeaturesTexture: '',
     },
     ancestryId: 'human',
-    ancestryChoices: { traitIds: [] },
+    ancestryChoices: {
+      traitIds: [],
+      freeSkillId: null,
+      wyrmplateType: null,
+      prismaticScalesType: null,
+      formerAncestryId: null,
+      previousLifeTraitIds: [],
+    },
     culture: {
       customName: '',
       environment: 'urban',

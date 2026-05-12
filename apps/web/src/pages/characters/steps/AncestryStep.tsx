@@ -1,5 +1,14 @@
 import { getAncestryTraitPointBudget } from '@ironyard/shared';
-import type { Character } from '@ironyard/shared';
+import type { AncestryChoices, Character } from '@ironyard/shared';
+
+const EMPTY_ANCESTRY_CHOICES: AncestryChoices = {
+  traitIds: [],
+  freeSkillId: null,
+  wyrmplateType: null,
+  prismaticScalesType: null,
+  formerAncestryId: null,
+  previousLifeTraitIds: [],
+};
 import type { WizardStaticData } from '../../../api/static-data';
 
 export function AncestryStep({
@@ -24,7 +33,7 @@ export function AncestryStep({
               key={a.id}
               type="button"
               onClick={() =>
-                onPatch({ ancestryId: a.id, ancestryChoices: { traitIds: [] } })
+                onPatch({ ancestryId: a.id, ancestryChoices: EMPTY_ANCESTRY_CHOICES })
               }
               className={`text-left rounded-md border px-4 py-3 min-h-11 ${isSelected ? 'bg-neutral-100 text-neutral-900 border-neutral-100' : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'}`}
             >
@@ -40,7 +49,9 @@ export function AncestryStep({
           traits={selected.purchasedTraits}
           budget={getAncestryTraitPointBudget(selected.id)}
           selected={draft.ancestryChoices?.traitIds ?? []}
-          onChange={(traitIds) => onPatch({ ancestryChoices: { traitIds } })}
+          onChange={(traitIds) =>
+            onPatch({ ancestryChoices: { ...EMPTY_ANCESTRY_CHOICES, ...draft.ancestryChoices, traitIds } })
+          }
         />
       )}
     </div>

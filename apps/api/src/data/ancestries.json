@@ -1,1 +1,613 @@
-[]
+[
+  {
+    "id": "devil",
+    "name": "Devil",
+    "description": "",
+    "signatureTrait": {
+      "name": "Silver Tongue",
+      "description": "Your innate magic allows you to twist how your words are perceived to get a better read on people and convince them to see things your way. You have one skill of your choice from the interpersonal skill group (see [Skills](#page-268-0) in Chapter 9: Tests), and you gain an edge on tests when attempting to discover an NPC's motivations and pitfalls during a negotiation (see [Chapter 11: Negotiation](#page-297-0))."
+    },
+    "purchasedTraits": [
+      {
+        "id": "barbed-tail",
+        "name": "Barbed Tail",
+        "cost": 1,
+        "description": "Your pointy tail allows you to punctuate all your actions. Once per round when you make a melee strike, you can deal extra damage with the strike equal to your highest characteristic score."
+      },
+      {
+        "id": "beast-legs",
+        "name": "Beast Legs",
+        "cost": 1,
+        "description": "Your powerful legs make you faster. You have speed 6."
+      },
+      {
+        "id": "glowing-eyes",
+        "name": "Glowing Eyes",
+        "cost": 1,
+        "description": "Your eyes are a solid, vibrant color that flares to show your excitement or rage. Whenever you take damage from a creature, you can use a triggered action to deal that creature psychic damage equal to 1d10 + your level."
+      },
+      {
+        "id": "hellsight",
+        "name": "Hellsight",
+        "cost": 1,
+        "description": "Your eyes let you see through darkness, fog, and other obscuring effects. You don't take a bane on strikes made against creatures with concealment."
+      },
+      {
+        "id": "impressive-horns",
+        "name": "Impressive Horns",
+        "cost": 2,
+        "description": "Your cherished horns are larger than the average devil's, and a hardened representation of your force of will. Whenever you make a saving throw, you succeed on a roll of 5 or higher."
+      },
+      {
+        "id": "prehensile-tail",
+        "name": "Prehensile Tail",
+        "cost": 2,
+        "description": "Your prehensile tail allows you to challenge foes on all sides. You can't be flanked."
+      },
+      {
+        "id": "wings",
+        "name": "Wings",
+        "cost": 2,
+        "description": "You possess wings powerful enough to take you airborne. While using your wings to fly, you can stay aloft for a number of rounds equal to your Might score (minimum 1 round) before you fall. While using your wings to fly at 3rd level or lower, you have damage weakness 5."
+      }
+    ],
+    "ancestryPoints": 3,
+    "defaultSize": "1M",
+    "defaultSpeed": 5,
+    "grantedImmunities": [],
+    "signatureAbilityId": null
+  },
+  {
+    "id": "dragon-knight",
+    "name": "Dragon Knight",
+    "description": "",
+    "signatureTrait": {
+      "name": "Wyrmplate",
+      "description": "Your hardened scales grant you damage immunity equal to your level to one of the following damage types: acid, cold, corruption, fire, lightning, or poison. You can change your damage immunity type when you finish a respite."
+    },
+    "purchasedTraits": [
+      {
+        "id": "draconian-guard",
+        "name": "Draconian Guard",
+        "cost": 1,
+        "description": "Whenever you or an adjacent creature takes damage from a strike, you can use a triggered action to guard against the blow. You reduce any damage from the strike by an amount equal to your level."
+      },
+      {
+        "id": "draconian-pride",
+        "name": "Draconian Pride",
+        "cost": 2,
+        "description": "You have the following signature ability."
+      },
+      {
+        "id": "dragon-breath",
+        "name": "Dragon Breath",
+        "cost": 2,
+        "description": "You have the following signature ability."
+      },
+      {
+        "id": "prismatic-scales",
+        "name": "Prismatic Scales",
+        "cost": 1,
+        "description": "Select one damage immunity granted by your Wyrmplate trait. You always have this immunity, in addition to the immunity granted by Wyrmplate."
+      },
+      {
+        "id": "remember-your-oath",
+        "name": "Remember Your Oath",
+        "cost": 1,
+        "description": "As a maneuver, you can recite the following oath. Until the start of your next turn, whenever you make a saving throw, you succeed on a 4 or higher. Even should the sun stop in the sky Even should the night last a thousand years I will stand forever I shall not yield Those who suffer and yearn for justice I am your sword and shield I will yield no ground I will speak no lies I will stand against all tyrants Until the last villain dies"
+      },
+      {
+        "id": "wings",
+        "name": "Wings",
+        "cost": 2,
+        "description": "You possess wings powerful enough to take you airborne. While using your wings to fly, you can stay aloft for a number of rounds equal to your Might score (minimum 1 round) before you fall. While using your wings to fly at 3rd level or lower, you have damage weakness 5."
+      }
+    ],
+    "ancestryPoints": 3,
+    "defaultSize": "1M",
+    "defaultSpeed": 5,
+    "grantedImmunities": [],
+    "signatureAbilityId": null
+  },
+  {
+    "id": "dwarf",
+    "name": "Dwarf",
+    "description": "",
+    "signatureTrait": {
+      "name": "Runic Carving",
+      "description": "You can carve a rune onto your skin with 10 uninterrupted minutes of work, which is activated by the magic within your body. The rune you carve determines the benefit you receive, chosen from among the following: **Detection:** Pick a specific type of creature (such as goblins or humans) or object (such as gems or potions). Your rune glows softly when you are within 20 squares of any creature or object of that type, even if you don't have line of effect to the creature or object. You can change the type of creature or object as a maneuver. **Light:** Your skin sheds light for 10 squares. You can turn this light on and off as a maneuver. **Voice:** As a maneuver, you can communicate telepathically with a willing creature you have met before and who is within 1 mile of you. You must know the creature's name, and they must speak and understand a language you know. You and the creature can respond to one another as if having a spoken conversation. You can communicate with a different creature by changing the rune. You can have one rune active at a time, and can change or remove a rune with 10 uninterrupted minutes of work."
+    },
+    "purchasedTraits": [
+      {
+        "id": "great-fortitude",
+        "name": "Great Fortitude",
+        "cost": 2,
+        "description": "Your hearty constitution prevents you from losing strength. You can't be made weakened."
+      },
+      {
+        "id": "grounded",
+        "name": "Grounded",
+        "cost": 1,
+        "description": "Your heavy stone body and connection to the earth make it difficult for others to move you. You have a +1 bonus to stability."
+      },
+      {
+        "id": "spark-off-your-skin",
+        "name": "Spark Off Your Skin",
+        "cost": 2,
+        "description": "Your stone skin affords you potent protection. You have a +6 bonus to Stamina, and that bonus increases by 6 at 4th, 7th, and 10th levels."
+      },
+      {
+        "id": "stand-tough",
+        "name": "Stand Tough",
+        "cost": 1,
+        "description": "Your body is made to withstand the blows of your enemies. Your Might score is treated as 1 higher for the purpose of resisting potencies, and you gain an edge on Might tests when called for to resist environmental effects or a creature's traits or abilities."
+      },
+      {
+        "id": "stone-singer",
+        "name": "Stone Singer",
+        "cost": 1,
+        "description": "You have a magic connection to the earth. When you spend 1 uninterrupted hour singing, you can reshape any unworked mundane stone within 3 squares. You can't destroy this stone, but you can move each square of it anywhere within 3 squares, piling it off to one side to dig a hole or building it up to create a wall."
+      }
+    ],
+    "ancestryPoints": 3,
+    "defaultSize": "1M",
+    "defaultSpeed": 5,
+    "grantedImmunities": [],
+    "signatureAbilityId": null
+  },
+  {
+    "id": "hakaan",
+    "name": "Hakaan",
+    "description": "",
+    "signatureTrait": {
+      "name": "Big!",
+      "description": "Your stature reflects your giant forebears. Your size is 1L."
+    },
+    "purchasedTraits": [
+      {
+        "id": "all-is-a-feather",
+        "name": "All Is a Feather",
+        "cost": 1,
+        "description": "You are exceptionally strong. You gain an edge on tests made to lift and haul heavy objects."
+      },
+      {
+        "id": "doomsight",
+        "name": "Doomsight",
+        "cost": 2,
+        "description": "Working with your Director, you can predetermine an encounter in which you will die. When that encounter begins, you become doomed. While doomed, you automatically obtain a tier 3 outcome on tests and ability rolls, and you don't die no matter how low your Stamina falls. You then die immediately at the end of the encounter, and can't be returned to life by any means. If you don't predetermine your death encounter, you can choose to become doomed while you are dying with the Director's approval (no action required). Doing so should be reserved for encounters in which you are dying as a result of suitable heroism, such as making a last stand against a boss or saving civilians, or when the consequences of your actions have finally caught up to you—not because you're playing a one-shot and have nothing to lose, Hacaarl. Additionally, when your Stamina reaches the negative of your winded value and you are not doomed, you turn to rubble instead of experiencing death. You are unaware of your surroundings in this state, and you can't regain Stamina or have this effect undone in any way. After 12 hours, you regain Stamina equal to your recovery value."
+      },
+      {
+        "id": "forceful",
+        "name": "Forceful",
+        "cost": 1,
+        "description": "Whenever you force move a creature or object, the forced movement distance gains a +1 bonus."
+      },
+      {
+        "id": "great-fortitude",
+        "name": "Great Fortitude",
+        "cost": 2,
+        "description": "Your hearty constitution prevents you from losing strength. You can't be made weakened."
+      },
+      {
+        "id": "stand-tough",
+        "name": "Stand Tough",
+        "cost": 1,
+        "description": "Your body is made to withstand the blows of your enemies. Your Might score is treated as 1 higher for the purpose of resisting potencies, and you gain an edge on Might tests when called for to resist environmental effects or a creature's traits or abilities."
+      }
+    ],
+    "ancestryPoints": 3,
+    "defaultSize": "1L",
+    "defaultSpeed": 5,
+    "grantedImmunities": [],
+    "signatureAbilityId": null
+  },
+  {
+    "id": "high-elf",
+    "name": "High Elf",
+    "description": "",
+    "signatureTrait": {
+      "name": "High Elf Glamor",
+      "description": "A magic glamor makes others perceive you as interesting and engaging, granting you an edge on Presence tests using the Flirt or Persuade skills. This glamor makes you appear and sound slightly different to each creature you meet, since what is engaging to one might be different for another. However, you never appear to be anyone other than yourself."
+    },
+    "purchasedTraits": [
+      {
+        "id": "glamor-of-terror",
+        "name": "Glamor of Terror",
+        "cost": 2,
+        "description": "When a foe strikes, you reverse the magic of your glamor to instill fear into their heart. Whenever you take damage from a creature, you can use a triggered action to make that creature frightened of you until the end of their next turn."
+      },
+      {
+        "id": "graceful-retreat",
+        "name": "Graceful Retreat",
+        "cost": 1,
+        "description": "You gain a +1 bonus to the distance you can shift when you take the Disengage move action."
+      },
+      {
+        "id": "high-senses",
+        "name": "High Senses",
+        "cost": 1,
+        "description": "Your senses are especially keen and perceptive. You gain an edge on tests made to notice threats."
+      },
+      {
+        "id": "otherworldly-grace",
+        "name": "Otherworldly Grace",
+        "cost": 2,
+        "description": "Your elf body and mind can't be contained for long. Whenever you make a saving throw, you succeed on a roll of 5 or higher."
+      },
+      {
+        "id": "revisit-memory",
+        "name": "Revisit Memory",
+        "cost": 1,
+        "description": "Accessing memories is as easy as living in the present for you. You gain an edge on tests made to recall lore."
+      },
+      {
+        "id": "unstoppable-mind",
+        "name": "Unstoppable Mind",
+        "cost": 2,
+        "description": "Your mind allows you to maintain your focus in any situation. You can't be made dazed."
+      }
+    ],
+    "ancestryPoints": 3,
+    "defaultSize": "1M",
+    "defaultSpeed": 5,
+    "grantedImmunities": [],
+    "signatureAbilityId": null
+  },
+  {
+    "id": "human",
+    "name": "Human",
+    "description": "",
+    "signatureTrait": {
+      "name": "Detect the Supernatural",
+      "description": "As a maneuver, you can open your awareness to detect supernatural creatures and phenomena. Until the end of your next turn, you know the location of any supernatural object, or any undead, construct, or creature from another world within 5 squares, even if you don't have line of effect to that object or creature. You know if you're detecting an item or a creature, and you know the nature of any creature you detect."
+    },
+    "purchasedTraits": [
+      {
+        "id": "can-t-take-hold",
+        "name": "Can't Take Hold",
+        "cost": 1,
+        "description": "Your connection to the natural world allows you to resist certain supernatural effects. You ignore temporary difficult terrain created by magic and psionic abilities. Additionally, when you are force moved by a magic or psionic ability, you can reduce the forced movement distance by 1."
+      },
+      {
+        "id": "determination",
+        "name": "Determination",
+        "cost": 2,
+        "description": "A tolerance for pain and distress allows you to push through difficult situations. If you are frightened, slowed, or weakened, you can use a maneuver to immediately end one of those conditions."
+      },
+      {
+        "id": "perseverance",
+        "name": "Perseverance",
+        "cost": 1,
+        "description": "Giving up is for other people. You gain an edge on tests made using the Endurance skill. Additionally, when you are slowed, your speed is reduced to 3 instead of 2."
+      },
+      {
+        "id": "resist-the-unnatural",
+        "name": "Resist the Unnatural",
+        "cost": 1,
+        "description": "Your instinctive resilience protects you from injuries beyond the routine. Whenever you take damage that isn't untyped, you can use a triggered action to take half the damage."
+      },
+      {
+        "id": "staying-power",
+        "name": "Staying Power",
+        "cost": 2,
+        "description": "Your human physiology allows you to fight, run, and stay awake longer than others. You increase your number of Recoveries by 2."
+      }
+    ],
+    "ancestryPoints": 3,
+    "defaultSize": "1M",
+    "defaultSpeed": 5,
+    "grantedImmunities": [],
+    "signatureAbilityId": null
+  },
+  {
+    "id": "memonek",
+    "name": "Memonek",
+    "description": "",
+    "signatureTrait": {
+      "name": "Fall Lightly",
+      "description": "Your silicone body is low in density. Whenever you fall, you reduce the distance of the fall by 2 squares."
+    },
+    "purchasedTraits": [
+      {
+        "id": "i-am-law",
+        "name": "I Am Law",
+        "cost": 1,
+        "description": "Your lawful nature and quick reflexes mean you give no quarter to creatures trying to get past you. Enemies can't move through your space unless you allow them to do so."
+      },
+      {
+        "id": "keeper-of-order",
+        "name": "Keeper of Order",
+        "cost": 2,
+        "description": "Your connection to Axiom, the plane of Uttermost Law, allows you to manage chaos around you. Once per round when you or an adjacent creature makes a power roll, you can use a free triggered action to remove an edge or a bane on the roll, to turn a double edge into an edge, or to turn a double bane into a bane."
+      },
+      {
+        "id": "lightning-nimbleness",
+        "name": "Lightning Nimbleness",
+        "cost": 2,
+        "description": "You can push your body to move at incredible speeds. Your speed is 7."
+      },
+      {
+        "id": "nonstop",
+        "name": "Nonstop",
+        "cost": 2,
+        "description": "Your connection to Axiom allows you to regulate your movement. You can't be made slowed."
+      },
+      {
+        "id": "systematic-mind",
+        "name": "Systematic Mind",
+        "cost": 1,
+        "description": "You gain an edge on tests made to parse schematics, maps, and other systematic documents that aren't inherently chaotic. In addition, you treat any language you don't know as if you know a related language."
+      },
+      {
+        "id": "unphased",
+        "name": "Unphased",
+        "cost": 1,
+        "description": "Your ordered mind can't be caught off guard. You can't be made surprised."
+      },
+      {
+        "id": "useful-emotion",
+        "name": "Useful Emotion",
+        "cost": 1,
+        "description": "Velloparatha—the worldsickness—might hinder you, but you know how to turn your pain into something your enemies feel. At the start of any combat, you gain 1 surge."
+      }
+    ],
+    "ancestryPoints": 3,
+    "defaultSize": "1M",
+    "defaultSpeed": 5,
+    "grantedImmunities": [],
+    "signatureAbilityId": null
+  },
+  {
+    "id": "orc",
+    "name": "Orc",
+    "description": "",
+    "signatureTrait": {
+      "name": "Relentless",
+      "description": "Whenever a creature deals damage to you that leaves you dying, you can make a free strike against any creature. If the creature is reduced to 0 Stamina by your strike, you can spend a Recovery."
+    },
+    "purchasedTraits": [
+      {
+        "id": "bloodfire-rush",
+        "name": "Bloodfire Rush",
+        "cost": 1,
+        "description": "The magic coursing through your veins makes you run faster in the heat of battle. The first time in any combat round that you take damage, you gain a +2 bonus to speed until the end of the round."
+      },
+      {
+        "id": "glowing-recovery",
+        "name": "Glowing Recovery",
+        "cost": 2,
+        "description": "Your bloodfire allows you to regain your strength quicker than others. Whenever you use the Catch Breath maneuver, you can spend as many Recoveries as you like."
+      },
+      {
+        "id": "grounded",
+        "name": "Grounded",
+        "cost": 1,
+        "description": "The magic in your blood makes it difficult for others to move you. You have a +1 bonus to stability."
+      },
+      {
+        "id": "nonstop",
+        "name": "Nonstop",
+        "cost": 2,
+        "description": "Your bloodfire supplies you with a constant rush of adrenaline. You can't be made slowed."
+      },
+      {
+        "id": "passionate-artisan",
+        "name": "Passionate Artisan",
+        "cost": 1,
+        "description": "When you are stirred by a passion for creation, your bloodfire allows you to work longer and harder. When you gain your initial skills from your career, culture, class, or other source, choose two skills from the crafting skill group, whether you have those skills or not. Whenever you make a project roll for a crafting project that uses these skills, you gain a +2 bonus to the roll."
+      }
+    ],
+    "ancestryPoints": 3,
+    "defaultSize": "1M",
+    "defaultSpeed": 5,
+    "grantedImmunities": [],
+    "signatureAbilityId": null
+  },
+  {
+    "id": "polder",
+    "name": "Polder",
+    "description": "",
+    "signatureTrait": {
+      "name": "Small!",
+      "description": "Your diminutive stature lets you easily get out of—or into—trouble. Your size is 1S."
+    },
+    "purchasedTraits": [
+      {
+        "id": "corruption-immunity",
+        "name": "Corruption Immunity",
+        "cost": 1,
+        "description": "Your innate shadow magic grants you resilience against the unnatural. You have corruption immunity equal to your level + 2."
+      },
+      {
+        "id": "fearless",
+        "name": "Fearless",
+        "cost": 2,
+        "description": "Courage is all you know. You can't be made frightened."
+      },
+      {
+        "id": "graceful-retreat",
+        "name": "Graceful Retreat",
+        "cost": 1,
+        "description": "Your small size makes it easier for you to slip away from the fray. You gain a +1 bonus to the distance you can shift when you take the Disengage move action."
+      },
+      {
+        "id": "nimblestep",
+        "name": "Nimblestep",
+        "cost": 2,
+        "description": "A light step serves you well when speed is of the essence. You ignore the effects of difficult terrain and can move at full speed while sneaking."
+      },
+      {
+        "id": "polder-geist",
+        "name": "Polder Geist",
+        "cost": 1,
+        "description": "Evading others' notice gives you freedom to move. At the start of each of your turns during combat, if no enemy has line of effect to you or if you are hidden from or have concealment from any enemy with line of effect to you, you gain a +3 bonus to speed until the end of your turn."
+      },
+      {
+        "id": "reactive-tumble",
+        "name": "Reactive Tumble",
+        "cost": 1,
+        "description": "Staying light on your feet lets you quickly get back into position. Whenever you are force moved, you can use a free triggered action to shift 1 square after the forced movement is resolved."
+      }
+    ],
+    "ancestryPoints": 3,
+    "defaultSize": "1S",
+    "defaultSpeed": 5,
+    "grantedImmunities": [],
+    "signatureAbilityId": null
+  },
+  {
+    "id": "revenant",
+    "name": "Revenant",
+    "description": "",
+    "signatureTrait": {
+      "name": "Former Life",
+      "description": "Choose the ancestry you were before you died. Your size is that ancestry's size and your speed is 5. Unless you select one of the Previous Life traits (see below), you don't receive any other ancestral traits from your original ancestry."
+    },
+    "purchasedTraits": [
+      {
+        "id": "bloodless",
+        "name": "Bloodless",
+        "cost": 2,
+        "description": "For you, an open wound is indistinguishable from a scratch. You can't be made bleeding even while dying."
+      },
+      {
+        "id": "previous-life-1-point",
+        "name": "Previous Life: 1 Point",
+        "cost": 1,
+        "description": "You select a purchased trait that costs 1 ancestry point from your previous ancestry. You can take this trait multiple times, selecting a different 1 point trait from your previous ancestry each time."
+      },
+      {
+        "id": "previous-life-2-points",
+        "name": "Previous Life: 2 Points",
+        "cost": 2,
+        "description": "You select a purchased trait that costs 2 ancestry points from your previous ancestry."
+      },
+      {
+        "id": "undead-influence",
+        "name": "Undead Influence",
+        "cost": 1,
+        "description": "Your supernatural gifts allow you to influence other undead. You gain an edge on Reason, Intuition, and Presence tests made to interact with undead creatures."
+      },
+      {
+        "id": "vengeance-mark",
+        "name": "Vengeance Mark",
+        "cost": 2,
+        "description": "As a maneuver, you place a magic sigil on a creature within 10 squares. When you place a sigil, you decide where it appears on the creature's body, and whether the sigil is visible to only you or to all creatures. You always know the direction to the exact location of a creature who bears one of your sigils and is on the same world. You can have a number of active sigils equal to your level, and can remove a sigil from a creature at will (no action required). If you already have the maximum number of sigils activated and you place a new one, your oldest sigil disappears with no other effect. Additionally, you have the following signature ability. Signature abilities can be used at will."
+      }
+    ],
+    "ancestryPoints": 3,
+    "defaultSize": "1M",
+    "defaultSpeed": 5,
+    "grantedImmunities": [],
+    "signatureAbilityId": null
+  },
+  {
+    "id": "time-raider",
+    "name": "Time Raider",
+    "description": "",
+    "signatureTrait": {
+      "name": "Psychic Scar",
+      "description": "Your mind is a formidable layer of defense. You have psychic immunity equal to your level."
+    },
+    "purchasedTraits": [
+      {
+        "id": "beyondsight",
+        "name": "Beyondsight",
+        "cost": 1,
+        "description": "As a maneuver, you can adjust your vision to allow you to see through mundane obstructions that are 1 square thick or less. While your vision is adjusted this way, you can't see the area within 1 square of you and you don't have line of effect to any creature or object in that area. You can restore your usual vision as a maneuver."
+      },
+      {
+        "id": "foresight",
+        "name": "Foresight",
+        "cost": 1,
+        "description": "Your senses extend past mundane obscuration and the veil of the future alike. You automatically know the location of any creature with concealment who isn't hidden from you within 20, and you negate the usual bane on strikes against such creatures. Additionally, whenever you are targeted by a strike, you can use a triggered action to impose a bane on the power roll."
+      },
+      {
+        "id": "four-armed-athletics",
+        "name": "Four-Armed Athletics",
+        "cost": 1,
+        "description": "Your unique physiology enhances your movement. You gain an edge on tests that use the Climb, Gymnastics, or Swim skills when you can use all your arms in the attempt."
+      },
+      {
+        "id": "four-armed-martial-arts",
+        "name": "Four-Armed Martial Arts",
+        "cost": 2,
+        "description": "Your multiple arms let you take on multiple tasks at the same time. Whenever you use the Grab or Knockback maneuver against an adjacent creature, you can target one additional adjacent creature, using the same power roll for both targets. Additionally, you can have up to two creatures grabbed at a time."
+      },
+      {
+        "id": "psionic-gift",
+        "name": "Psionic Gift",
+        "cost": 2,
+        "description": "Choose one signature ability from the following options. Signature abilities can be used at will."
+      },
+      {
+        "id": "unstoppable-mind",
+        "name": "Unstoppable Mind",
+        "cost": 2,
+        "description": "Your mind allows you to maintain your focus in any situation. You can't be made dazed."
+      }
+    ],
+    "ancestryPoints": 3,
+    "defaultSize": "1M",
+    "defaultSpeed": 5,
+    "grantedImmunities": [
+      {
+        "kind": "psychic",
+        "value": "level"
+      }
+    ],
+    "signatureAbilityId": null
+  },
+  {
+    "id": "wode-elf",
+    "name": "Wode Elf",
+    "description": "",
+    "signatureTrait": {
+      "name": "Wode Elf Glamor",
+      "description": "You can magically alter your appearance to better blend in with your surroundings. You gain an edge on tests made to hide and sneak, and tests made to search for you while you are hidden take a bane."
+    },
+    "purchasedTraits": [
+      {
+        "id": "forest-walk",
+        "name": "Forest Walk",
+        "cost": 1,
+        "description": "You can shift into and while within difficult terrain."
+      },
+      {
+        "id": "quick-and-brutal",
+        "name": "Quick and Brutal",
+        "cost": 1,
+        "description": "Whenever you score a critical hit, you can take an additional main action and an additional move action instead of just a main action."
+      },
+      {
+        "id": "otherworldly-grace",
+        "name": "Otherworldly Grace",
+        "cost": 2,
+        "description": "Your elf body and mind can't be contained for long. Whenever you make a saving throw, you succeed on a roll of 5 or higher."
+      },
+      {
+        "id": "revisit-memory",
+        "name": "Revisit Memory",
+        "cost": 1,
+        "description": "Accessing memories is as easy as living in the present for you. You gain an edge on tests made to recall lore."
+      },
+      {
+        "id": "swift",
+        "name": "Swift",
+        "cost": 1,
+        "description": "You have speed 6."
+      },
+      {
+        "id": "the-wode-defends",
+        "name": "The Wode Defends",
+        "cost": 2,
+        "description": "You have the following signature ability. Signature abilities can be used at will."
+      }
+    ],
+    "ancestryPoints": 3,
+    "defaultSize": "1M",
+    "defaultSpeed": 5,
+    "grantedImmunities": [],
+    "signatureAbilityId": null
+  }
+]

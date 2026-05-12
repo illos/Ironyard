@@ -43,6 +43,36 @@ export const CharacterCultureSchema = z.object({
 });
 export type CharacterCulture = z.infer<typeof CharacterCultureSchema>;
 
+// ── Ancestry choices ──────────────────────────────────────────────────────────
+
+export const AncestryChoicesSchema = z.object({
+  // Ids of purchasable traits the player has selected.
+  traitIds: z.array(z.string()).default([]),
+
+  // Devil — Silver Tongue: free interpersonal skill pick.
+  freeSkillId: z.string().nullable().default(null),
+
+  // Dragon Knight — Wyrmplate: chosen damage type immunity.
+  // One of 'acid' / 'cold' / 'corruption' / 'fire' / 'lightning' / 'poison'.
+  wyrmplateType: z.string().nullable().default(null),
+
+  // Dragon Knight (Prismatic Scales purchased trait): locked-in
+  // second damage type immunity from the same six-element list.
+  prismaticScalesType: z.string().nullable().default(null),
+
+  // Revenant — Former Life: the ancestry id the character was
+  // before they died. Determines size; speed is always 5.
+  formerAncestryId: z.string().nullable().default(null),
+
+  // Revenant — Previous Life slots: parallel array to the
+  // `previous-life-*-points` entries in `traitIds`. Each entry
+  // resolves to a trait id from the FORMER ancestry's purchasable
+  // trait list. Length should match the count of previous-life
+  // trait entries in traitIds.
+  previousLifeTraitIds: z.array(z.string()).default([]),
+});
+export type AncestryChoices = z.infer<typeof AncestryChoicesSchema>;
+
 // ── Career choices ────────────────────────────────────────────────────────────
 
 export const CharacterCareerChoicesSchema = z.object({
@@ -94,12 +124,7 @@ export const CharacterSchema = z.object({
   // ── Ancestry ─────────────────────────────────────────────────────────────
   // References ancestries.json by id.
   ancestryId: z.string().nullable().default(null),
-  ancestryChoices: z
-    .object({
-      // Ids of purchasable traits the player has selected.
-      traitIds: z.array(z.string()).default([]),
-    })
-    .default({}),
+  ancestryChoices: AncestryChoicesSchema.default({}),
 
   // ── Culture ───────────────────────────────────────────────────────────────
   culture: CharacterCultureSchema.default({}),
