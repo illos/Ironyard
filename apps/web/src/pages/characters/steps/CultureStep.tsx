@@ -120,9 +120,21 @@ function TypicalPath({ culture, preset, set }: {
     <div className="space-y-5">
       <PresetSummary rows={[
         { label: 'Language', value: preset.language },
-        { label: 'Environment', value: preset.environment },
-        { label: 'Organization', value: preset.organization },
-        { label: 'Upbringing', value: preset.upbringing },
+        {
+          label: 'Environment',
+          value: preset.environment,
+          description: CULTURE_ASPECT_DESCRIPTIONS.environment[preset.environment],
+        },
+        {
+          label: 'Organization',
+          value: preset.organization,
+          description: CULTURE_ASPECT_DESCRIPTIONS.organization[preset.organization],
+        },
+        {
+          label: 'Upbringing',
+          value: preset.upbringing,
+          description: CULTURE_ASPECT_DESCRIPTIONS.upbringing[preset.upbringing],
+        },
       ]} />
       <SkillPickers culture={culture} set={set} />
     </div>
@@ -163,9 +175,21 @@ function ArchetypicalPath({ culture, set }: {
       {selected && (
         <>
           <PresetSummary rows={[
-            { label: 'Environment', value: selected.environment },
-            { label: 'Organization', value: selected.organization },
-            { label: 'Upbringing', value: selected.upbringing },
+            {
+              label: 'Environment',
+              value: selected.environment,
+              description: CULTURE_ASPECT_DESCRIPTIONS.environment[selected.environment],
+            },
+            {
+              label: 'Organization',
+              value: selected.organization,
+              description: CULTURE_ASPECT_DESCRIPTIONS.organization[selected.organization],
+            },
+            {
+              label: 'Upbringing',
+              value: selected.upbringing,
+              description: CULTURE_ASPECT_DESCRIPTIONS.upbringing[selected.upbringing],
+            },
           ]} />
           <SkillPicker label="Language" options={LANGUAGE_POOL} value={culture.language}
             onChange={(v) => set({ language: v })} />
@@ -202,14 +226,23 @@ function ScratchPath({ culture, set }: {
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
-function PresetSummary({ rows }: { rows: { label: string; value: string }[] }) {
+function PresetSummary({
+  rows,
+}: {
+  rows: { label: string; value: string; description?: string }[];
+}) {
   return (
-    <div className="rounded-md border border-neutral-700 bg-neutral-800/50 px-4 py-3 space-y-1">
-      <p className="text-xs text-neutral-400 uppercase tracking-wide mb-2">Auto-filled from preset</p>
-      {rows.map(({ label, value }) => (
-        <div key={label} className="flex gap-2 text-sm">
-          <span className="text-neutral-400 w-24 shrink-0">{label}</span>
-          <span className="text-neutral-100 capitalize">{value}</span>
+    <div className="rounded-md border border-neutral-700 bg-neutral-800/50 px-4 py-3 space-y-3">
+      <p className="text-xs text-neutral-400 uppercase tracking-wide">Auto-filled from preset</p>
+      {rows.map(({ label, value, description }) => (
+        <div key={label} className="space-y-1">
+          <div className="flex gap-2 text-sm">
+            <span className="text-neutral-400 w-24 shrink-0">{label}</span>
+            <span className="text-neutral-100 capitalize">{value}</span>
+          </div>
+          {description && (
+            <p className="text-xs text-neutral-500 leading-relaxed pl-26 ml-24">{description}</p>
+          )}
         </div>
       ))}
     </div>
