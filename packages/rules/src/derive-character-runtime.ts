@@ -1,4 +1,6 @@
 import type { Character, Characteristics } from '@ironyard/shared';
+import { applyAttachments } from './attachments/apply';
+import { collectAttachments } from './attachments/collect';
 import { requireCanon } from './require-canon';
 import type { StaticDataBundle } from './static-data';
 
@@ -40,6 +42,16 @@ const ZERO_CHARACTERISTICS: Characteristics = {
 };
 
 export function deriveCharacterRuntime(
+  character: Character,
+  staticData: StaticDataBundle,
+): CharacterRuntime {
+  const base = deriveBaseRuntime(character, staticData);
+  const attachments = collectAttachments(character, staticData);
+  const kit = character.kitId ? staticData.kits.get(character.kitId) ?? null : null;
+  return applyAttachments(base, attachments, { character, kit });
+}
+
+function deriveBaseRuntime(
   character: Character,
   staticData: StaticDataBundle,
 ): CharacterRuntime {
