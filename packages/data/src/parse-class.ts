@@ -69,7 +69,7 @@ function parseCharacteristicsBlock(body: string): {
   // ── Arrays ───────────────────────────────────────────────────────────────
   // Each array is a bullet like "- 2, −1, −1" or "- 2, 2, −1, −1".
   const characteristicArrays: number[][] = [];
-  const arrayRe = /^-\s+([-0-9,\s−–]+)$/gm;
+  const arrayRe = /^-\s+([-0-9, \t−–]+)$/gm;
   for (const m of body.matchAll(arrayRe)) {
     const rawArr = normalizeMinus(m[1] ?? '');
     const nums = rawArr
@@ -89,7 +89,7 @@ function parseCharacteristicsBlock(body: string): {
   const charSectionEnd = weakPotencyIdx === -1 ? body.length : weakPotencyIdx;
   const charSection = body.slice(0, charSectionEnd);
   const filteredArrays: number[][] = [];
-  const arrayRe2 = /^-\s+([-0-9,\s−–]+)$/gm;
+  const arrayRe2 = /^-\s+([-0-9, \t−–]+)$/gm;
   for (const m of charSection.matchAll(arrayRe2)) {
     const rawArr = normalizeMinus(m[1] ?? '');
     const nums = rawArr
