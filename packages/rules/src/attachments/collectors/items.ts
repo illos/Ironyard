@@ -1,11 +1,18 @@
 import type { Character } from '@ironyard/shared';
+import { ITEM_OVERRIDES } from '@ironyard/data';
 import type { StaticDataBundle } from '../../static-data';
 import type { CharacterAttachment } from '../types';
 
 export function collectFromItems(
-  _character: Character,
+  character: Character,
   _staticData: StaticDataBundle,
 ): CharacterAttachment[] {
-  // Populated in Slice 3.
-  return [];
+  const out: CharacterAttachment[] = [];
+  for (const entry of character.inventory) {
+    if (!entry.equipped) continue;
+    const override = ITEM_OVERRIDES[entry.itemId];
+    if (!override) continue;
+    out.push(...override.attachments);
+  }
+  return out;
 }
