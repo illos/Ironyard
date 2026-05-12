@@ -2,8 +2,12 @@ import { useState } from 'react';
 import type { Character, CharacterCulture } from '@ironyard/shared';
 import {
   ARCHETYPICAL_CULTURES,
+  CULTURE_ASPECT_DESCRIPTIONS,
   getTypicalAncestryCulture,
   type ArchetypicalCulture,
+  type CultureEnvironment,
+  type CultureOrganization,
+  type CultureUpbringing,
   type TypicalAncestryCulture,
 } from '@ironyard/shared';
 
@@ -181,11 +185,14 @@ function ScratchPath({ culture, set }: {
   return (
     <div className="space-y-5">
       <Picker label="Environment" options={ENVIRONMENTS} value={culture.environment}
-        onChange={(v) => set({ environment: v })} />
+        onChange={(v) => set({ environment: v as CultureEnvironment })}
+        descriptions={CULTURE_ASPECT_DESCRIPTIONS.environment} />
       <Picker label="Organization" options={ORGANIZATIONS} value={culture.organization}
-        onChange={(v) => set({ organization: v })} />
+        onChange={(v) => set({ organization: v as CultureOrganization })}
+        descriptions={CULTURE_ASPECT_DESCRIPTIONS.organization} />
       <Picker label="Upbringing" options={UPBRINGINGS} value={culture.upbringing}
-        onChange={(v) => set({ upbringing: v })} />
+        onChange={(v) => set({ upbringing: v as CultureUpbringing })}
+        descriptions={CULTURE_ASPECT_DESCRIPTIONS.upbringing} />
       <SkillPicker label="Language" options={LANGUAGE_POOL} value={culture.language}
         onChange={(v) => set({ language: v })} />
       <SkillPickers culture={culture} set={set} />
@@ -225,11 +232,12 @@ function SkillPickers({ culture, set }: {
   );
 }
 
-function Picker<T extends string>({ label, options, value, onChange }: {
+function Picker<T extends string>({ label, options, value, onChange, descriptions }: {
   label: string;
   options: readonly T[];
   value: T | null;
   onChange: (v: T) => void;
+  descriptions?: Partial<Record<T, string>>;
 }) {
   return (
     <div>
@@ -238,7 +246,7 @@ function Picker<T extends string>({ label, options, value, onChange }: {
         {options.map((o) => (
           <button key={o} type="button" onClick={() => onChange(o)}
             className={
-              'min-h-11 px-3 py-2 rounded-md border text-sm ' +
+              'min-h-11 px-3 py-2 rounded-md border text-sm capitalize ' +
               (value === o
                 ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
                 : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
@@ -247,6 +255,11 @@ function Picker<T extends string>({ label, options, value, onChange }: {
           </button>
         ))}
       </div>
+      {descriptions && value && descriptions[value] && (
+        <p className="mt-2 text-xs text-neutral-500 leading-relaxed">
+          {descriptions[value]}
+        </p>
+      )}
     </div>
   );
 }

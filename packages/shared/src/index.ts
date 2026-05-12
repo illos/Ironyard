@@ -222,6 +222,7 @@ export {
 
 export {
   ARCHETYPICAL_CULTURES,
+  CULTURE_ASPECT_DESCRIPTIONS,
   TYPICAL_ANCESTRY_CULTURES,
   getTypicalAncestryCulture,
 } from './data/cultures';
