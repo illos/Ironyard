@@ -217,7 +217,9 @@ export function parseAbilityMarkdown(md: string, filePath = ''): Ability | null 
   const sourceClassId = parseSourceClassId(fm, filePath, typeField);
   const isSubclass = parseIsSubclass(filePath, typeField);
 
-  const id = `${sourceClassId ?? 'unknown'}-${slugify(name)}`;
+  const id = tier !== null
+    ? `${sourceClassId ?? 'unknown'}-${slugify(name)}-t${tier}`
+    : `${sourceClassId ?? 'unknown'}-${slugify(name)}`;
 
   const distance = typeof fm.distance === 'string' ? fm.distance : undefined;
   const target = typeof fm.target === 'string' ? fm.target : undefined;

@@ -1,5 +1,6 @@
 [
   {
+    "id": "censor-apostate-11-wrath-t9",
     "name": "Apostate (11 Wrath)",
     "type": "action",
     "keywords": [
@@ -37,6 +38,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-arrest-5-wrath-t1",
     "name": "Arrest (5 Wrath)",
     "type": "action",
     "keywords": [
@@ -99,6 +101,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-back-blasphemer-t1",
     "name": "Back Blasphemer!",
     "type": "action",
     "keywords": [
@@ -140,6 +143,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-banish-11-wrath-t9",
     "name": "Banish (11 Wrath)",
     "type": "action",
     "keywords": [
@@ -177,6 +181,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-begone-9-wrath-t6",
     "name": "Begone! (9 Wrath)",
     "type": "action",
     "keywords": [
@@ -216,6 +221,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-behold-a-shield-of-faith-3-wrath-t1",
     "name": "Behold a Shield of Faith! (3 Wrath)",
     "type": "action",
     "keywords": [
@@ -253,6 +259,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-behold-the-face-of-justice-5-wrath-t1",
     "name": "Behold the Face of Justice! (5 Wrath)",
     "type": "action",
     "keywords": [
@@ -319,6 +326,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-blessing-and-a-curse-11-wrath-t9",
     "name": "Blessing and a Curse (11 Wrath)",
     "type": "triggered",
     "keywords": [
@@ -334,6 +342,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-blessing-of-secrets-t4",
     "name": "Blessing of Secrets",
     "type": "maneuver",
     "keywords": [
@@ -349,6 +358,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-blessing-of-the-faithful-5-wrath-t2",
     "name": "Blessing of the Faithful (5 Wrath)",
     "type": "maneuver",
     "keywords": [
@@ -364,6 +374,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-burden-of-evil-9-wrath-t6",
     "name": "Burden of Evil (9 Wrath)",
     "type": "maneuver",
     "keywords": [
@@ -428,6 +439,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-censored-5-wrath-t1",
     "name": "Censored (5 Wrath)",
     "type": "action",
     "keywords": [
@@ -465,6 +477,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-congregation-9-wrath-t6",
     "name": "Congregation (9 Wrath)",
     "type": "action",
     "keywords": [
@@ -502,6 +515,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-driving-assault-3-wrath-t1",
     "name": "Driving Assault (3 Wrath)",
     "type": "action",
     "keywords": [
@@ -539,6 +553,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-edict-of-disruptive-isolation-7-wrath-t3",
     "name": "Edict of Disruptive Isolation (7 Wrath)",
     "type": "maneuver",
     "keywords": [
@@ -554,6 +569,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-edict-of-peace-9-wrath-t6",
     "name": "Edict of Peace (9 Wrath)",
     "type": "maneuver",
     "keywords": [
@@ -569,6 +585,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-edict-of-perfect-order-7-wrath-t3",
     "name": "Edict of Perfect Order (7 Wrath)",
     "type": "maneuver",
     "keywords": [
@@ -584,6 +601,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-edict-of-purifying-pacifism-7-wrath-t3",
     "name": "Edict of Purifying Pacifism (7 Wrath)",
     "type": "maneuver",
     "keywords": [
@@ -599,6 +617,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-edict-of-stillness-7-wrath-t3",
     "name": "Edict of Stillness (7 Wrath)",
     "type": "maneuver",
     "keywords": [
@@ -614,6 +633,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-edict-of-unyielding-resolve-11-wrath-t9",
     "name": "Edict of Unyielding Resolve (11 Wrath)",
     "type": "maneuver",
     "keywords": [
@@ -629,6 +649,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-every-step-death-t1",
     "name": "Every Step... Death!",
     "type": "action",
     "keywords": [
@@ -666,6 +687,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-excommunication-11-wrath-t8",
     "name": "Excommunication (11 Wrath)",
     "type": "action",
     "keywords": [
@@ -730,6 +752,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-faithful-friend-t1",
     "name": "Faithful Friend",
     "type": "action",
     "keywords": [
@@ -744,6 +767,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-fulfill-your-destiny-11-wrath-t9",
     "name": "Fulfill Your Destiny (11 Wrath)",
     "type": "triggered",
     "keywords": [
@@ -759,6 +783,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-gods-grant-thee-strength-9-wrath-t5",
     "name": "Gods Grant Thee Strength (9 Wrath)",
     "type": "action",
     "keywords": [
@@ -773,6 +798,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-grave-speech-t1",
     "name": "Grave Speech",
     "type": "maneuver",
     "keywords": [
@@ -787,6 +813,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-guided-to-your-side-t7",
     "name": "Guided to Your Side",
     "type": "action",
     "keywords": [
@@ -802,6 +829,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-halt-miscreant-t1",
     "name": "Halt Miscreant!",
     "type": "action",
     "keywords": [
@@ -866,6 +894,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-hand-of-the-gods-11-wrath-t8",
     "name": "Hand of the Gods (11 Wrath)",
     "type": "action",
     "keywords": [
@@ -903,6 +932,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-hands-of-the-maker-t1",
     "name": "Hands of the Maker",
     "type": "maneuver",
     "keywords": [
@@ -917,6 +947,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-intercede-9-wrath-t6",
     "name": "Intercede (9 Wrath)",
     "type": "free-triggered",
     "keywords": [
@@ -932,6 +963,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-it-is-justice-you-fear-5-wrath-t2",
     "name": "It Is Justice You Fear (5 Wrath)",
     "type": "action",
     "keywords": [
@@ -996,6 +1028,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-judgment-t1",
     "name": "Judgment",
     "type": "maneuver",
     "keywords": [
@@ -1011,6 +1044,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-my-life-for-yours-t1",
     "name": "My Life for Yours",
     "type": "triggered",
     "keywords": [
@@ -1026,6 +1060,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-orison-of-victory-9-wrath-t5",
     "name": "Orison of Victory (9 Wrath)",
     "type": "maneuver",
     "keywords": [
@@ -1061,6 +1096,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-pain-of-your-own-making-9-wrath-t6",
     "name": "Pain of Your Own Making (9 Wrath)",
     "type": "free-triggered",
     "keywords": [
@@ -1076,6 +1112,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-pillar-of-holy-fire-11-wrath-t8",
     "name": "Pillar of Holy Fire (11 Wrath)",
     "type": "action",
     "keywords": [
@@ -1140,6 +1177,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-prescient-grace-5-wrath-t2",
     "name": "Prescient Grace (5 Wrath)",
     "type": "triggered",
     "keywords": [
@@ -1155,6 +1193,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-purifying-fire-5-wrath-t1",
     "name": "Purifying Fire (5 Wrath)",
     "type": "action",
     "keywords": [
@@ -1194,6 +1233,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-repent-3-wrath-t1",
     "name": "Repent! (3 Wrath)",
     "type": "action",
     "keywords": [
@@ -1258,6 +1298,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-revelator-5-wrath-t2",
     "name": "Revelator (5 Wrath)",
     "type": "maneuver",
     "keywords": [
@@ -1273,6 +1314,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-righteous-judgment-9-wrath-t5",
     "name": "Righteous Judgment (9 Wrath)",
     "type": "action",
     "keywords": [
@@ -1310,6 +1352,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-sentenced-5-wrath-t2",
     "name": "Sentenced (5 Wrath)",
     "type": "action",
     "keywords": [
@@ -1375,6 +1418,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-shield-of-the-righteous-9-wrath-t5",
     "name": "Shield of the Righteous (9 Wrath)",
     "type": "action",
     "keywords": [
@@ -1412,6 +1456,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-terror-manifest-11-wrath-t9",
     "name": "Terror Manifest (11 Wrath)",
     "type": "action",
     "keywords": [
@@ -1476,6 +1521,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-the-gods-punish-and-defend-3-wrath-t1",
     "name": "The Gods Punish and Defend (3 Wrath)",
     "type": "action",
     "keywords": [
@@ -1514,6 +1560,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-trinity-of-trickery-9-wrath-t7",
     "name": "Trinity of Trickery (9 Wrath)",
     "type": "maneuver",
     "keywords": [
@@ -1529,6 +1576,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-with-my-blessing-5-wrath-t2",
     "name": "With My Blessing (5 Wrath)",
     "type": "action",
     "keywords": [
@@ -1544,6 +1592,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-your-allies-cannot-save-you-t1",
     "name": "Your Allies Cannot Save You!",
     "type": "action",
     "keywords": [
@@ -1581,6 +1630,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "censor-your-allies-turn-on-you-11-wrath-t8",
     "name": "Your Allies Turn on You! (11 Wrath)",
     "type": "action",
     "keywords": [
@@ -1645,6 +1695,7 @@
     "sourceClassId": "censor"
   },
   {
+    "id": "common-advance",
     "name": "Advance",
     "type": "maneuver",
     "keywords": [],
@@ -1655,6 +1706,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-aid-attack",
     "name": "Aid Attack",
     "type": "maneuver",
     "keywords": [],
@@ -1665,6 +1717,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-catch-breath",
     "name": "Catch Breath",
     "type": "maneuver",
     "keywords": [],
@@ -1675,6 +1728,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-charge",
     "name": "Charge",
     "type": "action",
     "keywords": [],
@@ -1685,6 +1739,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-defend",
     "name": "Defend",
     "type": "action",
     "keywords": [],
@@ -1695,6 +1750,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-disengage",
     "name": "Disengage",
     "type": "maneuver",
     "keywords": [],
@@ -1705,6 +1761,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-escape-grab",
     "name": "Escape Grab",
     "type": "maneuver",
     "keywords": [],
@@ -1759,6 +1816,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-free-strike",
     "name": "Free Strike",
     "type": "action",
     "keywords": [],
@@ -1769,6 +1827,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-grab",
     "name": "Grab",
     "type": "maneuver",
     "keywords": [],
@@ -1816,6 +1875,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-heal",
     "name": "Heal",
     "type": "action",
     "keywords": [],
@@ -1826,6 +1886,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-hide",
     "name": "Hide",
     "type": "maneuver",
     "keywords": [],
@@ -1836,6 +1897,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-knockback",
     "name": "Knockback",
     "type": "maneuver",
     "keywords": [],
@@ -1867,6 +1929,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-make-or-assist-a-test",
     "name": "Make or Assist a Test",
     "type": "maneuver",
     "keywords": [],
@@ -1877,6 +1940,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-ride",
     "name": "Ride",
     "type": "maneuver",
     "keywords": [],
@@ -1887,6 +1951,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-search-for-hidden-creatures",
     "name": "Search for Hidden Creatures",
     "type": "maneuver",
     "keywords": [],
@@ -1897,6 +1962,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-stand-up",
     "name": "Stand Up",
     "type": "maneuver",
     "keywords": [],
@@ -1907,6 +1973,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "common-use-consumable",
     "name": "Use Consumable",
     "type": "maneuver",
     "keywords": [],
@@ -1917,6 +1984,7 @@
     "sourceClassId": "common"
   },
   {
+    "id": "conduit-alacrity-of-the-heart-11-piety-t9",
     "name": "Alacrity of the Heart (11 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -1932,6 +2000,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-arise-11-piety-t7",
     "name": "Arise! (11 Piety)",
     "type": "action",
     "keywords": [
@@ -1947,6 +2016,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-arise-11-piety-t8",
     "name": "Arise! (11 Piety)",
     "type": "action",
     "keywords": [
@@ -1962,6 +2032,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-aura-of-souls-9-piety-t6",
     "name": "Aura of Souls (9 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -1977,6 +2048,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-beacon-of-grace-9-piety-t4",
     "name": "Beacon of Grace (9 Piety)",
     "type": "action",
     "keywords": [
@@ -2014,6 +2086,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-beacon-of-grace-9-piety-t5",
     "name": "Beacon of Grace (9 Piety)",
     "type": "action",
     "keywords": [
@@ -2051,6 +2124,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-bend-fate-11-piety-t9",
     "name": "Bend Fate (11 Piety)",
     "type": "action",
     "keywords": [
@@ -2066,6 +2140,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-blade-of-the-heavens-9-piety-t6",
     "name": "Blade of the Heavens (9 Piety)",
     "type": "action",
     "keywords": [
@@ -2154,6 +2229,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-blessed-light-t1",
     "name": "Blessed Light",
     "type": "action",
     "keywords": [
@@ -2191,6 +2267,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-blessing-of-fate-and-destiny-5-piety-t2",
     "name": "Blessing of Fate and Destiny (5 Piety)",
     "type": "action",
     "keywords": [
@@ -2206,6 +2283,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-blessing-of-insight-5-piety-t2",
     "name": "Blessing of Insight (5 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -2221,6 +2299,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-blessing-of-secrets-t4",
     "name": "Blessing of Secrets",
     "type": "maneuver",
     "keywords": [
@@ -2236,6 +2315,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-blessing-of-steel-11-piety-t7",
     "name": "Blessing of Steel (11 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -2251,6 +2331,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-blessing-of-steel-11-piety-t8",
     "name": "Blessing of Steel (11 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -2266,6 +2347,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-blessing-of-the-blade-11-piety-t7",
     "name": "Blessing of the Blade (11 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -2281,6 +2363,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-blessing-of-the-blade-11-piety-t8",
     "name": "Blessing of the Blade (11 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -2296,6 +2379,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-blessing-of-the-fortress-11-piety-t9",
     "name": "Blessing of the Fortress (11 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -2311,6 +2395,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-blessing-of-the-midday-sun-9-piety-t6",
     "name": "Blessing of the Midday Sun (9 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -2326,6 +2411,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-call-the-thunder-down-3-piety-t1",
     "name": "Call the Thunder Down (3 Piety)",
     "type": "action",
     "keywords": [
@@ -2366,6 +2452,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-corruption-s-curse-5-piety-t1",
     "name": "Corruption's Curse (5 Piety)",
     "type": "action",
     "keywords": [
@@ -2403,6 +2490,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-cuirass-of-the-gods-9-piety-t6",
     "name": "Cuirass of the Gods (9 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -2419,6 +2507,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-curse-of-terror-5-piety-t1",
     "name": "Curse of Terror (5 Piety)",
     "type": "action",
     "keywords": [
@@ -2483,6 +2572,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-divine-comedy-5-piety-t2",
     "name": "Divine Comedy (5 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -2498,6 +2588,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-divine-dragon-11-piety-t9",
     "name": "Divine Dragon (11 Piety)",
     "type": "action",
     "keywords": [
@@ -2534,6 +2625,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-drag-the-unworthy-11-piety-t7",
     "name": "Drag the Unworthy (11 Piety)",
     "type": "action",
     "keywords": [
@@ -2571,6 +2663,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-drag-the-unworthy-11-piety-t8",
     "name": "Drag the Unworthy (11 Piety)",
     "type": "action",
     "keywords": [
@@ -2608,6 +2701,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-drain-t1",
     "name": "Drain",
     "type": "action",
     "keywords": [
@@ -2645,6 +2739,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-faith-is-our-armor-5-piety-t1",
     "name": "Faith Is Our Armor (5 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -2681,6 +2776,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-faithful-friend-t1",
     "name": "Faithful Friend",
     "type": "action",
     "keywords": [
@@ -2695,6 +2791,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-fear-of-the-gods-7-piety-t3",
     "name": "Fear of the Gods (7 Piety)",
     "type": "action",
     "keywords": [
@@ -2762,6 +2859,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-font-of-wrath-3-piety-t1",
     "name": "Font of Wrath (3 Piety)",
     "type": "action",
     "keywords": [
@@ -2777,6 +2875,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-gods-machine-9-piety-t6",
     "name": "Gods' Machine (9 Piety)",
     "type": "action",
     "keywords": [
@@ -2813,6 +2912,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-godstorm-11-piety-t9",
     "name": "Godstorm (11 Piety)",
     "type": "action",
     "keywords": [
@@ -2853,6 +2953,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-grave-speech-t1",
     "name": "Grave Speech",
     "type": "maneuver",
     "keywords": [
@@ -2867,6 +2968,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-guided-to-your-side-t7",
     "name": "Guided to Your Side",
     "type": "action",
     "keywords": [
@@ -2882,6 +2984,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-hands-of-the-maker-t1",
     "name": "Hands of the Maker",
     "type": "maneuver",
     "keywords": [
@@ -2896,6 +2999,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-healing-grace-t1",
     "name": "Healing Grace",
     "type": "maneuver",
     "keywords": [
@@ -2911,6 +3015,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-holy-lash-t1",
     "name": "Holy Lash",
     "type": "action",
     "keywords": [
@@ -2948,6 +3053,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-invocation-of-mystery-9-piety-t6",
     "name": "Invocation of Mystery (9 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -2963,6 +3069,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-invocation-of-undoing-9-piety-t6",
     "name": "Invocation of Undoing (9 Piety)",
     "type": "action",
     "keywords": [
@@ -3002,6 +3109,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-judgment-s-hammer-3-piety-t1",
     "name": "Judgment's Hammer (3 Piety)",
     "type": "action",
     "keywords": [
@@ -3066,6 +3174,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-lauded-by-god-9-piety-t6",
     "name": "Lauded by God (9 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -3081,6 +3190,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-lightfall-t1",
     "name": "Lightfall",
     "type": "action",
     "keywords": [
@@ -3117,6 +3227,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-lightning-lord-9-piety-t6",
     "name": "Lightning Lord (9 Piety)",
     "type": "action",
     "keywords": [
@@ -3156,6 +3267,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-morning-light-5-piety-t2",
     "name": "Morning Light (5 Piety)",
     "type": "action",
     "keywords": [
@@ -3192,6 +3304,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-nature-judges-thee-5-piety-t2",
     "name": "Nature Judges Thee (5 Piety)",
     "type": "action",
     "keywords": [
@@ -3259,6 +3372,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-night-falls-11-piety-t9",
     "name": "Night Falls (11 Piety)",
     "type": "action",
     "keywords": [
@@ -3275,6 +3389,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-our-hearts-your-strength-5-piety-t2",
     "name": "Our Hearts Your Strength (5 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -3290,6 +3405,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-penance-9-piety-t4",
     "name": "Penance (9 Piety)",
     "type": "action",
     "keywords": [
@@ -3357,6 +3473,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-penance-9-piety-t5",
     "name": "Penance (9 Piety)",
     "type": "action",
     "keywords": [
@@ -3424,6 +3541,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-radiance-of-grace-11-piety-t9",
     "name": "Radiance of Grace (11 Piety)",
     "type": "action",
     "keywords": [
@@ -3439,6 +3557,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-ray-of-wrath-t1",
     "name": "Ray of Wrath",
     "type": "action",
     "keywords": [
@@ -3476,6 +3595,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-reap-5-piety-t2",
     "name": "Reap (5 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -3491,6 +3611,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-revitalizing-grace-9-piety-t6",
     "name": "Revitalizing Grace (9 Piety)",
     "type": "action",
     "keywords": [
@@ -3506,6 +3627,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-righteous-phalanx-11-piety-t9",
     "name": "Righteous Phalanx (11 Piety)",
     "type": "action",
     "keywords": [
@@ -3522,6 +3644,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-sacred-bond-5-piety-t2",
     "name": "Sacred Bond (5 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -3537,6 +3660,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-sacrificial-offer-t1",
     "name": "Sacrificial Offer",
     "type": "action",
     "keywords": [
@@ -3574,6 +3698,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-saint-s-raiment-7-piety-t3",
     "name": "Saint's Raiment (7 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -3589,6 +3714,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-saint-s-tempest-5-piety-t2",
     "name": "Saint's Tempest (5 Piety)",
     "type": "action",
     "keywords": [
@@ -3629,6 +3755,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-sanctuary-9-piety-t4",
     "name": "Sanctuary (9 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -3644,6 +3771,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-sanctuary-9-piety-t5",
     "name": "Sanctuary (9 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -3659,6 +3787,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-sermon-of-grace-5-piety-t1",
     "name": "Sermon of Grace (5 Piety)",
     "type": "action",
     "keywords": [
@@ -3674,6 +3803,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-solar-flare-11-piety-t9",
     "name": "Solar Flare (11 Piety)",
     "type": "action",
     "keywords": [
@@ -3711,6 +3841,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-soul-siphon-7-piety-t3",
     "name": "Soul Siphon (7 Piety)",
     "type": "action",
     "keywords": [
@@ -3748,6 +3879,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-spirit-stampede-9-piety-t6",
     "name": "Spirit Stampede (9 Piety)",
     "type": "action",
     "keywords": [
@@ -3815,6 +3947,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-staggering-curse-t1",
     "name": "Staggering Curse",
     "type": "action",
     "keywords": [
@@ -3852,6 +3985,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-statue-of-power-5-piety-t2",
     "name": "Statue of Power (5 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -3867,6 +4001,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-the-gods-command-you-obey-5-piety-t2",
     "name": "The Gods Command You Obey (5 Piety)",
     "type": "action",
     "keywords": [
@@ -3904,6 +4039,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-thorn-cage-11-piety-t9",
     "name": "Thorn Cage (11 Piety)",
     "type": "action",
     "keywords": [
@@ -3968,6 +4104,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-trinity-of-trickery-9-piety-t7",
     "name": "Trinity of Trickery (9 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -3983,6 +4120,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-vessel-of-retribution-9-piety-t4",
     "name": "Vessel of Retribution (9 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -3998,6 +4136,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-vessel-of-retribution-9-piety-t5",
     "name": "Vessel of Retribution (9 Piety)",
     "type": "maneuver",
     "keywords": [
@@ -4013,6 +4152,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-violence-will-not-aid-thee-3-piety-t1",
     "name": "Violence Will Not Aid Thee (3 Piety)",
     "type": "action",
     "keywords": [
@@ -4050,6 +4190,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-warrior-s-prayer-t1",
     "name": "Warrior's Prayer",
     "type": "action",
     "keywords": [
@@ -4087,6 +4228,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-wellspring-of-grace-5-piety-t2",
     "name": "Wellspring of Grace (5 Piety)",
     "type": "action",
     "keywords": [
@@ -4102,6 +4244,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-wither-t1",
     "name": "Wither",
     "type": "action",
     "keywords": [
@@ -4139,6 +4282,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-word-of-final-redemption-11-piety-t9",
     "name": "Word of Final Redemption (11 Piety)",
     "type": "free-triggered",
     "keywords": [
@@ -4154,6 +4298,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-word-of-guidance-t1",
     "name": "Word of Guidance",
     "type": "triggered",
     "keywords": [
@@ -4169,6 +4314,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-word-of-judgment-t1",
     "name": "Word of Judgment",
     "type": "triggered",
     "keywords": [
@@ -4184,6 +4330,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-word-of-weakening-11-piety-t9",
     "name": "Word of Weakening (11 Piety)",
     "type": "action",
     "keywords": [
@@ -4248,6 +4395,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-words-of-wrath-and-grace-7-piety-t3",
     "name": "Words of Wrath and Grace (7 Piety)",
     "type": "action",
     "keywords": [
@@ -4284,6 +4432,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "conduit-your-story-ends-here-9-piety-t6",
     "name": "Your Story Ends Here (9 Piety)",
     "type": "action",
     "keywords": [
@@ -4348,6 +4497,7 @@
     "sourceClassId": "conduit"
   },
   {
+    "id": "elementalist-afflict-a-bountiful-decay-t1",
     "name": "Afflict a Bountiful Decay",
     "type": "action",
     "keywords": [
@@ -4387,6 +4537,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-behold-the-mystery-3-essence-t1",
     "name": "Behold the Mystery (3 Essence)",
     "type": "action",
     "keywords": [
@@ -4425,6 +4576,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-bifurcated-incineration-t1",
     "name": "Bifurcated Incineration",
     "type": "action",
     "keywords": [
@@ -4463,6 +4615,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-breath-of-dawn-remembered-t1",
     "name": "Breath of Dawn Remembered",
     "type": "triggered",
     "keywords": [
@@ -4479,6 +4632,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-combustion-deferred-9-essence-t5",
     "name": "Combustion Deferred (9 Essence)",
     "type": "action",
     "keywords": [
@@ -4517,6 +4671,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-conflagration-5-essence-t1",
     "name": "Conflagration (5 Essence)",
     "type": "action",
     "keywords": [
@@ -4555,6 +4710,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-earth-accepts-me-t3",
     "name": "Earth Accepts Me",
     "type": "action",
     "keywords": [
@@ -4570,6 +4726,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-earth-rejects-you-11-essence-t8",
     "name": "Earth Rejects You (11 Essence)",
     "type": "action",
     "keywords": [
@@ -4608,6 +4765,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-earth-rejects-you-11-essence-t9",
     "name": "Earth Rejects You (11 Essence)",
     "type": "action",
     "keywords": [
@@ -4646,6 +4804,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-erase-7-essence-t3",
     "name": "Erase (7 Essence)",
     "type": "action",
     "keywords": [
@@ -4684,6 +4843,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-explosive-assistance-t1",
     "name": "Explosive Assistance",
     "type": "triggered",
     "keywords": [
@@ -4700,6 +4860,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-grasp-of-beyond-t1",
     "name": "Grasp of Beyond",
     "type": "action",
     "keywords": [
@@ -4738,6 +4899,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-heart-of-the-wode-11-essence-t4",
     "name": "Heart of the Wode (11 Essence)",
     "type": "action",
     "keywords": [
@@ -4754,6 +4916,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-heart-of-the-wode-11-essence-t5",
     "name": "Heart of the Wode (11 Essence)",
     "type": "action",
     "keywords": [
@@ -4770,6 +4933,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-heart-of-the-wode-11-essence-t8",
     "name": "Heart of the Wode (11 Essence)",
     "type": "action",
     "keywords": [
@@ -4786,6 +4950,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-hurl-element-t1",
     "name": "Hurl Element",
     "type": "action",
     "keywords": [
@@ -4823,6 +4988,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-instantaneous-excavation-5-essence-t1",
     "name": "Instantaneous Excavation (5 Essence)",
     "type": "maneuver",
     "keywords": [
@@ -4860,6 +5026,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-invigorating-growth-3-essence-t1",
     "name": "Invigorating Growth (3 Essence)",
     "type": "action",
     "keywords": [
@@ -4898,6 +5065,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-luminous-champion-aloft-9-essence-t5",
     "name": "Luminous Champion Aloft (9 Essence)",
     "type": "maneuver",
     "keywords": [
@@ -4916,6 +5084,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-luminous-champion-aloft-9-essence-t6",
     "name": "Luminous Champion Aloft (9 Essence)",
     "type": "maneuver",
     "keywords": [
@@ -4934,6 +5103,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-magma-titan-9-essence-t5",
     "name": "Magma Titan (9 Essence)",
     "type": "maneuver",
     "keywords": [
@@ -4952,6 +5122,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-magma-titan-9-essence-t6",
     "name": "Magma Titan (9 Essence)",
     "type": "maneuver",
     "keywords": [
@@ -4970,6 +5141,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-maw-of-earth-7-essence-t3",
     "name": "Maw of Earth (7 Essence)",
     "type": "action",
     "keywords": [
@@ -5008,6 +5180,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-meteor-9-essence-t5",
     "name": "Meteor (9 Essence)",
     "type": "action",
     "keywords": [
@@ -5047,6 +5220,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-meteor-9-essence-t6",
     "name": "Meteor (9 Essence)",
     "type": "action",
     "keywords": [
@@ -5086,6 +5260,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-meteoric-introduction-t1",
     "name": "Meteoric Introduction",
     "type": "action",
     "keywords": [
@@ -5124,6 +5299,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-motivate-earth-t1",
     "name": "Motivate Earth",
     "type": "action",
     "keywords": [
@@ -5140,6 +5316,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-muse-of-fire-11-essence-t4",
     "name": "Muse of Fire (11 Essence)",
     "type": "action",
     "keywords": [
@@ -5181,6 +5358,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-muse-of-fire-11-essence-t5",
     "name": "Muse of Fire (11 Essence)",
     "type": "action",
     "keywords": [
@@ -5222,6 +5400,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-muse-of-fire-11-essence-t8",
     "name": "Muse of Fire (11 Essence)",
     "type": "action",
     "keywords": [
@@ -5263,6 +5442,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-no-more-than-a-breeze-5-essence-t1",
     "name": "No More Than a Breeze (5 Essence)",
     "type": "maneuver",
     "keywords": [
@@ -5279,6 +5459,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-o-flower-aid-o-earth-defend-5-essence-t2",
     "name": "O Flower Aid, O Earth Defend (5 Essence)",
     "type": "maneuver",
     "keywords": [
@@ -5297,6 +5478,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-practical-magic-t1",
     "name": "Practical Magic",
     "type": "maneuver",
     "keywords": [
@@ -5311,6 +5493,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-prism-11-essence-t8",
     "name": "Prism (11 Essence)",
     "type": "action",
     "keywords": [
@@ -5326,6 +5509,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-prism-11-essence-t9",
     "name": "Prism (11 Essence)",
     "type": "action",
     "keywords": [
@@ -5341,6 +5525,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-ray-of-agonizing-self-reflection-t1",
     "name": "Ray of Agonizing Self-Reflection",
     "type": "action",
     "keywords": [
@@ -5406,6 +5591,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-remember-growth-and-sun-and-rain-t3",
     "name": "Remember Growth and Sun and Rain",
     "type": "action",
     "keywords": [
@@ -5422,6 +5608,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-return-to-formlessness-t1",
     "name": "Return to Formlessness",
     "type": "action",
     "keywords": [
@@ -5438,6 +5625,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-return-to-oblivion-11-essence-t4",
     "name": "Return to Oblivion (11 Essence)",
     "type": "action",
     "keywords": [
@@ -5455,6 +5643,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-return-to-oblivion-11-essence-t5",
     "name": "Return to Oblivion (11 Essence)",
     "type": "action",
     "keywords": [
@@ -5472,6 +5661,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-return-to-oblivion-11-essence-t8",
     "name": "Return to Oblivion (11 Essence)",
     "type": "action",
     "keywords": [
@@ -5489,6 +5679,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-ripples-in-the-earth-3-essence-t1",
     "name": "Ripples in the Earth (3 Essence)",
     "type": "action",
     "keywords": [
@@ -5536,6 +5727,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-shared-void-sense-t1",
     "name": "Shared Void Sense",
     "type": "maneuver",
     "keywords": [
@@ -5552,6 +5744,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-skin-like-castle-walls-t1",
     "name": "Skin Like Castle Walls",
     "type": "triggered",
     "keywords": [
@@ -5568,6 +5761,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-storm-of-sands-9-essence-t5",
     "name": "Storm of Sands (9 Essence)",
     "type": "action",
     "keywords": [
@@ -5606,6 +5800,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-subtle-relocation-t1",
     "name": "Subtle Relocation",
     "type": "triggered",
     "keywords": [
@@ -5622,6 +5817,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-subvert-the-green-within-5-essence-t2",
     "name": "Subvert the Green Within (5 Essence)",
     "type": "action",
     "keywords": [
@@ -5661,6 +5857,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-subverted-perception-of-space-9-essence-t5",
     "name": "Subverted Perception of Space (9 Essence)",
     "type": "action",
     "keywords": [
@@ -5699,6 +5896,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-summon-source-of-earth-t4",
     "name": "Summon Source of Earth",
     "type": "action",
     "keywords": [
@@ -5739,6 +5937,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-summon-source-of-earth-t5",
     "name": "Summon Source of Earth",
     "type": "action",
     "keywords": [
@@ -5779,6 +5978,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-summon-source-of-earth-t8",
     "name": "Summon Source of Earth",
     "type": "action",
     "keywords": [
@@ -5819,6 +6019,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-swarm-of-spirits-7-essence-t3",
     "name": "Swarm of Spirits (7 Essence)",
     "type": "action",
     "keywords": [
@@ -5856,6 +6057,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-test-of-rain-5-essence-t1",
     "name": "Test of Rain (5 Essence)",
     "type": "action",
     "keywords": [
@@ -5894,6 +6096,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-the-flesh-a-crucible-3-essence-t1",
     "name": "The Flesh, a Crucible (3 Essence)",
     "type": "action",
     "keywords": [
@@ -5932,6 +6135,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-the-green-defends-its-servants-11-essence-t8",
     "name": "The Green Defends Its Servants (11 Essence)",
     "type": "maneuver",
     "keywords": [
@@ -5948,6 +6152,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-the-green-defends-its-servants-11-essence-t9",
     "name": "The Green Defends Its Servants (11 Essence)",
     "type": "maneuver",
     "keywords": [
@@ -5964,6 +6169,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-the-green-within-the-green-without-t1",
     "name": "The Green Within, the Green Without",
     "type": "action",
     "keywords": [
@@ -6002,6 +6208,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-the-wode-remembers-and-returns-9-essence-t5",
     "name": "The Wode Remembers and Returns (9 Essence)",
     "type": "action",
     "keywords": [
@@ -6020,6 +6227,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-the-wode-remembers-and-returns-9-essence-t6",
     "name": "The Wode Remembers and Returns (9 Essence)",
     "type": "action",
     "keywords": [
@@ -6038,6 +6246,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-there-is-no-space-between-t2",
     "name": "There Is No Space Between",
     "type": "maneuver",
     "keywords": [
@@ -6054,6 +6263,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-translated-through-flame-5-essence-t2",
     "name": "Translated Through Flame (5 Essence)",
     "type": "action",
     "keywords": [
@@ -6092,6 +6302,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-unquenchable-fire-11-essence-t8",
     "name": "Unquenchable Fire (11 Essence)",
     "type": "action",
     "keywords": [
@@ -6157,6 +6368,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-unquenchable-fire-11-essence-t9",
     "name": "Unquenchable Fire (11 Essence)",
     "type": "action",
     "keywords": [
@@ -6222,6 +6434,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-unquiet-ground-t1",
     "name": "Unquiet Ground",
     "type": "action",
     "keywords": [
@@ -6260,6 +6473,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-viscous-fire-t1",
     "name": "Viscous Fire",
     "type": "action",
     "keywords": [
@@ -6298,6 +6512,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-volcano-s-embrace-5-essence-t2",
     "name": "Volcano's Embrace (5 Essence)",
     "type": "action",
     "keywords": [
@@ -6364,6 +6579,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-wall-of-fire-7-essence-t3",
     "name": "Wall of Fire (7 Essence)",
     "type": "maneuver",
     "keywords": [
@@ -6381,6 +6597,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-web-of-all-that-s-come-before-9-essence-t5",
     "name": "Web of All That's Come Before (9 Essence)",
     "type": "action",
     "keywords": [
@@ -6449,6 +6666,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-world-torn-asunder-11-essence-t4",
     "name": "World Torn Asunder (11 Essence)",
     "type": "action",
     "keywords": [
@@ -6513,6 +6731,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-world-torn-asunder-11-essence-t5",
     "name": "World Torn Asunder (11 Essence)",
     "type": "action",
     "keywords": [
@@ -6577,6 +6796,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "elementalist-world-torn-asunder-11-essence-t8",
     "name": "World Torn Asunder (11 Essence)",
     "type": "action",
     "keywords": [
@@ -6641,6 +6861,7 @@
     "sourceClassId": "elementalist"
   },
   {
+    "id": "fury-apex-predator-5-ferocity-t2",
     "name": "Apex Predator (5 Ferocity)",
     "type": "action",
     "keywords": [
@@ -6708,6 +6929,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-avalanche-impact-9-ferocity-t6",
     "name": "Avalanche Impact (9 Ferocity)",
     "type": "maneuver",
     "keywords": [
@@ -6746,6 +6968,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-back-3-ferocity-t1",
     "name": "Back! (3 Ferocity)",
     "type": "action",
     "keywords": [
@@ -6785,6 +7008,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-blood-for-blood-5-ferocity-t1",
     "name": "Blood for Blood! (5 Ferocity)",
     "type": "action",
     "keywords": [
@@ -6873,6 +7097,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-brutal-slam-t1",
     "name": "Brutal Slam",
     "type": "action",
     "keywords": [
@@ -6910,6 +7135,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-death-comes-for-you-all-11-ferocity-t9",
     "name": "Death Comes for You All! (11 Ferocity)",
     "type": "action",
     "keywords": [
@@ -6951,6 +7177,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-death-rattle-11-ferocity-t9",
     "name": "Death Rattle (11 Ferocity)",
     "type": "action",
     "keywords": [
@@ -6990,6 +7217,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-death-strike-9-ferocity-t6",
     "name": "Death Strike (9 Ferocity)",
     "type": "free-triggered",
     "keywords": [
@@ -7006,6 +7234,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-death-death-5-ferocity-t2",
     "name": "Death... Death! (5 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7094,6 +7323,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-debilitating-strike-9-ferocity-t5",
     "name": "Debilitating Strike (9 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7158,6 +7388,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-deluge-11-ferocity-t9",
     "name": "Deluge (11 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7195,6 +7426,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-demon-unleashed-7-ferocity-t3",
     "name": "Demon Unleashed (7 Ferocity)",
     "type": "maneuver",
     "keywords": [
@@ -7209,6 +7441,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-elemental-ferocity-11-ferocity-t8",
     "name": "Elemental Ferocity (11 Ferocity)",
     "type": "maneuver",
     "keywords": [
@@ -7223,6 +7456,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-face-the-storm-7-ferocity-t3",
     "name": "Face the Storm! (7 Ferocity)",
     "type": "maneuver",
     "keywords": [
@@ -7237,6 +7471,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-force-of-storms-9-ferocity-t6",
     "name": "Force of Storms (9 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7274,6 +7509,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-furious-change-t1",
     "name": "Furious Change",
     "type": "triggered",
     "keywords": [
@@ -7288,6 +7524,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-hit-and-run-t1",
     "name": "Hit and Run",
     "type": "action",
     "keywords": [
@@ -7334,6 +7571,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-impaled-t1",
     "name": "Impaled!",
     "type": "action",
     "keywords": [
@@ -7398,6 +7636,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-lines-of-force-t1",
     "name": "Lines of Force",
     "type": "triggered",
     "keywords": [
@@ -7413,6 +7652,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-make-peace-with-your-god-5-ferocity-t1",
     "name": "Make Peace With Your God! (5 Ferocity)",
     "type": "maneuver",
     "keywords": [
@@ -7427,6 +7667,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-my-turn-9-ferocity-t5",
     "name": "My Turn! (9 Ferocity)",
     "type": "free-triggered",
     "keywords": [
@@ -7464,6 +7705,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-out-of-the-way-3-ferocity-t1",
     "name": "Out of the Way! (3 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7501,6 +7743,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-overkill-11-ferocity-t8",
     "name": "Overkill (11 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7539,6 +7782,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-phalanx-breaker-5-ferocity-t2",
     "name": "Phalanx-Breaker (5 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7605,6 +7849,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-pounce-9-ferocity-t6",
     "name": "Pounce (9 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7673,6 +7918,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-primordial-bane-11-ferocity-t9",
     "name": "Primordial Bane (11 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7711,6 +7957,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-primordial-rage-11-ferocity-t8",
     "name": "Primordial Rage (11 Ferocity)",
     "type": "maneuver",
     "keywords": [
@@ -7725,6 +7972,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-primordial-vortex-11-ferocity-t9",
     "name": "Primordial Vortex (11 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7766,6 +8014,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-rebounding-storm-9-ferocity-t5",
     "name": "Rebounding Storm (9 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7806,6 +8055,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-relentless-death-11-ferocity-t8",
     "name": "Relentless Death (11 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7844,6 +8094,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-riders-on-the-storm-9-ferocity-t6",
     "name": "Riders on the Storm (9 Ferocity)",
     "type": "maneuver",
     "keywords": [
@@ -7859,6 +8110,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-seek-and-destroy-9-ferocity-t6",
     "name": "Seek and Destroy (9 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7923,6 +8175,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-shower-of-blood-11-ferocity-t9",
     "name": "Shower of Blood (11 Ferocity)",
     "type": "action",
     "keywords": [
@@ -7960,6 +8213,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-special-delivery-5-ferocity-t2",
     "name": "Special Delivery (5 Ferocity)",
     "type": "maneuver",
     "keywords": [
@@ -7975,6 +8229,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-steelbreaker-7-ferocity-t3",
     "name": "Steelbreaker (7 Ferocity)",
     "type": "maneuver",
     "keywords": [
@@ -7989,6 +8244,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-thunder-roar-5-ferocity-t1",
     "name": "Thunder Roar (5 Ferocity)",
     "type": "action",
     "keywords": [
@@ -8029,6 +8285,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-tide-of-death-3-ferocity-t1",
     "name": "Tide of Death (3 Ferocity)",
     "type": "action",
     "keywords": [
@@ -8065,6 +8322,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-to-stone-9-ferocity-t5",
     "name": "To Stone! (9 Ferocity)",
     "type": "action",
     "keywords": [
@@ -8130,6 +8388,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-to-the-death-t1",
     "name": "To the Death!",
     "type": "action",
     "keywords": [
@@ -8167,6 +8426,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-to-the-uttermost-end-5-ferocity-t1",
     "name": "To the Uttermost End (5 Ferocity)",
     "type": "action",
     "keywords": [
@@ -8204,6 +8464,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-unearthly-reflexes-t1",
     "name": "Unearthly Reflexes",
     "type": "triggered",
     "keywords": [
@@ -8218,6 +8479,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-visceral-roar-5-ferocity-t2",
     "name": "Visceral Roar (5 Ferocity)",
     "type": "action",
     "keywords": [
@@ -8284,6 +8546,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-wrecking-ball-5-ferocity-t2",
     "name": "Wrecking Ball (5 Ferocity)",
     "type": "maneuver",
     "keywords": [
@@ -8320,6 +8583,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-you-are-already-dead-7-ferocity-t3",
     "name": "You Are Already Dead (7 Ferocity)",
     "type": "action",
     "keywords": [
@@ -8336,6 +8600,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "fury-your-entrails-are-your-extrails-3-ferocity-t1",
     "name": "Your Entrails Are Your Extrails! (3 Ferocity)",
     "type": "action",
     "keywords": [
@@ -8400,6 +8665,7 @@
     "sourceClassId": "fury"
   },
   {
+    "id": "kits-battle-grace",
     "name": "Battle Grace",
     "type": "action",
     "keywords": [
@@ -8437,6 +8703,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-devastating-rush",
     "name": "Devastating Rush",
     "type": "action",
     "keywords": [
@@ -8474,6 +8741,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-double-strike",
     "name": "Double Strike",
     "type": "action",
     "keywords": [
@@ -8511,6 +8779,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-exploding-arrow",
     "name": "Exploding Arrow",
     "type": "action",
     "keywords": [
@@ -8549,6 +8818,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-extension-of-my-arm",
     "name": "Extension of My Arm",
     "type": "action",
     "keywords": [
@@ -8586,6 +8856,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-fade",
     "name": "Fade",
     "type": "action",
     "keywords": [
@@ -8624,6 +8895,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-fancy-footwork",
     "name": "Fancy Footwork",
     "type": "action",
     "keywords": [
@@ -8661,6 +8933,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-forward-thrust-backward-smash",
     "name": "Forward Thrust, Backward Smash",
     "type": "action",
     "keywords": [
@@ -8698,6 +8971,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-hamstring-shot",
     "name": "Hamstring Shot",
     "type": "action",
     "keywords": [
@@ -8762,6 +9036,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-leaping-lightning",
     "name": "Leaping Lightning",
     "type": "action",
     "keywords": [
@@ -8800,6 +9075,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-let-s-dance",
     "name": "Let's Dance",
     "type": "action",
     "keywords": [
@@ -8837,6 +9113,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-net-and-stab",
     "name": "Net and Stab",
     "type": "action",
     "keywords": [
@@ -8901,6 +9178,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-pain-for-pain",
     "name": "Pain for Pain",
     "type": "action",
     "keywords": [
@@ -8938,6 +9216,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-patient-shot",
     "name": "Patient Shot",
     "type": "action",
     "keywords": [
@@ -8975,6 +9254,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-protective-attack",
     "name": "Protective Attack",
     "type": "action",
     "keywords": [
@@ -9012,6 +9292,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-raider-s-awe",
     "name": "Raider's Awe",
     "type": "action",
     "keywords": [
@@ -9050,6 +9331,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-shield-bash",
     "name": "Shield Bash",
     "type": "action",
     "keywords": [
@@ -9096,6 +9378,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-two-shot",
     "name": "Two Shot",
     "type": "action",
     "keywords": [
@@ -9133,6 +9416,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-unmooring",
     "name": "Unmooring",
     "type": "action",
     "keywords": [
@@ -9171,6 +9455,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-weakening-brand",
     "name": "Weakening Brand",
     "type": "action",
     "keywords": [
@@ -9209,6 +9494,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "kits-where-i-want-you",
     "name": "Where I Want You",
     "type": "action",
     "keywords": [
@@ -9246,6 +9532,7 @@
     "sourceClassId": "kits"
   },
   {
+    "id": "null-a-squad-unto-myself-5-discipline-t1",
     "name": "A Squad Unto Myself (5 Discipline)",
     "type": "action",
     "keywords": [
@@ -9283,6 +9570,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-absolute-zero-11-discipline-t9",
     "name": "Absolute Zero (11 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -9318,6 +9606,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-absorption-field-7-discipline-t3",
     "name": "Absorption Field (7 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -9332,6 +9621,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-anticipating-strike-9-discipline-t5",
     "name": "Anticipating Strike (9 Discipline)",
     "type": "free-triggered",
     "keywords": [
@@ -9397,6 +9687,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-arcane-disruptor-5-discipline-t1",
     "name": "Arcane Disruptor (5 Discipline)",
     "type": "action",
     "keywords": [
@@ -9462,6 +9753,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-arcane-purge-11-discipline-t8",
     "name": "Arcane Purge (11 Discipline)",
     "type": "action",
     "keywords": [
@@ -9500,6 +9792,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-arrestor-cycle-11-discipline-t9",
     "name": "Arrestor Cycle (11 Discipline)",
     "type": "free-triggered",
     "keywords": [
@@ -9536,6 +9829,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-blur-5-discipline-t2",
     "name": "Blur (5 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -9550,6 +9844,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-chronal-spike-3-discipline-t1",
     "name": "Chronal Spike (3 Discipline)",
     "type": "action",
     "keywords": [
@@ -9588,6 +9883,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-dance-of-blows-t1",
     "name": "Dance of Blows",
     "type": "action",
     "keywords": [
@@ -9625,6 +9921,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-entropic-field-5-discipline-t2",
     "name": "Entropic Field (5 Discipline)",
     "type": "action",
     "keywords": [
@@ -9692,6 +9989,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-faster-than-the-eye-t1",
     "name": "Faster Than the Eye",
     "type": "action",
     "keywords": [
@@ -9730,6 +10028,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-force-redirected-5-discipline-t2",
     "name": "Force Redirected (5 Discipline)",
     "type": "action",
     "keywords": [
@@ -9768,6 +10067,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-gravitic-charge-9-discipline-t6",
     "name": "Gravitic Charge (9 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -9803,6 +10103,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-gravitic-strike-5-discipline-t2",
     "name": "Gravitic Strike (5 Discipline)",
     "type": "action",
     "keywords": [
@@ -9841,6 +10142,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-heat-drain-11-discipline-t9",
     "name": "Heat Drain (11 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -9905,6 +10207,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-heat-sink-5-discipline-t2",
     "name": "Heat Sink (5 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -9919,6 +10222,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-ice-pillars-9-discipline-t6",
     "name": "Ice Pillars (9 Discipline)",
     "type": "action",
     "keywords": [
@@ -9955,6 +10259,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-impart-force-5-discipline-t1",
     "name": "Impart Force (5 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -9993,6 +10298,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-inertial-absorption-11-discipline-t9",
     "name": "Inertial Absorption (11 Discipline)",
     "type": "free-triggered",
     "keywords": [
@@ -10007,6 +10313,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-inertial-shield-t1",
     "name": "Inertial Shield",
     "type": "triggered",
     "keywords": [
@@ -10021,6 +10328,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-inertial-step-t1",
     "name": "Inertial Step",
     "type": "action",
     "keywords": [
@@ -10059,6 +10367,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-interphase-9-discipline-t6",
     "name": "Interphase (9 Discipline)",
     "type": "action",
     "keywords": [
@@ -10073,6 +10382,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-iron-body-9-discipline-t6",
     "name": "Iron Body (9 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -10087,6 +10397,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-iron-grip-9-discipline-t5",
     "name": "Iron Grip (9 Discipline)",
     "type": "action",
     "keywords": [
@@ -10152,6 +10463,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-joint-lock-t1",
     "name": "Joint Lock",
     "type": "action",
     "keywords": [
@@ -10217,6 +10529,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-kinetic-shield-5-discipline-t2",
     "name": "Kinetic Shield (5 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -10252,6 +10565,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-kinetic-strike-t1",
     "name": "Kinetic Strike",
     "type": "action",
     "keywords": [
@@ -10314,6 +10628,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-magnetic-strike-t1",
     "name": "Magnetic Strike",
     "type": "action",
     "keywords": [
@@ -10352,6 +10667,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-molecular-rearrangement-field-7-discipline-t3",
     "name": "Molecular Rearrangement Field (7 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -10366,6 +10682,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-null-field-t1",
     "name": "Null Field",
     "type": "maneuver",
     "keywords": [
@@ -10381,6 +10698,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-phase-hurl-11-discipline-t8",
     "name": "Phase Hurl (11 Discipline)",
     "type": "action",
     "keywords": [
@@ -10446,6 +10764,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-phase-inversion-strike-t1",
     "name": "Phase Inversion Strike",
     "type": "action",
     "keywords": [
@@ -10484,6 +10803,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-phase-leap-9-discipline-t5",
     "name": "Phase Leap (9 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -10498,6 +10818,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-phase-step-9-discipline-t6",
     "name": "Phase Step (9 Discipline)",
     "type": "action",
     "keywords": [
@@ -10565,6 +10886,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-phase-strike-5-discipline-t1",
     "name": "Phase Strike (5 Discipline)",
     "type": "action",
     "keywords": [
@@ -10603,6 +10925,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-pressure-points-t1",
     "name": "Pressure Points",
     "type": "action",
     "keywords": [
@@ -10668,6 +10991,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-psychic-pulse-3-discipline-t1",
     "name": "Psychic Pulse (3 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -10683,6 +11007,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-realitas-11-discipline-t9",
     "name": "Realitas (11 Discipline)",
     "type": "action",
     "keywords": [
@@ -10748,6 +11073,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-relentless-nemesis-3-discipline-t1",
     "name": "Relentless Nemesis (3 Discipline)",
     "type": "action",
     "keywords": [
@@ -10786,6 +11112,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-scalar-assault-11-discipline-t8",
     "name": "Scalar Assault (11 Discipline)",
     "type": "action",
     "keywords": [
@@ -10825,6 +11152,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-stabilizing-field-7-discipline-t3",
     "name": "Stabilizing Field (7 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -10839,6 +11167,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-stunning-blow-3-discipline-t1",
     "name": "Stunning Blow (3 Discipline)",
     "type": "action",
     "keywords": [
@@ -10928,6 +11257,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-synapse-field-7-discipline-t3",
     "name": "Synapse Field (7 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -10942,6 +11272,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-synaptic-anchor-11-discipline-t8",
     "name": "Synaptic Anchor (11 Discipline)",
     "type": "free-triggered",
     "keywords": [
@@ -10956,6 +11287,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-synaptic-reset-9-discipline-t5",
     "name": "Synaptic Reset (9 Discipline)",
     "type": "maneuver",
     "keywords": [
@@ -10971,6 +11303,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-time-loop-11-discipline-t9",
     "name": "Time Loop (11 Discipline)",
     "type": "free-triggered",
     "keywords": [
@@ -10985,6 +11318,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "null-wall-of-ice-9-discipline-t6",
     "name": "Wall of Ice (9 Discipline)",
     "type": "action",
     "keywords": [
@@ -11001,6 +11335,7 @@
     "sourceClassId": "null"
   },
   {
+    "id": "shadow-assassinate-11-insight-t8",
     "name": "Assassinate (11 Insight)",
     "type": "action",
     "keywords": [
@@ -11038,6 +11373,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-black-ash-eruption-9-insight-t6",
     "name": "Black Ash Eruption (9 Insight)",
     "type": "action",
     "keywords": [
@@ -11076,6 +11412,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-black-ash-teleport-t1",
     "name": "Black Ash Teleport",
     "type": "maneuver",
     "keywords": [
@@ -11090,6 +11427,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-blackout-9-insight-t5",
     "name": "Blackout (9 Insight)",
     "type": "maneuver",
     "keywords": [
@@ -11105,6 +11443,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-cacophony-of-cinders-11-insight-t9",
     "name": "Cacophony of Cinders (11 Insight)",
     "type": "action",
     "keywords": [
@@ -11142,6 +11481,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-careful-observation-t3",
     "name": "Careful Observation",
     "type": "maneuver",
     "keywords": [
@@ -11156,6 +11496,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-chain-reaction-11-insight-t9",
     "name": "Chain Reaction (11 Insight)",
     "type": "action",
     "keywords": [
@@ -11191,6 +11532,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-cinderstorm-9-insight-t6",
     "name": "Cinderstorm (9 Insight)",
     "type": "maneuver",
     "keywords": [
@@ -11205,6 +11547,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-clever-trick-1-insight-t1",
     "name": "Clever Trick (1 Insight)",
     "type": "triggered",
     "keywords": [
@@ -11219,6 +11562,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-coat-the-blade-t1",
     "name": "Coat the Blade",
     "type": "maneuver",
     "keywords": [
@@ -11233,6 +11577,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-coup-de-grace-5-insight-t1",
     "name": "Coup de Grace (5 Insight)",
     "type": "action",
     "keywords": [
@@ -11271,6 +11616,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-dancer-7-insight-t3",
     "name": "Dancer (7 Insight)",
     "type": "maneuver",
     "keywords": [
@@ -11285,6 +11631,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-defensive-roll-t1",
     "name": "Defensive Roll",
     "type": "triggered",
     "keywords": [
@@ -11299,6 +11646,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-demon-door-11-insight-t9",
     "name": "Demon Door (11 Insight)",
     "type": "action",
     "keywords": [
@@ -11337,6 +11685,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-disorienting-strike-3-insight-t1",
     "name": "Disorienting Strike (3 Insight)",
     "type": "action",
     "keywords": [
@@ -11374,6 +11723,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-eviscerate-3-insight-t1",
     "name": "Eviscerate (3 Insight)",
     "type": "action",
     "keywords": [
@@ -11439,6 +11789,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-gasping-in-pain-t1",
     "name": "Gasping in Pain",
     "type": "action",
     "keywords": [
@@ -11485,6 +11836,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-get-in-get-out-3-insight-t1",
     "name": "Get In Get Out (3 Insight)",
     "type": "action",
     "keywords": [
@@ -11522,6 +11874,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-hesitation-is-weakness-1-insight-t1",
     "name": "Hesitation Is Weakness (1 Insight)",
     "type": "free-triggered",
     "keywords": [
@@ -11536,6 +11889,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-i-am-you-11-insight-t9",
     "name": "I Am You (11 Insight)",
     "type": "maneuver",
     "keywords": [
@@ -11551,6 +11905,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-i-work-better-alone-t1",
     "name": "I Work Better Alone",
     "type": "action",
     "keywords": [
@@ -11589,6 +11944,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-i-m-no-threat-t1",
     "name": "I'm No Threat",
     "type": "maneuver",
     "keywords": [
@@ -11603,6 +11959,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-in-a-puff-of-ash-5-insight-t2",
     "name": "In a Puff of Ash (5 Insight)",
     "type": "action",
     "keywords": [
@@ -11642,6 +11999,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-in-all-this-confusion-t1",
     "name": "In All This Confusion",
     "type": "triggered",
     "keywords": [
@@ -11656,6 +12014,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-into-the-shadows-9-insight-t5",
     "name": "Into the Shadows (9 Insight)",
     "type": "action",
     "keywords": [
@@ -11694,6 +12053,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-it-was-me-all-along-11-insight-t9",
     "name": "It Was Me All Along (11 Insight)",
     "type": "action",
     "keywords": [
@@ -11731,6 +12091,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-look-9-insight-t6",
     "name": "Look! (9 Insight)",
     "type": "maneuver",
     "keywords": [
@@ -11746,6 +12107,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-machinations-of-sound-5-insight-t2",
     "name": "Machinations of Sound (5 Insight)",
     "type": "maneuver",
     "keywords": [
@@ -11783,6 +12145,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-misdirecting-strike-7-insight-t3",
     "name": "Misdirecting Strike (7 Insight)",
     "type": "action",
     "keywords": [
@@ -11821,6 +12184,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-night-watch-t4",
     "name": "Night Watch",
     "type": "triggered",
     "keywords": [
@@ -11836,6 +12200,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-one-hundred-throats-5-insight-t1",
     "name": "One Hundred Throats (5 Insight)",
     "type": "action",
     "keywords": [
@@ -11872,6 +12237,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-one-vial-makes-you-better-9-insight-t6",
     "name": "One Vial Makes You Better (9 Insight)",
     "type": "maneuver",
     "keywords": [
@@ -11886,6 +12252,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-one-vial-makes-you-faster-9-insight-t6",
     "name": "One Vial Makes You Faster (9 Insight)",
     "type": "action",
     "keywords": [
@@ -11921,6 +12288,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-pinning-shot-7-insight-t3",
     "name": "Pinning Shot (7 Insight)",
     "type": "action",
     "keywords": [
@@ -11985,6 +12353,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-puppet-strings-9-insight-t6",
     "name": "Puppet Strings (9 Insight)",
     "type": "action",
     "keywords": [
@@ -12026,6 +12395,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-setup-5-insight-t1",
     "name": "Setup (5 Insight)",
     "type": "action",
     "keywords": [
@@ -12063,6 +12433,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-shadowfall-9-insight-t5",
     "name": "Shadowfall (9 Insight)",
     "type": "action",
     "keywords": [
@@ -12100,6 +12471,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-shadowgrasp-11-insight-t8",
     "name": "Shadowgrasp (11 Insight)",
     "type": "action",
     "keywords": [
@@ -12166,6 +12538,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-shadowstrike-5-insight-t1",
     "name": "Shadowstrike (5 Insight)",
     "type": "action",
     "keywords": [
@@ -12182,6 +12555,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-so-gullible-5-insight-t2",
     "name": "So Gullible (5 Insight)",
     "type": "free-triggered",
     "keywords": [
@@ -12196,6 +12570,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-speed-of-shadows-11-insight-t8",
     "name": "Speed of Shadows (11 Insight)",
     "type": "action",
     "keywords": [
@@ -12210,6 +12585,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-staggering-blow-7-insight-t3",
     "name": "Staggering Blow (7 Insight)",
     "type": "action",
     "keywords": [
@@ -12275,6 +12651,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-sticky-bomb-5-insight-t2",
     "name": "Sticky Bomb (5 Insight)",
     "type": "action",
     "keywords": [
@@ -12310,6 +12687,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-stink-bomb-5-insight-t2",
     "name": "Stink Bomb (5 Insight)",
     "type": "action",
     "keywords": [
@@ -12346,6 +12724,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-teamwork-has-its-place-t1",
     "name": "Teamwork Has Its Place",
     "type": "action",
     "keywords": [
@@ -12384,6 +12763,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-they-always-line-up-11-insight-t8",
     "name": "They Always Line Up (11 Insight)",
     "type": "action",
     "keywords": [
@@ -12451,6 +12831,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-time-bomb-t8",
     "name": "Time Bomb",
     "type": "maneuver",
     "keywords": [
@@ -12466,6 +12847,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-to-the-stars-11-insight-t9",
     "name": "To the Stars (11 Insight)",
     "type": "action",
     "keywords": [
@@ -12503,6 +12885,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-too-slow-5-insight-t2",
     "name": "Too Slow (5 Insight)",
     "type": "free-triggered",
     "keywords": [
@@ -12517,6 +12900,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-two-throats-at-once-3-insight-t1",
     "name": "Two Throats at Once (3 Insight)",
     "type": "action",
     "keywords": [
@@ -12555,6 +12939,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-you-talk-too-much-9-insight-t5",
     "name": "You Talk Too Much (9 Insight)",
     "type": "action",
     "keywords": [
@@ -12620,6 +13005,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "shadow-you-were-watching-the-wrong-one-t1",
     "name": "You Were Watching the Wrong One",
     "type": "action",
     "keywords": [
@@ -12657,6 +13043,7 @@
     "sourceClassId": "shadow"
   },
   {
+    "id": "tactician-strike-now-t1",
     "name": "\"Strike Now!\"",
     "type": "action",
     "keywords": [
@@ -12671,6 +13058,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-advanced-tactics-t1",
     "name": "Advanced Tactics",
     "type": "triggered",
     "keywords": [
@@ -12685,6 +13073,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-battle-cry-3-focus-t1",
     "name": "Battle Cry (3 Focus)",
     "type": "maneuver",
     "keywords": [
@@ -12720,6 +13109,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-battle-plan-9-focus-t6",
     "name": "Battle Plan (9 Focus)",
     "type": "maneuver",
     "keywords": [
@@ -12734,6 +13124,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-blot-out-the-sun-11-focus-t9",
     "name": "Blot Out the Sun! (11 Focus)",
     "type": "action",
     "keywords": [
@@ -12748,6 +13139,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-concussive-strike-3-focus-t1",
     "name": "Concussive Strike (3 Focus)",
     "type": "action",
     "keywords": [
@@ -12813,6 +13205,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-coordinated-execution-9-focus-t6",
     "name": "Coordinated Execution (9 Focus)",
     "type": "free-triggered",
     "keywords": [
@@ -12827,6 +13220,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-counterstrategy-11-focus-t9",
     "name": "Counterstrategy (11 Focus)",
     "type": "action",
     "keywords": [
@@ -12841,6 +13235,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-finish-them-11-focus-t8",
     "name": "Finish Them! (11 Focus)",
     "type": "free-triggered",
     "keywords": [
@@ -12855,6 +13250,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-floodgates-open-11-focus-t8",
     "name": "Floodgates Open (11 Focus)",
     "type": "action",
     "keywords": [
@@ -12869,6 +13265,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-fog-of-war-5-focus-t2",
     "name": "Fog of War (5 Focus)",
     "type": "maneuver",
     "keywords": [
@@ -12883,6 +13280,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-frontal-assault-7-focus-t3",
     "name": "Frontal Assault (7 Focus)",
     "type": "maneuver",
     "keywords": [
@@ -12897,6 +13295,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-go-now-and-speed-well-11-focus-t8",
     "name": "Go Now and Speed Well (11 Focus)",
     "type": "action",
     "keywords": [
@@ -12911,6 +13310,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-hammer-and-anvil-5-focus-t1",
     "name": "Hammer and Anvil (5 Focus)",
     "type": "action",
     "keywords": [
@@ -12949,6 +13349,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-hit-em-hard-7-focus-t3",
     "name": "Hit 'Em Hard! (7 Focus)",
     "type": "maneuver",
     "keywords": [
@@ -12963,6 +13364,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-hustle-9-focus-t6",
     "name": "Hustle! (9 Focus)",
     "type": "maneuver",
     "keywords": [
@@ -12977,6 +13379,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-i-ll-open-and-you-ll-close-11-focus-t8",
     "name": "I'll Open and You'll Close (11 Focus)",
     "type": "action",
     "keywords": [
@@ -13015,6 +13418,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-i-ve-got-your-back-5-focus-t2",
     "name": "I've Got Your Back (5 Focus)",
     "type": "action",
     "keywords": [
@@ -13076,6 +13480,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-inspiring-strike-3-focus-t1",
     "name": "Inspiring Strike (3 Focus)",
     "type": "action",
     "keywords": [
@@ -13114,6 +13519,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-instant-retaliation-9-focus-t6",
     "name": "Instant Retaliation (9 Focus)",
     "type": "free-triggered",
     "keywords": [
@@ -13177,6 +13583,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-mark-t1",
     "name": "Mark",
     "type": "maneuver",
     "keywords": [
@@ -13191,6 +13598,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-mind-game-5-focus-t1",
     "name": "Mind Game (5 Focus)",
     "type": "action",
     "keywords": [
@@ -13256,6 +13664,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-no-dying-on-my-watch-5-focus-t2",
     "name": "No Dying on My Watch (5 Focus)",
     "type": "triggered",
     "keywords": [
@@ -13320,6 +13729,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-no-escape-11-focus-t9",
     "name": "No Escape (11 Focus)",
     "type": "action",
     "keywords": [
@@ -13358,6 +13768,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-now-5-focus-t1",
     "name": "Now! (5 Focus)",
     "type": "maneuver",
     "keywords": [
@@ -13372,6 +13783,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-overwatch-t1",
     "name": "Overwatch",
     "type": "triggered",
     "keywords": [
@@ -13386,6 +13798,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-panic-in-their-lines-9-focus-t6",
     "name": "Panic in Their Lines (9 Focus)",
     "type": "action",
     "keywords": [
@@ -13424,6 +13837,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-parry-t1",
     "name": "Parry",
     "type": "triggered",
     "keywords": [
@@ -13439,6 +13853,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-rout-7-focus-t3",
     "name": "Rout (7 Focus)",
     "type": "maneuver",
     "keywords": [
@@ -13453,6 +13868,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-squad-forward-3-focus-t1",
     "name": "Squad! Forward! (3 Focus)",
     "type": "maneuver",
     "keywords": [
@@ -13467,6 +13883,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-squad-gear-check-9-focus-t5",
     "name": "Squad! Gear Check! (9 Focus)",
     "type": "action",
     "keywords": [
@@ -13504,6 +13921,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-squad-hit-and-run-11-focus-t9",
     "name": "Squad! Hit and Run! (11 Focus)",
     "type": "action",
     "keywords": [
@@ -13518,6 +13936,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-squad-on-me-5-focus-t2",
     "name": "Squad! On Me! (5 Focus)",
     "type": "maneuver",
     "keywords": [
@@ -13532,6 +13951,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-squad-remember-your-training-9-focus-t5",
     "name": "Squad! Remember Your Training! (9 Focus)",
     "type": "action",
     "keywords": [
@@ -13546,6 +13966,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-stay-strong-and-focus-7-focus-t3",
     "name": "Stay Strong and Focus! (7 Focus)",
     "type": "maneuver",
     "keywords": [
@@ -13560,6 +13981,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-targets-of-opportunity-5-focus-t2",
     "name": "Targets of Opportunity (5 Focus)",
     "type": "maneuver",
     "keywords": [
@@ -13574,6 +13996,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-that-one-is-mine-11-focus-t9",
     "name": "That One Is Mine! (11 Focus)",
     "type": "action",
     "keywords": [
@@ -13612,6 +14035,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-their-lack-of-focus-is-their-undoing-11-focus-t9",
     "name": "Their Lack of Focus Is Their Undoing (11 Focus)",
     "type": "action",
     "keywords": [
@@ -13676,6 +14100,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-this-is-what-we-planned-for-5-focus-t1",
     "name": "This Is What We Planned For (5 Focus)",
     "type": "maneuver",
     "keywords": [
@@ -13690,6 +14115,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-to-me-squad-9-focus-t6",
     "name": "To Me Squad! (9 Focus)",
     "type": "action",
     "keywords": [
@@ -13728,6 +14154,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-try-me-instead-5-focus-t2",
     "name": "Try Me Instead (5 Focus)",
     "type": "action",
     "keywords": [
@@ -13792,6 +14219,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-win-this-day-9-focus-t5",
     "name": "Win This Day! (9 Focus)",
     "type": "action",
     "keywords": [
@@ -13806,6 +14234,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "tactician-you-ve-still-got-something-left-9-focus-t5",
     "name": "You've Still Got Something Left (9 Focus)",
     "type": "action",
     "keywords": [
@@ -13820,6 +14249,7 @@
     "sourceClassId": "tactician"
   },
   {
+    "id": "talent-accelerate-t1",
     "name": "Accelerate",
     "type": "maneuver",
     "keywords": [
@@ -13835,6 +14265,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-acceleration-field-11-clarity-t9",
     "name": "Acceleration Field (11 Clarity)",
     "type": "action",
     "keywords": [
@@ -13896,6 +14327,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-again-t1",
     "name": "Again",
     "type": "triggered",
     "keywords": [
@@ -13911,6 +14343,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-applied-chronometrics-5-clarity-t2",
     "name": "Applied Chronometrics (5 Clarity)",
     "type": "maneuver",
     "keywords": [
@@ -13948,6 +14381,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-awe-3-clarity-t1",
     "name": "Awe (3 Clarity)",
     "type": "action",
     "keywords": [
@@ -14013,6 +14447,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-borrow-from-the-future-11-clarity-t9",
     "name": "Borrow From the Future (11 Clarity)",
     "type": "maneuver",
     "keywords": [
@@ -14029,6 +14464,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-choke-3-clarity-t1",
     "name": "Choke (3 Clarity)",
     "type": "action",
     "keywords": [
@@ -14094,6 +14530,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-doubt-11-clarity-t8",
     "name": "Doubt (11 Clarity)",
     "type": "action",
     "keywords": [
@@ -14167,6 +14604,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-entropic-bolt-t1",
     "name": "Entropic Bolt",
     "type": "action",
     "keywords": [
@@ -14232,6 +14670,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-exothermic-shield-9-clarity-t5",
     "name": "Exothermic Shield (9 Clarity)",
     "type": "maneuver",
     "keywords": [
@@ -14248,6 +14687,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-fate-9-clarity-t6",
     "name": "Fate (9 Clarity)",
     "type": "action",
     "keywords": [
@@ -14285,6 +14725,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-feedback-loop-t1",
     "name": "Feedback Loop",
     "type": "triggered",
     "keywords": [
@@ -14300,6 +14741,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-flashback-5-clarity-t1",
     "name": "Flashback (5 Clarity)",
     "type": "maneuver",
     "keywords": [
@@ -14316,6 +14758,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-fling-through-time-7-clarity-t3",
     "name": "Fling Through Time (7 Clarity)",
     "type": "action",
     "keywords": [
@@ -14381,6 +14824,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-force-orbs-7-clarity-t3",
     "name": "Force Orbs (7 Clarity)",
     "type": "action",
     "keywords": [
@@ -14419,6 +14863,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-fulcrum-11-clarity-t9",
     "name": "Fulcrum (11 Clarity)",
     "type": "action",
     "keywords": [
@@ -14456,6 +14901,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-gravitic-burst-5-clarity-t2",
     "name": "Gravitic Burst (5 Clarity)",
     "type": "action",
     "keywords": [
@@ -14496,6 +14942,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-gravitic-nova-11-clarity-t9",
     "name": "Gravitic Nova (11 Clarity)",
     "type": "action",
     "keywords": [
@@ -14536,6 +14983,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-gravitic-well-9-clarity-t6",
     "name": "Gravitic Well (9 Clarity)",
     "type": "action",
     "keywords": [
@@ -14577,6 +15025,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-greater-kinetic-grip-9-clarity-t6",
     "name": "Greater Kinetic Grip (9 Clarity)",
     "type": "action",
     "keywords": [
@@ -14623,6 +15072,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-hoarfrost-t1",
     "name": "Hoarfrost",
     "type": "action",
     "keywords": [
@@ -14688,6 +15138,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-hypersonic-9-clarity-t5",
     "name": "Hypersonic (9 Clarity)",
     "type": "action",
     "keywords": [
@@ -14726,6 +15177,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-incinerate-t1",
     "name": "Incinerate",
     "type": "action",
     "keywords": [
@@ -14765,6 +15217,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-inertia-soak-5-clarity-t1",
     "name": "Inertia Soak (5 Clarity)",
     "type": "maneuver",
     "keywords": [
@@ -14781,6 +15234,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-iron-5-clarity-t1",
     "name": "Iron (5 Clarity)",
     "type": "maneuver",
     "keywords": [
@@ -14797,6 +15251,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-kinetic-grip-t1",
     "name": "Kinetic Grip",
     "type": "action",
     "keywords": [
@@ -14842,6 +15297,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-kinetic-pulse-t1",
     "name": "Kinetic Pulse",
     "type": "action",
     "keywords": [
@@ -14881,6 +15337,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-levitation-field-t8",
     "name": "Levitation Field",
     "type": "maneuver",
     "keywords": [
@@ -14896,6 +15353,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-levity-and-gravity-5-clarity-t2",
     "name": "Levity and Gravity (5 Clarity)",
     "type": "action",
     "keywords": [
@@ -14961,6 +15419,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-materialize-t1",
     "name": "Materialize",
     "type": "action",
     "keywords": [
@@ -14999,6 +15458,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-mind-snare-9-clarity-t5",
     "name": "Mind Snare (9 Clarity)",
     "type": "action",
     "keywords": [
@@ -15064,6 +15524,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-mind-spike-t1",
     "name": "Mind Spike",
     "type": "action",
     "keywords": [
@@ -15102,6 +15563,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-mindwipe-11-clarity-t8",
     "name": "Mindwipe (11 Clarity)",
     "type": "action",
     "keywords": [
@@ -15140,6 +15602,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-minor-telekinesis-t1",
     "name": "Minor Telekinesis",
     "type": "maneuver",
     "keywords": [
@@ -15155,6 +15618,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-optic-blast-t1",
     "name": "Optic Blast",
     "type": "action",
     "keywords": [
@@ -15220,6 +15684,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-overwhelm-5-clarity-t2",
     "name": "Overwhelm (5 Clarity)",
     "type": "action",
     "keywords": [
@@ -15285,6 +15750,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-perfect-clarity-5-clarity-t1",
     "name": "Perfect Clarity (5 Clarity)",
     "type": "maneuver",
     "keywords": [
@@ -15301,6 +15767,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-precognition-3-clarity-t1",
     "name": "Precognition (3 Clarity)",
     "type": "action",
     "keywords": [
@@ -15317,6 +15784,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-reflector-field-7-clarity-t3",
     "name": "Reflector Field (7 Clarity)",
     "type": "action",
     "keywords": [
@@ -15333,6 +15801,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-rejuvenate-11-clarity-t8",
     "name": "Rejuvenate (11 Clarity)",
     "type": "maneuver",
     "keywords": [
@@ -15349,6 +15818,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-remote-assistance-t1",
     "name": "Remote Assistance",
     "type": "maneuver",
     "keywords": [
@@ -15364,6 +15834,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-repel-t1",
     "name": "Repel",
     "type": "triggered",
     "keywords": [
@@ -15379,6 +15850,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-resonant-mind-spike-11-clarity-t9",
     "name": "Resonant Mind Spike (11 Clarity)",
     "type": "action",
     "keywords": [
@@ -15417,6 +15889,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-slow-5-clarity-t2",
     "name": "Slow (5 Clarity)",
     "type": "maneuver",
     "keywords": [
@@ -15481,6 +15954,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-smolder-3-clarity-t1",
     "name": "Smolder (3 Clarity)",
     "type": "action",
     "keywords": [
@@ -15519,6 +15993,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-soul-burn-7-clarity-t3",
     "name": "Soul Burn (7 Clarity)",
     "type": "action",
     "keywords": [
@@ -15584,6 +16059,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-soulbound-9-clarity-t5",
     "name": "Soulbound (9 Clarity)",
     "type": "action",
     "keywords": [
@@ -15625,6 +16101,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-spirit-sword-t1",
     "name": "Spirit Sword",
     "type": "action",
     "keywords": [
@@ -15663,6 +16140,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-stasis-field-9-clarity-t6",
     "name": "Stasis Field (9 Clarity)",
     "type": "action",
     "keywords": [
@@ -15719,6 +16197,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-stasis-shield-3-clarity-t8",
     "name": "Stasis Shield (3 Clarity)",
     "type": "triggered",
     "keywords": [
@@ -15734,6 +16213,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-steel-11-clarity-t8",
     "name": "Steel (11 Clarity)",
     "type": "maneuver",
     "keywords": [
@@ -15750,6 +16230,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-synaptic-conditioning-9-clarity-t6",
     "name": "Synaptic Conditioning (9 Clarity)",
     "type": "action",
     "keywords": [
@@ -15791,6 +16272,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-synaptic-dissipation-9-clarity-t6",
     "name": "Synaptic Dissipation (9 Clarity)",
     "type": "maneuver",
     "keywords": [
@@ -15829,6 +16311,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-synaptic-override-5-clarity-t2",
     "name": "Synaptic Override (5 Clarity)",
     "type": "action",
     "keywords": [
@@ -15866,6 +16349,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "talent-synaptic-terror-11-clarity-t9",
     "name": "Synaptic Terror (11 Clarity)",
     "type": "action",
     "keywords": [
@@ -15930,6 +16414,7 @@
     "sourceClassId": "talent"
   },
   {
+    "id": "troubadour-ballad-of-the-beast-t1",
     "name": "\"Ballad of the Beast\"",
     "type": "trait",
     "keywords": [
@@ -15946,6 +16431,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-fire-up-the-night-t3",
     "name": "\"Fire Up the Night\"",
     "type": "trait",
     "keywords": [
@@ -15962,6 +16448,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-never-ending-hero-t3",
     "name": "\"Never-Ending Hero\"",
     "type": "trait",
     "keywords": [
@@ -15978,6 +16465,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-thunder-mother-t1",
     "name": "\"Thunder Mother\"",
     "type": "trait",
     "keywords": [
@@ -16016,6 +16504,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-acrobatics-t1",
     "name": "Acrobatics",
     "type": "trait",
     "keywords": [
@@ -16032,6 +16521,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-action-hero-9-drama-t5",
     "name": "Action Hero (9 Drama)",
     "type": "action",
     "keywords": [
@@ -16069,6 +16559,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-artful-flourish-t1",
     "name": "Artful Flourish",
     "type": "action",
     "keywords": [
@@ -16106,6 +16597,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-blocking-t1",
     "name": "Blocking",
     "type": "trait",
     "keywords": [
@@ -16122,6 +16614,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-blood-on-the-stage-9-drama-t6",
     "name": "Blood on the Stage (9 Drama)",
     "type": "action",
     "keywords": [
@@ -16194,6 +16687,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-choreography-t1",
     "name": "Choreography",
     "type": "trait",
     "keywords": [
@@ -16210,6 +16704,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-classic-chandelier-stunt-5-drama-t2",
     "name": "Classic Chandelier Stunt (5 Drama)",
     "type": "action",
     "keywords": [
@@ -16226,6 +16721,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-continuity-error-9-drama-t5",
     "name": "Continuity Error (9 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -16241,6 +16737,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-cutting-sarcasm-t1",
     "name": "Cutting Sarcasm",
     "type": "action",
     "keywords": [
@@ -16306,6 +16803,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-dramatic-monologue-t1",
     "name": "Dramatic Monologue",
     "type": "maneuver",
     "keywords": [
@@ -16321,6 +16819,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-dramatic-reveal-11-drama-t8",
     "name": "Dramatic Reveal (11 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -16335,6 +16834,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-dramatic-reversal-5-drama-t1",
     "name": "Dramatic Reversal (5 Drama)",
     "type": "action",
     "keywords": [
@@ -16371,6 +16871,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-en-garde-5-drama-t2",
     "name": "En Garde! (5 Drama)",
     "type": "action",
     "keywords": [
@@ -16408,6 +16909,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-encore-5-drama-t2",
     "name": "Encore (5 Drama)",
     "type": "action",
     "keywords": [
@@ -16423,6 +16925,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-epic-11-drama-t9",
     "name": "Epic (11 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -16460,6 +16963,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-expert-fencer-11-drama-t9",
     "name": "Expert Fencer (11 Drama)",
     "type": "action",
     "keywords": [
@@ -16507,6 +17011,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-extensive-rewrites-7-drama-t3",
     "name": "Extensive Rewrites (7 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -16543,6 +17048,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-fake-your-death-5-drama-t1",
     "name": "Fake Your Death (5 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -16557,6 +17063,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-feedback-9-drama-t6",
     "name": "Feedback (9 Drama)",
     "type": "action",
     "keywords": [
@@ -16623,6 +17130,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-fight-choreography-9-drama-t6",
     "name": "Fight Choreography (9 Drama)",
     "type": "action",
     "keywords": [
@@ -16639,6 +17147,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-flip-the-script-5-drama-t1",
     "name": "Flip the Script (5 Drama)",
     "type": "action",
     "keywords": [
@@ -16654,6 +17163,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-guest-star-5-drama-t2",
     "name": "Guest Star (5 Drama)",
     "type": "action",
     "keywords": [
@@ -16669,6 +17179,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-harmonize-3-drama-t1",
     "name": "Harmonize (3 Drama)",
     "type": "triggered",
     "keywords": [
@@ -16683,6 +17194,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-harsh-critic-3-drama-t1",
     "name": "Harsh Critic (3 Drama)",
     "type": "action",
     "keywords": [
@@ -16721,6 +17233,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-here-s-how-your-story-ends-9-drama-t6",
     "name": "Here's How Your Story Ends (9 Drama)",
     "type": "action",
     "keywords": [
@@ -16787,6 +17300,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-hypnotic-overtones-3-drama-t1",
     "name": "Hypnotic Overtones (3 Drama)",
     "type": "action",
     "keywords": [
@@ -16850,6 +17364,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-infernal-gavotte-7-drama-t3",
     "name": "Infernal Gavotte (7 Drama)",
     "type": "action",
     "keywords": [
@@ -16918,6 +17433,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-instigator-t1",
     "name": "Instigator",
     "type": "action",
     "keywords": [
@@ -16955,6 +17471,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-jam-session-11-drama-t9",
     "name": "Jam Session (11 Drama)",
     "type": "action",
     "keywords": [
@@ -16991,6 +17508,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-legendary-drum-fill-9-drama-t6",
     "name": "Legendary Drum Fill (9 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -17006,6 +17524,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-love-song-9-drama-t5",
     "name": "Love Song (9 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -17021,6 +17540,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-melt-their-faces-11-drama-t9",
     "name": "Melt Their Faces (11 Drama)",
     "type": "action",
     "keywords": [
@@ -17059,6 +17579,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-method-acting-5-drama-t1",
     "name": "Method Acting (5 Drama)",
     "type": "action",
     "keywords": [
@@ -17123,6 +17644,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-moonlight-sonata-t8",
     "name": "Moonlight Sonata",
     "type": "trait",
     "keywords": [
@@ -17139,6 +17661,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-patter-song-9-drama-t5",
     "name": "Patter Song (9 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -17175,6 +17698,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-power-ballad-11-drama-t8",
     "name": "Power Ballad (11 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -17190,6 +17714,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-power-chord-t1",
     "name": "Power Chord",
     "type": "maneuver",
     "keywords": [
@@ -17226,6 +17751,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-quick-rewrite-3-drama-t1",
     "name": "Quick Rewrite (3 Drama)",
     "type": "action",
     "keywords": [
@@ -17293,6 +17819,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-radical-fantasia-t8",
     "name": "Radical Fantasia",
     "type": "trait",
     "keywords": [
@@ -17309,6 +17836,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-renegotiated-contract-11-drama-t9",
     "name": "Renegotiated Contract (11 Drama)",
     "type": "action",
     "keywords": [
@@ -17346,6 +17874,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-revitalizing-limerick-t1",
     "name": "Revitalizing Limerick",
     "type": "trait",
     "keywords": [
@@ -17362,6 +17891,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-riposte-t1",
     "name": "Riposte",
     "type": "triggered",
     "keywords": [
@@ -17376,6 +17906,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-rising-tension-11-drama-t9",
     "name": "Rising Tension (11 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -17391,6 +17922,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-saved-in-the-edit-11-drama-t8",
     "name": "Saved in the Edit (11 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -17405,6 +17937,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-spotlight-t6",
     "name": "Spotlight",
     "type": "trait",
     "keywords": [
@@ -17421,6 +17954,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-star-power-1-drama-t1",
     "name": "Star Power (1 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -17435,6 +17969,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-star-solo-7-drama-t3",
     "name": "Star Solo (7 Drama)",
     "type": "action",
     "keywords": [
@@ -17474,6 +18009,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-take-two-t5",
     "name": "Take Two!",
     "type": "trait",
     "keywords": [
@@ -17490,6 +18026,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-the-show-must-go-on-11-drama-t8",
     "name": "The Show Must Go On (11 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -17530,6 +18067,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-tough-crowd-5-drama-t2",
     "name": "Tough Crowd (5 Drama)",
     "type": "action",
     "keywords": [
@@ -17570,6 +18108,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-turnabout-is-fair-play-t1",
     "name": "Turnabout Is Fair Play",
     "type": "triggered",
     "keywords": [
@@ -17584,6 +18123,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-twist-at-the-end-5-drama-t2",
     "name": "Twist at the End (5 Drama)",
     "type": "action",
     "keywords": [
@@ -17599,6 +18139,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-upstage-3-drama-t1",
     "name": "Upstage (3 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -17684,6 +18225,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-we-can-t-be-upstaged-t5",
     "name": "We Can't Be Upstaged!",
     "type": "trait",
     "keywords": [
@@ -17700,6 +18242,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-we-meet-at-last-7-drama-t3",
     "name": "We Meet at Last (7 Drama)",
     "type": "maneuver",
     "keywords": [
@@ -17715,6 +18258,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-witty-banter-t1",
     "name": "Witty Banter",
     "type": "action",
     "keywords": [
@@ -17753,6 +18297,7 @@
     "sourceClassId": "troubadour"
   },
   {
+    "id": "troubadour-you-re-all-my-understudies-9-drama-t6",
     "name": "You're All My Understudies (9 Drama)",
     "type": "maneuver",
     "keywords": [

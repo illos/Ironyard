@@ -114,4 +114,16 @@ type: common-ability/maneuver
     const a = parseAbilityMarkdown(md, '/abs/Abilities/Common/Heal.md');
     expect(a?.id).toBe('common-heal');
   });
+
+  it('appends -tN when level is set', () => {
+    const md = `---
+item_name: Arise (11 Piety)
+type: feature/ability/3
+class: conduit
+level: 7
+---
+`;
+    const a = parseAbilityMarkdown(md, '/abs/Abilities/Conduit/7th-Level Features/Arise.md');
+    expect(a?.id).toBe('conduit-arise-11-piety-t7');
+  });
 });
