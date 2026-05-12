@@ -56,7 +56,6 @@ function deriveBaseRuntime(
   staticData: StaticDataBundle,
 ): CharacterRuntime {
   const cls = character.classId ? staticData.classes.get(character.classId) : null;
-  const kit = character.kitId ? staticData.kits.get(character.kitId) : null;
   const ancestry = character.ancestryId ? staticData.ancestries.get(character.ancestryId) : null;
 
   // Characteristics: map the stored array positionally to canonical order.
@@ -66,13 +65,14 @@ function deriveBaseRuntime(
   // directly — no class-specific slot mapping needed.
   const characteristics = deriveCharacteristics(character);
 
-  // Stamina: starting + (level - 1) * perLevel + kit bonus.
+  // Stamina: starting + (level - 1) * perLevel. Kit bonus is layered on by the
+  // attachment pass via collectFromKit.
   // NOTE: ClassSchema does NOT have staminaCharacteristic/staminaCharacteristicMultiplier
   // fields (the plan assumed these but the actual schema omits them). If a
   // characteristic-scaled stamina formula is added to ClassSchema in future,
   // update this function and the `character-derivation.max-stamina` canon entry.
   const maxStamina = requireCanon('character-derivation.max-stamina')
-    ? deriveMaxStamina(character, cls) + (kit?.staminaBonus ?? 0)
+    ? deriveMaxStamina(character, cls)
     : 0;
 
   // Recoveries: ClassSchema uses `recoveries` (not `recoveriesPerLevel`).
@@ -132,8 +132,10 @@ function deriveBaseRuntime(
   // flow through the attachment pass via collectFromAncestry. The `immunities`
   // local is initialised empty here and populated by the attachment applier.
 
-  const stability = kit?.stabilityBonus ?? 0;
-  const freeStrikeDamage = (kit?.meleeDamageBonus ?? 0) + 2; // canon: free-strike base 2
+  // Stability and freeStrikeDamage base values; kit bonuses are layered on by
+  // the attachment pass via collectFromKit.
+  const stability = 0;
+  const freeStrikeDamage = 2; // canon: free-strike base 2
 
   return {
     characteristics,
