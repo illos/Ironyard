@@ -1,5 +1,353 @@
+import {
+  DndContext,
+  type DragEndEvent,
+  PointerSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import { type Character, LevelChoicesSchema } from '@ironyard/shared';
+import { useEffect, useState } from 'react';
 import type { WizardStaticData } from '../../../api/static-data';
+
+// ── Canonical characteristic display labels ────────────────────────────────────
+
+const CHAR_LABELS: Record<string, string> = {
+  might: 'Might',
+  agility: 'Agility',
+  reason: 'Reason',
+  intuition: 'Intuition',
+  presence: 'Presence',
+};
+
+const ALL_CHARACTERISTICS = ['might', 'agility', 'reason', 'intuition', 'presence'] as const;
+
+// ── Fallback arrays if class data is absent ────────────────────────────────────
+
+const FALLBACK_ARRAYS: number[][] = [
+  [2, -1, -1],
+  [1, 1, -1],
+  [-1, 0, 0],
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function formatValue(n: number): string {
+  return n >= 0 ? `+${n}` : `${n}`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section A — Locked characteristics (read-only)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function LockedCharacteristics({ lockedIds }: { lockedIds: string[] }) {
+  return (
+    <div>
+      <h3 className="text-sm text-neutral-300 mb-1">Locked characteristics</h3>
+      <p className="text-xs text-neutral-500 mb-2">
+        Set by your class — these cannot be reassigned.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {lockedIds.map((id) => (
+          <div
+            key={id}
+            className="flex items-center gap-1 px-3 py-2 rounded-md border border-neutral-700 bg-neutral-800 text-neutral-400 text-sm select-none"
+          >
+            <span>{CHAR_LABELS[id] ?? id}</span>
+            <span className="font-mono text-neutral-300">+2</span>
+            <span className="ml-1 text-xs text-neutral-600">(locked)</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section B — Array picker
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ArrayPicker({
+  klass,
+  value,
+  onChange,
+}: {
+  klass: { characteristicArrays: number[][] };
+  value: number[] | null;
+  onChange: (arr: number[]) => void;
+}) {
+  const arrays =
+    klass.characteristicArrays.length > 0 ? klass.characteristicArrays : FALLBACK_ARRAYS;
+
+  return (
+    <div>
+      <h3 className="text-sm text-neutral-300 mb-1">Characteristic array</h3>
+      <p className="text-xs text-neutral-500 mb-2">
+        Choose the distribution you want to assign to your three free characteristics.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {arrays.map((arr) => {
+          const isSelected = value !== null && arr.join(',') === value.join(',');
+          return (
+            <button
+              key={arr.join(',')}
+              type="button"
+              onClick={() => onChange(arr)}
+              className={`min-h-11 px-3 py-2 rounded-md border text-sm font-mono ${
+                isSelected
+                  ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
+                  : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'
+              }`}
+            >
+              [{arr.map(formatValue).join(', ')}]
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section C — Drag-and-drop assignment
+// ─────────────────────────────────────────────────────────────────────────────
+
+// A tile representing one value from the chosen array.
+// tileId format: "tile-{index}"
+function DraggableTile({ tileId, value }: { tileId: string; value: number }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: tileId });
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md border text-sm font-mono font-semibold cursor-grab active:cursor-grabbing select-none ${
+        isDragging
+          ? 'opacity-40 border-neutral-600 bg-neutral-800 text-neutral-400'
+          : 'border-neutral-500 bg-neutral-800 text-neutral-100 hover:border-neutral-400'
+      }`}
+    >
+      {formatValue(value)}
+    </div>
+  );
+}
+
+// A slot for one of the unlocked characteristics.
+// slotId = characteristic slug
+function DroppableSlot({
+  slotId,
+  label,
+  tileValue,
+  onClear,
+}: {
+  slotId: string;
+  label: string;
+  tileValue: number | null;
+  onClear: () => void;
+}) {
+  const { isOver, setNodeRef } = useDroppable({ id: slotId });
+  const filled = tileValue !== null;
+
+  return (
+    <div className="flex items-center gap-3">
+      <span className="w-24 text-sm text-neutral-300 shrink-0">{label}</span>
+      <div
+        ref={setNodeRef}
+        className={`min-w-[60px] min-h-[44px] flex items-center justify-center rounded-md border text-sm font-mono font-semibold transition-colors ${
+          filled
+            ? 'bg-neutral-700 border-neutral-500 text-neutral-100'
+            : isOver
+              ? 'bg-neutral-800 border-neutral-400 text-neutral-400'
+              : 'bg-neutral-900 border-dashed border-neutral-600 text-neutral-600'
+        }`}
+      >
+        {filled && tileValue !== null ? (
+          <span>{formatValue(tileValue)}</span>
+        ) : (
+          <span className="text-xs">drop here</span>
+        )}
+      </div>
+      {filled && (
+        <button
+          type="button"
+          onClick={onClear}
+          className="text-xs text-neutral-500 hover:text-neutral-300"
+          aria-label={`Clear ${label} slot`}
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ArrayAssignment({
+  klass,
+  chosenArray,
+  onPatch,
+}: {
+  klass: { id: string; lockedCharacteristics: string[] };
+  chosenArray: number[] | null;
+  onPatch: (p: Partial<Character>) => void;
+}) {
+  // assignment: tileIndex → characteristic slug (or null = unplaced)
+  const [assignment, setAssignment] = useState<Record<number, string | null>>({
+    0: null,
+    1: null,
+    2: null,
+  });
+
+  // Reset when class changes (locked chars change, slot list changes).
+  // Reset when chosen array changes (values change, previous mapping invalid).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reset triggered by external ids
+  useEffect(() => {
+    setAssignment({ 0: null, 1: null, 2: null });
+  }, [klass.id, chosenArray?.join(',')]);
+  // Note: chosenArray?.join(',') is a stable primitive derived from the prop, used as a dep key.
+
+  const sensors = useSensors(useSensor(PointerSensor));
+
+  if (chosenArray === null) {
+    return (
+      <div>
+        <h3 className="text-sm text-neutral-300 mb-1">Assign array values</h3>
+        <p className="text-xs text-neutral-500">Pick an array above to assign values.</p>
+      </div>
+    );
+  }
+
+  // Non-null alias for use inside closures where TypeScript loses the narrowing.
+  const arr = chosenArray;
+
+  const lockedSet = new Set(klass.lockedCharacteristics);
+  const unlockedChars = ALL_CHARACTERISTICS.filter((c) => !lockedSet.has(c));
+
+  // Build reverse maps for quick lookup.
+  // tileIndexBySlot: characteristicSlug → tileIndex that is in that slot
+  const tileIndexBySlot: Record<string, number | null> = {};
+  for (const c of unlockedChars) tileIndexBySlot[c] = null;
+  for (const [idxStr, charId] of Object.entries(assignment)) {
+    if (charId !== null) tileIndexBySlot[charId] = Number(idxStr);
+  }
+
+  // Collect which tile indices are already placed in a slot.
+  const placedIndices = new Set<number>();
+  for (const [idxStr, charId] of Object.entries(assignment)) {
+    if (charId !== null) placedIndices.add(Number(idxStr));
+  }
+  const unplacedTiles = [0, 1, 2].filter((i) => !placedIndices.has(i));
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over) return;
+
+    const draggedTileId = String(active.id);
+    const targetSlotId = String(over.id);
+
+    // Only drop onto characteristic slots.
+    if (!unlockedChars.includes(targetSlotId as (typeof ALL_CHARACTERISTICS)[number])) return;
+
+    // Parse the dragged tile index from the id ("tile-0", "tile-1", "tile-2").
+    if (!draggedTileId.startsWith('tile-')) return;
+    const draggedIdx = Number(draggedTileId.slice(5));
+
+    setAssignment((prev) => {
+      const next = { ...prev };
+
+      // Check if the target slot already has a tile.
+      const incumbentIdx = tileIndexBySlot[targetSlotId];
+
+      // Remove the dragged tile from whatever slot it was previously in.
+      for (const k of [0, 1, 2] as const) {
+        if (next[k] === targetSlotId) next[k] = null;
+      }
+
+      // If target slot had a tile, move that tile to the slot the dragged tile just left.
+      if (incumbentIdx !== null && incumbentIdx !== undefined) {
+        const previousSlotOfDragged = prev[draggedIdx] ?? null; // may be null (came from tray)
+        next[incumbentIdx] = previousSlotOfDragged; // swap or send back to tray (null)
+      }
+
+      // Place the dragged tile into the target slot.
+      next[draggedIdx] = targetSlotId;
+
+      // Derive characteristicSlots and fire onPatch.
+      const slots: Record<string, number> = {};
+      for (const [idxStr, charId] of Object.entries(next)) {
+        if (charId !== null) {
+          const v = arr[Number(idxStr)];
+          if (v !== undefined) slots[charId] = v;
+        }
+      }
+      const allPlaced = Object.keys(slots).length === 3;
+      // Fire asynchronously to avoid setState-in-setState warning.
+      setTimeout(() => {
+        onPatch({ characteristicSlots: allPlaced ? slots : null });
+      }, 0);
+
+      return next;
+    });
+  }
+
+  function clearSlot(charId: string) {
+    setAssignment((prev) => {
+      const next = { ...prev };
+      for (const k of [0, 1, 2] as const) {
+        if (next[k] === charId) next[k] = null;
+      }
+      setTimeout(() => {
+        onPatch({ characteristicSlots: null });
+      }, 0);
+      return next;
+    });
+  }
+
+  return (
+    <div>
+      <h3 className="text-sm text-neutral-300 mb-1">Assign array values</h3>
+      <p className="text-xs text-neutral-500 mb-3">
+        Drag each value onto one of your free characteristics.
+      </p>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        {/* Tile tray — unplaced tiles */}
+        <div className="flex gap-2 mb-4 min-h-[44px]">
+          {unplacedTiles.length === 0 ? (
+            <p className="text-xs text-neutral-500 self-center">All values assigned.</p>
+          ) : (
+            unplacedTiles.map((i) => (
+              <DraggableTile key={i} tileId={`tile-${i}`} value={arr[i] ?? 0} />
+            ))
+          )}
+        </div>
+
+        {/* Characteristic slots */}
+        <div className="space-y-2">
+          {unlockedChars.map((charId) => {
+            const assignedTileIdx = tileIndexBySlot[charId];
+            const tileValue: number | null =
+              assignedTileIdx !== null && assignedTileIdx !== undefined
+                ? (arr[assignedTileIdx] ?? null)
+                : null;
+            return (
+              <DroppableSlot
+                key={charId}
+                slotId={charId}
+                label={CHAR_LABELS[charId] ?? charId}
+                tileValue={tileValue}
+                onClear={() => clearSlot(charId)}
+              />
+            );
+          })}
+        </div>
+      </DndContext>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ClassStep — top level
+// ─────────────────────────────────────────────────────────────────────────────
 
 export function ClassStep({
   draft,
@@ -27,15 +375,15 @@ export function ClassStep({
                   classId: cl.id,
                   subclassId: null,
                   characteristicArray: null,
+                  characteristicSlots: null,
                   levelChoices: {},
                 })
               }
-              className={
-                'text-left rounded-md border px-4 py-3 min-h-11 ' +
-                (cl.id === draft.classId
+              className={`text-left rounded-md border px-4 py-3 min-h-11 ${
+                cl.id === draft.classId
                   ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                  : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
-              }
+                  : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'
+              }`}
             >
               <div className="font-medium">{cl.name}</div>
               {cl.description && <div className="text-xs opacity-80 mt-1">{cl.description}</div>}
@@ -46,63 +394,35 @@ export function ClassStep({
 
       {selected && (
         <>
-          <CharacteristicArrayPicker
+          <LockedCharacteristics lockedIds={selected.lockedCharacteristics} />
+
+          <ArrayPicker
             klass={selected}
             value={draft.characteristicArray}
-            onChange={(arr) => onPatch({ characteristicArray: arr })}
+            onChange={(arr) => onPatch({ characteristicArray: arr, characteristicSlots: null })}
           />
+
+          <ArrayAssignment
+            klass={selected}
+            chosenArray={draft.characteristicArray}
+            onPatch={onPatch}
+          />
+
           <SubclassPicker
             klass={selected}
             value={draft.subclassId}
             onChange={(id) => onPatch({ subclassId: id })}
           />
-          <LevelPicks
-            draft={draft}
-            onChange={(levelChoices) => onPatch({ levelChoices })}
-          />
+          <LevelPicks draft={draft} onChange={(levelChoices) => onPatch({ levelChoices })} />
         </>
       )}
     </div>
   );
 }
 
-function CharacteristicArrayPicker({
-  klass,
-  value,
-  onChange,
-}: {
-  klass: { characteristicArrays?: number[][] };
-  value: number[] | null;
-  onChange: (arr: number[]) => void;
-}) {
-  const arrays = klass.characteristicArrays ?? [];
-  if (arrays.length === 0) return null;
-  return (
-    <div>
-      <h3 className="text-sm text-neutral-300 mb-1">Characteristic array</h3>
-      <div className="flex flex-wrap gap-2">
-        {arrays.map((arr, i) => {
-          const isSelected = value && arr.join(',') === value.join(',');
-          return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => onChange(arr)}
-              className={
-                'min-h-11 px-3 py-2 rounded-md border text-sm font-mono ' +
-                (isSelected
-                  ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                  : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
-              }
-            >
-              [{arr.join(', ')}]
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// Subclass + Level picks (unchanged from before)
+// ─────────────────────────────────────────────────────────────────────────────
 
 function SubclassPicker({
   klass,
@@ -124,12 +444,11 @@ function SubclassPicker({
             key={s.id}
             type="button"
             onClick={() => onChange(s.id)}
-            className={
-              'min-h-11 px-3 py-2 rounded-md border text-sm ' +
-              (value === s.id
+            className={`min-h-11 px-3 py-2 rounded-md border text-sm ${
+              value === s.id
                 ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
-            }
+                : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'
+            }`}
           >
             {s.name}
           </button>
@@ -146,9 +465,6 @@ function LevelPicks({
   draft: Character;
   onChange: (lc: Character['levelChoices']) => void;
 }) {
-  // For prototype, just ensure an empty LevelChoices entry exists per level
-  // up to draft.level. Real per-level ability picker is Phase 5 work; the
-  // Submit gate only checks that the entries exist (per CompleteCharacterSchema).
   const ensureEntries = () => {
     const next: Character['levelChoices'] = { ...draft.levelChoices };
     for (let lvl = 1; lvl <= draft.level; lvl++) {
@@ -160,9 +476,8 @@ function LevelPicks({
     <div>
       <h3 className="text-sm text-neutral-300 mb-1">Level picks</h3>
       <p className="text-xs text-neutral-500 mb-2">
-        Per-level ability / perk / skill picks. Epic 1 ships a stub —
-        click below to seed default entries for levels 1–{draft.level}.
-        The real interactive picker comes in Phase 5.
+        Per-level ability / perk / skill picks. Epic 1 ships a stub — click below to seed default
+        entries for levels 1–{draft.level}. The real interactive picker comes in Phase 5.
       </p>
       <button
         type="button"
