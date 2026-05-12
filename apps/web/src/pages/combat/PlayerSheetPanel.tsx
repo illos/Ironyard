@@ -6,6 +6,7 @@ import { useWizardStaticData } from '../../api/static-data';
 import { useSessionSocket } from '../../ws/useSessionSocket';
 import { HpBar } from './HpBar';
 import { ConditionChip } from './ConditionChip';
+import { AbilityCard } from './AbilityCard';
 
 export function PlayerSheetPanel({ campaignId }: { campaignId: string }) {
   const me = useMe();
@@ -165,12 +166,9 @@ function RecoveryButton({
 }
 
 // Abilities: look up the character by characterId, derive the runtime, and
-// render the character's ability ids. CharacterRuntime.abilityIds is string[]
-// (ids from levelChoices), not full Ability objects — there is no ability
-// lookup table by id in Epic 1. AbilityCard requires a full Ability object with
-// parsed powerRoll tiers, so we render a plain list here.
-// TODO(Epic 2): when a class-abilities JSON ships with full Ability objects
-// keyed by id, wire AbilityCard here so players can auto-roll from the panel.
+// render full AbilityCard components for each ability id, resolved against
+// the StaticDataBundle. Roll dispatch is stubbed until the RollPower intent
+// flow lands in Epic 2C.
 function Abilities({
   participant,
   campaignId: _campaignId,
@@ -217,18 +215,48 @@ function Abilities({
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium">Abilities</h3>
-      {/* Ability id list — full roll affordances require full Ability objects
-          (Epic 2, class-abilities JSON ingestion). */}
-      <ul className="space-y-1">
-        {runtime.abilityIds.map((id) => (
-          <li
-            key={id}
-            className="rounded-md border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-xs font-mono text-neutral-300"
-          >
-            {id}
-          </li>
-        ))}
-      </ul>
+      <div className="space-y-3">
+        {runtime.abilityIds.map((id) => {
+          // Look up via the cast `bundle` (Map<string, Ability>) rather than
+          // `staticData.abilities` directly — the latter's value type still
+          // carries Zod input-side optionality on defaulted fields, which
+          // doesn't satisfy AbilityCard's `Ability` prop.
+          const ability = bundle.abilities.get(id);
+          if (!ability) {
+            return (
+              <div
+                key={id}
+                className="rounded-md border border-amber-800/40 bg-amber-900/10 px-3 py-2 text-xs font-mono text-amber-200"
+                title="Ability data not found — likely a stale id from before Epic 2B"
+              >
+                {id} <span className="text-amber-400">(missing)</span>
+              </div>
+            );
+          }
+          if (!ability.powerRoll) {
+            // Traits / maneuvers without a power roll get a passive renderer.
+            return (
+              <article
+                key={id}
+                className="rounded-lg border border-neutral-800 bg-neutral-900/60 p-3"
+              >
+                <h4 className="font-medium text-sm">{ability.name}</h4>
+                <p className="mt-1 text-xs text-neutral-400">{ability.raw}</p>
+              </article>
+            );
+          }
+          return (
+            <AbilityCard
+              key={id}
+              ability={ability}
+              disabled={false}
+              onRoll={(_a, _args) => {
+                // Stub for Slice 1 — UI lights up; real RollPower intent flow lands in Epic 2C.
+              }}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
