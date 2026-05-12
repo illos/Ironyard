@@ -19,6 +19,10 @@ import type {
   Title,
 } from '@ironyard/shared';
 import { ANCESTRY_OVERRIDES } from './overrides/ancestries';
+import { ITEM_OVERRIDES } from './overrides/items';
+import { KIT_OVERRIDES } from './overrides/kits';
+import { ABILITY_OVERRIDES } from './overrides/abilities';
+import { TITLE_OVERRIDES } from './overrides/titles';
 import { parseAncestryMarkdown } from './src/parse-ancestry';
 import { parseCareerMarkdown } from './src/parse-career';
 import { parseClassMarkdown } from './src/parse-class';
@@ -627,6 +631,9 @@ function buildClasses(version: string): void {
     for (const e of errors) console.warn(`  skipped ${e.file}: ${e.reason}`);
   }
 }
+
+// Override maps imported for future 2B wiring. No-op in 2A.
+void ITEM_OVERRIDES; void KIT_OVERRIDES; void ABILITY_OVERRIDES; void TITLE_OVERRIDES;
 
 // ── Title build ───────────────────────────────────────────────────────────────
 
