@@ -255,6 +255,9 @@ export {
 } from './data/complication';
 export type { Complication, ComplicationFile } from './data/complication';
 
+export { KitFileSchema, KitSchema } from './data/kit';
+export type { Kit, KitFile } from './data/kit';
+
 export {
   AbilitySlotSchema,
   CharacteristicArraySchema,
