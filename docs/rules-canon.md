@@ -1572,7 +1572,7 @@ character-validation layer (alongside the existing rule that
 `prismaticScalesType` must be non-null when the trait is taken), not
 in derivation.
 
-### 10.5 Ancestry purchased-trait attachments 🚧
+### 10.5 Ancestry purchased-trait attachments ✅
 <!-- Generated slug: character-attachment-activation.ancestry-purchased-trait-attachments -->
 
 For each id in `character.ancestryChoices.traitIds`, the collector
@@ -1855,6 +1855,16 @@ skipped entry with `SKIPPED-DEFERRED` for traceability.
   `stat-mod.delta` is a flat integer. Needs an echelon-keyed variant.
 - **Level+N immunity offsets.** Polder *Corruption Immunity* (level + 2).
   Today's `immunity.value` is `number | 'level'`; no `'level + N'` form.
+- **Speed-trait stat-replace semantics.** Devil *Beast Legs* ("speed 6"),
+  Memonek *Lightning Nimbleness* ("speed 7"), Wode Elf *Swift* ("speed 6").
+  Rulebook phrases these as replacements, but the engine models them as
+  additive `stat-mod speed +N` deltas off the ancestry's `defaultSpeed`.
+  Functionally correct today (all ancestries `defaultSpeed: 5`; max one
+  speed trait per ancestry) but the model would mis-handle (a) future
+  ancestries shipping with non-5 default speed and (b) any future
+  combination where two speed traits could coexist on one character.
+  `stat-replace` only handles strings today (just `size`); extending to
+  numeric replace fields is straightforward when needed.
 - **Conditional / triggered attachments.** Devil *Wings* (only while
   flying), Orc *Bloodfire Rush* (the round you took damage), Revenant
   *Bloodless* (saving-throw modifier), Color Cloak triggered weakness

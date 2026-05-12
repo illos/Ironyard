@@ -93,7 +93,7 @@ export const canonStatus = {
   'character-attachment-activation.ancestry-signature-trait-ability-attachments': 'verified',
   'character-attachment-activation.dragon-knight-wyrmplate-attachment': 'verified',
   'character-attachment-activation.dragon-knight-prismatic-scales-attachment': 'verified',
-  'character-attachment-activation.ancestry-purchased-trait-attachments': 'drafted',
+  'character-attachment-activation.ancestry-purchased-trait-attachments': 'verified',
   'character-attachment-activation.kit-stamina-bonus-attachment': 'drafted',
   'character-attachment-activation.kit-stability-bonus-attachment': 'drafted',
   'character-attachment-activation.kit-melee-damage-bonus-attachment': 'drafted',
