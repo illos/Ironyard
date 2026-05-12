@@ -290,6 +290,8 @@ export type {
   Subclass,
 } from './data/class';
 
+export { TitleSchema, TitleFileSchema, type Title, type TitleFile } from './data/title';
+
 // ── Character blob schemas ─────────────────────────────────────────────────────
 
 export {
