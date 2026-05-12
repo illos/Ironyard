@@ -94,9 +94,16 @@ export function Wizard() {
   const patch = (p: Partial<Character>) => setDraft((d) => ({ ...d, ...p }));
 
   const persist = async (): Promise<string | null> => {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      // Name is required; bounce the user back to the first step instead of
+      // silently saving "Unnamed hero".
+      setStep('name');
+      return null;
+    }
     if (!persisted) {
       const created = await createMut.mutateAsync({
-        name: name.trim() || 'Unnamed hero',
+        name: trimmedName,
         campaignCode: search.code,
         data: draft,
       });
@@ -108,7 +115,7 @@ export function Wizard() {
       return created.id;
     } else if (characterId) {
       const updated = await updateMut.mutateAsync({
-        name: name.trim() || 'Unnamed hero',
+        name: trimmedName,
         data: draft,
       });
       setDraft(updated.data);

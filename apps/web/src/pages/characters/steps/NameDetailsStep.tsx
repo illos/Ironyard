@@ -25,7 +25,18 @@ export function NameDetailsStep({
       <div className="rounded-lg border border-neutral-800 p-5 space-y-4">
         <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wider">Build</h3>
 
-        <Field label="Level">
+        <Field label="Name" required>
+          <input
+            value={name}
+            onChange={(e) => onNameChange(e.target.value)}
+            required
+            aria-required
+            className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
+            placeholder="Your hero's name"
+          />
+        </Field>
+
+        <Field label="Level" required>
           <input
             type="number"
             min={1}
@@ -34,11 +45,13 @@ export function NameDetailsStep({
             onChange={(e) =>
               onPatch({ level: Math.max(1, Math.min(10, Number(e.target.value) || 1)) })
             }
+            required
+            aria-required
             className="w-24 rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
           />
         </Field>
 
-        <Field label="Campaign code (optional)">
+        <Field label="Campaign code">
           <input
             value={campaignCode ?? ''}
             readOnly={!!campaignCode}
@@ -58,15 +71,6 @@ export function NameDetailsStep({
         <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wider">
           Hero details
         </h3>
-
-        <Field label="Name">
-          <input
-            value={name}
-            onChange={(e) => onNameChange(e.target.value)}
-            className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
-            placeholder="Your hero's name"
-          />
-        </Field>
 
         <Field label="Pronouns">
           <input
@@ -154,10 +158,21 @@ export function NameDetailsStep({
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <label className="block">
-      <span className="block text-sm text-neutral-300 mb-1">{label}</span>
+      <span className="block text-sm text-neutral-300 mb-1">
+        {label}
+        {required && <span className="text-rose-400 ml-0.5">*</span>}
+      </span>
       {children}
     </label>
   );
