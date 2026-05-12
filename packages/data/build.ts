@@ -16,6 +16,7 @@ import type {
   KitFile,
   Monster,
   MonsterFile,
+  Title,
 } from '@ironyard/shared';
 import { ANCESTRY_OVERRIDES } from './overrides/ancestries';
 import { parseAncestryMarkdown } from './src/parse-ancestry';
@@ -26,6 +27,7 @@ import { parseItemMarkdown } from './src/parse-item';
 import { parseKitMarkdown } from './src/parse-kit';
 import { parseAbilityMarkdown } from './src/parse-ability';
 import { parseMonsterMarkdown } from './src/parse-monster';
+import { parseTitleMarkdown } from './src/parse-title';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(here, '../..');
@@ -55,6 +57,10 @@ const TREASURES_DIR = join(RULES_DIR, 'Treasures');
 const ABILITIES_OUT = join(REPO_ROOT, 'apps/web/public/data/abilities.json');
 const API_ABILITIES_OUT = join(REPO_ROOT, 'apps/api/src/data/abilities.json');
 const ABILITIES_DIR = join(RULES_DIR, 'Abilities');
+// titles.json: populated by Phase 2 Epic 2A title ingestion (Slice 4).
+const TITLES_OUT = join(REPO_ROOT, 'apps/web/public/data/titles.json');
+const API_TITLES_OUT = join(REPO_ROOT, 'apps/api/src/data/titles.json');
+const TITLES_DIR = join(RULES_DIR, 'Titles');
 
 // API Worker data — flat arrays (no wrapper) so getStaticDataBundle() can
 // iterate and parse them with their individual schemas. Mirroring the
@@ -110,6 +116,9 @@ function main() {
 
   // ── PC Abilities ─────────────────────────────────────────────────────────
   buildAbilities();
+
+  // ── Titles ───────────────────────────────────────────────────────────────
+  buildTitles();
 
   // ── Monsters ────────────────────────────────────────────────────────────
   try {
@@ -617,6 +626,41 @@ function buildClasses(version: string): void {
   if (errors.length > 0) {
     for (const e of errors) console.warn(`  skipped ${e.file}: ${e.reason}`);
   }
+}
+
+// ── Title build ───────────────────────────────────────────────────────────────
+
+function buildTitles(): void {
+  let titleFiles: string[];
+  try {
+    titleFiles = walkMd(TITLES_DIR);
+  } catch {
+    console.error(`build:data — titles dir not found at ${TITLES_DIR}`);
+    return;
+  }
+
+  const titles: Title[] = [];
+  for (const path of titleFiles) {
+    const md = readFileSync(path, 'utf-8');
+    const t = parseTitleMarkdown(md);
+    if (t) titles.push(t);
+  }
+
+  titles.sort((a, b) => a.echelon - b.echelon || a.id.localeCompare(b.id));
+
+  const titlesFile = {
+    version: '1.0',
+    generatedAt: Date.now(),
+    count: titles.length,
+    titles,
+  };
+
+  mkdirSync(dirname(TITLES_OUT), { recursive: true });
+  writeFileSync(TITLES_OUT, JSON.stringify(titlesFile, null, 2));
+  mkdirSync(dirname(API_TITLES_OUT), { recursive: true });
+  writeFileSync(API_TITLES_OUT, JSON.stringify(titles, null, 2));
+  console.log(`build:data — wrote ${titles.length} titles to apps/web/public/data/titles.json`);
+  console.log('             mirrored to apps/api/src/data/titles.json');
 }
 
 main();

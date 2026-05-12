@@ -1,0 +1,474 @@
+[
+  {
+    "id": "ancient-loremaster",
+    "name": "Ancient Loremaster",
+    "echelon": 1,
+    "description": "It's astonishing what you find in old books. Look at this—nearly complete schematics for a war automaton, gathering dust because nobody here reads Zaliac.",
+    "raw": "\n#### Ancient Loremaster\n\n*It's astonishing what you find in old books. Look at this—nearly complete schematics for a war automaton, gathering dust because nobody here reads Zaliac.*\n\n**Prerequisite:** You find a trove of forgotten books.\n\n**Effect:** Choose one of the following benefits:\n\n- *Leverage:* You know a priceless secret. The Director chooses the type of person who would value this secret—usually a member of a particular faction, such as a Higaran noble, or a type of person, such as a fence of stolen goods. When engaged in a negotiation with this type of person, you can offer this secret. If they accept, their interest increases by 3 (to a maximum of 5). You can share this secret only once.\n- *Rare Books:* You add rare, ancient books to your collection. Whenever you undertake a research project, roll 1d6 for each dead language you know and add the total to the project roll.\n- *Susurrus Codex:* You find a sinister book that whispers advice in a voice no one else can hear. As long as you follow the book's advice, you gain an edge on Reason tests and take a bane on Presence tests. You can stop following the book's advice at any time, but the book won't speak to you for the rest of the day.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "battleaxe-diplomat",
+    "name": "Battleaxe Diplomat",
+    "echelon": 1,
+    "description": "We seem to be equals in might and combat prowess. Perhaps we should bandy words awhile instead.",
+    "raw": "\n#### Battleaxe Diplomat\n\n*We seem to be equals in might and combat prowess. Perhaps we should bandy words awhile instead.*\n\n**Prerequisite:** You gain the friendship or alliance of a creature you once battled.\n\n**Effect:** Choose one of the following benefits:\n\n- *Iron Hand in Velvet Glove:* The first time during a negotiation that you make a test using the Intimidate skill and don't make an argument that appeals to an NPC's motivation, you don't lower the NPC's patience or interest no matter the outcome of the roll.\n- *Truce!:* You have a double edge on tests made to stop combat and start a negotiation.\n- *Warriors' Understanding:* You gain an edge on Presence tests made to interact with creatures you have fought against in combat encounters.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "brawler",
+    "name": "Brawler",
+    "echelon": 1,
+    "description": "We won't kill you. But you might wish we had.",
+    "raw": "\n#### Brawler\n\n*We won't kill you. But you might wish we had.*\n\n**Prerequisite:** You triumph in battle without killing any of your foes.\n\n**Effect:** Choose one of the following benefits:\n\n- *Duck!:* When an enemy strikes you while a second creature is flanking you, you can use a triggered action to redirect the strike against the second creature. Once you use this benefit, you can't use it again until you earn 1 or more Victories.\n- *Furniture Fighter:* When you use a weapon ability with an improvised weapon or a weapon that isn't part of your kit, the ability benefits from your kit's melee weapon damage bonus.\n- *Headbutt:* While you are grabbed or restrained, your free strikes don't take a bane when those conditions would impose one.\n- *If I Wanted You Dead, You'd Be Dead:* Whenever you defeat foes without killing any of them (including the foes you defeat to meet the prerequisite for this title), you gain an edge on tests during negotiations with those foes.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "city-rat",
+    "name": "City Rat",
+    "echelon": 1,
+    "description": "Stay out all night, visit the dives. Get in a fight, run from the cops. That's the real city.",
+    "raw": "\n#### City Rat\n\n*Stay out all night, visit the dives. Get in a fight, run from the cops. That's the real city.*\n\n**Prerequisite:** You have spent at least five respites in a metropolis.\n\n**Effect:** Choose one of the following benefits:\n\n- *Discerning Shopper:* When looking for an item prerequisite for a crafting project, you can remember meeting someone who might have the item—or at least information about it.\n- *One with the Crowd:* While you're using one or more creatures as cover, you gain an edge on tests made to hide and sneak.\n- *Street Smart:* While in a settlement, you can't be surprised.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "doomed",
+    "name": "Doomed",
+    "echelon": 1,
+    "description": "I don't know what it meant, but when I watched her die, I saw a vision. I watched her die and saw my own death. Am I losing my mind?",
+    "raw": "\n#### Doomed\n\n*I don't know what it meant, but when I watched her die, I saw a vision. I watched her die and saw my own death. Am I losing my mind?*\n\n**Prerequisite:** You aren't a hakaan but have witnessed the death of a hakaan.\n\n**Effect:** You aren't destined for a meaningful death, but you still might achieve one. When you're reduced to 0 Stamina but remain conscious, you can become doomed. If you do, you can't regain Stamina, you automatically obtain a tier 3 outcome on tests and power rolls, and you don't die until your Stamina reaches the negative of your Stamina maximum. At the end of the encounter, you die.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "dwarven-legionnaire",
+    "name": "Dwarven Legionnaire",
+    "echelon": 1,
+    "description": "I have learned much. It might be your courage that inspires others. Watch your opponent's shield as well as their sword. And above all, stand fast, and do not yield.",
+    "raw": "\n#### Dwarven Legionnaire\n\n*I have learned much. It might be your courage that inspires others. Watch your opponent's shield as well as their sword. And above all, stand fast, and do not yield.*\n\n**Prerequisite:** You fight alongside three or more dwarves.\n\n**Effect:** Choose one of the following benefits:\n\n- *Close Formation:* While adjacent to two or more allies, you gain a +2 bonus to stability.\n- *Rune of Alarm:* You can spend 10 uninterrupted minutes to inscribe a magic eye-shaped rune on a surface. The rune sheds light for 2 squares. The rune is dispelled 1 minute after it is activated or if you inscribe the rune elsewhere. The rune activates when an enemy comes within 2 squares of it. When the rune is activated, you wake up if you are nonmagically asleep, and you can perceive through the rune for 1 minute as if you were in its square.\n- *Stonemeld:* While adjacent to a stone wall, you can use a maneuver to gain concealment. This concealment lasts until you leave the square or use an ability.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "elemental-dabbler",
+    "name": "Elemental Dabbler",
+    "echelon": 1,
+    "description": "Spirit of fire, I command you!",
+    "raw": "\n#### Elemental Dabbler\n\n*Spirit of fire, I command you!*\n\n**Prerequisite:** You defeat a creature with the Elemental keyword, such as a crux of fire.\n\n**Effect:** Choose a damage type to which the defeated creature had an immunity (such as fire). Then choose one of the following benefits:\n\n- *Elemental Blaster:* You have the Elementalist 1st-level Hurl Element feature, dealing the chosen damage type.\n- *Elemental Immunity:* You have immunity to the chosen damage type equal to your highest characteristic score.\n- *Elemental Weapons:* Whenever you use a damage-dealing weapon ability, that ability can deal damage of the chosen type instead of its usual damage type.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "faction-member",
+    "name": "Faction Member",
+    "echelon": 1,
+    "description": "In six months, I'll be running this place.",
+    "raw": "\n#### Faction Member\n\n*In six months, I'll be running this place.*\n\n**Prerequisite:** You join an army, guild, or similar organization.\n\n**Effect:** You gain membership in a faction. You're regarded as a promising but untested agent, and you're allowed to operate independently. You can be assigned tasks to further your faction's goals, and you can expect rewards and promotion if you succeed. When engaged in a negotiation with any member of your faction, their patience increases by 2 (to a maximum of 5).\n\nAdditionally, the Director assigns you one of the following benefits, as appropriate to the faction in question. The Director can also create a custom benefit for a type of faction not noted here. You can use this benefit only in a settlement where your faction has a presence, and once you use this benefit, you can't use it again until you complete a task for your faction.\n\n- *Academic Faction:* You find a sage who can make up to three Reason tests to recall lore or make project rolls for research projects on your behalf. The sage has a +5 bonus to these tests. These project rolls take 10 minutes each and don't need to be made during a respite.\n- *Guild Faction:* You find an expert crafter who can make up to three project rolls for crafting projects on your behalf. The crafter has a +5 bonus to these tests. These project rolls take 10 uninterrupted minutes each and don't need to be made during a respite.\n- *Martial Faction:* You recruit up to three minions with levels no greater than your own, of a type appropriate for the faction (such as **human guards**). These minions follow your orders for a day.\n- *Spy Faction:* You find an agent who can provide you with three pieces of information about the settlement you're in, such as the location of a hidden person, a secret entrance into a guarded area, or the negotiation motivation or pitfall of an important person.\n\n**Special:** You can gain this title multiple times, once for each faction. You can be stripped of this title if you act against the faction's interests.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "local-hero",
+    "name": "Local Hero",
+    "echelon": 1,
+    "description": "Your coin won't spend here. The Heroes of Gravesford drink for free in this tavern!",
+    "raw": "\n#### Local Hero\n\n*Your coin won't spend here. The Heroes of Gravesford drink for free in this tavern!*\n\n**Prerequisite:** You save a community from certain destruction.\n\n**Effect:** Choose one of the following benefits:\n\n- *Easy Marks:* You gain an edge on tests made using skills from the interpersonal and intrigue skill groups when influencing members of a community that you have saved.\n- *Local Fame:* You earn 1 Renown.\n- *A New Dawn:* Each time you finish a respite while in a community you have saved, the party gains a hero token. This hero token disappears at the end of your next respite if it hasn't been used.\n\n<!-- -->\n> **Renown and Wealth**\n>\n> Many titles bestow Renown, followers, and wealth upon heroes. Those topics are covered later in this chapter.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "mage-hunter",
+    "name": "Mage Hunter",
+    "echelon": 1,
+    "description": "Their power is dangerous. Unnatural. Someone needs to do something.",
+    "raw": "\n#### Mage Hunter\n\n*Their power is dangerous. Unnatural. Someone needs to do something.*\n\n**Prerequisite:** You defeat three leader or solo creatures who each have at least one ability with the Magic keyword.\n\n**Effect:** Choose one of the following benefits:\n\n- *Arcane Dampening:* When resisting potencies from magic abilities, your characteristic scores are considered to be 1 higher than usual.\n- *Oh No, You Don't!:* Whenever an adjacent creature uses an ability with the Magic keyword, you can make a free strike against them as a triggered action.\n- *Stink of Magic:* As a maneuver, you open your senses to the residue of magic. Until the end of your next turn, you are aware of whether each creature within 5 squares is a construct, an undead, or a creature from another world, and whether they have used a magic ability in the previous hour. Additionally, you can't be surprised by constructs, undead, or creatures from another world.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "marshal",
+    "name": "Marshal",
+    "echelon": 1,
+    "description": "I said you had twenty-four hours to leave town. That was... what, about twenty-four hours ago?",
+    "raw": "\n#### Marshal\n\n*I said you had twenty-four hours to leave town. That was... what, about twenty-four hours ago?*\n\n**Prerequisite:** You join an organization that hunts criminals, such as the Far Mariners (see [Orden and the Timescape](#page-24-1) in [Chapter 1: The Basics](#page-17-3)), or you are deputized to act for the local authorities.\n\n**Effect:** Choose one of the following benefits:\n\n- *Guess It's the Hard Way Then:* When combat begins and you aren't surprised, the first time you take damage before taking your turn, you halve that damage.\n- *Heedless Pursuer:* Once on each of your turns, you can use a free maneuver to deal yourself 1d6 damage that can't be reduced in any way. When you do, you ignore difficult terrain and you can increase the distance of any jump you make by 1 square, both until the end of your turn.\n- *Silver Shield:* You have a badge granted to you by your organization. While you wear it, you gain the My Life for Yours feature from the censor class. When you use that ability, you can't spend wrath unless you have the Wrath class feature.\n- *Trained Tracker:* You gain an edge on tests made to track criminals.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "monster-bane",
+    "name": "Monster Bane",
+    "echelon": 1,
+    "description": "You dare mock Blunwin Mousebane? You think my deed trivial? Ah, but you didn't see the size of the mouse!",
+    "raw": "\n#### Monster Bane\n\n*You dare mock Blunwin Mousebane? You think my deed trivial? Ah, but you didn't see the size of the mouse!*\n\n**Prerequisite:** You defeat a leader or solo creature with a Reason score of −2 or lower, such as an arixx.\n\n**Effect:** Choose one of the following benefits:\n\n- *Beast Bane:* Creatures with the Animal keyword take a bane on strikes made against you.\n- *Monster Soother:* You gain an edge on tests made to calm or tame nonsapient creatures.\n- *Monster Trophy:* You decorate your equipment with a trophy from a creature you defeated. While the trophy is visible, you gain an edge on tests made to intimidate sapient creatures.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "owed-a-favor",
+    "name": "Owed a Favor",
+    "echelon": 1,
+    "description": "The Guild's gratitude knows no bounds! We'll repay you in any way we can... short of actually paying you.",
+    "raw": "\n#### Owed a Favor\n\n*The Guild's gratitude knows no bounds! We'll repay you in any way we can... short of actually paying you.*\n\n**Prerequisite:** You successfully perform a service for a powerful faction.\n\n**Effect:** The faction will perform one favor for the party, provided it doesn't interfere with the faction's goals.\n\nAdditionally, the faction is a good source of information. The Director chooses a skill from the crafting or lore skill groups appropriate to the faction, such as the Criminal Underworld skill for an outlaw gang, the Blacksmithing skill for a blacksmith's guild, or the Society skill for a noble house. While in a settlement where the faction has a presence, you gain this skill if you don't already have it. If you already have the skill, you instead gain an edge on tests made using the skill.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "presumed-dead",
+    "name": "Presumed Dead",
+    "echelon": 1,
+    "description": "But... you're dead. We went to your funeral.",
+    "raw": "\n#### Presumed Dead\n\n*But... you're dead. We went to your funeral.*\n\n**Prerequisite:** You die in a way that prevents your body from being recovered or examined (for instance, by falling off a cliff).\n\n**Effect:** While it might appear that you died, you did not. Instead, you regain 1 Stamina and can spend 1 or more Recoveries. Additionally, you gain a 1st-echelon trinket of the Director's choice (see [Treasures](#page-327-2) earlier in this chapter).\n\nAt a dramatic moment determined by the Director, you rejoin your party with an explanation for your narrow escape, and how you found your new trinket along the way.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "ratcatcher",
+    "name": "Ratcatcher",
+    "echelon": 1,
+    "description": "I like fighting these little guys. Means I don't have to waste money on a helmet.",
+    "raw": "\n#### Ratcatcher\n\n*I like fighting these little guys. Means I don't have to waste money on a helmet.*\n\n**Prerequisite:** You defeat a leader or solo creature who is size 1S or smaller, such as a goblin monarch.\n\n**Effect:** Choose one of the following benefits:\n\n- *Come Out to Play:* You have the following ability, which can be paid for using the Heroic Resource of your class.\n\n<!-- -->\n> ###### Come Out to Play (1 Heroic Resource)\n>\n> *Come out to play—yay!*\n>\n> | **Area, Magic** |                                **Maneuver** |\n> | --------------- | ------------------------------------------: |\n> | **📏 5 burst**  | **🎯 Each enemy in the area hidden to you** |\n>\n> **Effect:** Each target who has P < AVERAGE is taunted by you until the end of their next turn, and you know the location of each creature taunted in this way.\n\n- *Deadly and Big:* Your strikes gain a +3 damage bonus against creatures whose size is smaller than yours.\n- *Everybody Move!:* When you use the Knockback maneuver, you can target one additional creature of your size or two additional smaller creatures.\n",
+    "grantsAbilityId": "ratcatcher-come-out-to-play"
+  },
+  {
+    "id": "saved-for-a-worse-fate",
+    "name": "Saved for a Worse Fate",
+    "echelon": 1,
+    "description": "Drink this. You'll need all your strength for what lies ahead!",
+    "raw": "\n#### Saved for a Worse Fate\n\n*Drink this. You'll need all your strength for what lies ahead!*\n\n**Prerequisite:** The entire party is killed or captured by sapient foes.\n\n**Effect:** After being defeated, each character awakes, alive and with full Stamina and Recoveries. You are all captives of the creatures who defeated you, and a gruesome end awaits you—unless you can escape or overcome the nefarious challenge your captors have planned.\n\nThe Director chooses one of the following benefits, based on the fate your captors have in mind for you. Each hero gains the same benefit. Additionally, you must face an encounter, montage test, or adventure related to the benefit, as the Director determines.\n\n- *Gladiators:* You must fight to the death for your captors' amusement. Your intended opponents wield or guard a trinket or leveled treasure, which you can earn if you are victorious.\n- *Prey:* Your captors plan to release you and hunt you down, but it's no fun unless you offer a challenge. Each of you is given a medicinal draught that grants a +1 bonus to speed and increases your Recoveries by 2. This benefit lasts until the end of your next respite.\n- *Sacrifices:* You are to be dropped in a volcano, fed to a sacred monster, abandoned in a desert, or otherwise sacrificed to a higher power. You are bedecked with holy jewelry. Each hero earns 1 Wealth.\n- *Saviors:* Your captors fear an even stronger foe, and they want you to defeat this enemy for them. You can even keep any treasure you find while doing so.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "ship-captain",
+    "name": "Ship Captain",
+    "echelon": 1,
+    "description": "Up anchor, shipmates! 'Tisn't gold but glory we seek!",
+    "raw": "\n#### Ship Captain\n\n*Up anchor, shipmates! 'Tisn't gold but glory we seek!*\n\n**Prerequisite:** You acquire a ship, airship, or similar vessel.\n\n**Effect:** Choose one of the following benefits:\n\n- *Deep-Sea Diver:* You can automatically swim at full speed while moving.\n- *Ship Speaker:* You magically know the location of any ship controlled by your party even while you aren't aboard. You can telepathically communicate with anyone on board one of your ships who understands a language, and they can respond, no matter your distance from the ship.\n- *Signal Flags:* While aboard a ship, you can communicate with and conduct negotiations with another ship up to 5 miles away, as long as you and creatures on the other ship have line of effect to each other. You gain an edge on Presence tests made while negotiating in this way.\n- *Trained Crewmember:* You gain an edge on tests made to handle air or sea vessels.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "troupe-leading-player",
+    "name": "Troupe Leading Player",
+    "echelon": 1,
+    "description": "We're actors! We're the opposite of people!",
+    "raw": "\n#### Troupe Leading Player\n\n*We're actors! We're the opposite of people!*\n\n**Prerequisite:** The party has successfully performed as a troupe of actors, circus performers, or other entertainers.\n\n**Effect:** Choose one of the following benefits:\n\n- *Flying Circus:* When you are adjacent to a willing ally on their turn, you can use a triggered action to push them up to 2 squares if their size is the same as yours, or 4 squares if they are smaller. If this push causes the ally to fall, they can use a maneuver before they fall to reduce the height of the fall by 2.\n- *Spotlight:* You magically cause a creature within 10 squares to shed light for 5 squares. This light lasts for 1 minute, until the creature is more than 10 squares away from you, or until you dismiss the effect (no action required). While illuminated, a creature can't sneak or hide, they take a bane on tests made to perform any action secretly, and they gain an edge on tests made using the Lead, Music, or Perform skills.\n- *Supporting Player:* You gain an edge on group tests using Presence and on tests made to assist another creature with a Presence test.\n- *Work the Crowd:* While any of your allies is playing music or performing, you gain an edge on tests made to conceal objects, hide, pick pockets, or sneak.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "wanted-dead-or-alive",
+    "name": "Wanted Dead or Alive",
+    "echelon": 1,
+    "description": "A hundred silver?! An insult! I turned my father in for fifty golden crowns. And he was innocent!",
+    "raw": "\n#### Wanted Dead or Alive\n\n*A hundred silver?! An insult! I turned my father in for fifty golden crowns. And he was innocent!*\n\n**Prerequisite:** You are declared an outlaw by a governmental authority.\n\n**Effect:** Choose one of the following benefits:\n\n- *Honor Among Thieves:* When negotiating with criminals, your Renown score is considered to be 2 higher than usual.\n- *Minion Mower:* When you make a melee strike that targets a minion and at least one more minion is within distance of the strike, the strike gains a +3 damage bonus.\n- *No, You're Under Arrest!:* You gain an edge on the Escape Grab maneuver. Additionally, when you succeed on a test to escape bonds or manacles, as part of the same maneuver, you can transfer the bonds or manacles to an adjacent creature of the same size without them immediately noticing.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "zombie-slayer",
+    "name": "Zombie Slayer",
+    "echelon": 1,
+    "description": "Why won't you die?! You've already done it once, you should be good at it by now!",
+    "raw": "\n#### Zombie Slayer\n\n*Why won't you die?! You've already done it once, you should be good at it by now!*\n\n**Prerequisite:** You defeat a leader or solo creature with the Undead keyword, such as a ghost.\n\n**Effect:** Choose one of the following benefits:\n\n- *Blessed Weapons:* Whenever you use a damage-dealing weapon ability, that ability can deal holy damage instead of its usual damage type.\n- *Divine Health:* You gain corruption immunity equal to your highest characteristic score. Additionally, you can't be turned into an undead creature.\n- *Holy Terror:* You have the following ability, which can be paid for using the Heroic Resource of your class.\n\n<!-- -->\n> ###### Holy Terror (3 Heroic Resource)\n>\n> *Return to your grave!*\n>\n> | **Area, Magic** |                         **Maneuver** |\n> | --------------- | -----------------------------------: |\n> | **📏 3 burst**  | **🎯 Each undead enemy in the area** |\n>\n> **Effect:** Each target takes holy damage equal to your Reason, Intuition, or Presence score (your choice). Additionally, each target who has P < STRONG is frightened (save ends).\n",
+    "grantsAbilityId": "zombie-slayer-holy-terror"
+  },
+  {
+    "id": "arena-fighter",
+    "name": "Arena Fighter",
+    "echelon": 2,
+    "description": "You've never seen the showstopper? The move so brutal it was banned in the arena? Come closer and I'll show it to you.",
+    "raw": "\n#### Arena Fighter\n\n*You've never seen the showstopper? The move so brutal it was banned in the arena? Come closer and I'll show it to you.*\n\n**Prerequisite:** You are victorious in battle in an arena or some other public contest of combat.\n\n**Effect:** Choose one of the following benefits:\n\n- *Dirty Fighting:* While you are standing, your melee strikes gain a +3 damage bonus against prone creatures. Additionally, being prone doesn't impose a bane on your strikes.\n- *Foes as Weapons:* Whenever you have a creature of your size or smaller grabbed, you can use them as a weapon when you make a melee weapon free strike. Both the target and the grabbed enemy take the strike's damage.\n- *Instant Celebrity:* You earn 1 Renown.\n- *Showstopper:* You have the following ability, which can be paid for using the Heroic Resource of your class.\n\n<!-- -->\n> ###### Showstopper (5 Heroic Resource)\n>\n> | **Melee, Strike, Weapon** |     **Main action** |\n> | ------------------------- | ------------------: |\n> | **📏 Melee 1**            | **🎯 One creature** |\n>\n> **Power Roll + Might or Agility:**\n>\n> - **≤11:** 6 damage; I < WEAK, slowed (save ends)\n> - **12-16:** 10 damage; I < AVERAGE, frightened (save ends)\n> - **17+:** 14 damage; I < STRONG, dazed (save ends)\n>\n> **Effect:** If you kill a non-minion opponent using this ability, each enemy within 3 squares of you is frightened (save ends).\n",
+    "grantsAbilityId": "arena-fighter-showstopper"
+  },
+  {
+    "id": "awakened",
+    "name": "Awakened",
+    "echelon": 2,
+    "description": "I was grappling with them, and when they died... I felt something happen. To me.",
+    "raw": "\n#### Awakened\n\n*I was grappling with them, and when they died... I felt something happen. To me.*\n\n**Prerequisite:** You defeat a leader or solo creature who has at least one ability with the Psionic keyword, such as a voiceless talker evolutionist.\n\n**Effect:** Choose one of the following benefits:\n\n- *Foresight:* You don't take a bane when using abilities against creatures with concealment.\n- *Rogue Talent:* Choose one triggered action that the talent class has access to at 1st level. You gain that ability regardless of whether your class and subclass allow you to take it. If this ability allows you to gain or spend clarity, you can't do so unless you have the Clarity class feature.\n- *Telepathy:* As a maneuver, you communicate telepathically with a creature within 10 squares who understands a language you know. The creature can respond telepathically as part of the same maneuver.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "battlefield-commander",
+    "name": "Battlefield Commander",
+    "echelon": 2,
+    "description": "Spells and shadows have their place, but it takes soldiers to hold the field.",
+    "raw": "\n#### Battlefield Commander\n\n*Spells and shadows have their place, but it takes soldiers to hold the field.*\n\n**Prerequisite:** You lead an army in battle and win.\n\n**Effect:** Choose one of the following benefits:\n\n- *Charge!:* You have the following ability, which can be paid for using the Heroic Resource of your class.\n\n<!-- -->\n> ###### Charge! (9 Heroic Resource)\n>\n> *Follow me!*\n>\n> | **Area**       |                       **Main action** |\n> | -------------- | ------------------------------------: |\n> | **📏 3 burst** | **🎯 Self and each ally in the area** |\n>\n> **Effect:** Each target can use the Charge main action.\n\n- *Renowned Warrior:* You earn 1 Renown.\n- *Student of War:* Choose a 1st-level doctrine feature from the tactician class. You gain that feature even if you don't have the Tactical Doctrine feature.\n",
+    "grantsAbilityId": "battlefield-commander-charge"
+  },
+  {
+    "id": "blood-magic",
+    "name": "Blood Magic",
+    "echelon": 2,
+    "description": "Flow, blood, thou fiend's libation, and catch my foes in conflagration!",
+    "raw": "\n#### Blood Magic\n\n*Flow, blood, thou fiend's libation, and catch my foes in conflagration!*\n\n**Prerequisite:** You participate in a Discover Lore project to learn forbidden knowledge.\n\n**Effect:** Choose one of the following benefits:\n\n- *Blood Mage:* When you use an area ability with the Magic or Psionic keyword, you can take damage equal to your level to increase the ability's area by 1 until the end of the encounter. If the area is a line, you increase the size of one dimension, not both. This damage can't be reduced in any way. You can use this benefit only once per use of an ability.\n- *Bloody Murder:* When you deal rolled damage to a creature with a strike, you can take damage equal to your level to deal twice that much corruption damage to the creature. The damage you take from this title can't be reduced in any way. You can use this benefit only once per ability. If the creature is reduced to 0 Stamina by this corruption damage, the creature explodes in a shower of blood and you regain the Stamina you lost. You can't use this benefit on creatures without blood, such as constructs, elementals, or undead.\n- *I Reject This Evil Power!:* You gain corruption immunity equal to your level.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "corsair",
+    "name": "Corsair",
+    "echelon": 2,
+    "description": "Haul down your flag or we'll burn you to the waterline!",
+    "raw": "\n#### Corsair\n\n*Haul down your flag or we'll burn you to the waterline!*\n\n**Prerequisite:** You have the Ship Captain title, and you sink or capture a ship of equal or greater size than your own.\n\n**Effect:** Choose one of the following benefits:\n\n- *Artillerist:* You gain a +5 damage bonus when using a ship's weapons\n- *Black Flag:* You have a recognizable flag that strikes terror on the high seas. While your flag is flying from your ship, crewmembers of other ships who have line of effect to the flag take a bane on strikes made against your ship or its crew.\n- *Fearsome Reputation:* You earn 1 Renown.\n- *Scoundrel Tactics:* While aboard a ship, you can use the following skills to make a test to influence another ship up to 5 miles away whose crewmembers have line of effect to you, and you gain an edge when you do so. You can use Disguise to hide your ship's identity or general type, Intimidate to convince another ship's crew to flee or surrender, or Hide or Sneak to let your ship avoid notice.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "faction-officer",
+    "name": "Faction Officer",
+    "echelon": 2,
+    "description": "If you want or need something, talk to me. I have a certain... influence in these parts.",
+    "raw": "\n#### Faction Officer\n\n*If you want or need something, talk to me. I have a certain... influence in these parts.*\n\n**Prerequisite:** You have the Faction Member title, and you greatly advance the faction's goals.\n\n**Effect:** You are given a position of great authority in your faction. Additionally, you gain the following benefits:\n\n- *Requisition:* When you gain this title, you gain a 1st- or 2nd-echelon magic trinket of your choice from your faction (see [Treasures](#page-327-2) earlier in this chapter). Whenever you gain a level, you can swap the trinket out for another one.\n- *You're the Boss:* Lower-ranking members of your faction follow your routine orders. In nonroutine matters, you gain an edge on tests made to influence those characters' behavior.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "fey-friend",
+    "name": "Fey Friend",
+    "echelon": 2,
+    "description": "Do you enjoy the vintage? Yes, you can understand my tongue now. One does not drink at my table and leave unchanged.",
+    "raw": "\n#### Fey Friend\n\n*Do you enjoy the vintage? Yes, you can understand my tongue now. One does not drink at my table and leave unchanged.*\n\n**Prerequisite:** You eat and drink with an elf monarch or archfey.\n\n**Effect:** You know the Khelt language. Additionally, choose one of the following benefits:\n\n- *Gift of Charm:* You have a skill of your choice from the interpersonal skill group.\n- *Gift of Foresight:* When resisting potencies, your Intuition score is considered to be 1 higher than usual.\n- *Gift of Knowledge:* You gain an edge on tests you make that use any skill from the lore skill group.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "giant-slayer",
+    "name": "Giant Slayer",
+    "echelon": 2,
+    "description": "Come back here, puny one, and let me crush you!",
+    "raw": "\n#### Giant Slayer\n\n*Come back here, puny one, and let me crush you!*\n\n**Prerequisite:** You defeat a leader or solo creature with the Giant keyword, such as a fire giant chief.\n\n**Effect:** Choose one of the following benefits:\n\n- *Smallfolk Dodge:* Any creature of size 2 or larger takes a bane on strikes against you.\n- *The Harder They Fall:* You have the following ability, which can be paid for using the Heroic Resource of your class.\n\n<!-- -->\n> ###### The Harder They Fall (7 Heroic Resource)\n>\n> | **Melee, Strike, Weapon** |     **Main action** |\n> | ------------------------- | ------------------: |\n> | **📏 Melee 1**            | **🎯 One creature** |\n>\n> **Power Roll + Might or Agility:**\n>\n> - **≤11:** 7 damage; M < WEAK, prone and can't stand (save ends)\n> - **12-16:** 11 damage; M < AVERAGE, prone and can't stand (save ends)\n> - **17+:** 16 damage; M < STRONG, prone and can't stand (save ends)\n>\n> **Special:** If the target is size 2 or larger, you gain an edge on this ability.\n\n- *Up the Beanstalk:* You have the Climb skill. If you already have this skill, you instead gain an edge on tests made using the Climb skill. While you're climbing a creature, the creature has a double bane on strikes against you and you have a double edge on tests made to stay on the creature.\n",
+    "grantsAbilityId": "giant-slayer-the-harder-they-fall"
+  },
+  {
+    "id": "godsworn",
+    "name": "Godsworn",
+    "echelon": 2,
+    "description": "He seemed like he needed help! Now the dead speak to me. I think maybe that old man was more than he appeared.",
+    "raw": "\n#### Godsworn\n\n*He seemed like he needed help! Now the dead speak to me. I think maybe that old man was more than he appeared.*\n\n**Prerequisite:** You do a favor for an agent of a god or saint, or promise to do so.\n\n**Effect:** Choose one of the following benefits:\n\n- *Healing Gift:* You can use the 1st-level [Conduit](#page-108-0) feature Healing Grace as if you had spent 1 piety (see [Chapter 5: Classes](#page-83-2)). Once you use this benefit, you can't use it again until you earn 1 or more Victories.\n- *Last-Ditch Prayer:* As a free maneuver, you recite a prayer for help, gaining a pool of 2d10 of the Heroic Resource granted by your class. This pool disappears at the end of your turn if you haven't used it. Once you use this benefit, you can't use it again until you perform another service for a god or saint, or until you gain a level.\n- *Touched by the Divine:* Choose a god or saint from the [Deities and](#page-369-0) [Domains table](#page-369-0) in [Chapter 14: Gods and Religion](#page-367-1). From that god or saint's domains, choose a [Conduit](#page-108-0) 1st-level domain feature (see [Chapter 5: Classes](#page-83-2)).\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "heist-hero",
+    "name": "Heist Hero",
+    "echelon": 2,
+    "description": "Everybody know their assignments? All right, let's go.",
+    "raw": "\n#### Heist Hero\n\n*Everybody know their assignments? All right, let's go.*\n\n**Prerequisite:** You have the Troupe Leading Player title, and you have used planning and teamwork to execute a theft that went (reasonably) according to plan.\n\n**Effect:** Choose one of the following benefits:\n\n- *Mother Hen:* You can spend 10 uninterrupted minutes to psionically enhance up to five willing creatures within 10 squares of you who understand a language you know. For the next hour, you and each target can communicate telepathically with each other no matter the distance between you.\n- *Sneakers:* You gain the Sneak skill. If you already have this skill, you instead gain an edge on tests made using the Sneak skill. During group tests, you can both use the Sneak skill and assist another hero using the Sneak skill.\n- *Timely Distraction:* You have the following triggered action.\n\n<!-- -->\n> ###### Timely Distraction\n>\n> *Coming through with hot soup!<br/> I better watch out for that banana peel!*\n>\n> | **Ranged**       |       **Triggered** |\n> | ---------------- | ------------------: |\n> | **📏 Ranged 10** | **🎯 One creature** |\n>\n> **Trigger:** An ally makes a test to lie to, pick the pocket of, hide from, or sneak by the target and doesn't like the outcome.\n>\n> **Effect:** You momentarily attract the target's notice to let your ally reroll their test. Once you use this ability, you can't use it again against the same target for 1 hour.\n",
+    "grantsAbilityId": "heist-hero-timely-distraction"
+  },
+  {
+    "id": "knight",
+    "name": "Knight",
+    "echelon": 2,
+    "description": "Kneel, heroes. Arise, knights of Tor, and may your swords be ever sharp in our service.",
+    "raw": "\n#### Knight\n\n*Kneel, heroes. Arise, knights of Tor, and may your swords be ever sharp in our service.*\n\n**Prerequisite:** A noble or monarch grants you knighthood or a similar rank.\n\n**Effect:** Choose one of the following benefits:\n\n- *Heraldic Fame:* You earn 1 Renown.\n- *Knightly Aegis:* Your Stamina maximum increases by 6.\n- *Knightly Challenge:* You have the following ability, which can be paid for using the Heroic Resource of your class.\n\n<!-- -->\n> ###### Knightly Challenge (5 Heroic Resource)\n>\n> *Have at thee!*\n>\n> | **Melee, Strike, Weapon** |     **Main action** |\n> | ------------------------- | ------------------: |\n> | **📏 Melee 1**            | **🎯 One creature** |\n>\n> **Power Roll + Might or Agility:**\n>\n> - **≤11:** 7 damage; taunted (save ends)\n> - **12-16:** 11 damage; taunted (save ends)\n> - **17+:** 16 damage; taunted (save ends)\n>\n> **Effect:** You can end the taunted condition on the target as a free maneuver.\n>\n> **Special:** If you take this title, you might occasionally be called upon to perform duties for the person who knighted you.\n",
+    "grantsAbilityId": "knight-knightly-challenge"
+  },
+  {
+    "id": "master-librarian",
+    "name": "Master Librarian",
+    "echelon": 2,
+    "description": "You want to know the exact coordinates of the **Gem of the Waves** shipwreck? I came across that just the other day in an unpublished memoir of its second mate. Let me get that for you.",
+    "raw": "\n#### Master Librarian\n\n*You want to know the exact coordinates of the **Gem of the Waves** shipwreck? I came across that just the other day in an unpublished memoir of its second mate. Let me get that for you.*\n\n**Prerequisite:** You have the Ancient Loremaster title, and you have completed a Discover Lore project to learn lost knowledge or forbidden knowledge.\n\n**Effect:** Choose one of the following benefits:\n\n- *Arcane Improvisation:* When you use a damage-dealing magic signature ability, you can change its damage type to acid, cold, corruption, fire, lightning, poison, or sonic damage.\n- *I Have Just the Book:* If you start a Discover Lore project in your hero's stronghold or other a permanent base of operations you immediately gain 60 project points toward the completion of that project. If the project costs 60 or fewer points, you complete it in 10 uninterrupted minutes without needing to use a respite activity.\n- *Picked Up a Few Things:* You know a skill from the lore skill group.\n- *Polyglot:* You know two languages. Additionally, the project goal for the Learn New Language project is halved for you.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "special-agent",
+    "name": "Special Agent",
+    "echelon": 2,
+    "description": "And this is interesting... if you twist the third button on your overcoat no, don't do it now!",
+    "raw": "\n#### Special Agent\n\n*And this is interesting... if you twist the third button on your overcoat no, don't do it now!*\n\n**Prerequisite:** A spymaster gives you an important secret mission.\n\n**Effect:** Choose one of the following benefits:\n\n- *Boffin:* You gain a small magic spy device called a boffin. Once per encounter, you can activate a boffin property as a maneuver (see below).\n- *Caustic Alchemy:* You have your choice of the 1st-level shadow college features Coat the Blade or Smoke Bomb (see [Chapter 5: Classes](#page-83-2)). When you use that feature, you can't spend insight unless you have the Insight class feature.\n- *Spy Ring:* You gain a piece of magic jewelry, such as a ring. As a main action while wearing the jewelry, you can take on the illusory appearance of an individual within 10 squares who you have line of effect to. This disguise lets you automatically succeed on tests made using the Disguise skill based solely on visual identification.\n\n##### Boffin Properties\n\nTaking the Boffin benefit lets you use the following boffin properties as a maneuver:\n\n- Make a test that uses the Disguise skill. You gain an edge on the test.\n- One mundane lock you touch is unlocked.\n- Choose a square within 10 squares, even if you don't have line of effect to it. You can observe the area around that square as if you were in it.\n- You throw the boffin up to 10 squares, where it explodes in a 5 cube. Each creature in the area takes fire damage equal to 2d10 + your level. The boffin is permanently destroyed but can be replaced by your spymaster... though they don't like doing so too often.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "sworn-hunter",
+    "name": "Sworn Hunter",
+    "echelon": 2,
+    "description": "I will follow you to the ends of the earth—just so I can kick you off the edge.",
+    "raw": "\n#### Sworn Hunter\n\n*I will follow you to the ends of the earth—just so I can kick you off the edge.*\n\n**Prerequisite:** You have the Marshal title, and you take down an entire criminal organization.\n\n**Effect:** Choose one of the following benefits:\n\n- *Hunter's Oath:* As a main action, you swear a hunter's oath against a creature within 10 squares who you have line of effect to. This oath lasts until the target dies or until you swear a hunter's oath against a different creature. As long as the hunter's oath lasts, you magically know the direction to the target if they are within 50 miles of you, and your damage-dealing abilities gain a +5 damage bonus against the target.\n- *Particular Set of Skills:* You know a skill from the intrigue skill group.\n- *We're In This Together:* When you have a creature grabbed and take damage from an ability not used by that creature, the grabbed creature takes the same damage.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "undead-slain",
+    "name": "Undead Slain",
+    "echelon": 2,
+    "description": "No, I didn't get bitten. And yes, I'm fine!",
+    "raw": "\n#### Undead Slain\n\n*No, I didn't get bitten. And yes, I'm fine!*\n\n**Prerequisite:** You are killed by an undead creature.\n\n**Effect:** You return to life 1 minute after being killed with Stamina equal to your winded value. You gain corruption immunity equal to your level and one of the benefits below, based on the type of creature who killed you. If you die again, you rise as an undead creature under the Director's control.\n\n- *Ghoul or Vampire:* When you make a melee free strike against an adjacent creature, you can bite that creature. If you do so and obtain a tier 3 outcome, you gain temporary Stamina equal to the damage dealt. If not lost beforehand, this temporary Stamina lasts until the end of your next respite.\n- *Incorporeal Undead:* You can move through other creatures and objects. The first time in a combat round that you pass through a creature, that creature takes corruption damage equal to half your level. You don't take damage from being force moved into objects.\n- *Other Corporeal Undead:* When you are reduced to 0 Stamina by damage that isn't fire or holy damage and your body isn't destroyed, you can regain half your Stamina and fall prone. Once you use this benefit, you can't use it again until you earn 10 or more Victories.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "unstoppable",
+    "name": "Unstoppable",
+    "echelon": 2,
+    "description": "I seen the goblin king run 'im through with a spear. Then I seen 'im pull 'imself back up, spear still in 'im, and headbutt the goblin king... then he pulls out the spear and throws it on the goblin king's corpse.",
+    "raw": "\n#### Unstoppable\n\n*I seen the goblin king run 'im through with a spear. Then I seen 'im pull 'imself back up, spear still in 'im, and headbutt the goblin king... then he pulls out the spear and throws it on the goblin king's corpse.*\n\n**Prerequisite:** You defeat a foe while at or below 0 Stamina.\n\n**Effect:** Choose one of the following benefits:\n\n- *From Hell's Heart:* While you are winded, your melee strikes gain a +3 damage bonus.\n- *Furious Attack:* Choose one signature ability from the fury class. You gain that ability regardless of whether your class and subclass allow you to take it. If this ability allows you to gain or spend ferocity, you can't do so unless you have the Ferocity class feature.\n- *Furious Charge:* When you use the Charge action, your strike made as part of that action gains a damage bonus equal to the number of squares you moved as part of the charge.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "armed-and-dangerous",
+    "name": "Armed and Dangerous",
+    "echelon": 3,
+    "description": "I'm not picky. Any tool will suffice. A sword seems a most appropriate tool for this job.",
+    "raw": "\n#### Armed and Dangerous\n\n*I'm not picky. Any tool will suffice. A sword seems a most appropriate tool for this job.*\n\n**Prerequisite:** You can't use kits, and you defeat five non-minion enemies using weapon abilities that don't have the Magic or Psionic keyword.\n\n**Effect:** You can use and gain the benefits of kits.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "back-from-the-grave",
+    "name": "Back From the Grave",
+    "echelon": 3,
+    "description": "Hi! Remember me?",
+    "raw": "\n#### Back From the Grave\n\n*Hi! Remember me?*\n\n**Prerequisite:** You die at the hands of your greatest foe, that foe still lives, and you aren't a revenant.\n\n**Effect:** You are restored to life. You gain the Tough But Withered signature trait from the revenant ancestry.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "demon-slayer",
+    "name": "Demon Slayer",
+    "echelon": 3,
+    "description": "F'lath v'korr en zaratha g'rrack.",
+    "raw": "\n#### Demon Slayer\n\n*F'lath v'korr en zaratha g'rrack.*\n\n**Prerequisite:** You defeat a leader or solo creature with the Demon keyword, such as a soulraker hivequeen, or you are possessed by a demon.\n\n**Effect:** Choose one of the following benefits:\n\n*Demonic Lore:* You know the Proto-Ctholl language. Additionally, when you deal damage using a magic ability, you can change the ability's damage type to holy.\n\n- *Lethe:* While you are winded, your strikes gain a +5 damage bonus\n- *Made of Teeth:* Your body can sprout teeth in unusual places. Whenever a creature makes physical contact with you or starts their turn touching you, you can deal 5 damage to them (no action required).\n- *Soulsight:* Any creature within 2 squares can't be hidden from you.\n\n**Special:** When you make a Presence test and roll a natural 5 or lower, you are cursed to communicate in only Proto-Ctholl for 1 minute, whether you know that language or not.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "diabolist",
+    "name": "Diabolist",
+    "echelon": 3,
+    "description": "If you can't beat 'em, join 'em.",
+    "raw": "\n#### Diabolist\n\n*If you can't beat 'em, join 'em.*\n\n**Prerequisite:** You defeat a leader or solo creature with the Devil keyword, such as an archdevil, or you make a deal with a devil.\n\n**Effect:** Choose one of the following benefits:\n\n- *Devil Lore:* You know the Anjali language, and your understanding of this language helps you create irresistible supernatural effects. The potencies of your magic or psionic abilities that target Reason, Intuition, or Presence increase by 1.\n- *Infernal Legacy:* You gain 3 ancestry points to spend on purchased devil ancestry traits (see [Chapter 3](#page-35-0)).\n- *Sly Devil:* You gain the Silver Tongue signature trait from the devil ancestry.\n- *Untouched by Corruption:* Whenever you use a damage-dealing ability, that ability can deal holy damage instead of its usual damage type.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "dragon-blooded",
+    "name": "Dragon Blooded",
+    "echelon": 3,
+    "description": "I stabbed the wyrm Axarthan in the heart and their silver blood washed over me, leaving me... as you see.",
+    "raw": "\n#### Dragon Blooded\n\n*I stabbed the wyrm Axarthan in the heart and their silver blood washed over me, leaving me... as you see.*\n\n**Prerequisite:** You defeat a leader or solo creature with the Dragon keyword, such as a gloom dragon.\n\n**Effect:** Choose one of the following benefits:\n\n- *Dragon Scaled:* Dragon scales grow on your body wherever the heart's blood of the dragon touched you. You gain the Wyrmplate signature trait from the dragon knight ancestry (see [Chapter 3](#page-35-0)).\n- *Dragon Touched:* You gain 3 ancestry points to spend on purchased dragon knight ancestry traits.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "fleet-admiral",
+    "name": "Fleet Admiral",
+    "echelon": 3,
+    "description": "All hail the Pirate Queen!",
+    "raw": "\n#### Fleet Admiral\n\n*All hail the Pirate Queen!*\n\n**Prerequisite:** You have the Corsair title, and you lead a fleet of at least three ships.\n\n**Effect:** Choose one of the following benefits:\n\n- *First Mate:* You have a pirate retainer, such as a **human warrior**, chosen by the Director from *[Draw Steel: Monsters](https://mcdm.gg/DS-Monsters)*. This retainer's level increases to your level.\n- *Swashbuckler:* You can automatically climb at full speed while moving\n- *Treasure Keeper:* You earn 1 Wealth.\n- *Weather Wizard:* Once per day, you can spend 10 uninterrupted minutes to magically alter mundane weather in a 5-mile radius around you. The weather moves with you and persists for 6 hours or until you dismiss it as a free maneuver. Choose from one of the following weather types:\n    - *Calm:* Wind-powered vessels and technology cease working\n    - *Fog:* Visibility is reduced to 6 squares.\n    - *High Winds:* The speed of wind-powered vessels is doubled.\n    - *Light Winds:* No effects due to weather.\n    - *Storm:* The crew of an unsheltered wind-powered vessel must make a medium group Reason test. On a failure, the vessel needs repairs and moves at half speed until those repairs are made.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "maestro",
+    "name": "Maestro",
+    "echelon": 3,
+    "description": "When I saw the bloodstained manuscript under Fellwander's arm, I knew his quest for the Opera was over—and with it, his chance for redemption.",
+    "raw": "\n#### Maestro\n\n*When I saw the bloodstained manuscript under Fellwander's arm, I knew his quest for the Opera was over—and with it, his chance for redemption.*\n\n**Prerequisite:** You visit the realms of gods, devils, or other immortal beings and hear a note of the Music of Creation.\n\n**Effect:** Choose one of the following benefits:\n\n- *Angelic Chorus:* You can use the lessons of musical improvisation in combat. Choose one class act triggered action from the troubadour class. You gain that ability regardless of whether your class and subclass allow you to take it. If this ability allows you to gain or spend drama, you can gain or spend the Heroic Resource of your class in place of drama.\n- *Devil's Opera:* You have the following ability, which can be paid for using the Heroic Resource of your class.\n\n<!-- -->\n> ###### The Devil's Chord (9 Heroic Resource)\n>\n> *Helloooo Orden!*\n>\n> | **Area, Magic** |                  **Main action** |\n> | --------------- | -------------------------------: |\n> | **📏 5 burst**  | **🎯 Each creature in the area** |\n>\n> **Power Roll + Presence:**\n>\n> - **≤11:** You take 4 sonic damage unless you have the Performance skill.\n> - **12-16:** 6 sonic damage; M < AVERAGE, weakened (save ends)\n> - **17+:** 10 sonic damage; M < STRONG, weakened and bleeding (save ends)\n>\n> **Effect:** The soul of any creature killed by this ability is dragged to Hell.\n\n- *Music of the Spheres:* As a main action, you sing or play a note as delicate and sharp as glass—and just as easily shattered. Until the start of your next turn, whenever a creature within 10 squares makes a strike, they take 8 sonic damage. Whenever you make a strike during that same period, you also take 8 sonic damage.\n",
+    "grantsAbilityId": "maestro-the-devil-s-chord"
+  },
+  {
+    "id": "master-crafter",
+    "name": "Master Crafter",
+    "echelon": 3,
+    "description": "The sword Vanartha has been remade, mightier now than on the day it was forged.",
+    "raw": "\n#### Master Crafter\n\n*The sword Vanartha has been remade, mightier now than on the day it was forged.*\n\n**Prerequisite:** You complete a downtime project to imbue armor, an implement, or a weapon with a 9th-level enhancement.\n\n**Effect:** Choose one of the following benefits:\n\n- *Masterpiece:* The armor, implement, or weapon can be imbued a fourth time, with any enhancement the item qualifies for.\n- *Research Dividends:* You gain the item prerequisite for an armor, implement, or weapon enhancement of your choice. Additionally, you learn the project source language for that enhancement.\n- *Skilled Hands:* You have a skill from the crafting skill group that would have been used during the creation of the prerequisite item. If you already have that skill, you instead gain an edge on tests made using the skill. Additionally, you gain a second skill of your choice from the crafting skill group.\n- *Strong Hands Make Light Work:* Whenever you make a project roll, you can use Might as the project roll characteristic.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "noble",
+    "name": "Noble",
+    "echelon": 3,
+    "description": "Technically, I'm called Lord Morninghill these days. I did a little favor for Duke Kenway at the Battle of Black Forest.",
+    "raw": "\n#### Noble\n\n*Technically, I'm called Lord Morninghill these days. I did a little favor for Duke Kenway at the Battle of Black Forest.*\n\n**Prerequisite:** A monarch or important noble grants you a noble rank.\n\n**Effect:** Choose one of the following benefits:\n\n- *I Know How to Talk to These People:* You gain an edge on Presence tests made to interact with royals, nobles, and their feudal followers, provided they are aware of your noble rank.\n- *Noble Splendor:* You earn 1 Renown and 1 Wealth.\n- *Retinue:* The number of followers you can recruit increases by two.\n\n**Special:** If you take this title, you might occasionally be called upon to perform duties for the person who granted your noble rank.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "planar-voyager",
+    "name": "Planar Voyager",
+    "echelon": 3,
+    "description": "I've seen skywhales floating above the seas of Primordius. I've seen star freighters dancing around the moons of Axiom. So I guess you're right, I'm not from around these parts.",
+    "raw": "\n#### Planar Voyager\n\n*I've seen skywhales floating above the seas of Primordius. I've seen star freighters dancing around the moons of Axiom. So I guess you're right, I'm not from around these parts.*\n\n**Prerequisite:** You voyage in strange vehicles on different worlds.\n\n**Effect:** Choose one of the following benefits:\n\n- *Prismacore Eyes:* Exposure to prismacore has given your eyes a mirrorlike sheen. You have psychic immunity 10, creatures can't use magic or psionic abilities or other effects to determine your location or read your thoughts unless you allow them to, and you gain a +3 bonus to stability against magic or psionic abilities.\n- *Stellar Knowledge:* You gain the Mechanics skill. If you already have this skill, you instead gain an edge on tests made using the skill. Additionally, you gain the item prerequisite and project source for a psionic trinket.\n- *Time Raider Training:* You gain 2 ancestry points to spend on purchased time raider ancestry traits (see [Chapter 3](#page-35-0)).\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "scarred",
+    "name": "Scarred",
+    "echelon": 3,
+    "description": "Last time we fought, I gave you a little token to remember me by... now it appears you need another reminder of my power.",
+    "raw": "\n#### Scarred\n\n*Last time we fought, I gave you a little token to remember me by... now it appears you need another reminder of my power.*\n\n**Prerequisite:** An enemy leader or solo creature reduces you to 0 Stamina.\n\n**Effect:** You gain a visible scar in a location of your choice. Additionally, your Stamina maximum increases by 20, and the creature who scarred you takes a bane on abilities against you.\n\n**Special:** You can gain this title multiple times. The second and each subsequent time that you gain it, your Stamima maximum doesn't increase..\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "siege-breaker",
+    "name": "Siege Breaker",
+    "echelon": 3,
+    "description": "Best way to deal with a castle siege? Be on the outside.",
+    "raw": "\n#### Siege Breaker\n\n*Best way to deal with a castle siege? Be on the outside.*\n\n**Prerequisite:** You have the Battlefield Commander title, and you lead the defense of a settlement or fortification.\n\n**Effect:** Choose one of the following benefits:\n\n- *Death From Above:* When you gain an edge on an ability due to high ground, the ability gains a +8 damage bonus.\n- *Hold the Line:* While you're within 5 squares of an ally, you and each ally within 5 squares of you gains a +3 bonus to stability.\n- *Last Defender:* Whenever an ally within 5 squares is reduced to 0 Stamina, you gain temporary Stamina equal to the ally's level (or 1 if they have no level). If you already have temporary Stamina granted by this title, you increase your temporary Stamina by the amount you would have gained.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "teacher",
+    "name": "Teacher",
+    "echelon": 3,
+    "description": "Someday, I'll understand how peeling these carrots for dinner relates to my elementalist training.",
+    "raw": "\n#### Teacher\n\n*Someday, I'll understand how peeling these carrots for dinner relates to my elementalist training.*\n\n**Prerequisite:** You train or command at least three lower-level members of your class.\n\n**Effect:** You can travel with a student who shares your class. The student has the statistics of a 1st-level member of your class and has the same skills as you, but doesn't engage in combat. They can perform any out-of-combat tasks a 1st-level member of your class can perform. Whenever they make a test to assist you in a task, they can't obtain less than a tier 2 outcome on the test.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "champion-competitor",
+    "name": "Champion Competitor",
+    "echelon": 4,
+    "description": "Marduk uses the Beldoit Gambit! Avanna counters with the Iron Defense and goes on the attack! Marduk's last tower is knocked down! And just like that, we have a new... world... champion!",
+    "raw": "\n#### Champion Competitor\n\n*Marduk uses the Beldoit Gambit! Avanna counters with the Iron Defense and goes on the attack! Marduk's last tower is knocked down! And just like that, we have a new... world... champion!*\n\n**Prerequisite:** You beat the best in the world at a game or sport.\n\n**Effect:** A characteristic used during the competition increases by 1 (to a maximum of 6). Additionally, choose one of the following benefits:\n\n- *Best of the Best:* Choose a skill you used during the competition. You gain a +4 bonus to tests made using that skill instead of a +2 bonus\n- *Glory and Riches:* You earn 2 Renown and 1 Wealth.\n- *I'll Just Take the Prize:* You gain a trinket or leveled treasure of the Director's choice.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "demigod",
+    "name": "Demigod",
+    "echelon": 4,
+    "description": "The ritual is complete. I feel your power flow through me. I am become a god! Ah-ha-ha-ha-ha!",
+    "raw": "\n#### Demigod\n\n*The ritual is complete. I feel your power flow through me. I am become a god! Ah-ha-ha-ha-ha!*\n\n**Prerequisite:** You have the Godsworn title, and hundreds of worshipful mortals complete a divine ritual in your name.\n\n**Effect:** You gain the following benefits:\n\n- *Immortal Excellence:* A characteristic of your choice increases by 1 (to a maximum of 6).\n- *Longevity:* Your natural lifespan doubles and you can appear to be any age.\n- *Worshippers:* You magically hear prayers directed to you.\n\nAdditionally, choose one of the following benefits:\n\n- *Acolytes:* The number of followers you can recruit increases by two\n- *Divine Weapons:* Whenever you use a damage-dealing weapon ability, that ability can deal corruption or holy damage instead of its usual damage type.\n- *Missionaries:* You earn 2 Renown.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "enlightened",
+    "name": "Enlightened",
+    "echelon": 4,
+    "description": "Don't you see? This world that seems so real to you is nothing but a game, and all the people merely pieces!",
+    "raw": "\n#### Enlightened\n\n*Don't you see? This world that seems so real to you is nothing but a game, and all the people merely pieces!*\n\n**Prerequisite:** You learn a cosmic truth that alters your understanding of reality.\n\n**Effect:** Your choice of your Reason or Intuition increases by 1 (to a maximum of 6). Additionally, choose one of the following benefits:\n\n- *Cosmic Revelation:* When you make a test with a skill from the lore skill group and obtain a tier 1 or tier 2 outcome, you can instead obtain a tier 3 outcome. Once you use this benefit, you can't use it again until you earn 1 or more Victories.\n- *Mind Over Matter:* Whenever you spend a Recovery, you can end one condition on yourself.\n- *Rearrange the Game Pieces:* You can reach behind the curtain and alter reality. At the start of combat, choose yourself or any creature within 5 squares. The chosen target must move up to their speed to a space you choose, but can't enter damaging terrain or terrain that could impose a condition on them. The target doesn't appear to move or teleport to that space—they are simply there. No one but you has any memory of the target's previous position.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "forsaken",
+    "name": "Forsaken",
+    "echelon": 4,
+    "description": "The quest is done, the enemy is defeated, and the Blade of a Thousand Years has passed from our hands. What do we do with the rest of our lives?",
+    "raw": "\n#### Forsaken\n\n*The quest is done, the enemy is defeated, and the Blade of a Thousand Years has passed from our hands. What do we do with the rest of our lives?*\n\n**Prerequisite:** Your party loses, destroys, or otherwise parts with an artifact.\n\n**Effect:** A characteristic of your choice increases by 1 (to a maximum of 6). Additionally, choose one of the following benefits:\n\n- *Brief Reunion:* While you're winded, you can use a maneuver to summon the artifact to your hand. It disappears at the end of your next turn. Once you use this benefit, you can't use it again until you earn 1 or more Victories.\n- *Perfect Protection:* The Director chooses a damage type that is dealt by or thematically related to the artifact—for instance, holy for the Blade of a Thousand Years, psychic for the Encepter, or corruption for the Mortal Coil. You have immunity all to the chosen damage type.\n- *Poor Compensation:* Instead of disappearing or otherwise departing, the artifact turns into a trinket or leveled treasure of the Director's choice that has the same approximate shape as the lost item—for instance, any magic sword for the Blade of a Thousand Years, any implement for the Encepter, or a Thief of Joy or any other torque for the Mortal Coil.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "monarch",
+    "name": "Monarch",
+    "echelon": 4,
+    "description": "The tyrant is dead! Long live the new king!",
+    "raw": "\n#### Monarch\n\n*The tyrant is dead! Long live the new king!*\n\n**Prerequisite:** You or a member of your party becomes the monarch of a nation.\n\n**Effect:** You gain the following benefits:\n\n- *Royal Authority:* Inhabitants of your nation must obey your lawful orders or suffer the consequences.\n- *Royal Majesty:* Your choice of your Might or Presence increases by 1 (to a maximum of 6).\n\nAdditionally, choose one of the following benefits:\n\n- *Crown Jewels:* You gain one of your nation's treasures—a trinket of the Director's choice.\n- *Royal Fame:* You earn 2 Renown.\n- *Royal Retinue:* The number of followers you can recruit increases by 2\n- *Royal Wealth:* You earn 2 Wealth.\n\n**Special:** If you take this title, you might be called upon to perform duties for your nation.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "peace-bringer",
+    "name": "Peace Bringer",
+    "echelon": 4,
+    "description": "There goes Diana, peace bringer. She has won many a victory with her sword, but her greatest deed was convincing two nations to stop fighting.",
+    "raw": "\n#### Peace Bringer\n\n*There goes Diana, peace bringer. She has won many a victory with her sword, but her greatest deed was convincing two nations to stop fighting.*\n\n**Prerequisite:** You conduct a successful negotiation on which the fate of a nation or a world stands.\n\n**Effect:** Your choice of your Reason or Presence increases by 1 (to a maximum of 6). Additionally, choose one of the following benefits:\n\n- *Calm Heads Prevail:* When you make a test to stop combat and start a negotiation, you always obtain a tier 3 outcome.\n- *Drop Your Sword:* When you succeed on a test using the Intimidate skill, you can cause affected creatures to drop any items they are holding.\n- *Hear Me Out:* While you are present in a negotiation, an NPC's starting patience increases by 3 (to a maximum of 5).\n- *Many Paths to Peace:* When you make a test with a skill from the interpersonal skill group, you can use any characteristic of your choice for the test.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "reborn",
+    "name": "Reborn",
+    "echelon": 4,
+    "description": "I remember this world. I suppose my task is not yet complete.",
+    "raw": "\n#### Reborn\n\n*I remember this world. I suppose my task is not yet complete.*\n\n**Prerequisite:** You died in glorious battle while on a quest for a higher power.\n\n**Effect:** A god or other powerful being has determined that it is not yet your time to die. Your body fades away, but you reappear alive 24 hours later in a location of your choice. You regain all your Stamina and Recoveries, and your choice of your Intuition or Presence increases by 1 (to a maximum of 6).\n\nAdditionally, choose one of the following benefits:\n\n- *Holy Weapon:* You have a leveled treasure of the Director's choice.\n- *Kill Me Once, Shame On You:* Choose a creature keyword belonging to one of the creatures who defeated you. Any creature with that keyword takes a bane on ability rolls against you.\n- *Memories of the Beyond:* You have two skills of your choice.\n\n**Special:** If a hakaan gains this title as a result of using their Doomsight trait, they lose that trait.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "theoretical-warrior",
+    "name": "Theoretical Warrior",
+    "echelon": 4,
+    "description": "I've read about this tactic in books—it looks fairly straightforward.",
+    "raw": "\n#### Theoretical Warrior\n\n*I've read about this tactic in books—it looks fairly straightforward.*\n\n**Prerequisite:** You have the Master Librarian title, and you complete a Learn From a Master project with a project goal of 1,000.\n\n**Effect:** Your choice of your Reason or Intuition increases by 1 (to a maximum of 6).\n\nAdditionally, choose a heroic ability belonging to any class. You gain this heroic ability, which can be paid for using the Heroic Resource of your class. You can't use a heroic ability that requires a class feature you don't have.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "tireless",
+    "name": "Tireless",
+    "echelon": 4,
+    "description": "To reach Giant's Foot by dawn, we'll have to run every step of the way. Let's get moving.",
+    "raw": "\n#### Tireless\n\n*To reach Giant's Foot by dawn, we'll have to run every step of the way. Let's get moving.*\n\n**Prerequisite:** You have the Unstoppable title, and you make or assist on a test as part of a montage test that obtains a full success.\n\n**Effect:** Your choice of your Might or Agility increases by 1 (to a maximum of 6). Additionally, choose one of the following benefits:\n\n- *Bounce Back Fast:* Whenever you rest for 8 hours or more, you can gain the benefit of a respite. Once you use this benefit, you can't use it again until you have taken a regular respite.\n- *Reserves of Strength:* Your recovery value is half your Stamina\n- *Undying:* You can't be affected by the bleeding condition.\n",
+    "grantsAbilityId": null
+  },
+  {
+    "id": "unchained",
+    "name": "Unchained",
+    "echelon": 4,
+    "description": "I'll never get away with it? My dear, I already have.",
+    "raw": "\n#### Unchained\n\n*I'll never get away with it? My dear, I already have.*\n\n**Prerequisite:** You have the Heist Hero title, and you have stolen a precious object or escaped from captivity while evading guards of 8th level or higher.\n\n**Effect:** Your choice of your Might or Agility increases by 1 (to a maximum of 6). Additionally, choose one of the following benefits:\n\n- *Bye-Bye:* You can use a maneuver to teleport yourself and each willing ally within 5 squares of you to new positions within 10 squares of your original starting point. Once you use this benefit, you can't use it again until you earn 1 or more Victories.\n- *Laughs at Locks:* Whenever you make a test to open a lock or break a restraint, you don't need any tools and you automatically obtain a tier 3 outcome.\n- *Slippery:* You can't be grabbed against your will.\n",
+    "grantsAbilityId": null
+  }
+]
