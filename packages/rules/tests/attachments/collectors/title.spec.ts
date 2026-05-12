@@ -2,9 +2,9 @@
 // one canonical-example title override per effect category (stat-mod and
 // grant-ability) to prove the title collector path works end-to-end.
 
+import { CharacterSchema } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { collectFromTitle } from '../../../src/attachments/collectors/title';
-import { CharacterSchema } from '@ironyard/shared';
 import type { StaticDataBundle } from '../../../src/static-data';
 
 // The title collector reads only `character.titleId`. The bundle argument
@@ -15,11 +15,12 @@ describe('collectFromTitle — stat-mod (knight)', () => {
   it('emits a maxStamina stat-mod attachment when titleId = "knight"', () => {
     const char = CharacterSchema.parse({ titleId: 'knight' });
     const out = collectFromTitle(char, BUNDLE_STUB);
-    expect(out).toHaveLength(1);
-    const att = out[0]!;
-    expect(att.source.kind).toBe('title');
-    expect(att.source.id).toBe('knight');
-    expect(att.effect).toEqual({ kind: 'stat-mod', stat: 'maxStamina', delta: 6 });
+    expect(out).toEqual([
+      {
+        source: { kind: 'title', id: 'knight' },
+        effect: { kind: 'stat-mod', stat: 'maxStamina', delta: 6 },
+      },
+    ]);
   });
 
   it('emits nothing when titleId is null', () => {
@@ -39,13 +40,11 @@ describe('collectFromTitle — grant-ability (zombie-slayer)', () => {
   it('emits a grant-ability attachment when titleId = "zombie-slayer"', () => {
     const char = CharacterSchema.parse({ titleId: 'zombie-slayer' });
     const out = collectFromTitle(char, BUNDLE_STUB);
-    expect(out).toHaveLength(1);
-    const att = out[0]!;
-    expect(att.source.kind).toBe('title');
-    expect(att.source.id).toBe('zombie-slayer');
-    expect(att.effect).toEqual({
-      kind: 'grant-ability',
-      abilityId: 'zombie-slayer-holy-terror',
-    });
+    expect(out).toEqual([
+      {
+        source: { kind: 'title', id: 'zombie-slayer' },
+        effect: { kind: 'grant-ability', abilityId: 'zombie-slayer-holy-terror' },
+      },
+    ]);
   });
 });
