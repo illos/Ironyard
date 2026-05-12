@@ -331,3 +331,15 @@ describe('deriveCharacterRuntime — ancestry immunities', () => {
     expect(r.immunities).toHaveLength(0);
   });
 });
+
+describe('ancestry signature abilities (Class-D)', () => {
+  it('Human gets detect-the-supernatural in abilityIds', () => {
+    const human = buildAncestry({
+      id: 'human',
+      signatureAbilityId: 'human-detect-the-supernatural',
+    });
+    const char = buildCharacter({ ancestryId: 'human' });
+    const r = deriveCharacterRuntime(char, buildBundleWith([human]));
+    expect(r.abilityIds).toContain('human-detect-the-supernatural');
+  });
+});

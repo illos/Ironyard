@@ -47,5 +47,15 @@ export function collectFromAncestry(
     }
   }
 
+  if (ancestry.signatureAbilityId) {
+    out.push({
+      source: {
+        kind: 'ancestry-signature',
+        id: `${character.ancestryId}.signature`,
+      },
+      effect: { kind: 'grant-ability', abilityId: ancestry.signatureAbilityId },
+    });
+  }
+
   return out;
 }
