@@ -68,6 +68,7 @@ export function buildFuryL1Fixture(overrides: Partial<Character> = {}): Characte
     },
     kitId: 'wrecker',
     complicationId: null,
+    inventory: [],
     campaignId: null,
     xp: 0,
   };

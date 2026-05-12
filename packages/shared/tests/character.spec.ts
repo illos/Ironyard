@@ -4,6 +4,7 @@ import {
   CompleteCharacterSchema,
   CreateCharacterRequestSchema,
 } from '../src/character';
+import { InventoryEntrySchema } from '../src';
 
 describe('CharacterSchema (draft)', () => {
   it('accepts an empty default character', () => {
@@ -259,6 +260,39 @@ describe('CompleteCharacterSchema — per-ancestry refinements', () => {
       },
     });
     expect(r.success).toBe(true);
+  });
+});
+
+describe('InventoryEntrySchema', () => {
+  it('parses an entry with defaults', () => {
+    const e = InventoryEntrySchema.parse({ itemId: 'healing-potion' });
+    expect(e.quantity).toBe(1);
+    expect(e.equipped).toBe(false);
+  });
+
+  it('parses an entry with quantity > 1 for consumables', () => {
+    const e = InventoryEntrySchema.parse({ itemId: 'healing-potion', quantity: 3 });
+    expect(e.quantity).toBe(3);
+  });
+
+  it('parses an equipped entry', () => {
+    const e = InventoryEntrySchema.parse({ itemId: 'flaming-sword', equipped: true });
+    expect(e.equipped).toBe(true);
+  });
+});
+
+describe('CharacterSchema.inventory', () => {
+  it('defaults to empty array', () => {
+    const c = CharacterSchema.parse({});
+    expect(c.inventory).toEqual([]);
+  });
+
+  it('accepts inventory entries', () => {
+    const c = CharacterSchema.parse({
+      inventory: [{ itemId: 'healing-potion', quantity: 2 }],
+    });
+    expect(c.inventory.length).toBe(1);
+    expect(c.inventory[0]?.quantity).toBe(2);
   });
 });
 

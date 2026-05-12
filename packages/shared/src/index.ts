@@ -303,6 +303,7 @@ export {
   CharacterSchema,
   CompleteCharacterSchema,
   CreateCharacterRequestSchema,
+  InventoryEntrySchema,
   LevelChoicesSchema,
   UpdateCharacterRequestSchema,
 } from './character';
@@ -315,6 +316,7 @@ export type {
   CharacterResponse,
   CompleteCharacter,
   CreateCharacterRequest,
+  InventoryEntry,
   LevelChoices,
   UpdateCharacterRequest,
 } from './character';

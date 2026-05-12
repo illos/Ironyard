@@ -112,6 +112,17 @@ export type LevelChoices = z.infer<typeof LevelChoicesSchema>;
 // stored as a top-level column on the `characters` table for list views;
 // keep them in sync on every write.
 
+export const InventoryEntrySchema = z.object({
+  itemId: z.string().min(1),
+  // Consumables use quantity > 1. Others default to 1.
+  quantity: z.number().int().min(0).default(1),
+  // Worn/wielded vs. carried. Per-category invariants (body-slot conflicts,
+  // 3-safely-carry) are runtime concerns enforced in 2B/2C, not at the
+  // schema level.
+  equipped: z.boolean().default(false),
+});
+export type InventoryEntry = z.infer<typeof InventoryEntrySchema>;
+
 export const CharacterSchema = z.object({
   // ── Advancement ──────────────────────────────────────────────────────────
   level: z.number().int().min(1).max(10).default(1),
@@ -164,6 +175,10 @@ export const CharacterSchema = z.object({
   // ── Complication (optional) ───────────────────────────────────────────────
   // References complications.json by id. Null if the player opted out.
   complicationId: z.string().nullable().default(null),
+
+  // ── Inventory ─────────────────────────────────────────────────────────────
+  // Items the character owns. Empty default for fresh characters.
+  inventory: z.array(InventoryEntrySchema).default([]),
 
   // ── Campaign context ──────────────────────────────────────────────────────
   // Set when the character was created using a campaign invite code.
