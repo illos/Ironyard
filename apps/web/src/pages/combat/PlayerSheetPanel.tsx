@@ -1,13 +1,15 @@
 import { type StaticDataBundle, deriveCharacterRuntime } from '@ironyard/rules';
-import { IntentTypes, type Item, type Participant } from '@ironyard/shared';
+import { IntentTypes, type Item, type Kit, type Participant } from '@ironyard/shared';
+import { useState } from 'react';
 import { buildIntent } from '../../api/dispatch';
 import { useCharacter, useMe } from '../../api/queries';
-import { useItems, useWizardStaticData } from '../../api/static-data';
+import { useItems, useKits, useWizardStaticData } from '../../api/static-data';
 import { useSessionSocket } from '../../ws/useSessionSocket';
 import { AbilityCard } from './AbilityCard';
 import { ConditionChip } from './ConditionChip';
 import { HpBar } from './HpBar';
 import { InventoryPanel } from './inventory/InventoryPanel';
+import { SwapKitModal } from './inventory/SwapKitModal';
 
 export function PlayerSheetPanel({ campaignId }: { campaignId: string }) {
   const me = useMe();
@@ -47,6 +49,7 @@ export function PlayerSheetPanel({ campaignId }: { campaignId: string }) {
       <ResourcePanel participant={myParticipant} campaignId={campaignId} userId={userId} />
       <RecoveryButton participant={myParticipant} campaignId={campaignId} userId={userId} />
       <Abilities participant={myParticipant} campaignId={campaignId} userId={userId} />
+      <KitDisplayAndSwap participant={myParticipant} campaignId={campaignId} userId={userId} />
       <Inventory participant={myParticipant} campaignId={campaignId} userId={userId} />
     </aside>
   );
@@ -316,5 +319,69 @@ function Inventory({
         )
       }
     />
+  );
+}
+
+// Kit row + Swap trigger. Reads kitId off the D1 character (not the
+// participant — participants don't carry kit data) and opens the
+// SwapKitModal on Swap. On confirm, dispatches IntentTypes.SwapKit; the
+// useSessionSocket character-mutating-intent hook invalidates the character
+// query, so max-stamina / speed / stability re-derive automatically.
+function KitDisplayAndSwap({
+  participant,
+  campaignId,
+  userId,
+}: {
+  participant: Participant;
+  campaignId: string;
+  userId: string;
+}) {
+  const ch = useCharacter(participant.characterId ?? undefined);
+  const kits = useKits();
+  const sock = useSessionSocket(campaignId);
+  const [open, setOpen] = useState(false);
+
+  if (!participant.characterId || !ch.data || !kits.data) return null;
+
+  const character = ch.data.data;
+  const characterId = ch.data.id;
+  const currentKitId = character.kitId ?? null;
+  const currentKit = kits.data.find((k) => k.id === currentKitId);
+  const actor = { userId, role: 'player' as const };
+
+  // Cast: useKits()'s value type carries Zod input-side optionality on
+  // defaulted fields, so it doesn't satisfy the strict `Kit` output type.
+  // Same pattern as the items cast in <Inventory> above.
+  const kitList = kits.data as unknown as Kit[];
+
+  return (
+    <div className="flex items-center justify-between text-xs text-neutral-400">
+      <span>Kit: {currentKit?.name ?? '—'}</span>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="min-h-[44px] rounded border border-neutral-700 px-2 text-xs hover:bg-neutral-800"
+      >
+        Swap
+      </button>
+      {open && (
+        <SwapKitModal
+          kits={kitList}
+          currentKitId={currentKitId}
+          onConfirm={(newKitId) => {
+            sock.dispatch(
+              buildIntent({
+                campaignId,
+                type: IntentTypes.SwapKit,
+                payload: { characterId, newKitId, ownerId: userId },
+                actor,
+              }),
+            );
+            setOpen(false);
+          }}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </div>
   );
 }

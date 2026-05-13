@@ -15,7 +15,12 @@ type Props = {
 
 export function SwapKitModal({ kits, currentKitId, onConfirm, onClose }: Props) {
   const [selected, setSelected] = useState<string | null>(currentKitId);
+  // The native <dialog> element requires imperative showModal()/close() calls
+  // and has quirky scrolling/focus behavior. We render a controlled React
+  // modal via a styled div with role="dialog" + aria-modal="true" for
+  // screen-reader semantics — the prevailing pattern across the app.
   return (
+    // biome-ignore lint/a11y/useSemanticElements: see comment above
     <div
       role="dialog"
       aria-modal="true"
