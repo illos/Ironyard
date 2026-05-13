@@ -84,7 +84,7 @@ function ArrayPicker({
     <div>
       <h3 className="text-sm text-neutral-300 mb-1">Characteristic array</h3>
       <p className="text-xs text-neutral-500 mb-2">
-        Choose the distribution you want to assign to your three free characteristics.
+        Choose the distribution you want to assign to your free characteristics.
       </p>
       <div className="flex flex-wrap gap-2">
         {arrays.map((arr) => {
@@ -191,18 +191,21 @@ function ArrayAssignment({
   chosenArray: number[] | null;
   onPatch: (p: Partial<Character>) => void;
 }) {
-  // assignment: tileIndex → characteristic slug (or null = unplaced)
-  const [assignment, setAssignment] = useState<Record<number, string | null>>({
-    0: null,
-    1: null,
-    2: null,
-  });
+  // assignment: tileIndex → characteristic slug (or null = unplaced).
+  // The size of this map is `chosenArray.length` — varies per class
+  // (3 tiles for classes that lock 2 characteristics, 4 tiles for classes
+  // that lock 1, e.g. Conduit/Elementalist/Shadow).
+  const [assignment, setAssignment] = useState<Record<number, string | null>>({});
 
-  // Reset when class changes (locked chars change, slot list changes).
-  // Reset when chosen array changes (values change, previous mapping invalid).
+  // Reset whenever the class or the chosen array changes — the tile
+  // count + array values may have changed too.
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reset triggered by external ids
   useEffect(() => {
-    setAssignment({ 0: null, 1: null, 2: null });
+    const next: Record<number, string | null> = {};
+    if (chosenArray !== null) {
+      for (let i = 0; i < chosenArray.length; i++) next[i] = null;
+    }
+    setAssignment(next);
   }, [klass.id, chosenArray?.join(',')]);
   // Note: chosenArray?.join(',') is a stable primitive derived from the prop, used as a dep key.
 
@@ -219,6 +222,7 @@ function ArrayAssignment({
 
   // Non-null alias for use inside closures where TypeScript loses the narrowing.
   const arr = chosenArray;
+  const allIndices = arr.map((_, i) => i);
 
   const lockedSet = new Set(klass.lockedCharacteristics);
   const unlockedChars = ALL_CHARACTERISTICS.filter((c) => !lockedSet.has(c));
@@ -236,7 +240,7 @@ function ArrayAssignment({
   for (const [idxStr, charId] of Object.entries(assignment)) {
     if (charId !== null) placedIndices.add(Number(idxStr));
   }
-  const unplacedTiles = [0, 1, 2].filter((i) => !placedIndices.has(i));
+  const unplacedTiles = allIndices.filter((i) => !placedIndices.has(i));
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -248,7 +252,7 @@ function ArrayAssignment({
     // Only drop onto characteristic slots.
     if (!unlockedChars.includes(targetSlotId as (typeof ALL_CHARACTERISTICS)[number])) return;
 
-    // Parse the dragged tile index from the id ("tile-0", "tile-1", "tile-2").
+    // Parse the dragged tile index from the id ("tile-0", "tile-1", ...).
     if (!draggedTileId.startsWith('tile-')) return;
     const draggedIdx = Number(draggedTileId.slice(5));
 
@@ -259,7 +263,7 @@ function ArrayAssignment({
       const incumbentIdx = tileIndexBySlot[targetSlotId];
 
       // Remove the dragged tile from whatever slot it was previously in.
-      for (const k of [0, 1, 2] as const) {
+      for (const k of allIndices) {
         if (next[k] === targetSlotId) next[k] = null;
       }
 
@@ -280,7 +284,7 @@ function ArrayAssignment({
           if (v !== undefined) slots[charId] = v;
         }
       }
-      const allPlaced = Object.keys(slots).length === 3;
+      const allPlaced = Object.keys(slots).length === arr.length;
       // Fire asynchronously to avoid setState-in-setState warning.
       setTimeout(() => {
         onPatch({ characteristicSlots: allPlaced ? slots : null });
@@ -293,7 +297,7 @@ function ArrayAssignment({
   function clearSlot(charId: string) {
     setAssignment((prev) => {
       const next = { ...prev };
-      for (const k of [0, 1, 2] as const) {
+      for (const k of allIndices) {
         if (next[k] === charId) next[k] = null;
       }
       setTimeout(() => {
