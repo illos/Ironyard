@@ -29,7 +29,7 @@ export function MonsterBrowser() {
     <main className="mx-auto max-w-3xl p-6 space-y-5">
       <header className="flex items-baseline justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-3xl font-semibold">Monster codex</h1>
+          <h1 className="text-3xl font-semibold">Foes</h1>
           {monsters.data && (
             <p className="text-sm text-neutral-400 mt-1">
               {monsters.data.count} monsters · data version{' '}

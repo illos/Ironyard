@@ -26,7 +26,7 @@ The plan that survived contact with the requirements. Each phase ends in somethi
 **UI quality bar:** prototype-grade — functional, dark theme, 44pt touch targets, no embarrassing wrong-feeling moments. **Not** a finished product. The visual / interaction / motion / brand pass happens in **Phase 5 (UI rebuild)**. Don't over-invest in polish, refactors, design-system extraction, or animation here.
 
 - `packages/rules` reducer with the core intents: combat lifecycle, rolls, damage, conditions, resources, undo
-- Monster browser at `/codex/monsters` (read-only)
+- Monster browser at `/foes` (read-only)
 - Director item list at `/codex/items` (read-only, same pattern as monster browser) — browse all treasure types (leveled, artifacts, consumables, trinkets); director can hand an item to a player from here
 - `CharacterAttachment` framework in `packages/rules`: effect schema + folding logic, canon-gated via `requireCanon`. **No attachment content ships in Phase 1** — this is scaffolding only, same philosophy as the canon-status registry in Phase 0. Phase 2 lights it up. Magic items and titles are both instances of the same abstraction.
 - **Encounter template builder:** the active director picks monsters and quantities and saves them as a named encounter template (stored in `encounter_templates` D1 table). Templates are separate from lobby state — saving a template does not alter who is in the lobby roster.

@@ -39,9 +39,9 @@ const combatRunRoute = createRoute({
   component: CombatRun,
 });
 
-const monsterCodexRoute = createRoute({
+const foesRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/codex/monsters',
+  path: '/foes',
   component: MonsterBrowser,
 });
 
@@ -71,7 +71,7 @@ const routeTree = rootRoute.addChildren([
   campaignRoute,
   encounterBuilderRoute,
   combatRunRoute,
-  monsterCodexRoute,
+  foesRoute,
   wizardNewRoute,
   wizardEditRoute,
   sheetRoute,

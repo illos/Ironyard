@@ -28,10 +28,10 @@ function LoginPanel() {
       <p className="mt-1 text-neutral-400">Sign in to start or join a session.</p>
 
       <Link
-        to="/codex/monsters"
+        to="/foes"
         className="mt-3 inline-block text-sm text-neutral-400 underline hover:text-neutral-200"
       >
-        Or browse the monster codex →
+        Or browse the foes list →
       </Link>
 
       <form
@@ -90,8 +90,8 @@ function CampaignsPanel({ user }: { user: { displayName: string; email: string }
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <Link to="/codex/monsters" className="text-sm text-neutral-400 hover:text-neutral-200">
-            Codex
+          <Link to="/foes" className="text-sm text-neutral-400 hover:text-neutral-200">
+            Foes
           </Link>
           <button
             type="button"
