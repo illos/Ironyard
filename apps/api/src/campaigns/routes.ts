@@ -160,6 +160,26 @@ campaignRoutes.get('/:id', async (c) => {
   });
 });
 
+// DELETE /api/campaigns/:id — owner-only. Cascade is configured in the schema
+// (campaign_memberships, campaign_characters, encounter_templates,
+// campaign_snapshots, intents) so the single campaigns delete is enough.
+campaignRoutes.delete('/:id', async (c) => {
+  const id = c.req.param('id');
+  const user = c.get('user');
+  const conn = db(c.env.DB);
+
+  const campaign = await conn
+    .select({ ownerId: campaigns.ownerId })
+    .from(campaigns)
+    .where(eq(campaigns.id, id))
+    .get();
+  if (!campaign) return c.json({ error: 'not_found' }, 404);
+  if (campaign.ownerId !== user.id) return c.json({ error: 'forbidden' }, 403);
+
+  await conn.delete(campaigns).where(eq(campaigns.id, id));
+  return c.json({ ok: true } as const);
+});
+
 // GET /api/campaigns/:id/socket — WebSocket upgrade, forwarded to the DO.
 campaignRoutes.get('/:id/socket', async (c) => {
   if (c.req.header('upgrade')?.toLowerCase() !== 'websocket') {
