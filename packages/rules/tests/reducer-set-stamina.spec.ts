@@ -55,10 +55,20 @@ function pc(over: Partial<Participant> = {}): Participant {
 }
 
 function ready(over?: Partial<Participant>): CampaignState {
-  let s = emptyCampaignState(campaignId, 'user-owner');
-  s = { ...s, participants: [pc(over)] };
-  s = applyIntent(s, intent('StartEncounter', {})).state;
-  return s;
+  const participant = pc(over);
+  const s = emptyCampaignState(campaignId, 'user-owner');
+  return {
+    ...s,
+    participants: [participant],
+    encounter: {
+      id: 'enc-test',
+      currentRound: 1,
+      turnOrder: [participant.id],
+      activeParticipantId: null,
+      turnState: {},
+      malice: { current: 0, lastMaliciousStrikeRound: null },
+    },
+  };
 }
 
 function getAlice(s: CampaignState): Participant | undefined {
@@ -75,8 +85,17 @@ describe('applyIntent — SetStamina', () => {
   });
 
   it('rejects when participant not found', () => {
-    let s = emptyCampaignState(campaignId, 'user-owner');
-    s = applyIntent(s, intent('StartEncounter', {})).state;
+    const s: CampaignState = {
+      ...emptyCampaignState(campaignId, 'user-owner'),
+      encounter: {
+        id: 'enc-test',
+        currentRound: 1,
+        turnOrder: [],
+        activeParticipantId: null,
+        turnState: {},
+        malice: { current: 0, lastMaliciousStrikeRound: null },
+      },
+    };
     const r = applyIntent(
       s,
       intent('SetStamina', { participantId: 'pc_ghost', currentStamina: 1 }),

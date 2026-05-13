@@ -4,16 +4,15 @@ import {
   type TypedResistance,
   ulid,
 } from '@ironyard/shared';
+import { participantFromMonster } from './add-monster';
 import { deriveCharacterRuntime } from '../derive-character-runtime';
 import type {
   CampaignState,
   EncounterPhase,
   IntentResult,
   ReducerContext,
-  RosterEntry,
   StampedIntent,
 } from '../types';
-import { isParticipant } from '../types';
 
 export function applyStartEncounter(
   state: CampaignState,
@@ -56,39 +55,30 @@ export function applyStartEncounter(
     };
   }
 
-  // D4: Materialize PC placeholders into full participants.
-  // stampedPcs maps characterId → { name, ownerId, character }.
-  const stampedByCharId = new Map(parsed.data.stampedPcs.map((s) => [s.characterId, s]));
-
-  const nextParticipants: RosterEntry[] = state.participants.map((entry) => {
-    if (entry.kind !== 'pc-placeholder') return entry;
-    const stamped = stampedByCharId.get(entry.characterId);
-    if (!stamped) {
-      // No blob stamped → leave placeholder (skipped in encounter turnOrder).
-      return entry;
-    }
+  // Materialize PC participants from DO-stamped character blobs.
+  const pcParticipants: Participant[] = parsed.data.stampedPcs.map((stamped) => {
     const runtime = deriveCharacterRuntime(stamped.character, ctx.staticData);
-    const preservedStamina = preservedRuntime(state, entry.characterId, 'currentStamina');
-    const preservedRecoveriesCurrent = preservedRuntime(
-      state,
-      entry.characterId,
-      'recoveriesCurrent',
-    );
-    const materialized: Participant = {
-      id: `pc:${entry.characterId}`, // stable id derived from characterId
-      name: stamped.name, // from characters.name column (stamped by DO)
+
+    // Apply persisted stamina: null means fresh (use derived max).
+    const currentStamina =
+      stamped.character.currentStamina !== null
+        ? Math.min(stamped.character.currentStamina, runtime.maxStamina)
+        : runtime.maxStamina;
+
+    // Recoveries: start with max, subtract how many were used before respite.
+    const recoveriesUsed = stamped.character.recoveriesUsed;
+    const recoveriesCurrent = Math.max(0, runtime.recoveriesMax - recoveriesUsed);
+
+    return {
+      id: `pc:${stamped.characterId}`,
+      name: stamped.name,
       kind: 'pc',
       ownerId: stamped.ownerId,
-      characterId: entry.characterId,
+      characterId: stamped.characterId,
       level: stamped.character.level,
-      currentStamina:
-        preservedStamina !== null
-          ? Math.min(preservedStamina, runtime.maxStamina)
-          : runtime.maxStamina,
+      currentStamina,
       maxStamina: runtime.maxStamina,
       characteristics: runtime.characteristics,
-      // CharacterRuntime uses `kind` but Participant uses `type` for the damage field name.
-      // The values are compatible DamageType strings at runtime; cast for TypeScript.
       immunities: runtime.immunities.map((r) => ({
         type: r.kind as TypedResistance['type'],
         value: r.value,
@@ -98,40 +88,39 @@ export function applyStartEncounter(
         value: r.value,
       })),
       conditions: [],
-      heroicResources: [], // reset to class floor at encounter start (slice-7 logic)
+      heroicResources: [],
       extras: [],
       surges: 0,
       recoveries: {
-        current:
-          preservedRecoveriesCurrent !== null
-            ? Math.min(preservedRecoveriesCurrent, runtime.recoveriesMax)
-            : runtime.recoveriesMax,
+        current: recoveriesCurrent,
         max: runtime.recoveriesMax,
       },
       recoveryValue: runtime.recoveryValue,
-      // Slice 6 / Epic 2C § 10.8: snapshot the derived per-tier weapon bonus.
       weaponDamageBonus: runtime.weaponDamageBonus,
     };
-    return materialized;
   });
 
-  // Use the client-suggested encounterId if provided (useful for optimistic
-  // local state and integration tests that need to reference the encounter
-  // by ID in follow-up intents like EndEncounter). The server-generated ulid()
-  // is the fallback.
-  const encounterId = parsed.data.encounterId ?? ulid();
+  // Materialize monster participants from DO-stamped monster stat blocks.
+  const monsterParticipants: Participant[] = parsed.data.stampedMonsters.flatMap((entry) => {
+    const baseName = entry.nameOverride ?? entry.monster.name;
+    return Array.from({ length: entry.quantity }, (_, i) => {
+      const suffix = entry.quantity > 1 ? ` ${i + 1}` : '';
+      return participantFromMonster(entry.monster, {
+        id: ulid(),
+        name: `${baseName}${suffix}`,
+      });
+    });
+  });
 
-  // Only full Participants (not remaining placeholders) go in the turn order.
-  const fullParticipants = nextParticipants.filter(isParticipant);
+  const allParticipants: Participant[] = [...pcParticipants, ...monsterParticipants];
+  const encounterId = parsed.data.encounterId ?? ulid();
 
   const encounter: EncounterPhase = {
     id: encounterId,
     currentRound: 1,
-    turnOrder: fullParticipants.map((p) => p.id),
+    turnOrder: allParticipants.map((p) => p.id),
     activeParticipantId: null,
     turnState: {},
-    // Slice 7: Director's Malice starts at 0 with no Malicious Strike
-    // history (canon §5.5). Per-round generation is dispatcher-driven.
     malice: { current: 0, lastMaliciousStrikeRound: null },
   };
 
@@ -139,29 +128,17 @@ export function applyStartEncounter(
     state: {
       ...state,
       seq: state.seq + 1,
-      participants: nextParticipants,
+      // REPLACE the existing roster — the new encounter is the single source of truth.
+      participants: allParticipants,
       encounter,
     },
     derived: [],
     log: [
       {
         kind: 'info',
-        text: `encounter ${encounterId} started with ${fullParticipants.length} participants`,
+        text: `encounter ${encounterId} started with ${pcParticipants.length} PC(s) and ${monsterParticipants.length} monster(s)`,
         intentId: intent.id,
       },
     ],
   };
-}
-
-function preservedRuntime(
-  state: CampaignState,
-  characterId: string,
-  field: 'currentStamina' | 'recoveriesCurrent',
-): number | null {
-  const existing = state.participants.find(
-    (p): p is Participant => isParticipant(p) && p.kind === 'pc' && p.id === `pc:${characterId}`,
-  );
-  if (!existing) return null;
-  if (field === 'currentStamina') return existing.currentStamina;
-  return existing.recoveries.current;
 }

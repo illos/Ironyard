@@ -2,7 +2,6 @@ import type { Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
   type CampaignState,
-  type PcPlaceholder,
   type ReducerContext,
   type StampedIntent,
   applyIntent,
@@ -12,89 +11,170 @@ import {
 import { buildBundleWithFury, buildFuryL1Fixture } from './fixtures/character-runtime';
 
 const T = 1_700_000_000_000;
-const campaignId = 'sess_start_enc';
+const CAMPAIGN = 'sess_start_enc';
 
-function intent(type: string, payload: unknown): StampedIntent {
+function makeIntent(payload: unknown): StampedIntent {
   return {
     id: `i_${Math.random().toString(36).slice(2)}`,
-    campaignId,
+    campaignId: CAMPAIGN,
     actor: { userId: 'user-owner', role: 'director' },
     timestamp: T,
     source: 'manual',
-    type,
+    type: 'StartEncounter',
     payload,
     causedBy: undefined,
   };
 }
 
-describe('applyStartEncounter — materialization / ownerId', () => {
-  it('materialized PC carries ownerId from the placeholder', () => {
+function baseState(overrides: Partial<CampaignState> = {}): CampaignState {
+  return { ...emptyCampaignState(CAMPAIGN, 'user-owner'), ...overrides };
+}
+
+describe('applyStartEncounter — new atomic payload shape', () => {
+  it('materializes a PC from stampedPcs with ownerId and characterId', () => {
     const character = buildFuryL1Fixture();
     const ctx: ReducerContext = { staticData: buildBundleWithFury() };
-    const placeholder: PcPlaceholder = {
-      kind: 'pc-placeholder',
-      characterId: 'c1',
-      ownerId: 'user-1',
-      position: 0,
-    };
-    let s: CampaignState = emptyCampaignState(campaignId, 'user-owner');
-    s = { ...s, participants: [placeholder] };
 
     const result = applyIntent(
-      s,
-      intent('StartEncounter', {
+      baseState(),
+      makeIntent({
+        characterIds: ['c1'],
+        monsters: [],
         stampedPcs: [{ characterId: 'c1', name: 'Hero', ownerId: 'user-1', character }],
+        stampedMonsters: [],
       }),
       ctx,
     );
 
     expect(result.errors).toBeUndefined();
+    expect(result.state.encounter).not.toBeNull();
+
     const pc = result.state.participants.find(
       (p): p is Participant => isParticipant(p) && p.kind === 'pc',
     );
     expect(pc).toBeDefined();
     expect(pc?.ownerId).toBe('user-1');
+    expect(pc?.characterId).toBe('c1');
+    expect(pc?.id).toBe('pc:c1');
   });
 
-  it('materialized PC carries characterId from the placeholder', () => {
-    const character = buildFuryL1Fixture();
+  it('applies persisted currentStamina from the character blob (clamped to max)', () => {
+    const character = buildFuryL1Fixture({ currentStamina: 10 });
     const ctx: ReducerContext = { staticData: buildBundleWithFury() };
-    const placeholder: PcPlaceholder = {
-      kind: 'pc-placeholder',
-      characterId: 'c1',
-      ownerId: 'user-1',
-      position: 0,
-    };
-    let s: CampaignState = emptyCampaignState(campaignId, 'user-owner');
-    s = { ...s, participants: [placeholder] };
 
     const result = applyIntent(
-      s,
-      intent('StartEncounter', {
-        stampedPcs: [{ characterId: 'c1', name: 'Hero', ownerId: 'user-1', character }],
+      baseState(),
+      makeIntent({
+        characterIds: ['c1'],
+        monsters: [],
+        stampedPcs: [{ characterId: 'c1', name: 'Hero', ownerId: 'u1', character }],
+        stampedMonsters: [],
       }),
       ctx,
     );
 
-    expect(result.errors).toBeUndefined();
     const pc = result.state.participants.find(
       (p): p is Participant => isParticipant(p) && p.kind === 'pc',
     );
-    expect(pc).toBeDefined();
-    expect(pc?.characterId).toBe('c1');
+    expect(pc?.currentStamina).toBe(10);
   });
 
-  it('monsters carry ownerId: null', () => {
-    // Monsters are constructed with ownerId: null (the schema default).
-    // This test verifies the field is present on the Participant type.
-    const monster: Participant = {
-      id: 'm1',
+  it('uses derived maxStamina when character.currentStamina is null (fresh encounter)', () => {
+    const character = buildFuryL1Fixture({ currentStamina: null });
+    const ctx: ReducerContext = { staticData: buildBundleWithFury() };
+
+    const result = applyIntent(
+      baseState(),
+      makeIntent({
+        characterIds: ['c1'],
+        monsters: [],
+        stampedPcs: [{ characterId: 'c1', name: 'Hero', ownerId: 'u1', character }],
+        stampedMonsters: [],
+      }),
+      ctx,
+    );
+
+    const pc = result.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'pc',
+    );
+    // buildBundleWithFury: startingStamina=21, staminaPerLevel=9, level=1 → maxStamina=21
+    expect(pc?.currentStamina).toBe(21);
+    expect(pc?.maxStamina).toBe(21);
+  });
+
+  it('applies recoveriesUsed to compute recoveries.current', () => {
+    // 3 recoveries used out of 10 → 7 remaining
+    const character = buildFuryL1Fixture({ recoveriesUsed: 3 });
+    const ctx: ReducerContext = { staticData: buildBundleWithFury() };
+
+    const result = applyIntent(
+      baseState(),
+      makeIntent({
+        characterIds: ['c1'],
+        monsters: [],
+        stampedPcs: [{ characterId: 'c1', name: 'Hero', ownerId: 'u1', character }],
+        stampedMonsters: [],
+      }),
+      ctx,
+    );
+
+    const pc = result.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'pc',
+    );
+    // buildBundleWithFury: recoveries = 10
+    expect(pc?.recoveries.max).toBe(10);
+    expect(pc?.recoveries.current).toBe(7);
+  });
+
+  it('materializes monsters from stampedMonsters (respects quantity)', () => {
+    const monster = {
+      id: 'goblin',
       name: 'Goblin',
-      kind: 'monster',
       level: 1,
-      currentStamina: 20,
-      maxStamina: 20,
+      roles: [],
+      ancestry: [],
+      ev: { ev: 2 },
+      stamina: { base: 15 },
+      speed: 5,
+      movement: [],
+      size: '1S',
+      stability: 0,
+      freeStrike: 2,
       characteristics: { might: 0, agility: 1, reason: -1, intuition: 0, presence: -1 },
+      immunities: [],
+      weaknesses: [],
+      abilities: [],
+    };
+
+    const result = applyIntent(
+      baseState(),
+      makeIntent({
+        characterIds: [],
+        monsters: [{ monsterId: 'goblin', quantity: 3 }],
+        stampedPcs: [],
+        stampedMonsters: [{ monsterId: 'goblin', quantity: 3, monster }],
+      }),
+    );
+
+    expect(result.errors).toBeUndefined();
+    const monsters = result.state.participants.filter(
+      (p): p is Participant => isParticipant(p) && p.kind === 'monster',
+    );
+    expect(monsters).toHaveLength(3);
+    expect(monsters[0]!.name).toBe('Goblin 1');
+    expect(monsters[1]!.name).toBe('Goblin 2');
+    expect(monsters[2]!.name).toBe('Goblin 3');
+  });
+
+  it('REPLACES the existing participant roster (no duplicate carry-over)', () => {
+    const oldMonster: Participant = {
+      id: 'old-monster-1',
+      name: 'Old Orc',
+      kind: 'monster',
+      level: 3,
+      currentStamina: 0,
+      maxStamina: 40,
+      characteristics: { might: 2, agility: 0, reason: -1, intuition: 0, presence: -1 },
       immunities: [],
       weaknesses: [],
       conditions: [],
@@ -107,16 +187,51 @@ describe('applyStartEncounter — materialization / ownerId', () => {
       characterId: null,
       weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
     };
-    let s: CampaignState = emptyCampaignState(campaignId, 'user-owner');
-    s = { ...s, participants: [monster] };
+    const s = baseState({ participants: [oldMonster] });
 
-    const result = applyIntent(s, intent('StartEncounter', {}));
+    const result = applyIntent(
+      s,
+      makeIntent({
+        characterIds: [],
+        monsters: [],
+        stampedPcs: [],
+        stampedMonsters: [],
+      }),
+    );
+
+    expect(result.state.participants).toHaveLength(0);
+  });
+
+  it('rejects if an encounter is already active', () => {
+    const s = baseState({
+      encounter: {
+        id: 'enc-1',
+        currentRound: 1,
+        turnOrder: [],
+        activeParticipantId: null,
+        turnState: {},
+        malice: { current: 0, lastMaliciousStrikeRound: null },
+      },
+    });
+
+    const result = applyIntent(
+      s,
+      makeIntent({ characterIds: [], monsters: [], stampedPcs: [], stampedMonsters: [] }),
+    );
+
+    expect(result.errors).toEqual(
+      expect.arrayContaining([expect.objectContaining({ code: 'encounter_already_active' })]),
+    );
+  });
+
+  it('accepts an empty payload (no PCs, no monsters) — valid but empty encounter', () => {
+    const result = applyIntent(
+      baseState(),
+      makeIntent({ characterIds: [], monsters: [], stampedPcs: [], stampedMonsters: [] }),
+    );
 
     expect(result.errors).toBeUndefined();
-    const m = result.state.participants.find(
-      (p): p is Participant => isParticipant(p) && p.kind === 'monster',
-    );
-    expect(m).toBeDefined();
-    expect(m?.ownerId).toBeNull();
+    expect(result.state.encounter).not.toBeNull();
+    expect(result.state.participants).toHaveLength(0);
   });
 });

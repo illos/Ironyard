@@ -73,13 +73,23 @@ function monster(over: Partial<Participant> = {}): Participant {
 }
 
 function ready(): CampaignState {
-  // Directly seed the roster so tests are independent of BringCharacterIntoEncounter
-  // semantics. StartEncounter only materializes pc-placeholders; since we seed
-  // full Participants here, it just sets up the encounter phase.
-  let s = emptyCampaignState(campaignId, 'user-owner');
-  s = { ...s, participants: [pc(), monster()] };
-  s = applyIntent(s, intent('StartEncounter', {})).state;
-  return s;
+  // Directly construct state with encounter phase — independent of StartEncounter
+  // roster-replacement semantics (StartEncounter now atomically replaces the
+  // roster from stampedPcs; seeded participants would be wiped out).
+  const participants = [pc(), monster()];
+  const s = emptyCampaignState(campaignId, 'user-owner');
+  return {
+    ...s,
+    participants,
+    encounter: {
+      id: 'enc_test',
+      currentRound: 1,
+      turnOrder: participants.map((p) => p.id),
+      activeParticipantId: null,
+      turnState: {},
+      malice: { current: 0, lastMaliciousStrikeRound: null },
+    },
+  };
 }
 
 function getConditions(state: CampaignState, participantId: string): ConditionInstance[] {
@@ -403,7 +413,17 @@ describe('applyIntent — RemoveCondition', () => {
         }),
       ],
     };
-    s = applyIntent(s, intent('StartEncounter', {})).state;
+    s = {
+      ...s,
+      encounter: {
+        id: 'enc-test',
+        currentRound: 1,
+        turnOrder: s.participants.map((p) => p.id),
+        activeParticipantId: null,
+        turnState: {},
+        malice: { current: 0, lastMaliciousStrikeRound: null },
+      },
+    };
     const r = applyIntent(
       s,
       intent('RemoveCondition', { targetId: 'pc_alice', condition: 'Bleeding' }),

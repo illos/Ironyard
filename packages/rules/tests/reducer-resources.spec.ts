@@ -73,10 +73,23 @@ function monster(over: Partial<Participant> = {}): Participant {
 }
 
 function ready(extra?: Partial<Participant>): CampaignState {
-  let s = emptyCampaignState(campaignId, 'user-owner');
-  s = { ...s, participants: [pc(extra), monster()] };
-  s = applyIntent(s, intent('StartEncounter', {})).state;
-  return s;
+  // Directly construct state with encounter phase — independent of StartEncounter
+  // roster-replacement semantics (StartEncounter now atomically replaces the
+  // roster from stampedPcs; seeded participants would be wiped out).
+  const participants = [pc(extra), monster()];
+  const s = emptyCampaignState(campaignId, 'user-owner');
+  return {
+    ...s,
+    participants,
+    encounter: {
+      id: 'enc_test',
+      currentRound: 1,
+      turnOrder: participants.map((p) => p.id),
+      activeParticipantId: null,
+      turnState: {},
+      malice: { current: 0, lastMaliciousStrikeRound: null },
+    },
+  };
 }
 
 function getParticipant(state: CampaignState, id: string): Participant | undefined {
@@ -429,9 +442,22 @@ describe('applyIntent — Director Malice intents', () => {
 
 describe('applyIntent — EndTurn Talent Clarity EoT damage hook', () => {
   function readyForTalent(over?: Partial<Participant>): CampaignState {
-    let s = emptyCampaignState(campaignId, 'user-owner');
-    s = { ...s, participants: [pc(over), monster()] };
-    s = applyIntent(s, intent('StartEncounter', {})).state;
+    // Directly construct state with encounter phase — independent of StartEncounter
+    // roster-replacement semantics (StartEncounter now atomically replaces the
+    // roster from stampedPcs; seeded participants would be wiped out).
+    const participants = [pc(over), monster()];
+    let s: CampaignState = {
+      ...emptyCampaignState(campaignId, 'user-owner'),
+      participants,
+      encounter: {
+        id: 'enc_test',
+        currentRound: 1,
+        turnOrder: participants.map((p) => p.id),
+        activeParticipantId: null,
+        turnState: {},
+        malice: { current: 0, lastMaliciousStrikeRound: null },
+      },
+    };
     s = applyIntent(s, intent('SetInitiative', { order: ['pc_talent', 'm_goblin'] })).state;
     s = applyIntent(s, intent('StartRound', {})).state;
     s = applyIntent(s, intent('StartTurn', { participantId: 'pc_talent' })).state;

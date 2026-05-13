@@ -1,28 +1,58 @@
 import { z } from 'zod';
 import { CharacterSchema } from '../character';
+import { MonsterSchema } from '../data/monster';
 
-// D4: Pre-resolved PC blobs stamped onto the payload by the DO before dispatch.
-// One entry per PC placeholder currently in the roster. The DO reads
-// characters.name + characters.data from D1 and stamps them here so the
-// pure reducer never does I/O.
+// ── Stamped PC entry (DO resolves character blob + owner from D1) ─────────────
+
 export const StartEncounterStampedPcSchema = z.object({
   characterId: z.string().min(1),
   ownerId: z.string().min(1),
-  name: z.string().min(1), // from characters.name column (not data blob)
-  character: CharacterSchema, // full blob, stamped by DO from D1
+  name: z.string().min(1),  // from characters.name column
+  character: CharacterSchema, // full blob parsed from characters.data
 });
 export type StartEncounterStampedPc = z.infer<typeof StartEncounterStampedPcSchema>;
 
-// C2: the reducer generates the canonical encounter id via ulid(). Clients
-// may still send a suggested encounterId for optimistic local-state
-// reflection; the reducer ignores it. Kept optional to avoid forcing a
-// frontend rewrite during the campaigns restructure — the prototype UI's
-// optimistic ActiveEncounter shadow uses it. Frontend follow-on plan removes
-// this entirely.
+// ── Monster entry (client-sent) ───────────────────────────────────────────────
+
+export const MonsterEntrySchema = z.object({
+  monsterId: z.string().min(1),
+  quantity: z.number().int().min(1).max(50),
+  nameOverride: z.string().min(1).max(80).optional(),
+});
+export type MonsterEntry = z.infer<typeof MonsterEntrySchema>;
+
+// ── Stamped monster entry (DO resolves stat block from static data) ───────────
+
+export const StartEncounterStampedMonsterSchema = z.object({
+  monsterId: z.string().min(1),
+  quantity: z.number().int().min(1).max(50),
+  nameOverride: z.string().min(1).max(80).optional(),
+  monster: MonsterSchema, // resolved by DO stamper
+});
+export type StartEncounterStampedMonster = z.infer<typeof StartEncounterStampedMonsterSchema>;
+
+// ── Full payload ──────────────────────────────────────────────────────────────
+//
+// Client sends: { encounterId?, characterIds[], monsters[], stampedPcs: [], stampedMonsters: [] }
+// DO stamper fills in stampedPcs (reads D1 character blobs) and stampedMonsters
+// (resolves static monster data). The reducer ignores characterIds/monsters once
+// stamped — stampedPcs and stampedMonsters are the authoritative inputs.
+
 export const StartEncounterPayloadSchema = z.object({
+  // Optional optimistic id. The reducer generates the canonical id via ulid()
+  // if absent; the client may suggest one for optimistic local state.
   encounterId: z.string().min(1).optional(),
-  // D4: DO stamps the PC character blobs here before dispatch. Optional/defaults
-  // to [] so existing callers (tests, early UI) don't need to change right away.
-  stampedPcs: z.array(StartEncounterStampedPcSchema).optional().default([]),
+
+  // Character IDs to include. DO stamper resolves → stampedPcs.
+  characterIds: z.array(z.string().min(1)).default([]),
+
+  // Monster entries. DO stamper resolves → stampedMonsters.
+  monsters: z.array(MonsterEntrySchema).default([]),
+
+  // DO-stamped PC blobs. Client sends []; DO fills before reducer.
+  stampedPcs: z.array(StartEncounterStampedPcSchema).default([]),
+
+  // DO-stamped monster blobs. Client sends []; DO fills before reducer.
+  stampedMonsters: z.array(StartEncounterStampedMonsterSchema).default([]),
 });
 export type StartEncounterPayload = z.infer<typeof StartEncounterPayloadSchema>;

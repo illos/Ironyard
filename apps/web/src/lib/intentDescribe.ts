@@ -75,8 +75,6 @@ export function describeIntent(args: DescribeArgs): string {
       const { targetId, condition } = intent.payload as RemoveConditionPayload;
       return `${nameOf(participantsBefore, targetId)} freed of ${condition}`;
     }
-    case IntentTypes.BringCharacterIntoEncounter:
-      return 'Participant added';
     case IntentTypes.StartEncounter:
       return 'Encounter started';
     case IntentTypes.Undo:

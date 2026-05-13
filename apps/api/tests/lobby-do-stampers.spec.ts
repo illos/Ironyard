@@ -98,7 +98,6 @@ vi.mock('../src/db/schema', () => ({
 // ── Import stampers after mocks are set up ─────────────────────────────────
 import {
   stampAddMonster,
-  stampBringCharacterIntoEncounter,
   stampIntent,
   stampJumpBehindScreen,
   stampKickPlayer,
@@ -358,119 +357,34 @@ describe('stampKickPlayer', () => {
     const intent = makeIntent('KickPlayer', { userId: 'user-nobody' });
     const result = await stampKickPlayer(intent, makeCampaignState(), mockEnv);
     expect(result).toBeNull();
-    const payload = intent.payload as {
-      participantIdsToRemove?: string[];
-      placeholderCharacterIdsToRemove?: string[];
-    };
+    const payload = intent.payload as { participantIdsToRemove?: string[] };
     expect(payload.participantIdsToRemove).toEqual([]);
-    expect(payload.placeholderCharacterIdsToRemove).toEqual([]);
-  });
-
-  it('stamps placeholderCharacterIdsToRemove from pc-placeholder entries owned by the kicked user', async () => {
-    mockDbResult = [{ characterId: 'char-placeholder-1' }]; // DB says user owns char-placeholder-1
-
-    const state = makeCampaignState({
-      participants: [
-        // pc-placeholder owned by the kicked user
-        {
-          kind: 'pc-placeholder',
-          characterId: 'char-placeholder-1',
-          ownerId: 'user-alice',
-          position: 0,
-        },
-        // pc-placeholder owned by a different user — must NOT appear
-        { kind: 'pc-placeholder', characterId: 'char-other', ownerId: 'user-bob', position: 1 },
-      ],
-    });
-
-    const intent = makeIntent('KickPlayer', { userId: 'user-alice' });
-    const result = await stampKickPlayer(intent, state, mockEnv);
-    expect(result).toBeNull();
-    const payload = intent.payload as {
-      participantIdsToRemove?: string[];
-      placeholderCharacterIdsToRemove?: string[];
-    };
-    expect(payload.participantIdsToRemove).toEqual([]);
-    expect(payload.placeholderCharacterIdsToRemove).toContain('char-placeholder-1');
-    expect(payload.placeholderCharacterIdsToRemove).not.toContain('char-other');
-  });
-
-  it('stamps both participantIdsToRemove and placeholderCharacterIdsToRemove when user has both', async () => {
-    // DB returns two character IDs belonging to the kicked user
-    mockDbResult = [{ characterId: 'char-full' }, { characterId: 'char-placeholder-2' }];
-
-    const state = makeCampaignState({
-      participants: [
-        // Full pc Participant for char-full
-        {
-          id: 'char-full',
-          name: 'Mira',
-          kind: 'pc',
-          level: 1,
-          currentStamina: 30,
-          maxStamina: 30,
-          characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
-          immunities: [],
-          weaknesses: [],
-          conditions: [],
-          heroicResources: [],
-          extras: [],
-          surges: 0,
-          recoveries: { current: 3, max: 3 },
-          recoveryValue: 10,
-          ownerId: null as string | null,
-          characterId: null as string | null,
-          weaponDamageBonus: {
-            melee: [0, 0, 0] as [number, number, number],
-            ranged: [0, 0, 0] as [number, number, number],
-          },
-        },
-        // pc-placeholder for char-placeholder-2 (not yet materialized)
-        {
-          kind: 'pc-placeholder',
-          characterId: 'char-placeholder-2',
-          ownerId: 'user-alice',
-          position: 1,
-        },
-      ],
-    });
-
-    const intent = makeIntent('KickPlayer', { userId: 'user-alice' });
-    const result = await stampKickPlayer(intent, state, mockEnv);
-    expect(result).toBeNull();
-    const payload = intent.payload as {
-      participantIdsToRemove?: string[];
-      placeholderCharacterIdsToRemove?: string[];
-    };
-    expect(payload.participantIdsToRemove).toContain('char-full');
-    expect(payload.placeholderCharacterIdsToRemove).toContain('char-placeholder-2');
   });
 });
 
 // ── StartEncounter ────────────────────────────────────────────────────────
 
 describe('stampStartEncounter', () => {
-  it('stamps empty stampedPcs when there are no pc-placeholders', async () => {
+  it('stamps empty stampedPcs and stampedMonsters when payload has no characterIds or monsters', async () => {
     mockDbResult = [];
-    const intent = makeIntent('StartEncounter', {});
+    const intent = makeIntent('StartEncounter', { characterIds: [], monsters: [] });
     const state = makeCampaignState({ participants: [] });
     const result = await stampStartEncounter(intent, state, mockEnv);
     expect(result).toBeNull();
-    const payload = intent.payload as { stampedPcs?: unknown[] };
+    const payload = intent.payload as { stampedPcs?: unknown[]; stampedMonsters?: unknown[] };
     expect(payload.stampedPcs).toEqual([]);
+    expect(payload.stampedMonsters).toEqual([]);
   });
 
-  it('stamps matched character rows onto stampedPcs', async () => {
+  it('stamps matched character rows onto stampedPcs from payload.characterIds', async () => {
     // Minimal valid Character blob — CharacterSchema fills in all defaults.
     const characterData = JSON.stringify({});
     mockDbResult = [{ id: 'char-1', ownerId: 'user-alice', name: 'Alice', data: characterData }];
-    const intent = makeIntent('StartEncounter', {});
-    const state = makeCampaignState({
-      participants: [
-        { kind: 'pc-placeholder', characterId: 'char-1', ownerId: 'user-alice', position: 0 },
-      ],
+    const intent = makeIntent('StartEncounter', {
+      characterIds: ['char-1'],
+      monsters: [],
     });
-    const result = await stampStartEncounter(intent, state, mockEnv);
+    const result = await stampStartEncounter(intent, makeCampaignState(), mockEnv);
     expect(result).toBeNull();
     const payload = intent.payload as { stampedPcs?: Array<{ characterId: string; name: string }> };
     expect(payload.stampedPcs).toHaveLength(1);
@@ -482,43 +396,43 @@ describe('stampStartEncounter', () => {
     mockDbResult = [
       { id: 'char-bad', ownerId: 'user-alice', name: 'Bad', data: 'not-json-at-all' },
     ];
-    const intent = makeIntent('StartEncounter', {});
-    const state = makeCampaignState({
-      participants: [
-        { kind: 'pc-placeholder', characterId: 'char-bad', ownerId: 'user-alice', position: 0 },
-      ],
+    const intent = makeIntent('StartEncounter', {
+      characterIds: ['char-bad'],
+      monsters: [],
     });
     // Should not throw — invalid blob is silently skipped.
-    const result = await stampStartEncounter(intent, state, mockEnv);
+    const result = await stampStartEncounter(intent, makeCampaignState(), mockEnv);
     expect(result).toBeNull();
     const payload = intent.payload as { stampedPcs?: unknown[] };
     expect(payload.stampedPcs).toEqual([]);
   });
-});
 
-// ── BringCharacterIntoEncounter ────────────────────────────────────────────
-
-describe('stampBringCharacterIntoEncounter', () => {
-  it('looks up ownerId from D1 and stamps it onto the payload', async () => {
-    mockDbResult = { ownerId: 'user-alice' };
-    const intent = makeIntent('BringCharacterIntoEncounter', {
-      characterId: 'char-001',
-      ownerId: 'user-attacker', // client-supplied — should be overwritten
+  it('stamps stampedMonsters from payload.monsters using static data', async () => {
+    mockDbResult = [];
+    const intent = makeIntent('StartEncounter', {
+      characterIds: [],
+      monsters: [{ monsterId: 'goblin-soldier-l1', quantity: 2 }],
     });
-    const result = await stampBringCharacterIntoEncounter(intent, makeCampaignState(), mockEnv);
+    const result = await stampStartEncounter(intent, makeCampaignState(), mockEnv);
     expect(result).toBeNull();
-    const payload = intent.payload as { ownerId?: string; characterId?: string };
-    expect(payload.ownerId).toBe('user-alice'); // stamped from D1, not client value
-    expect(payload.characterId).toBe('char-001');
+    const payload = intent.payload as {
+      stampedMonsters?: Array<{ monsterId: string; quantity: number }>;
+    };
+    expect(payload.stampedMonsters).toHaveLength(1);
+    expect(payload.stampedMonsters?.[0]?.monsterId).toBe('goblin-soldier-l1');
+    expect(payload.stampedMonsters?.[0]?.quantity).toBe(2);
   });
 
-  it('returns error when character does not exist', async () => {
-    mockDbResult = null; // no row
-    const intent = makeIntent('BringCharacterIntoEncounter', {
-      characterId: 'char-missing',
+  it('skips monsters not found in static data', async () => {
+    mockDbResult = [];
+    const intent = makeIntent('StartEncounter', {
+      characterIds: [],
+      monsters: [{ monsterId: 'unknown-beast', quantity: 1 }],
     });
-    const result = await stampBringCharacterIntoEncounter(intent, makeCampaignState(), mockEnv);
-    expect(result).toMatch(/^character_not_found/);
+    const result = await stampStartEncounter(intent, makeCampaignState(), mockEnv);
+    expect(result).toBeNull();
+    const payload = intent.payload as { stampedMonsters?: unknown[] };
+    expect(payload.stampedMonsters).toEqual([]);
   });
 });
 

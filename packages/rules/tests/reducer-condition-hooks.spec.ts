@@ -79,11 +79,22 @@ const ladder = {
 };
 
 function readyState(parts: Participant[] = [pc(), monster()]): CampaignState {
-  // Directly seed the roster — independent of BringCharacterIntoEncounter semantics.
-  let s = emptyCampaignState(campaignId, 'user-owner');
-  s = { ...s, participants: parts };
-  s = applyIntent(s, intent('StartEncounter', {})).state;
-  return s;
+  // Build encounter state directly — StartEncounter now replaces the roster
+  // atomically from stampedPcs/stampedMonsters, so seeded participants would be
+  // wiped. Construct the encounter phase manually instead.
+  const s = emptyCampaignState(campaignId, 'user-owner');
+  return {
+    ...s,
+    participants: parts,
+    encounter: {
+      id: 'enc-test',
+      currentRound: 1,
+      turnOrder: parts.map((p) => p.id),
+      activeParticipantId: null,
+      turnState: {},
+      malice: { current: 0, lastMaliciousStrikeRound: null },
+    },
+  };
 }
 
 // Helper — start a round with the given initiative order, then start the

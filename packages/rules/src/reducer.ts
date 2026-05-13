@@ -4,7 +4,6 @@ import {
   applyApplyDamage,
   applyApplyHeal,
   applyApproveCharacter,
-  applyBringCharacterIntoEncounter,
   applyClearLobby,
   applyDenyCharacter,
   applyEndEncounter,
@@ -77,8 +76,6 @@ export function applyIntent(
       return applyApplyDamage(state, intent);
     case IntentTypes.ApplyHeal:
       return applyApplyHeal(state, intent);
-    case IntentTypes.BringCharacterIntoEncounter:
-      return applyBringCharacterIntoEncounter(state, intent);
     case IntentTypes.ClearLobby:
       return applyClearLobby(state, intent);
     case IntentTypes.DenyCharacter:

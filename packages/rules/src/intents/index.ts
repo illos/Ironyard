@@ -2,7 +2,6 @@ export { applyAddMonster, participantFromMonster } from './add-monster';
 export { applyApplyDamage } from './apply-damage';
 export { applyApplyHeal } from './apply-heal';
 export { applyApproveCharacter } from './approve-character';
-export { applyBringCharacterIntoEncounter } from './bring-character-into-encounter';
 export { applyClearLobby } from './clear-lobby';
 export { applyDenyCharacter } from './deny-character';
 export { applyEndEncounter } from './end-encounter';

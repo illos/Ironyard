@@ -56,9 +56,7 @@ function makeState(overrides: Partial<CampaignState> = {}): CampaignState {
 describe('StartEncounter PC materialization (ReducerContext wiring)', () => {
   it('materializes a PC placeholder with maxStamina > 0 when class data is present in the bundle', () => {
     const state = makeState({
-      participants: [
-        { kind: 'pc-placeholder', characterId: 'char-fury', ownerId: 'owner-1', position: 0 },
-      ],
+      participants: [],
     });
 
     // Minimal character blob: level 1 Fury with no characteristic array.
@@ -117,9 +115,7 @@ describe('StartEncounter PC materialization (ReducerContext wiring)', () => {
     // This test documents the old (broken) behaviour: calling applyIntent
     // without ctx causes EMPTY_BUNDLE to be used, yielding zero-derived values.
     const state = makeState({
-      participants: [
-        { kind: 'pc-placeholder', characterId: 'char-fury', ownerId: 'owner-1', position: 0 },
-      ],
+      participants: [],
     });
 
     const character = {
@@ -188,9 +184,7 @@ describe('StartEncounter PC materialization (ReducerContext wiring)', () => {
     };
 
     const state = makeState({
-      participants: [
-        { kind: 'pc-placeholder', characterId: 'char-x', ownerId: 'owner-1', position: 0 },
-      ],
+      participants: [],
     });
 
     const intent = {

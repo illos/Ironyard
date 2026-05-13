@@ -47,12 +47,23 @@ function part(id: string, name = id): Participant {
 }
 
 function readyState(participantIds: string[] = ['alice', 'bob', 'cleric']): CampaignState {
-  let s = emptyCampaignState(campaignId, 'user-owner');
-  // Directly seed participants — independent of BringCharacterIntoEncounter semantics
-  s = { ...s, participants: participantIds.map((id) => part(id)) };
-  // StartEncounter engages the current roster; currentRound initializes to 1
-  s = applyIntent(s, intent('StartEncounter', {})).state;
-  return s;
+  const participants = participantIds.map((id) => part(id));
+  const s = emptyCampaignState(campaignId, 'user-owner');
+  // Directly construct state with encounter phase — independent of StartEncounter
+  // roster-replacement semantics (StartEncounter now atomically replaces the
+  // roster from stampedPcs; seeded participants would be wiped out).
+  return {
+    ...s,
+    participants,
+    encounter: {
+      id: 'enc_test',
+      currentRound: 1,
+      turnOrder: participants.map((p) => p.id),
+      activeParticipantId: null,
+      turnState: {},
+      malice: { current: 0, lastMaliciousStrikeRound: null },
+    },
+  };
 }
 
 describe('SetInitiative', () => {

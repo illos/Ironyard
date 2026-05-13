@@ -1,22 +1,18 @@
 import type { Intent, MaliceState, Member, Participant } from '@ironyard/shared';
 import type { StaticDataBundle } from './static-data';
 
-export type PcPlaceholder = {
-  kind: 'pc-placeholder';
-  characterId: string;
-  ownerId: string;
-  position: number;
-};
+// After Epic 2D: the roster only holds fully-materialized participants.
+// PcPlaceholder was removed — participants are now created atomically
+// at StartEncounter, not pre-staged via BringCharacterIntoEncounter.
+export type RosterEntry = Participant;
 
-export type RosterEntry = Participant | PcPlaceholder;
-
-/** Type guard — narrows RosterEntry to a full Participant (pc or monster). */
+/** Type guard — kept for call-site compatibility; always true after Epic 2D. */
 export function isParticipant(e: RosterEntry): e is Participant {
   return e.kind === 'pc' || e.kind === 'monster';
 }
 
 // Context threaded through every applyIntent call. Most handlers ignore it;
-// applyStartEncounter uses staticData to materialize PC placeholders.
+// applyStartEncounter uses staticData to materialize PC participants.
 export type ReducerContext = { staticData: StaticDataBundle };
 
 // The DO stamps `timestamp` before calling applyIntent — the reducer signature
@@ -79,9 +75,9 @@ export type CampaignState = {
   seq: number; // last applied intent seq
   connectedMembers: Member[];
   notes: NoteEntry[];
-  // Lobby-persistent roster. Heroes + monsters added to the lobby.
-  // Survives EndEncounter; cleared only by RemoveParticipant or ClearLobby.
-  participants: RosterEntry[]; // widened from Participant[] in Phase D
+  // Participants for the current encounter. Empty between encounters.
+  // StartEncounter replaces this list atomically.
+  participants: RosterEntry[];
   // Encounter phase. null when there is no active encounter.
   encounter: EncounterPhase | null;
   // Party victories earned this session. Drained by Respite to per-character XP.

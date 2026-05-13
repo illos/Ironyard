@@ -15,8 +15,6 @@ export { ApplyDamagePayloadSchema } from './apply-damage';
 export type { ApplyDamagePayload } from './apply-damage';
 export { ApplyHealPayloadSchema } from './apply-heal';
 export type { ApplyHealPayload } from './apply-heal';
-export { BringCharacterIntoEncounterPayloadSchema } from './bring-character-into-encounter';
-export type { BringCharacterIntoEncounterPayload } from './bring-character-into-encounter';
 export { ClearLobbyPayloadSchema } from './clear-lobby';
 export type { ClearLobbyPayload } from './clear-lobby';
 export { DenyCharacterPayloadSchema } from './deny-character';
@@ -77,8 +75,18 @@ export { SpendResourcePayloadSchema } from './spend-resource';
 export type { SpendResourcePayload } from './spend-resource';
 export { SpendSurgePayloadSchema } from './spend-surge';
 export type { SpendSurgePayload } from './spend-surge';
-export { StartEncounterPayloadSchema, StartEncounterStampedPcSchema } from './start-encounter';
-export type { StartEncounterPayload, StartEncounterStampedPc } from './start-encounter';
+export {
+  MonsterEntrySchema,
+  StartEncounterPayloadSchema,
+  StartEncounterStampedMonsterSchema,
+  StartEncounterStampedPcSchema,
+} from './start-encounter';
+export type {
+  MonsterEntry,
+  StartEncounterPayload,
+  StartEncounterStampedMonster,
+  StartEncounterStampedPc,
+} from './start-encounter';
 
 export {
   EndRoundPayloadSchema,
@@ -111,7 +119,6 @@ export const IntentTypes = {
   ApplyDamage: 'ApplyDamage',
   ApplyHeal: 'ApplyHeal',
   ApproveCharacter: 'ApproveCharacter',
-  BringCharacterIntoEncounter: 'BringCharacterIntoEncounter',
   ClearLobby: 'ClearLobby',
   DenyCharacter: 'DenyCharacter',
   EndEncounter: 'EndEncounter',

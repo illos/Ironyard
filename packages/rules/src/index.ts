@@ -15,7 +15,6 @@ export type {
   IntentResult,
   LogEntry,
   NoteEntry,
-  PcPlaceholder,
   ReducerContext,
   RosterEntry,
   StampedIntent,

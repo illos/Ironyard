@@ -6,14 +6,15 @@
 // still return null on success — the reducer performs the authority check.
 
 import { CONSUMABLE_HEAL_AMOUNTS, isParticipant } from '@ironyard/rules';
-import type { CampaignState, PcPlaceholder } from '@ironyard/rules';
+import type { CampaignState } from '@ironyard/rules';
 import {
-  type BringCharacterIntoEncounterPayload,
   CharacterSchema,
   EncounterTemplateDataSchema,
   type Intent,
   type LoadEncounterTemplatePayload,
   type SafelyCarryWarning,
+  type StartEncounterStampedMonster,
+  type StartEncounterStampedPc,
   type SwapKitPayload,
 } from '@ironyard/shared';
 import { and, eq, inArray } from 'drizzle-orm';
@@ -459,111 +460,96 @@ export async function stampKickPlayer(
     )
     .map((p) => p.id);
 
-  // Also collect characterIds for any pc-placeholder entries owned by the kicked user.
-  // Placeholders are added by BringCharacterIntoEncounter but not yet materialized
-  // by StartEncounter — they have no `id`, only `characterId` + `ownerId`.
-  const placeholderCharacterIdsToRemove = campaignState.participants
-    .filter(
-      (p): p is PcPlaceholder =>
-        p.kind === 'pc-placeholder' && ownedCharacterIds.has(p.characterId),
-    )
-    .map((p) => p.characterId);
-
   payload.participantIdsToRemove = participantIdsToRemove;
-  payload.placeholderCharacterIdsToRemove = placeholderCharacterIdsToRemove;
   return null;
 }
 
 /**
- * BringCharacterIntoEncounter — look up characters.owner_id for the given
- * characterId in D1 and stamp ownerId onto the payload. Rejects if the
- * character row does not exist (prevents a client from claiming any ownerId).
+ * StartEncounter — resolve character blobs from D1 for each characterId in
+ * payload.characterIds, and resolve monster stat blocks from static data for
+ * each entry in payload.monsters. Stamps stampedPcs and stampedMonsters onto
+ * the payload. Does NOT reject — missing or invalid rows/monsters are silently
+ * skipped (the reducer operates only on what was successfully resolved).
  */
-export async function stampBringCharacterIntoEncounter(
+export async function stampStartEncounter(
   intent: Intent & { timestamp: number },
   _campaignState: CampaignState,
   env: Bindings,
 ): Promise<StampResult> {
   const payload = intent.payload as MutablePayload;
-  const characterId = payload.characterId;
-  if (typeof characterId !== 'string' || !characterId) {
-    return 'invalid_payload: characterId required';
-  }
 
-  const conn = db(env.DB);
-  const row = await conn
-    .select({ ownerId: characters.ownerId })
-    .from(characters)
-    .where(eq(characters.id, characterId))
-    .get();
+  // Extract characterIds from payload (filter to non-empty strings).
+  const rawCharacterIds = Array.isArray(payload.characterIds) ? payload.characterIds : [];
+  const characterIds = rawCharacterIds.filter(
+    (id): id is string => typeof id === 'string' && id.length > 0,
+  );
 
-  if (!row) return `character_not_found: ${characterId}`;
+  // Extract monster entries from payload.
+  const rawMonsters = Array.isArray(payload.monsters) ? payload.monsters : [];
 
-  // Stamp the server-derived ownerId, discarding whatever the client sent.
-  const stamped: BringCharacterIntoEncounterPayload = {
-    characterId,
-    ownerId: row.ownerId,
-    ...(typeof payload.position === 'number' ? { position: payload.position } : {}),
-  };
-  Object.assign(payload, stamped);
-  return null;
-}
+  // ── Resolve PCs from D1 ───────────────────────────────────────────────────
+  const stampedPcs: StartEncounterStampedPc[] = [];
 
-/**
- * StartEncounter — find all PC placeholders in the current roster, load their
- * character blobs from D1, and stamp them onto `payload.stampedPcs`.
- * If there are no placeholders, stamps an empty array and returns null.
- * Does NOT reject — if a character row is missing the placeholder is silently
- * skipped (it remains as a placeholder after StartEncounter).
- */
-export async function stampStartEncounter(
-  intent: Intent & { timestamp: number },
-  campaignState: CampaignState,
-  env: Bindings,
-): Promise<StampResult> {
-  const payload = intent.payload as MutablePayload;
+  if (characterIds.length > 0) {
+    const conn = db(env.DB);
+    const rows = await conn
+      .select({
+        id: characters.id,
+        ownerId: characters.ownerId,
+        name: characters.name,
+        data: characters.data,
+      })
+      .from(characters)
+      .where(inArray(characters.id, characterIds))
+      .all();
 
-  // Collect characterIds for all pc-placeholder entries in the roster.
-  const placeholderCharIds = campaignState.participants
-    .filter((p): p is PcPlaceholder => p.kind === 'pc-placeholder')
-    .map((p) => p.characterId);
-
-  if (placeholderCharIds.length === 0) {
-    // No placeholders — stamp an empty array so the schema is always satisfied.
-    payload.stampedPcs = [];
-    return null;
-  }
-
-  const conn = db(env.DB);
-  const rows = await conn
-    .select({
-      id: characters.id,
-      ownerId: characters.ownerId,
-      name: characters.name,
-      data: characters.data,
-    })
-    .from(characters)
-    .where(inArray(characters.id, placeholderCharIds))
-    .all();
-
-  const stampedPcs = rows
-    .map((row) => {
+    for (const row of rows) {
       try {
         const parsed = CharacterSchema.safeParse(JSON.parse(row.data));
-        if (!parsed.success) return null; // invalid blob — skip silently
-        return {
+        if (!parsed.success) {
+          console.error(`stampStartEncounter: invalid character blob for ${row.id}`, parsed.error);
+          continue;
+        }
+        stampedPcs.push({
           characterId: row.id,
           ownerId: row.ownerId,
           name: row.name,
           character: parsed.data,
-        };
-      } catch {
-        return null; // JSON.parse failure — skip silently
+        });
+      } catch (err) {
+        console.error(`stampStartEncounter: JSON.parse failed for character ${row.id}`, err);
+        // Skip this row silently.
       }
-    })
-    .filter((e): e is NonNullable<typeof e> => e !== null);
+    }
+  }
+
+  // ── Resolve monsters from static data ────────────────────────────────────
+  const stampedMonsters: StartEncounterStampedMonster[] = [];
+
+  for (const entry of rawMonsters) {
+    if (typeof entry !== 'object' || entry === null) continue;
+    const e = entry as { monsterId?: unknown; quantity?: unknown; nameOverride?: unknown };
+    if (typeof e.monsterId !== 'string' || !e.monsterId) continue;
+    if (typeof e.quantity !== 'number') continue;
+
+    const monster = loadMonsterById(e.monsterId);
+    if (!monster) {
+      console.error(`stampStartEncounter: monster not found: ${e.monsterId}`);
+      continue;
+    }
+
+    stampedMonsters.push({
+      monsterId: e.monsterId,
+      quantity: e.quantity,
+      ...(typeof e.nameOverride === 'string' && e.nameOverride.length > 0
+        ? { nameOverride: e.nameOverride }
+        : {}),
+      monster,
+    });
+  }
 
   payload.stampedPcs = stampedPcs;
+  payload.stampedMonsters = stampedMonsters;
   return null;
 }
 
@@ -696,8 +682,6 @@ export async function stampIntent(
   switch (intent.type) {
     case 'AddMonster':
       return stampAddMonster(intent, campaignState, env);
-    case 'BringCharacterIntoEncounter':
-      return stampBringCharacterIntoEncounter(intent, campaignState, env);
     case 'EquipItem':
       return stampEquipItem(intent, campaignState, env);
     case 'LoadEncounterTemplate':
