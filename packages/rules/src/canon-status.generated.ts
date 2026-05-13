@@ -97,7 +97,7 @@ export const canonStatus = {
   'character-attachment-activation.ancestry-purchased-trait-attachments': 'verified',
   'character-attachment-activation.kit-stamina-bonus-attachment': 'verified',
   'character-attachment-activation.kit-stability-bonus-attachment': 'verified',
-  'character-attachment-activation.kit-melee-damage-bonus-attachment': 'drafted',
+  'character-attachment-activation.kit-weapon-damage-bonus-attachment': 'verified',
   'character-attachment-activation.kit-speed-bonus-attachment': 'verified',
   'character-attachment-activation.kit-keyword-condition': 'verified',
   'character-attachment-activation.class-feature-attachments': 'verified',

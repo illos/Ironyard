@@ -1704,48 +1704,46 @@ For each kit with non-zero `stabilityBonus`, emit a
 
 **Override authoring.** None — structural read.
 
-### 10.8 Kit melee-damage-bonus attachment 🚧
-<!-- Generated slug: character-attachment-activation.kit-melee-damage-bonus-attachment -->
+### 10.8 Kit weapon-damage-bonus attachment ✅
+<!-- Generated slug: character-attachment-activation.kit-weapon-damage-bonus-attachment -->
+<!-- Slice 6 / Epic 2C renamed this from kit-melee-damage-bonus-attachment when
+     the engine grew the per-tier `weapon-damage-bonus` AttachmentEffect that
+     also covers ranged. Old plan references in
+     docs/superpowers/plans/2026-05-12-phase-2-epic-2c-interactive-ui.md cite
+     the pre-rename slug — they don't need editing. -->
 
-For each kit with a non-zero resolved `meleeDamageBonus`, the engine
-emits a `free-strike-damage +N` attachment.
+For each kit with non-zero per-tier melee or ranged damage bonus arrays,
+the engine emits a `weapon-damage-bonus` attachment with `appliesTo` set
+to `melee` or `ranged` and `perTier` carrying the three-tier tuple. The
+applier folds these into `runtime.weaponDamageBonus.{melee,ranged}` by
+summing per-tier across sources. `StartEncounter` snapshots the runtime
+tuples onto the materialised participant. The power-roll evaluation in
+`RollPower` adds the tier-N entry to the ability's damage outcome when
+the ability's keywords include `Weapon` plus either `Melee` or `Ranged`.
 
 **Source.**
-- SteelCompendium — "Melee Damage Bonus" sub-field of the *Kit
-  Bonuses* block. Example: `Rules/Kits/Mountain.md` line 29
-  (**Melee Damage Bonus:** +0/+0/+4). Chapter rule: `Rules/Chapters/
+- SteelCompendium — "Melee Damage Bonus" / "Ranged Damage Bonus"
+  sub-fields of the *Kit Bonuses* block. Per-tier values appear as
+  `+X/+Y/+Z` in the markdown. Example: `Rules/Kits/Mountain.md` line 29
+  (`**Melee Damage Bonus:** +0/+0/+4`). Chapter rule: `Rules/Chapters/
   Kits.md` lines 122–130.
 - Printed Heroes Book — *Kit Bonuses and Traits → Damage Bonuses*
   ("If a kit has a melee damage bonus, that bonus is added to the
   rolled damage of any damage-dealing ability with both the Melee and
-  Weapon keywords") and *Bonuses Across Tiers* ("Kit damage bonuses
-  increase based on the tier outcome of the power roll… '+X/+Y/+Z'
-  added to tier 1 / tier 2 / tier 3 outcomes respectively").
+  Weapon keywords. The same applies to ranged damage bonuses for
+  abilities with both the Ranged and Weapon keywords.") and *Bonuses
+  Across Tiers* ("Kit damage bonuses increase based on the tier outcome
+  of the power roll… '+X/+Y/+Z' added to tier 1 / tier 2 / tier 3
+  outcomes respectively"). Confirmed against
+  `.reference/core-rules/Draw_Steel_Heroes_v1.01.pdf` 2026-05-12 by
+  Slice 6 of Epic 2C.
 
-**Engine gaps (status remains 🚧):**
+**Override authoring.** None — structural read from the parsed kit data.
 
-1. **Scope is too narrow.** Canon says the bonus applies to *any*
-   damage-dealing Melee + Weapon ability (which INCLUDES free strikes
-   but isn't limited to them). The engine only adds it to free strikes
-   via `runtime.freeStrikeDamage`. All other melee weapon abilities
-   miss the bonus.
-2. **Tier scaling is collapsed.** The "+X/+Y/+Z" ladder is collapsed
-   by the parser (`parse-kit.ts:109-110` takes the third / highest-echelon
-   value) so `kit.meleeDamageBonus: 4` for Mountain means "the tier-3
-   bonus only" — but the engine applies it as a flat add on every roll
-   regardless of tier outcome. Tier 1 and tier 2 rolls receive an
-   inflated bonus today.
-3. **Effect variant doesn't exist.** Fixing (1)+(2) requires a new
-   `AttachmentEffect` variant — something like `weapon-damage-bonus`
-   with `weaponKeyword: 'melee' | 'ranged'` and tier-keyed deltas — and
-   a power-roll integration point that consumes it at roll time, not
-   at derivation time. Out of scope for Epic 2B.
-
-**Override authoring.** None — structural read. When the engine grows
-the tier-scaled effect variant, the parser will be extended to preserve
-the +X/+Y/+Z tuple and this section will be rewritten + re-verified.
-
-Tracked in § 10.16 carry-overs.
+**Stacking.** Per-tier values from multiple sources (kit + kit-keyword-
+gated leveled treasures, etc.) currently sum additively. Canon § 10.10
+says "only the higher applies" for treasure bonuses — that stacking rule
+is deferred to a follow-up engine fix (tracked in § 10.16 carry-overs).
 
 ### 10.9 Kit speed-bonus attachment ✅
 <!-- Generated slug: character-attachment-activation.kit-speed-bonus-attachment -->
