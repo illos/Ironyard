@@ -8,8 +8,17 @@ export const KitSchema = z.object({
   staminaBonus: z.number().int().default(0),
   speedBonus: z.number().int().default(0),
   stabilityBonus: z.number().int().default(0),
-  meleeDamageBonus: z.number().int().default(0),
-  rangedDamageBonus: z.number().int().default(0),
+  // Slice 6 (Epic 2C § 10.8): per-tier damage bonus tuples. Source markdown
+  // reads "+X/+Y/+Z" — preserved positionally as [tier1, tier2, tier3]. The
+  // attachment collector emits a `weapon-damage-bonus` effect (one per
+  // appliesTo) and the RollPower handler adds the tier-N entry to ability
+  // damage when the ability has Weapon + Melee/Ranged keywords.
+  meleeDamageBonusPerTier: z
+    .tuple([z.number().int(), z.number().int(), z.number().int()])
+    .default([0, 0, 0]),
+  rangedDamageBonusPerTier: z
+    .tuple([z.number().int(), z.number().int(), z.number().int()])
+    .default([0, 0, 0]),
   signatureAbilityId: z.string().nullable().default(null),
   // 2B uses these to gate weapon/armor item bonuses on the attachment fold.
   // Examples: ['heavy-weapon'], ['light-armor', 'shield'].

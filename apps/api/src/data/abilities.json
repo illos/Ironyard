@@ -59,7 +59,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target"
           }
@@ -73,7 +73,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target"
           }
@@ -87,7 +87,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target"
           }
@@ -1781,14 +1781,14 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target"
           },
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target"
           }
@@ -1802,7 +1802,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target"
           }
@@ -1847,7 +1847,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target"
           }
@@ -1861,7 +1861,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target"
           }
@@ -3129,7 +3129,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "A < WEAK"
@@ -3144,7 +3144,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "A < AVERAGE"
@@ -5712,7 +5712,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < STRONG"
@@ -6686,7 +6686,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < WEAK"
@@ -6701,7 +6701,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < AVERAGE"
@@ -6716,7 +6716,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < STRONG"
@@ -6751,7 +6751,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < WEAK"
@@ -6766,7 +6766,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < AVERAGE"
@@ -6781,7 +6781,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < STRONG"
@@ -6816,7 +6816,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < WEAK"
@@ -6831,7 +6831,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < AVERAGE"
@@ -6846,7 +6846,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < STRONG"
@@ -7591,7 +7591,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < WEAK"
@@ -7606,7 +7606,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < AVERAGE"
@@ -7621,7 +7621,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < STRONG"
@@ -7871,7 +7871,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < WEAK"
@@ -7887,7 +7887,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < AVERAGE"
@@ -7903,7 +7903,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < STRONG"
@@ -9363,7 +9363,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < STRONG"
@@ -10418,7 +10418,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "A < WEAK"
@@ -10433,7 +10433,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "A < AVERAGE"
@@ -10448,7 +10448,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "A < STRONG"
@@ -10484,7 +10484,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "A < WEAK"
@@ -10499,7 +10499,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "A < AVERAGE"
@@ -10514,7 +10514,7 @@
           {
             "condition": "Grabbed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "A < STRONG"
@@ -10839,7 +10839,7 @@
           {
             "condition": "Dazed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < WEAK"
@@ -10855,7 +10855,7 @@
           {
             "condition": "Dazed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < AVERAGE"
@@ -10871,7 +10871,7 @@
           {
             "condition": "Dazed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < STRONG"
@@ -11028,7 +11028,7 @@
           {
             "condition": "Dazed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "I < WEAK"
@@ -11043,7 +11043,7 @@
           {
             "condition": "Dazed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "I < AVERAGE"
@@ -11058,7 +11058,7 @@
           {
             "condition": "Dazed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "I < STRONG"
@@ -11821,7 +11821,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "I < STRONG"
@@ -15058,7 +15058,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target"
           }
@@ -15283,7 +15283,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target"
           }
@@ -15374,7 +15374,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < WEAK"
@@ -15389,7 +15389,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < AVERAGE"
@@ -15639,7 +15639,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < WEAK"
@@ -15654,7 +15654,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < AVERAGE"
@@ -15669,7 +15669,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "M < STRONG"
@@ -16161,7 +16161,7 @@
           {
             "condition": "Slowed",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "P < WEAK"
@@ -16182,7 +16182,7 @@
           {
             "condition": "Restrained",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "P < STRONG"
@@ -17083,7 +17083,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "P < WEAK"
@@ -17099,7 +17099,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "P < AVERAGE"
@@ -17115,7 +17115,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "P < STRONG"
@@ -18166,7 +18166,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "A < WEAK"
@@ -18188,7 +18188,7 @@
           {
             "condition": "Prone",
             "duration": {
-              "kind": "EoT"
+              "kind": "end_of_encounter"
             },
             "scope": "target",
             "note": "A < AVERAGE"

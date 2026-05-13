@@ -17,7 +17,9 @@ describe('parseKitMarkdown', () => {
     expect(k!.name).toBe('Mountain');
     expect(k!.staminaBonus).toBe(9);
     expect(k!.stabilityBonus).toBe(2);
-    expect(k!.meleeDamageBonus).toBe(4);
+    // Slice 6: per-tier tuple from "+0/+0/+4"; the engine adds tier-N at roll time.
+    expect(k!.meleeDamageBonusPerTier).toEqual([0, 0, 4]);
+    expect(k!.rangedDamageBonusPerTier).toEqual([0, 0, 0]);
     expect(k!.keywords).toContain('heavy-weapon');
     expect(k!.keywords).toContain('heavy-armor');
     expect(k!.signatureAbilityId).toBe('mountain-pain-for-pain');

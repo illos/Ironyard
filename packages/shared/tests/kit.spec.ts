@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { KitSchema, KitFileSchema } from '../src/data/kit';
+import { KitFileSchema, KitSchema } from '../src/data/kit';
 
 describe('KitSchema', () => {
   it('parses a kit with all required fields', () => {
@@ -8,13 +8,15 @@ describe('KitSchema', () => {
       name: 'Mountain',
       staminaBonus: 9,
       stabilityBonus: 2,
-      meleeDamageBonus: 4,
+      meleeDamageBonusPerTier: [0, 0, 4],
     });
     expect(k.id).toBe('mountain');
     expect(k.staminaBonus).toBe(9);
     expect(k.speedBonus).toBe(0); // default
     expect(k.signatureAbilityId).toBeNull(); // default
     expect(k.keywords).toEqual([]); // default
+    expect(k.meleeDamageBonusPerTier).toEqual([0, 0, 4]);
+    expect(k.rangedDamageBonusPerTier).toEqual([0, 0, 0]); // default
   });
 
   it('accepts keywords and signatureAbilityId', () => {

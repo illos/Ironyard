@@ -19,8 +19,13 @@ export const ResolvedKitSchema = z.object({
   staminaBonus: z.number().int().default(0),
   speedBonus: z.number().int().default(0),
   stabilityBonus: z.number().int().default(0),
-  meleeDamageBonus: z.number().int().default(0),
-  rangedDamageBonus: z.number().int().default(0),
+  // Slice 6 / Epic 2C § 10.8: per-tier damage tuples mirror KitSchema.
+  meleeDamageBonusPerTier: z
+    .tuple([z.number().int(), z.number().int(), z.number().int()])
+    .default([0, 0, 0]),
+  rangedDamageBonusPerTier: z
+    .tuple([z.number().int(), z.number().int(), z.number().int()])
+    .default([0, 0, 0]),
   signatureAbilityId: z.string().optional(),
   keywords: z.array(z.string()).default([]),
 });

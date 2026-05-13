@@ -27,6 +27,14 @@ function parseIntSafe(s: string | undefined): number {
   return Number.isNaN(n) ? 0 : n;
 }
 
+// Per-tier melee/ranged damage bonus is authored as "+X/+Y/+Z". When the
+// regex finds the row we return [X, Y, Z]; otherwise we return [0, 0, 0] so
+// the kit emits no weapon-damage-bonus attachment.
+function parseTierTuple(match: RegExpExecArray | null): [number, number, number] {
+  if (!match) return [0, 0, 0];
+  return [parseIntSafe(match[1]), parseIntSafe(match[2]), parseIntSafe(match[3])];
+}
+
 /**
  * Parse one kit markdown file. Returns null for non-kit pages (e.g. the
  * Kits Table index and _Index) so the caller can skip them.
@@ -106,17 +114,15 @@ export function parseKitMarkdown(md: string): Kit | null {
     /\*\*Stability Bonus:\*\*\s*([+\-]?\d+)/.exec(bonusesText)?.[1],
   );
 
-  // Melee/Ranged damage bonus is "+0/+0/+4" (per-echelon). For the prototype,
-  // take the third value (highest echelon) as the structural max. 2B can
-  // refine per-tier later if needed.
-  const meleeMatch = /\*\*Melee Damage Bonus:\*\*\s*[+\-\d]+\/[+\-\d]+\/([+\-]?\d+)/.exec(
-    bonusesText,
-  );
-  const rangedMatch = /\*\*Ranged Damage Bonus:\*\*\s*[+\-\d]+\/[+\-\d]+\/([+\-]?\d+)/.exec(
-    bonusesText,
-  );
-  const meleeDamageBonus = parseIntSafe(meleeMatch?.[1]);
-  const rangedDamageBonus = parseIntSafe(rangedMatch?.[1]);
+  // Melee/Ranged damage bonus is "+0/+0/+4" (per-tier). Slice 6 / Epic 2C
+  // § 10.8 captures all three values positionally so the engine can fold the
+  // tier-N entry into the matching RollPower outcome.
+  const meleeBonusRegex =
+    /\*\*Melee Damage Bonus:\*\*\s*\+?(-?\d+)\s*\/\s*\+?(-?\d+)\s*\/\s*\+?(-?\d+)/;
+  const rangedBonusRegex =
+    /\*\*Ranged Damage Bonus:\*\*\s*\+?(-?\d+)\s*\/\s*\+?(-?\d+)\s*\/\s*\+?(-?\d+)/;
+  const meleeDamageBonusPerTier = parseTierTuple(meleeBonusRegex.exec(bonusesText));
+  const rangedDamageBonusPerTier = parseTierTuple(rangedBonusRegex.exec(bonusesText));
 
   // Signature Ability section — extract the H6 heading right after.
   const sigMatch = content.match(/#####\s+Signature Ability[\s\S]*?######\s+([^\n]+)/);
@@ -132,8 +138,8 @@ export function parseKitMarkdown(md: string): Kit | null {
     staminaBonus,
     speedBonus,
     stabilityBonus,
-    meleeDamageBonus,
-    rangedDamageBonus,
+    meleeDamageBonusPerTier,
+    rangedDamageBonusPerTier,
     signatureAbilityId,
     keywords,
   };

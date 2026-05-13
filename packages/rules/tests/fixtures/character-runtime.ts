@@ -134,8 +134,8 @@ export function buildBundleWithFury(): StaticDataBundle {
     staminaBonus: 0,
     speedBonus: 0,
     stabilityBonus: 0,
-    meleeDamageBonus: 1,
-    rangedDamageBonus: 0,
+    meleeDamageBonusPerTier: [1, 1, 1],
+    rangedDamageBonusPerTier: [0, 0, 0],
     keywords: [],
   } satisfies ResolvedKit);
 
