@@ -108,9 +108,18 @@ Deferred from earlier work that lands here:
 - **Class-D ancestry signature abilities** on the sheet — now wired through `collectFromAncestry`'s `attachment.ancestry-signature-ability` path (the schema field had been in place since Epic 1.1 Slice 5).
 - **Kit-keyword matching gate** for weapon/armor leveled-treasure bonuses — gate plumbing exists (`condition.kit-has-keyword`); per-treasure authoring is 2C territory.
 
-**Sub-epic 2C — interactive UI + runtime intents** (not yet specced)
+**Sub-epic 2C — interactive UI + runtime intents** ([design spec](superpowers/specs/2026-05-12-phase-2-epic-2c-interactive-ui-design.md), [plan](superpowers/plans/2026-05-12-phase-2-epic-2c-interactive-ui.md)) — **shipping**
 
-Inventory display on the character sheet; equip/unequip affordances; `UseConsumable` intent + UI; director "push item to player" affordance; per-category UX rules (3-safely-carry warning for leveled treasures, body-slot conflicts for trinkets); previewable character sheet (the polished structural view we deferred). Also home for Sheet's SwapKit picker UI if it didn't land as 2A Slice 1 stretch goal.
+Six slices landed: EquipItem / UnequipItem ratification intents (stamper → reducer → side-effect pattern) + `InventoryPanel` rendered on `PlayerSheetPanel` with body-slot conflict chips + `SwapKitModal`; `UseConsumable` intent with instant/attack/area branches dispatching `ApplyHeal` (duration/two-phase fall through to manual log path); `PushItem` director intent + modal in `CampaignView`; `Respite` expansion (stamina restoration, Talent clarity floor reset, new canon § 10.17 three-safely-carry warning, Wyrmplate damage-type change for Dragon Knight); § 10.8 `weapon-damage-bonus` engine variant — kit melee/ranged bonuses now apply tier-scaled (`+X/+Y/+Z`) damage to all Melee+Weapon / Ranged+Weapon abilities; comprehensive item + title override sweep (22 new entries across weapon treasures, armor treasures, trinkets, titles).
+
+Carry-overs deferred (each tracked in canon § 10.16 or a separate Q-entry):
+- **Revenant Q16** (inert state / 12h Stamina recovery) — depends on § 2.7+ damage-engine winded/dying transitions, not yet built.
+- **Q18 class-feature choice pipeline** (Conduit Prayers / Wards, Censor Domains) — separate engine epic.
+- **UseConsumable duration / two-phase branches** — need a temp-buff state machine the engine doesn't have. Fall through to the manual log path today.
+- **§ 10.10 treasure-bonus stacking** ("only the higher applies") — engine sums today; canon flags but doesn't block this epic.
+- **Ranged-distance / disengage kit-bonus variants** — § 10.8 covers tier-scaled melee + ranged damage only.
+- **`magic-damage-bonus` AttachmentEffect variant** — implement-style leveled treasures need this; tracked in § 10.16 carry-overs.
+- **Per-tier `stat-mod` scaling** — armor leveled treasures author L1 baseline only; per-tier scaling is § 10.16 carry-over.
 
 ## Phase 3 — Collaborative campaign capabilities
 
