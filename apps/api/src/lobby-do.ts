@@ -80,6 +80,11 @@ export class LobbyDO implements DurableObject {
     let fromSeq = 0;
     if (snapshot) {
       state = JSON.parse(snapshot.state) as CampaignState;
+      // Forward-compat: fill defaults for participant fields added after this
+      // snapshot was persisted (e.g. Q17 Bucket A `activeAbilities`).
+      state.participants = state.participants.map((p) =>
+        p.activeAbilities === undefined ? { ...p, activeAbilities: [] } : p,
+      );
       fromSeq = snapshot.seq;
       this.lastSnapshotSeq = snapshot.seq;
       this.lastSnapshotAt = snapshot.savedAt;

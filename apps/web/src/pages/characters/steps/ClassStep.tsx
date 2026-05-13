@@ -417,7 +417,11 @@ export function ClassStep({
             value={draft.subclassId}
             onChange={(id) => onPatch({ subclassId: id })}
           />
-          <LevelPicks draft={draft} onChange={(levelChoices) => onPatch({ levelChoices })} />
+          <LevelPicks
+            draft={draft}
+            staticData={staticData}
+            onChange={(levelChoices) => onPatch({ levelChoices })}
+          />
         </>
       )}
     </div>
@@ -464,35 +468,147 @@ function SubclassPicker({
 
 function LevelPicks({
   draft,
+  staticData,
   onChange,
 }: {
   draft: Character;
+  staticData: WizardStaticData;
   onChange: (lc: Character['levelChoices']) => void;
 }) {
-  const ensureEntries = () => {
+  const klass = draft.classId ? staticData.classes.get(draft.classId) : null;
+  if (!klass) return null;
+
+  // Materialize empty level entries up to the character's level on first render
+  // so the slot loops below have something to bind to.
+  useEffect(() => {
+    let mutated = false;
     const next: Character['levelChoices'] = { ...draft.levelChoices };
     for (let lvl = 1; lvl <= draft.level; lvl++) {
-      if (!next[String(lvl)]) next[String(lvl)] = LevelChoicesSchema.parse({});
+      if (!next[String(lvl)]) {
+        next[String(lvl)] = LevelChoicesSchema.parse({});
+        mutated = true;
+      }
     }
+    if (mutated) onChange(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.level, draft.classId]);
+
+  // Pre-index the class's per-level abilities for filtering. Abilities carry
+  // sourceClassId + tier + cost + isSubclass; we group by (tier, cost,
+  // isSubclass) so each slot picker presents the correct subset.
+  const allClassAbilities = Array.from(staticData.abilities.values()).filter(
+    (a) => a.sourceClassId === klass.id,
+  );
+
+  const setPick = (
+    lvl: number,
+    field: 'abilityIds' | 'subclassAbilityIds',
+    slotIdx: number,
+    abilityId: string,
+  ) => {
+    const next: Character['levelChoices'] = { ...draft.levelChoices };
+    const cur = next[String(lvl)] ?? LevelChoicesSchema.parse({});
+    const arr = [...cur[field]];
+    arr[slotIdx] = abilityId;
+    next[String(lvl)] = { ...cur, [field]: arr };
     onChange(next);
   };
+
   return (
-    <div>
-      <h3 className="text-sm text-neutral-300 mb-1">Level picks</h3>
-      <p className="text-xs text-neutral-500 mb-2">
-        Per-level ability / perk / skill picks. Epic 1 ships a stub — click below to seed default
-        entries for levels 1–{draft.level}. The real interactive picker comes in Phase 5.
-      </p>
-      <button
-        type="button"
-        onClick={ensureEntries}
-        className="min-h-11 px-3 py-2 rounded-md bg-neutral-100 text-neutral-900 text-sm font-medium"
-      >
-        Seed levels 1–{draft.level}
-      </button>
-      <pre className="mt-3 text-xs text-neutral-400 bg-neutral-950 border border-neutral-800 rounded p-3 overflow-x-auto">
-        {JSON.stringify(draft.levelChoices, null, 2)}
-      </pre>
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-sm text-neutral-300 mb-1">Level picks</h3>
+        <p className="text-xs text-neutral-500 mb-2">
+          Pick one ability per slot. Slots are determined by your class's level table; the dropdown
+          filters {klass.name} abilities by tier, cost, and subclass scope.
+        </p>
+      </div>
+      {Array.from({ length: draft.level }, (_, i) => i + 1).map((lvl) => {
+        const lvlData = klass.levels.find((l) => l.level === lvl);
+        if (!lvlData) return null;
+        const choices = draft.levelChoices[String(lvl)] ?? LevelChoicesSchema.parse({});
+
+        // Split slots by subclass vs non-subclass; each picker writes into the
+        // matching array (abilityIds vs subclassAbilityIds).
+        const slots = lvlData.abilitySlots ?? [];
+        const featureNames = lvlData.featureNames ?? [];
+        const baseSlots = slots.filter((s) => !s.isSubclass);
+        const subSlots = slots.filter((s) => s.isSubclass);
+
+        return (
+          <div key={lvl} className="rounded-md border border-neutral-800 bg-neutral-950 p-3">
+            <h4 className="text-sm font-medium text-neutral-200 mb-2">Level {lvl}</h4>
+            {featureNames.length > 0 && (
+              <p className="text-xs text-neutral-500 mb-2">
+                Features: {featureNames.join(' · ')}
+              </p>
+            )}
+            <div className="space-y-2">
+              {baseSlots.map((slot, idx) => (
+                <AbilitySlotPicker
+                  key={`base-${idx}`}
+                  label={`Ability slot ${idx + 1} (${slot.cost === 0 ? 'Signature' : `Cost ${slot.cost}`})`}
+                  options={allClassAbilities.filter(
+                    (a) =>
+                      a.tier === lvl &&
+                      a.cost === slot.cost &&
+                      a.isSubclass === false,
+                  )}
+                  value={choices.abilityIds[idx] ?? ''}
+                  onChange={(id) => setPick(lvl, 'abilityIds', idx, id)}
+                />
+              ))}
+              {subSlots.map((slot, idx) => (
+                <AbilitySlotPicker
+                  key={`sub-${idx}`}
+                  label={`${klass.subclassLabel} ability slot ${idx + 1} (${slot.cost === 0 ? 'Signature' : `Cost ${slot.cost}`})`}
+                  options={allClassAbilities.filter(
+                    (a) =>
+                      a.tier === lvl &&
+                      a.cost === slot.cost &&
+                      a.isSubclass === true,
+                  )}
+                  value={choices.subclassAbilityIds[idx] ?? ''}
+                  onChange={(id) => setPick(lvl, 'subclassAbilityIds', idx, id)}
+                />
+              ))}
+              {baseSlots.length === 0 && subSlots.length === 0 && (
+                <p className="text-xs text-neutral-500">No ability picks at this level.</p>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
+  );
+}
+
+function AbilitySlotPicker({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: Array<{ id: string; name: string }>;
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  return (
+    <label className="flex flex-col gap-1 text-sm">
+      <span className="text-xs text-neutral-400">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="min-h-11 rounded-md bg-neutral-900 border border-neutral-800 px-2 py-1 text-sm text-neutral-100"
+      >
+        <option value="">— pick one —</option>
+        {options.map((a) => (
+          <option key={a.id} value={a.id}>
+            {a.name}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
