@@ -99,7 +99,7 @@ function makePcParticipant(id: string) {
     recoveries: { current: 3, max: 8 },
     recoveryValue: 10,
     ownerId: null as string | null,
-    characterId: null as string | null,
+    characterId: id.replace(/^pc:/, '') as string | null,
     weaponDamageBonus: {
       melee: [0, 0, 0] as [number, number, number],
       ranged: [0, 0, 0] as [number, number, number],

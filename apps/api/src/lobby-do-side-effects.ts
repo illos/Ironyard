@@ -71,6 +71,11 @@ export async function handleSideEffect(
       case 'PushItem':
         await sideEffectPushItem(intent, env);
         break;
+      case 'EndEncounter':
+        if (stateBefore !== undefined) {
+          await sideEffectEndEncounter(intent, stateBefore, env);
+        }
+        break;
       case 'Respite':
         if (stateBefore !== undefined) {
           await sideEffectRespite(intent, stateBefore, env);
@@ -423,6 +428,50 @@ async function sideEffectPushItem(
     .where(eq(characters.id, targetCharacterId));
 }
 
+// Writes each PC's encounter-final currentStamina and recoveriesUsed back to
+// the character blob so the next encounter starts with the correct persisted
+// values. Uses stateBefore (the pre-reducer state) — EndEncounter does not
+// touch stamina or recoveries, so pre- and post-reducer values are identical.
+async function sideEffectEndEncounter(
+  intent: Intent & { timestamp: number },
+  stateBefore: CampaignState,
+  env: Bindings,
+): Promise<void> {
+  const pcParticipants = stateBefore.participants
+    .filter(isParticipant)
+    .filter((p) => p.kind === 'pc' && p.characterId !== null);
+
+  if (pcParticipants.length === 0) return;
+
+  const conn = db(env.DB);
+
+  for (const participant of pcParticipants) {
+    const charId = participant.characterId as string;
+    const row = await conn
+      .select({ data: characters.data })
+      .from(characters)
+      .where(eq(characters.id, charId))
+      .get();
+    if (!row) continue;
+
+    let data: ReturnType<typeof CharacterSchema.parse>;
+    try {
+      data = CharacterSchema.parse(JSON.parse(row.data));
+    } catch {
+      console.error(`[side-effect] EndEncounter: skipping character ${charId} — invalid blob`);
+      continue;
+    }
+
+    data.currentStamina = participant.currentStamina;
+    data.recoveriesUsed = participant.recoveries.max - participant.recoveries.current;
+
+    await conn
+      .update(characters)
+      .set({ data: JSON.stringify(data), updatedAt: intent.timestamp })
+      .where(eq(characters.id, charId));
+  }
+}
+
 // Hybrid side-effect: writes per-character XP increments to D1 using the
 // partyVictories count that existed BEFORE the reducer drained it to 0.
 // Also processes Slice 4 (Epic 2C) extensions: per-character Wyrmplate
@@ -445,13 +494,11 @@ async function sideEffectRespite(
   const wyrmplateChoices = parsed.data.wyrmplateChoices;
 
   // Collect character ids for every PC participant that was in the roster
-  // before the respite. Participant ids are `pc:<characterId>`.
-  // We filter with isParticipant first to narrow from RosterEntry to Participant,
-  // then keep only kind === 'pc' (excluding monsters).
+  // before the respite. Use characterId directly (populated at StartEncounter).
   const pcCharIds = stateBefore.participants
     .filter(isParticipant)
-    .filter((p) => p.kind === 'pc')
-    .map((p) => p.id.replace(/^pc:/, ''));
+    .filter((p) => p.kind === 'pc' && p.characterId !== null)
+    .map((p) => p.characterId as string);
 
   // Union of (a) characters in the lobby that gain XP and (b)
   // characters with a Wyrmplate damage-type pick. The pick can target a
@@ -487,6 +534,14 @@ async function sideEffectRespite(
     // XP increment — only for PCs that were in the lobby roster.
     if (xpAwarded > 0 && pcCharIds.includes(charId)) {
       data.xp = (data.xp ?? 0) + xpAwarded;
+      mutated = true;
+    }
+
+    // Respite resets stamina and recoveries to default (null → re-derived at
+    // next StartEncounter; 0 recoveries used → full pool restored).
+    if (pcCharIds.includes(charId)) {
+      data.currentStamina = null;
+      data.recoveriesUsed = 0;
       mutated = true;
     }
 
