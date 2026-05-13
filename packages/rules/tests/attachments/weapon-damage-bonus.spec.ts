@@ -91,6 +91,7 @@ function makeParticipant(
     ownerId: null,
     characterId: null,
     weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
+    activeAbilities: [],
     ...overrides,
   };
 }

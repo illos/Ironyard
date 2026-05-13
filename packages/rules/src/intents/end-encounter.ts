@@ -33,12 +33,15 @@ export function resetParticipantForEndOfEncounter(p: Participant): Participant {
   // Data-driven condition clearing — no canon slug needed beyond the slice-5
   // condition data model.
   const filteredConditions = p.conditions.filter((c) => c.duration.kind !== 'end_of_encounter');
+  // All active-ability tags drop at encounter end — both 'EoT' (residual from
+  // a turn that didn't reach EndTurn) and 'end_of_encounter' kinds clear.
   return {
     ...p,
     heroicResources: resetHeroic,
     extras: resetExtras,
     surges: resetSurges,
     conditions: filteredConditions,
+    activeAbilities: [],
     // recoveries: not touched (canon §2.13 — respite-only).
   };
 }
@@ -100,7 +103,6 @@ export function applyEndEncounter(state: CampaignState, intent: StampedIntent): 
 
   // Reset every participant's encounter-scoped pools and conditions.
   // Participants survive EndEncounter at the campaign level (lobby-persistent).
-  // PC placeholders are preserved as-is (they have no encounter-scoped state).
   const resetParticipants: RosterEntry[] = state.participants.map((entry) =>
     isParticipant(entry) ? resetParticipantForEndOfEncounter(entry) : entry,
   );

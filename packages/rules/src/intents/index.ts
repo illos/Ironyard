@@ -40,4 +40,5 @@ export {
 } from './turn';
 export { applyUndo } from './undo';
 export { applyUnequipItem } from './unequip-item';
+export { applyUseAbility } from './use-ability';
 export { applyUseConsumable } from './use-consumable';

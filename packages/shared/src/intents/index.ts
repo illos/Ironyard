@@ -1,11 +1,5 @@
-// Payload schemas, one per intent type. Phase 1 ships these incrementally —
-// slice 1: JoinSession, LeaveSession, Note. Slice 3: StartEncounter,
-// BringCharacterIntoEncounter, RollPower, ApplyDamage. Slice 4: StartRound,
-// EndRound, StartTurn, EndTurn, SetInitiative. Slice 5: SetCondition,
-// RemoveCondition, RollResistance. Slice 7: GainResource, SpendResource,
-// SetResource, SpendSurge, SpendRecovery, ApplyHeal, GainMalice, SpendMalice.
-// The blanket IntentSchema.payload stays z.unknown() until enough types exist
-// to warrant a discriminated union.
+// Payload schemas, one per intent type. The blanket IntentSchema.payload stays
+// z.unknown() until enough types exist to warrant a discriminated union.
 
 export { AddMonsterPayloadSchema } from './add-monster';
 export type { AddMonsterPayload } from './add-monster';
@@ -111,6 +105,8 @@ export { UnequipItemPayloadSchema } from './unequip-item';
 export type { UnequipItemPayload } from './unequip-item';
 export { UndoPayloadSchema } from './undo';
 export type { UndoPayload } from './undo';
+export { UseAbilityPayloadSchema } from './use-ability';
+export type { UseAbilityPayload } from './use-ability';
 export { UseConsumablePayloadSchema } from './use-consumable';
 export type { UseConsumablePayload } from './use-consumable';
 
@@ -155,6 +151,7 @@ export const IntentTypes = {
   SwapKit: 'SwapKit',
   UnequipItem: 'UnequipItem',
   Undo: 'Undo',
+  UseAbility: 'UseAbility',
   UseConsumable: 'UseConsumable',
 } as const;
 export type KnownIntentType = (typeof IntentTypes)[keyof typeof IntentTypes];

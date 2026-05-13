@@ -35,7 +35,7 @@ Anywhere a `rules-canon.md` entry rests on a judgment call rather than a direct 
 | Q14 | Numeric Bleeding rating ("Bleeding 5") — flavor for canon §3.5.1 or per-instance damage? | 🟢 | (parser, not in canon yet) |
 | Q15 | Default duration when a tier outcome names a condition with no marker | 🟢 | (parser, not in canon yet) |
 | Q16 | Revenant Tough But Withered — inert state, fire-while-inert death, 12h Stamina recovery | 🟡 | rules-canon § 10.1 |
-| Q17 | Ancestry signature-trait mechanics not modelled by §10.2 — data + engine gaps | 🟡 | rules-canon § 10.2 |
+| Q17 | Ancestry signature-trait mechanics not modelled by §10.2 — data + engine gaps | 🟡 (A 🟢 / B 🟡) | rules-canon § 10.2 |
 | Q18 | Class-feature choice slots (Conduit Prayers/Wards, Censor Domains) — pipeline gap | 🟡 | rules-canon § 10.11 |
 
 ---
@@ -516,16 +516,22 @@ Searched PDFs 2026-05-12, no additional rule text found — Heroes Book Revenant
 
 ---
 
-## Q17. Ancestry signature-trait mechanics not modelled by § 10.2 🟡
+## Q17. Ancestry signature-trait mechanics not modelled by § 10.2 🟡 (A 🟢 / B 🟡)
 
 **Cited from:** `rules-canon.md` § 10.2.
 
 **Question.** § 10.2 handles ancestry signature traits whose mechanic is an invocable ability (Human *Detect the Supernatural* maneuver; Polder *Shadowmeld* magic maneuver). The remaining signature traits fall into two categories of gaps:
 
-### A — Data gaps (engine path exists; data missing)
+### A — Data gaps (engine path exists; data missing) 🟢 RESOLVED 2026-05-13
 
-- **Human *Detect the Supernatural*** — needs an `Ability` record in `abilities.json` (or hand-authored entry in `ABILITY_OVERRIDES`) and `ANCESTRY_OVERRIDES.human.signatureTraitAbilityId` populated with its id. The ability text lives in `.reference/data-md/Rules/Ancestries/Human.md` (Signature Trait block), not under `.reference/data-md/Rules/Abilities/`, so the current parser doesn't pick it up.
-- **Polder *Shadowmeld*** — same situation; ability text in `.reference/data-md/Rules/Ancestries/Polder.md` Signature Trait block.
+Both abilities are now hand-authored in `packages/data/overrides/synthetic-abilities.ts` (the markdown parser doesn't walk ancestry files, so they're injected at build time) and the matching `signatureTraitAbilityId` entries in `ANCESTRY_OVERRIDES` are wired.
+
+**Implementation note — narrative-tag pattern.** Neither ability has structured mechanical effects the engine can auto-apply ("you know the location of supernatural creatures" / "you flatten into a shadow with bane on strikes/searches"). The design call (user, 2026-05-13): model these as **active-ability tags** rather than ad-hoc state machines. New shared schema `ActiveAbilityInstance` on `Participant.activeAbilities`; new `UseAbility` intent appends to the array; the `EndTurn` reducer drains `EoT` entries for the ending creature; `EndEncounter` drains all entries. The sheet renders a violet chip per active entry and an "Activate" button on maneuver-typed ability cards. The director / player adjudicates the effect at the table.
+
+This pattern is reusable for any future ability whose effect is too narrative to encode — class features, items, kits all have `ActiveAbilitySource` values reserved.
+
+- **Human *Detect the Supernatural*** — done.
+- **Polder *Shadowmeld*** — done.
 
 ### B — Engine gaps (no current mechanism)
 

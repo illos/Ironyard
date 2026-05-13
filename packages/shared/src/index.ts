@@ -77,6 +77,7 @@ export {
   SwapKitPayloadSchema,
   UndoPayloadSchema,
   UnequipItemPayloadSchema,
+  UseAbilityPayloadSchema,
   UseConsumablePayloadSchema,
 } from './intents';
 export type {
@@ -126,6 +127,7 @@ export type {
   SwapKitPayload,
   UndoPayload,
   UnequipItemPayload,
+  UseAbilityPayload,
   UseConsumablePayload,
 } from './intents';
 
@@ -181,6 +183,17 @@ export type {
   ConditionSource,
   ConditionType,
 } from './condition';
+
+export {
+  ActiveAbilityExpirySchema,
+  ActiveAbilityInstanceSchema,
+  ActiveAbilitySourceSchema,
+} from './active-ability';
+export type {
+  ActiveAbilityExpiry,
+  ActiveAbilityInstance,
+  ActiveAbilitySource,
+} from './active-ability';
 
 export {
   ExtraResourceInstanceSchema,

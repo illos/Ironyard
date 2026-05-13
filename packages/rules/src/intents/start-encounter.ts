@@ -97,6 +97,7 @@ export function applyStartEncounter(
       },
       recoveryValue: runtime.recoveryValue,
       weaponDamageBonus: runtime.weaponDamageBonus,
+      activeAbilities: [],
     };
   });
 
@@ -130,7 +131,6 @@ export function applyStartEncounter(
     state: {
       ...state,
       seq: state.seq + 1,
-      // REPLACE the existing roster — the new encounter is the single source of truth.
       participants: allParticipants,
       encounter,
     },

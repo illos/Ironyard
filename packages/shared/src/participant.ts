@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ActiveAbilityInstanceSchema } from './active-ability';
 import { CharacteristicsSchema } from './characteristic';
 import { ConditionInstanceSchema } from './condition';
 import { TypedResistanceSchema } from './damage';
@@ -68,5 +69,9 @@ export const ParticipantSchema = z.object({
       ranged: z.tuple([z.number().int(), z.number().int(), z.number().int()]),
     })
     .default({ melee: [0, 0, 0], ranged: [0, 0, 0] }),
+  // Q17 Bucket A: narrative-only maneuvers (Human Detect the Supernatural,
+  // Polder Shadowmeld) toggle on as tagged active abilities. The engine tracks
+  // expiry; the table adjudicates effect.
+  activeAbilities: z.array(ActiveAbilityInstanceSchema).default([]),
 });
 export type Participant = z.infer<typeof ParticipantSchema>;

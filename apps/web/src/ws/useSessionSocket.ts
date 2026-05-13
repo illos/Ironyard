@@ -72,7 +72,6 @@ export type ConnectionStatus = 'connecting' | 'open' | 'closed';
 
 export type RosterEntry = Participant;
 
-/** Type guard — narrows a roster entry to a full Participant (kept for call-site compat). */
 export function isParticipantEntry(e: RosterEntry): e is Participant {
   return e.kind === 'pc' || e.kind === 'monster';
 }
@@ -376,6 +375,7 @@ function participantFromMonsterClient(
     ownerId: null,
     characterId: null,
     weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
+    activeAbilities: [],
   };
 }
 

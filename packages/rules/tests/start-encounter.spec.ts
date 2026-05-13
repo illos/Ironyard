@@ -160,10 +160,7 @@ describe('applyStartEncounter — new atomic payload shape', () => {
     const monsters = result.state.participants.filter(
       (p): p is Participant => isParticipant(p) && p.kind === 'monster',
     );
-    expect(monsters).toHaveLength(3);
-    expect(monsters[0]!.name).toBe('Goblin 1');
-    expect(monsters[1]!.name).toBe('Goblin 2');
-    expect(monsters[2]!.name).toBe('Goblin 3');
+    expect(monsters.map((m) => m.name)).toEqual(['Goblin 1', 'Goblin 2', 'Goblin 3']);
   });
 
   it('REPLACES the existing participant roster (no duplicate carry-over)', () => {
@@ -186,6 +183,7 @@ describe('applyStartEncounter — new atomic payload shape', () => {
       ownerId: null,
       characterId: null,
       weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
+      activeAbilities: [],
     };
     const s = baseState({ participants: [oldMonster] });
 

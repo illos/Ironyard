@@ -292,10 +292,23 @@ export function applyEndTurn(state: CampaignState, intent: StampedIntent): Inten
     }
   }
 
+  // Q17 Bucket A: drain EoT active-ability tags from the ending creature.
+  // 'end_of_encounter' tags persist; EndEncounter sweeps those.
+  const updatedParticipants =
+    currentId === null
+      ? state.participants
+      : state.participants.map((p) => {
+          if (!isParticipant(p) || p.id !== currentId) return p;
+          if (p.activeAbilities.length === 0) return p;
+          const next = p.activeAbilities.filter((a) => a.expiresAt.kind !== 'EoT');
+          return next.length === p.activeAbilities.length ? p : { ...p, activeAbilities: next };
+        });
+
   return {
     state: {
       ...state,
       seq: state.seq + 1,
+      participants: updatedParticipants,
       encounter: {
         ...guard.encounter,
         activeParticipantId: nextId,

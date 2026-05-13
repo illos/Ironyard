@@ -14,13 +14,23 @@ export type AncestryOverride = {
 
 export const ANCESTRY_OVERRIDES: Record<string, AncestryOverride> = {
   memonek: {},
-  polder: { defaultSize: '1S' },
+  polder: {
+    defaultSize: '1S',
+    // Q17 Bucket A: Shadowmeld is a narrative-only signature trait — the
+    // engine renders it as a maneuver card; the table adjudicates the effect.
+    signatureTraitAbilityId: 'polder.shadowmeld',
+  },
   devil: {},
   'dragon-knight': {},
   dwarf: {},
   hakaan: { defaultSize: '1L' },
   'high-elf': {},
-  human: {},
+  human: {
+    // Q17 Bucket A: Detect the Supernatural is a narrative-only signature
+    // trait — the engine tracks the active-tag duration; the table
+    // adjudicates what counts as supernatural and what the player perceives.
+    signatureTraitAbilityId: 'human.detect-the-supernatural',
+  },
   orc: {},
   'time-raider': {
     grantedImmunities: [{ kind: 'psychic', value: 'level' }],

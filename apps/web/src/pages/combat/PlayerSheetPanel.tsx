@@ -46,12 +46,35 @@ export function PlayerSheetPanel({ campaignId }: { campaignId: string }) {
       </header>
       <HpBar current={myParticipant.currentStamina} max={myParticipant.maxStamina} />
       <ConditionsStrip participant={myParticipant} campaignId={campaignId} userId={userId} />
+      <ActiveAbilitiesStrip participant={myParticipant} />
       <ResourcePanel participant={myParticipant} campaignId={campaignId} userId={userId} />
       <RecoveryButton participant={myParticipant} campaignId={campaignId} userId={userId} />
       <Abilities participant={myParticipant} campaignId={campaignId} userId={userId} />
       <KitDisplayAndSwap participant={myParticipant} campaignId={campaignId} userId={userId} />
       <Inventory participant={myParticipant} campaignId={campaignId} userId={userId} />
     </aside>
+  );
+}
+
+function ActiveAbilitiesStrip({ participant }: { participant: Participant }) {
+  const staticData = useWizardStaticData();
+  const active = participant.activeAbilities ?? [];
+  if (active.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-1">
+      {active.map((a) => {
+        const name = staticData?.abilities?.get(a.abilityId)?.name ?? a.abilityId;
+        return (
+          <span
+            key={a.abilityId}
+            className="rounded-full border border-violet-700/60 bg-violet-900/30 px-2 py-0.5 text-xs text-violet-100"
+            title={`Active until ${a.expiresAt.kind === 'EoT' ? 'end of turn' : 'end of encounter'}`}
+          >
+            {name}
+          </span>
+        );
+      })}
+    </div>
   );
 }
 
@@ -176,8 +199,8 @@ function RecoveryButton({
 // flow lands in Epic 2C.
 function Abilities({
   participant,
-  campaignId: _campaignId,
-  userId: _userId,
+  campaignId,
+  userId,
 }: {
   participant: Participant;
   campaignId: string;
@@ -185,6 +208,7 @@ function Abilities({
 }) {
   const ch = useCharacter(participant.characterId ?? undefined);
   const staticData = useWizardStaticData();
+  const sock = useSessionSocket(campaignId);
 
   if (!participant.characterId) {
     return (
@@ -239,13 +263,44 @@ function Abilities({
             );
           }
           if (!ability.powerRoll) {
-            // Traits / maneuvers without a power roll get a passive renderer.
+            // Maneuvers / traits without a power roll: render a passive card.
+            // Maneuver-typed abilities also get an Activate button that
+            // dispatches UseAbility — the engine tracks the active-tag
+            // duration; the table adjudicates the effect (Q17 Bucket A).
+            const isActive = (participant.activeAbilities ?? []).some((a) => a.abilityId === id);
+            const canActivate = ability.type === 'maneuver';
+            const activate = () =>
+              sock.dispatch(
+                buildIntent({
+                  campaignId,
+                  type: IntentTypes.UseAbility,
+                  payload: {
+                    participantId: participant.id,
+                    abilityId: id,
+                    source: 'ancestry',
+                    duration: { kind: 'EoT' },
+                  },
+                  actor: { userId, role: 'player' },
+                }),
+              );
             return (
               <article
                 key={id}
                 className="rounded-lg border border-neutral-800 bg-neutral-900/60 p-3"
               >
-                <h4 className="font-medium text-sm">{ability.name}</h4>
+                <header className="flex items-baseline justify-between gap-2">
+                  <h4 className="font-medium text-sm">{ability.name}</h4>
+                  {canActivate && (
+                    <button
+                      type="button"
+                      onClick={activate}
+                      disabled={isActive}
+                      className="min-h-9 rounded-md bg-violet-500 text-neutral-900 px-3 py-1 text-xs font-medium disabled:opacity-50"
+                    >
+                      {isActive ? 'Active' : 'Activate'}
+                    </button>
+                  )}
+                </header>
                 <p className="mt-1 text-xs text-neutral-400">{ability.raw}</p>
               </article>
             );

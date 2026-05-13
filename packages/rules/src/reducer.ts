@@ -40,6 +40,7 @@ import {
   applySwapKit,
   applyUndo,
   applyUnequipItem,
+  applyUseAbility,
   applyUseConsumable,
 } from './intents';
 import type { CampaignState, IntentResult, ReducerContext, StampedIntent } from './types';
@@ -148,6 +149,8 @@ export function applyIntent(
       return applyUnequipItem(state, intent);
     case IntentTypes.Undo:
       return applyUndo(state, intent);
+    case IntentTypes.UseAbility:
+      return applyUseAbility(state, intent);
     case IntentTypes.UseConsumable:
       return applyUseConsumable(state, intent);
     default:
