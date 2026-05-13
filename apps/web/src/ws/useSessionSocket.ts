@@ -2,7 +2,6 @@ import {
   type AddMonsterPayload,
   type ApplyDamagePayload,
   type ApplyHealPayload,
-  type BringCharacterIntoEncounterPayload,
   type ConditionInstance,
   type EndTurnPayload,
   type GainMalicePayload,
@@ -61,29 +60,15 @@ function characterIdFromPayload(payload: unknown): string | null {
 
 export type ConnectionStatus = 'connecting' | 'open' | 'closed';
 
-// PC roster entry that hasn't been materialized into a full Participant yet.
-// Mirrors the server-side `PcPlaceholder` from @ironyard/rules — the lobby roster
-// can hold these between BringCharacterIntoEncounter and StartEncounter.
-// We keep an explicit copy here rather than importing from @ironyard/rules so
-// the web app doesn't take a dependency on the engine package's internal types.
-export type PcPlaceholderEntry = {
-  kind: 'pc-placeholder';
-  characterId: string;
-  ownerId: string;
-  position: number;
-};
+export type RosterEntry = Participant;
 
-export type RosterEntry = Participant | PcPlaceholderEntry;
-
-/** Type guard — narrows a roster entry to a full Participant. */
+/** Type guard — narrows a roster entry to a full Participant (kept for call-site compat). */
 export function isParticipantEntry(e: RosterEntry): e is Participant {
   return e.kind === 'pc' || e.kind === 'monster';
 }
 
 export type ActiveEncounter = {
   encounterId: string;
-  // Phase 2: widened from Participant[] to RosterEntry[] so the mirror can
-  // hold pc-placeholders between BringCharacterIntoEncounter and StartEncounter.
   participants: RosterEntry[];
   // Slice 11 mirror additions — surface the live turn state for the play screen.
   currentRound: number | null;
@@ -136,30 +121,6 @@ function reflect(
     return null;
   }
   if (!prev) return prev;
-
-  if (type === IntentTypes.BringCharacterIntoEncounter) {
-    // Phase 2: BCIE appends a pc-placeholder onto the lobby roster.
-    // Placeholders are materialized into full participants at StartEncounter.
-    // Mirror the reducer's append exactly (see
-    // packages/rules/src/intents/bring-character-into-encounter.ts:61-66).
-    const { characterId, ownerId, position } = payload as BringCharacterIntoEncounterPayload;
-    // Idempotency: if a placeholder for this characterId already exists, the
-    // server reducer rejects the intent. The DO won't broadcast applied in
-    // that case, so we don't need to guard here — but a defensive check
-    // costs nothing and keeps the optimistic mirror well-behaved.
-    if (
-      prev.participants.some((p) => p.kind === 'pc-placeholder' && p.characterId === characterId)
-    ) {
-      return prev;
-    }
-    const placeholder: PcPlaceholderEntry = {
-      kind: 'pc-placeholder',
-      characterId,
-      ownerId,
-      position: position ?? prev.participants.length,
-    };
-    return { ...prev, participants: [...prev.participants, placeholder] };
-  }
 
   if (type === IntentTypes.AddMonster) {
     // The DO stamps the full Monster blob onto the payload before broadcast;
@@ -502,15 +463,17 @@ function snapshotToEncounter(state: unknown): ActiveEncounter | null {
     participants?: RosterEntry[];
   };
 
-  // Top-level participants (new shape) — pc-placeholders ride along too.
-  const topParticipants = Array.isArray(s.participants) ? (s.participants as RosterEntry[]) : null;
+  const topParticipants = Array.isArray(s.participants)
+    ? (s.participants as RosterEntry[]).filter(
+        (p): p is Participant => p.kind === 'pc' || p.kind === 'monster',
+      )
+    : null;
 
   const e = s.encounter;
   if (!e || typeof e !== 'object') return null;
 
   const enc = e as {
     id?: string;
-    // Old shape had participants on encounter; new shape has them at top level.
     participants?: RosterEntry[];
     currentRound?: number | null;
     turnOrder?: string[];
@@ -520,7 +483,6 @@ function snapshotToEncounter(state: unknown): ActiveEncounter | null {
 
   if (typeof enc.id !== 'string') return null;
 
-  // Prefer top-level participants (new shape), fall back to encounter-embedded (old shape).
   const participants = topParticipants ?? enc.participants ?? [];
 
   return {

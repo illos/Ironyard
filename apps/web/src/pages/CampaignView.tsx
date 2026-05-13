@@ -1,6 +1,5 @@
 import type {
   ApproveCharacterPayload,
-  BringCharacterIntoEncounterPayload,
   CampaignCharacter,
   Character,
   CharacterResponse,
@@ -51,14 +50,6 @@ export function CampaignView() {
     activeDirectorId: liveActiveDirectorId,
   } = useSessionSocket(id);
 
-  // Set of characterIds currently in the lobby roster as pc-placeholders.
-  // We surface this in the approved roster so the director can see which
-  // characters they've already brought in and avoid double-add attempts.
-  const lobbyPlaceholderCharacterIds = new Set<string>(
-    (activeEncounter?.participants ?? []).flatMap((p) =>
-      p.kind === 'pc-placeholder' ? [p.characterId] : [],
-    ),
-  );
 
   if (me.isLoading || campaign.isLoading) {
     return (
@@ -255,7 +246,6 @@ export function CampaignView() {
         dispatch={dispatch}
         wsOpen={status === 'open'}
         isDirector={campaign.data.isDirector}
-        lobbyPlaceholderCharacterIds={lobbyPlaceholderCharacterIds}
       />
 
       {/* Saved encounter templates */}
@@ -701,47 +691,19 @@ function ApprovedRosterPanel({
   dispatch,
   wsOpen,
   isDirector,
-  lobbyPlaceholderCharacterIds,
 }: {
   campaignId: string;
   actor: { userId: string; role: 'director' | 'player' };
   dispatch: (intent: unknown) => boolean;
   wsOpen: boolean;
   isDirector: boolean;
-  // Set of characterIds currently in the WS-mirrored lobby as pc-placeholders.
-  // Used to badge "in lobby" and disable the redundant "Bring into lobby" CTA.
-  lobbyPlaceholderCharacterIds: Set<string>;
 }) {
   const approved = useCampaignCharacters(campaignId, 'approved');
   const items = useItems();
   const [pushItemOpen, setPushItemOpen] = useState(false);
 
-  const handleBring = (cc: CampaignCharacter) => {
-    // Phase 2: BringCharacterIntoEncounter now creates a pc-placeholder.
-    // DO stamps the character blob from D1 at StartEncounter.
-    // Prototype: ownerId is stamped by the DO from D1; actor.userId is a safe
-    // fallback here since the director is typically the one bringing PCs.
-    const payload: BringCharacterIntoEncounterPayload = {
-      characterId: cc.characterId,
-      ownerId: actor.userId,
-    };
-    dispatch(
-      buildIntent({
-        campaignId,
-        type: IntentTypes.BringCharacterIntoEncounter,
-        payload,
-        actor,
-      }),
-    );
-  };
-
   if (approved.isLoading) return null;
 
-  // Slice 3 (Epic 2C) director push-item handler — dispatch a PushItem
-  // intent and close the modal. The DO stamps `isDirectorPermitted`,
-  // `targetCharacterExists`, and `itemExists`; the client sends only the
-  // user-picked fields. Cast via unknown because the shared payload type
-  // includes the DO-stamped fields.
   const handlePushItem = (targetCharacterId: string, itemId: string, quantity: number) => {
     const payload = { targetCharacterId, itemId, quantity } as unknown as PushItemPayload;
     dispatch(
@@ -758,9 +720,6 @@ function ApprovedRosterPanel({
   const charactersForModal =
     approved.data?.map((cc) => ({
       id: cc.characterId,
-      // CampaignCharacter doesn't carry the character name today — display the
-      // truncated id, same convention used in the approved roster list below.
-      // Slice 5 (or a name-join endpoint) can wire real names through later.
       name: `${cc.characterId.slice(0, 8)}…`,
     })) ?? [];
 
@@ -784,43 +743,22 @@ function ApprovedRosterPanel({
       )}
       {approved.data && approved.data.length > 0 && (
         <ul className="space-y-1">
-          {approved.data.map((cc) => {
-            const inLobby = lobbyPlaceholderCharacterIds.has(cc.characterId);
-            return (
-              <li
-                key={cc.characterId}
-                className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
-              >
-                <span className="flex-1 text-sm font-mono text-neutral-300">
-                  {cc.characterId.slice(0, 8)}…
-                  {inLobby && (
-                    <span className="ml-2 text-xs font-sans text-emerald-300 normal-case">
-                      in lobby
-                    </span>
-                  )}
-                </span>
-                {isDirector && (
-                  <button
-                    type="button"
-                    onClick={() => handleBring(cc)}
-                    disabled={!wsOpen || inLobby}
-                    className="min-h-11 px-3 rounded-md border border-neutral-700 text-sm hover:bg-neutral-800 disabled:opacity-50"
-                  >
-                    {inLobby ? 'In lobby' : 'Bring into lobby'}
-                  </button>
-                )}
-              </li>
-            );
-          })}
+          {approved.data.map((cc) => (
+            <li
+              key={cc.characterId}
+              className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
+            >
+              <span className="flex-1 text-sm font-mono text-neutral-300">
+                {cc.characterId.slice(0, 8)}…
+              </span>
+            </li>
+          ))}
         </ul>
       )}
 
       {pushItemOpen && (
         <PushItemModal
           characters={charactersForModal}
-          // Cast: useItems()'s value type carries Zod input-side optionality
-          // on description/raw, so it doesn't satisfy the strict Item output
-          // type. Same pattern as PlayerSheetPanel.tsx.
           items={(items.data ?? []) as unknown as Item[]}
           onConfirm={handlePushItem}
           onClose={() => setPushItemOpen(false)}
