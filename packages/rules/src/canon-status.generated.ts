@@ -106,6 +106,7 @@ export const canonStatus = {
   'character-attachment-activation.level-pick-attachments': 'drafted',
   'character-attachment-activation.engine-apply-order-and-gating': 'drafted',
   'character-attachment-activation.carry-overs-and-known-shape-gaps': 'drafted',
+  'character-attachment-activation.three-safely-carry-rule': 'verified',
   'respite': 'verified',
   'respite.effects-of-finishing-a-respite': 'verified',
   'respite.interruption-and-gating': 'verified',

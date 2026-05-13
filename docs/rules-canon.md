@@ -2066,6 +2066,37 @@ skipped entry with `SKIPPED-DEFERRED` for traceability.
   `titleBenefitId` slot on `CharacterSchema` and an override map keyed
   on `{titleId}.{benefitId}` instead of plain `{titleId}`.
 
+### 10.17 Three-safely-carry rule ✅
+<!-- Generated slug: character-attachment-activation.three-safely-carry-rule -->
+
+A creature can safely carry a maximum of three leveled treasures at a
+time. If you carry more (= equipped, not just owned), items become
+jealous and fight for your attention. At each respite, the carrier
+makes a Presence power roll with a tier ladder:
+
+| Tier | Outcome |
+|------|---------|
+| ≤ 11 (t1) | Director picks one of your leveled treasures; it grabs your psyche → fugue state → you discard the rest in locations you can't remember. |
+| 12–16 (t2) | Items prevent you from moving until you pick three to keep and leave the rest behind. |
+| ≥ 17 (t3) | Nothing happens. |
+
+It's fine to OWN more than three — only carried/equipped count toward
+the limit.
+
+**Source.**
+- SteelCompendium — `Rules/Chapters/Rewards.md` "Leveled Treasures" section, "Connection With Leveled Treasures" sub-block.
+- Printed Heroes Book — p. 326 (*Rewards → Leveled Treasures → Connection With Leveled Treasures*). Confirmed against
+  `.reference/core-rules/Draw_Steel_Heroes_v1.01.pdf` 2026-05-12 by Slice 4 of Epic 2C.
+
+**Engine application.** The Respite reducer (canon § 11) checks each
+PC's equipped leveled-treasure count at dispatch time. When count > 3,
+the intent log emits a structured warning entry; the player or
+director then dispatches a Presence `RollPower` and consequence
+intents (drop items via Unequip, narrate). No auto-resolution.
+
+**Override authoring.** None — this is a reducer-side rule, not an
+attachment effect.
+
 ## 11. Respite ✅
 
 > **Source:** `.reference/data-md/Rules/Chapters/The Basics.md` lines 282–320 (Heroes PDF p. 7, "Respite" section, alongside "Victories Reset" and "Regaining Recoveries"). Cross-references: `.reference/data-md/Rules/Chapters/Kits.md` line 23 (kit-swap is a respite activity); § 5.4.9 / § 5.5 / § 5.6 (respite is *not* an encounter, but most heroic resources reset at end of encounter — orthogonal); § 8.1 (Victories → XP cited there as "§ TBD respite rules" — now resolved here).
