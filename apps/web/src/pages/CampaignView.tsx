@@ -2,6 +2,7 @@ import type {
   ApproveCharacterPayload,
   BringCharacterIntoEncounterPayload,
   CampaignCharacter,
+  Character,
   CharacterResponse,
   DenyCharacterPayload,
   Item,
@@ -22,6 +23,7 @@ import {
 } from '../api/mutations';
 import {
   type CampaignMember,
+  useApprovedCharactersFull,
   useCampaign,
   useCampaignCharacters,
   useCampaignMembers,
@@ -31,6 +33,7 @@ import {
 } from '../api/queries';
 import { useItems } from '../api/static-data';
 import { useSessionSocket } from '../ws/useSessionSocket';
+import { RespiteConfirm } from './combat/RespiteConfirm';
 import { PushItemModal } from './director/PushItemModal';
 
 export function CampaignView() {
@@ -188,25 +191,11 @@ export function CampaignView() {
         </Link>
       )}
 
-      {/* Respite — available to everyone when no encounter is active */}
-      {!activeEncounter && (
-        <button
-          type="button"
-          onClick={() =>
-            dispatch(
-              buildIntent({
-                campaignId: id,
-                type: IntentTypes.Respite,
-                payload: {},
-                actor,
-              }),
-            )
-          }
-          className="min-h-11 px-4 py-2 rounded-md bg-neutral-100 text-neutral-900 font-medium hover:bg-neutral-200"
-        >
-          Respite (refill recoveries, convert victories → XP)
-        </button>
-      )}
+      {/* Respite — available to everyone when no encounter is active. The
+          modal collects Dragon Knight Wyrmplate damage-type picks + previews
+          the 3-safely-carry warning (canon §10.17); the DO stamps the real
+          safelyCarryWarnings server-side from live participant inventory. */}
+      {!activeEncounter && <RespiteTrigger campaignId={id} actor={actor} dispatch={dispatch} />}
 
       {/* Submit character (player flow) */}
       <SubmitCharacterPanel
@@ -250,6 +239,67 @@ export function CampaignView() {
         />
       )}
     </main>
+  );
+}
+
+// ─── Respite Trigger ──────────────────────────────────────────────────────────
+//
+// Renders the Respite button and, when opened, the RespiteConfirm modal.
+// Pulls every approved character's full row via useApprovedCharactersFull so
+// the modal can detect Dragon Knight ancestry + preview the 3-safely-carry
+// warning (canon §10.17). On confirm we dispatch a Respite intent with the
+// player-supplied wyrmplateChoices; safelyCarryWarnings are stamped DO-side.
+
+function RespiteTrigger({
+  campaignId,
+  actor,
+  dispatch,
+}: {
+  campaignId: string;
+  actor: { userId: string; role: 'director' | 'player' };
+  dispatch: (intent: unknown) => boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const approvedFull = useApprovedCharactersFull(campaignId);
+  const items = useItems();
+
+  // Adapt CharacterResponse[] → Character[] (the modal works in `data` shape)
+  // while preserving the id at the top level so the modal can key by it.
+  // Cast: the static-data items have Zod-input optionality on description/raw
+  // — same pattern used by PushItemModal and PlayerSheetPanel.
+  const characters: Character[] = (approvedFull.data ?? []).map(
+    (cr) => ({ ...cr.data, id: cr.id }) as unknown as Character,
+  );
+  const itemList = (items.data ?? []) as unknown as Item[];
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="min-h-11 px-4 py-2 rounded-md bg-neutral-100 text-neutral-900 font-medium hover:bg-neutral-200"
+      >
+        Respite (refill recoveries, restore stamina, convert victories → XP)
+      </button>
+      {open && (
+        <RespiteConfirm
+          characters={characters}
+          items={itemList}
+          onConfirm={(payload) => {
+            dispatch(
+              buildIntent({
+                campaignId,
+                type: IntentTypes.Respite,
+                payload,
+                actor,
+              }),
+            );
+            setOpen(false);
+          }}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </>
   );
 }
 
