@@ -17,10 +17,18 @@
 // 1–10 with reasonable equipped items + applied title produces a wrong
 // runtime number" — these fixtures cover the static-fold path end-to-end.
 
+import type { InventoryEntry } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { deriveCharacterRuntime } from '../../src/derive-character-runtime';
 import type { ResolvedKit, StaticDataBundle } from '../../src/static-data';
 import { buildBundleWithFury, buildCharacter } from '../fixtures/character-runtime';
+
+// Construct an inventory entry with a stable test-id (so snapshots don't
+// drift on each run). The character schema generates a UUID by default; we
+// override with a deterministic value here.
+function inv(itemId: string, equipped = true): InventoryEntry {
+  return { id: `inv-${itemId}`, itemId, quantity: 1, equipped };
+}
 
 // Helper: extend the Fury bundle with an extra kit fixture so we can cover
 // other keyword combinations. Mirrors the shape from
@@ -54,7 +62,7 @@ describe('2C Slice 5 coverage — items + titles', () => {
     );
     const character = buildCharacter({
       kitId: 'mountain',
-      inventory: [{ itemId: 'chain-of-the-sea-and-sky', quantity: 1, equipped: true }],
+      inventory: [inv('chain-of-the-sea-and-sky')],
     });
     const runtime = deriveCharacterRuntime(character, bundle);
     expect(runtime).toMatchSnapshot();
@@ -70,7 +78,7 @@ describe('2C Slice 5 coverage — items + titles', () => {
     );
     const character = buildCharacter({
       kitId: 'mountain',
-      inventory: [{ itemId: 'icemaker-maul', quantity: 1, equipped: true }],
+      inventory: [inv('icemaker-maul')],
     });
     const runtime = deriveCharacterRuntime(character, bundle);
     expect(runtime).toMatchSnapshot();
@@ -86,7 +94,7 @@ describe('2C Slice 5 coverage — items + titles', () => {
     );
     const character = buildCharacter({
       kitId: 'sniper',
-      inventory: [{ itemId: 'icemaker-maul', quantity: 1, equipped: true }],
+      inventory: [inv('icemaker-maul')],
     });
     const runtime = deriveCharacterRuntime(character, bundle);
     expect(runtime).toMatchSnapshot();
@@ -100,7 +108,7 @@ describe('2C Slice 5 coverage — items + titles', () => {
     );
     const character = buildCharacter({
       kitId: 'sniper',
-      inventory: [{ itemId: 'onerous-bow', quantity: 1, equipped: true }],
+      inventory: [inv('onerous-bow')],
     });
     const runtime = deriveCharacterRuntime(character, bundle);
     expect(runtime).toMatchSnapshot();
@@ -111,7 +119,7 @@ describe('2C Slice 5 coverage — items + titles', () => {
   it('Any kit + Bastion Belt → +3 maxStamina + +1 stability', () => {
     const bundle = buildBundleWithFury();
     const character = buildCharacter({
-      inventory: [{ itemId: 'bastion-belt', quantity: 1, equipped: true }],
+      inventory: [inv('bastion-belt')],
     });
     const runtime = deriveCharacterRuntime(character, bundle);
     expect(runtime).toMatchSnapshot();
@@ -125,7 +133,7 @@ describe('2C Slice 5 coverage — items + titles', () => {
   it('Wrecker kit + Bracers of Strife → +3/+3/+3 melee (kit + trinket)', () => {
     const bundle = buildBundleWithFury();
     const character = buildCharacter({
-      inventory: [{ itemId: 'bracers-of-strife', quantity: 1, equipped: true }],
+      inventory: [inv('bracers-of-strife')],
     });
     const runtime = deriveCharacterRuntime(character, bundle);
     expect(runtime).toMatchSnapshot();
@@ -136,7 +144,7 @@ describe('2C Slice 5 coverage — items + titles', () => {
   it('Any kit + Lightning Treads → +2 speed', () => {
     const bundle = buildBundleWithFury();
     const character = buildCharacter({
-      inventory: [{ itemId: 'lightning-treads', quantity: 1, equipped: true }],
+      inventory: [inv('lightning-treads')],
     });
     const runtime = deriveCharacterRuntime(character, bundle);
     expect(runtime).toMatchSnapshot();
@@ -179,10 +187,7 @@ describe('2C Slice 5 coverage — items + titles', () => {
     const character = buildCharacter({
       kitId: 'mountain',
       titleId: 'knight',
-      inventory: [
-        { itemId: 'spiny-turtle', quantity: 1, equipped: true },
-        { itemId: 'bastion-belt', quantity: 1, equipped: true },
-      ],
+      inventory: [inv('spiny-turtle'), inv('bastion-belt')],
     });
     const runtime = deriveCharacterRuntime(character, bundle);
     expect(runtime).toMatchSnapshot();
@@ -196,7 +201,7 @@ describe('2C Slice 5 coverage — items + titles', () => {
     );
     const character = buildCharacter({
       kitId: 'mountain',
-      inventory: [{ itemId: 'spiny-turtle', quantity: 1, equipped: false }],
+      inventory: [inv('spiny-turtle', false)],
     });
     const runtime = deriveCharacterRuntime(character, bundle);
     expect(runtime).toMatchSnapshot();
