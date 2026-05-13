@@ -1,0 +1,614 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`2C Slice 5 coverage — items + titles > Any kit + Bastion Belt → +3 maxStamina + +1 stability 1`] = `
+{
+  "abilityIds": [
+    "fury-rage",
+  ],
+  "characteristics": {
+    "agility": 1,
+    "intuition": 0,
+    "might": 2,
+    "presence": 0,
+    "reason": -1,
+  },
+  "freeStrikeDamage": 2,
+  "heroicResource": {
+    "floor": 0,
+    "max": null,
+    "name": "ferocity",
+  },
+  "immunities": [],
+  "languages": [
+    "caelian",
+    "khoursirian",
+  ],
+  "maxStamina": 24,
+  "recoveriesMax": 10,
+  "recoveryValue": 8,
+  "size": "1M",
+  "skills": [
+    "streetwise",
+    "culture",
+    "lore",
+    "intimidation",
+  ],
+  "speed": 5,
+  "stability": 1,
+  "weaknesses": [],
+  "weaponDamageBonus": {
+    "melee": [
+      1,
+      1,
+      1,
+    ],
+    "ranged": [
+      0,
+      0,
+      0,
+    ],
+  },
+}
+`;
+
+exports[`2C Slice 5 coverage — items + titles > Any kit + Lightning Treads → +2 speed 1`] = `
+{
+  "abilityIds": [
+    "fury-rage",
+  ],
+  "characteristics": {
+    "agility": 1,
+    "intuition": 0,
+    "might": 2,
+    "presence": 0,
+    "reason": -1,
+  },
+  "freeStrikeDamage": 2,
+  "heroicResource": {
+    "floor": 0,
+    "max": null,
+    "name": "ferocity",
+  },
+  "immunities": [],
+  "languages": [
+    "caelian",
+    "khoursirian",
+  ],
+  "maxStamina": 21,
+  "recoveriesMax": 10,
+  "recoveryValue": 7,
+  "size": "1M",
+  "skills": [
+    "streetwise",
+    "culture",
+    "lore",
+    "intimidation",
+  ],
+  "speed": 7,
+  "stability": 0,
+  "weaknesses": [],
+  "weaponDamageBonus": {
+    "melee": [
+      1,
+      1,
+      1,
+    ],
+    "ranged": [
+      0,
+      0,
+      0,
+    ],
+  },
+}
+`;
+
+exports[`2C Slice 5 coverage — items + titles > Combined: Spiny Turtle + Bastion Belt + Knight → maxStamina 36, stability 1 1`] = `
+{
+  "abilityIds": [
+    "fury-rage",
+  ],
+  "characteristics": {
+    "agility": 1,
+    "intuition": 0,
+    "might": 2,
+    "presence": 0,
+    "reason": -1,
+  },
+  "freeStrikeDamage": 2,
+  "heroicResource": {
+    "floor": 0,
+    "max": null,
+    "name": "ferocity",
+  },
+  "immunities": [],
+  "languages": [
+    "caelian",
+    "khoursirian",
+  ],
+  "maxStamina": 36,
+  "recoveriesMax": 10,
+  "recoveryValue": 12,
+  "size": "1M",
+  "skills": [
+    "streetwise",
+    "culture",
+    "lore",
+    "intimidation",
+  ],
+  "speed": 5,
+  "stability": 1,
+  "weaknesses": [],
+  "weaponDamageBonus": {
+    "melee": [
+      0,
+      0,
+      0,
+    ],
+    "ranged": [
+      0,
+      0,
+      0,
+    ],
+  },
+}
+`;
+
+exports[`2C Slice 5 coverage — items + titles > Mountain kit + Chain of the Sea and Sky → +6 maxStamina 1`] = `
+{
+  "abilityIds": [
+    "fury-rage",
+  ],
+  "characteristics": {
+    "agility": 1,
+    "intuition": 0,
+    "might": 2,
+    "presence": 0,
+    "reason": -1,
+  },
+  "freeStrikeDamage": 2,
+  "heroicResource": {
+    "floor": 0,
+    "max": null,
+    "name": "ferocity",
+  },
+  "immunities": [],
+  "languages": [
+    "caelian",
+    "khoursirian",
+  ],
+  "maxStamina": 27,
+  "recoveriesMax": 10,
+  "recoveryValue": 9,
+  "size": "1M",
+  "skills": [
+    "streetwise",
+    "culture",
+    "lore",
+    "intimidation",
+  ],
+  "speed": 5,
+  "stability": 0,
+  "weaknesses": [],
+  "weaponDamageBonus": {
+    "melee": [
+      0,
+      0,
+      0,
+    ],
+    "ranged": [
+      0,
+      0,
+      0,
+    ],
+  },
+}
+`;
+
+exports[`2C Slice 5 coverage — items + titles > Mountain kit + Icemaker Maul → +1/+2/+3 melee weapon-damage-bonus 1`] = `
+{
+  "abilityIds": [
+    "fury-rage",
+  ],
+  "characteristics": {
+    "agility": 1,
+    "intuition": 0,
+    "might": 2,
+    "presence": 0,
+    "reason": -1,
+  },
+  "freeStrikeDamage": 2,
+  "heroicResource": {
+    "floor": 0,
+    "max": null,
+    "name": "ferocity",
+  },
+  "immunities": [],
+  "languages": [
+    "caelian",
+    "khoursirian",
+  ],
+  "maxStamina": 21,
+  "recoveriesMax": 10,
+  "recoveryValue": 7,
+  "size": "1M",
+  "skills": [
+    "streetwise",
+    "culture",
+    "lore",
+    "intimidation",
+  ],
+  "speed": 5,
+  "stability": 0,
+  "weaknesses": [],
+  "weaponDamageBonus": {
+    "melee": [
+      1,
+      2,
+      3,
+    ],
+    "ranged": [
+      0,
+      0,
+      0,
+    ],
+  },
+}
+`;
+
+exports[`2C Slice 5 coverage — items + titles > Sniper kit + Icemaker Maul → bonus SKIPPED (kit mismatch) 1`] = `
+{
+  "abilityIds": [
+    "fury-rage",
+  ],
+  "characteristics": {
+    "agility": 1,
+    "intuition": 0,
+    "might": 2,
+    "presence": 0,
+    "reason": -1,
+  },
+  "freeStrikeDamage": 2,
+  "heroicResource": {
+    "floor": 0,
+    "max": null,
+    "name": "ferocity",
+  },
+  "immunities": [],
+  "languages": [
+    "caelian",
+    "khoursirian",
+  ],
+  "maxStamina": 21,
+  "recoveriesMax": 10,
+  "recoveryValue": 7,
+  "size": "1M",
+  "skills": [
+    "streetwise",
+    "culture",
+    "lore",
+    "intimidation",
+  ],
+  "speed": 5,
+  "stability": 0,
+  "weaknesses": [],
+  "weaponDamageBonus": {
+    "melee": [
+      0,
+      0,
+      0,
+    ],
+    "ranged": [
+      0,
+      0,
+      0,
+    ],
+  },
+}
+`;
+
+exports[`2C Slice 5 coverage — items + titles > Sniper kit + Onerous Bow → +1/+2/+3 ranged weapon-damage-bonus 1`] = `
+{
+  "abilityIds": [
+    "fury-rage",
+  ],
+  "characteristics": {
+    "agility": 1,
+    "intuition": 0,
+    "might": 2,
+    "presence": 0,
+    "reason": -1,
+  },
+  "freeStrikeDamage": 2,
+  "heroicResource": {
+    "floor": 0,
+    "max": null,
+    "name": "ferocity",
+  },
+  "immunities": [],
+  "languages": [
+    "caelian",
+    "khoursirian",
+  ],
+  "maxStamina": 21,
+  "recoveriesMax": 10,
+  "recoveryValue": 7,
+  "size": "1M",
+  "skills": [
+    "streetwise",
+    "culture",
+    "lore",
+    "intimidation",
+  ],
+  "speed": 5,
+  "stability": 0,
+  "weaknesses": [],
+  "weaponDamageBonus": {
+    "melee": [
+      0,
+      0,
+      0,
+    ],
+    "ranged": [
+      1,
+      2,
+      3,
+    ],
+  },
+}
+`;
+
+exports[`2C Slice 5 coverage — items + titles > Spiny Turtle UNEQUIPPED → no stamina bonus 1`] = `
+{
+  "abilityIds": [
+    "fury-rage",
+  ],
+  "characteristics": {
+    "agility": 1,
+    "intuition": 0,
+    "might": 2,
+    "presence": 0,
+    "reason": -1,
+  },
+  "freeStrikeDamage": 2,
+  "heroicResource": {
+    "floor": 0,
+    "max": null,
+    "name": "ferocity",
+  },
+  "immunities": [],
+  "languages": [
+    "caelian",
+    "khoursirian",
+  ],
+  "maxStamina": 21,
+  "recoveriesMax": 10,
+  "recoveryValue": 7,
+  "size": "1M",
+  "skills": [
+    "streetwise",
+    "culture",
+    "lore",
+    "intimidation",
+  ],
+  "speed": 5,
+  "stability": 0,
+  "weaknesses": [],
+  "weaponDamageBonus": {
+    "melee": [
+      0,
+      0,
+      0,
+    ],
+    "ranged": [
+      0,
+      0,
+      0,
+    ],
+  },
+}
+`;
+
+exports[`2C Slice 5 coverage — items + titles > Wrecker kit + Bracers of Strife → +3/+3/+3 melee (kit + trinket) 1`] = `
+{
+  "abilityIds": [
+    "fury-rage",
+  ],
+  "characteristics": {
+    "agility": 1,
+    "intuition": 0,
+    "might": 2,
+    "presence": 0,
+    "reason": -1,
+  },
+  "freeStrikeDamage": 2,
+  "heroicResource": {
+    "floor": 0,
+    "max": null,
+    "name": "ferocity",
+  },
+  "immunities": [],
+  "languages": [
+    "caelian",
+    "khoursirian",
+  ],
+  "maxStamina": 21,
+  "recoveriesMax": 10,
+  "recoveryValue": 7,
+  "size": "1M",
+  "skills": [
+    "streetwise",
+    "culture",
+    "lore",
+    "intimidation",
+  ],
+  "speed": 5,
+  "stability": 0,
+  "weaknesses": [],
+  "weaponDamageBonus": {
+    "melee": [
+      3,
+      3,
+      3,
+    ],
+    "ranged": [
+      0,
+      0,
+      0,
+    ],
+  },
+}
+`;
+
+exports[`2C Slice 5 coverage — items + titles > titleId giant-slayer → abilityId added 1`] = `
+{
+  "abilityIds": [
+    "fury-rage",
+    "giant-slayer-the-harder-they-fall",
+  ],
+  "characteristics": {
+    "agility": 1,
+    "intuition": 0,
+    "might": 2,
+    "presence": 0,
+    "reason": -1,
+  },
+  "freeStrikeDamage": 2,
+  "heroicResource": {
+    "floor": 0,
+    "max": null,
+    "name": "ferocity",
+  },
+  "immunities": [],
+  "languages": [
+    "caelian",
+    "khoursirian",
+  ],
+  "maxStamina": 21,
+  "recoveriesMax": 10,
+  "recoveryValue": 7,
+  "size": "1M",
+  "skills": [
+    "streetwise",
+    "culture",
+    "lore",
+    "intimidation",
+  ],
+  "speed": 5,
+  "stability": 0,
+  "weaknesses": [],
+  "weaponDamageBonus": {
+    "melee": [
+      1,
+      1,
+      1,
+    ],
+    "ranged": [
+      0,
+      0,
+      0,
+    ],
+  },
+}
+`;
+
+exports[`2C Slice 5 coverage — items + titles > titleId knight → +6 maxStamina via title 1`] = `
+{
+  "abilityIds": [
+    "fury-rage",
+  ],
+  "characteristics": {
+    "agility": 1,
+    "intuition": 0,
+    "might": 2,
+    "presence": 0,
+    "reason": -1,
+  },
+  "freeStrikeDamage": 2,
+  "heroicResource": {
+    "floor": 0,
+    "max": null,
+    "name": "ferocity",
+  },
+  "immunities": [],
+  "languages": [
+    "caelian",
+    "khoursirian",
+  ],
+  "maxStamina": 27,
+  "recoveriesMax": 10,
+  "recoveryValue": 9,
+  "size": "1M",
+  "skills": [
+    "streetwise",
+    "culture",
+    "lore",
+    "intimidation",
+  ],
+  "speed": 5,
+  "stability": 0,
+  "weaknesses": [],
+  "weaponDamageBonus": {
+    "melee": [
+      1,
+      1,
+      1,
+    ],
+    "ranged": [
+      0,
+      0,
+      0,
+    ],
+  },
+}
+`;
+
+exports[`2C Slice 5 coverage — items + titles > titleId scarred → +20 maxStamina via title 1`] = `
+{
+  "abilityIds": [
+    "fury-rage",
+  ],
+  "characteristics": {
+    "agility": 1,
+    "intuition": 0,
+    "might": 2,
+    "presence": 0,
+    "reason": -1,
+  },
+  "freeStrikeDamage": 2,
+  "heroicResource": {
+    "floor": 0,
+    "max": null,
+    "name": "ferocity",
+  },
+  "immunities": [],
+  "languages": [
+    "caelian",
+    "khoursirian",
+  ],
+  "maxStamina": 41,
+  "recoveriesMax": 10,
+  "recoveryValue": 13,
+  "size": "1M",
+  "skills": [
+    "streetwise",
+    "culture",
+    "lore",
+    "intimidation",
+  ],
+  "speed": 5,
+  "stability": 0,
+  "weaknesses": [],
+  "weaponDamageBonus": {
+    "melee": [
+      1,
+      1,
+      1,
+    ],
+    "ranged": [
+      0,
+      0,
+      0,
+    ],
+  },
+}
+`;
