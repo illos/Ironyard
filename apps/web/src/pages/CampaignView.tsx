@@ -4,8 +4,10 @@ import type {
   CampaignCharacter,
   CharacterResponse,
   DenyCharacterPayload,
+  Item,
   JumpBehindScreenPayload,
   KickPlayerPayload,
+  PushItemPayload,
   SubmitCharacterPayload,
 } from '@ironyard/shared';
 import { IntentTypes, ulid } from '@ironyard/shared';
@@ -27,7 +29,9 @@ import {
   useMe,
   useMyCharacters,
 } from '../api/queries';
+import { useItems } from '../api/static-data';
 import { useSessionSocket } from '../ws/useSessionSocket';
+import { PushItemModal } from './director/PushItemModal';
 
 export function CampaignView() {
   const { id } = useParams({ from: '/campaigns/$id' });
@@ -621,6 +625,8 @@ function ApprovedRosterPanel({
   isDirector: boolean;
 }) {
   const approved = useCampaignCharacters(campaignId, 'approved');
+  const items = useItems();
+  const [pushItemOpen, setPushItemOpen] = useState(false);
 
   const handleBring = (cc: CampaignCharacter) => {
     // Phase 2: BringCharacterIntoEncounter now creates a pc-placeholder.
@@ -643,9 +649,48 @@ function ApprovedRosterPanel({
 
   if (approved.isLoading) return null;
 
+  // Slice 3 (Epic 2C) director push-item handler — dispatch a PushItem
+  // intent and close the modal. The DO stamps `isDirectorPermitted`,
+  // `targetCharacterExists`, and `itemExists`; the client sends only the
+  // user-picked fields. Cast via unknown because the shared payload type
+  // includes the DO-stamped fields.
+  const handlePushItem = (targetCharacterId: string, itemId: string, quantity: number) => {
+    const payload = { targetCharacterId, itemId, quantity } as unknown as PushItemPayload;
+    dispatch(
+      buildIntent({
+        campaignId,
+        type: IntentTypes.PushItem,
+        payload,
+        actor,
+      }),
+    );
+    setPushItemOpen(false);
+  };
+
+  const charactersForModal =
+    approved.data?.map((cc) => ({
+      id: cc.characterId,
+      // CampaignCharacter doesn't carry the character name today — display the
+      // truncated id, same convention used in the approved roster list below.
+      // Slice 5 (or a name-join endpoint) can wire real names through later.
+      name: `${cc.characterId.slice(0, 8)}…`,
+    })) ?? [];
+
   return (
     <section className="rounded-lg border border-neutral-800 p-4 space-y-3">
-      <h2 className="font-semibold text-sm">Approved roster ({approved.data?.length ?? 0})</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-sm">Approved roster ({approved.data?.length ?? 0})</h2>
+        {isDirector && (
+          <button
+            type="button"
+            onClick={() => setPushItemOpen(true)}
+            disabled={!wsOpen || !items.data || (approved.data?.length ?? 0) === 0}
+            className="min-h-11 px-3 rounded-md border border-neutral-700 text-xs hover:bg-neutral-800 disabled:opacity-50"
+          >
+            Push item to player
+          </button>
+        )}
+      </div>
       {(!approved.data || approved.data.length === 0) && (
         <p className="text-xs text-neutral-500">No approved characters yet.</p>
       )}
@@ -672,6 +717,18 @@ function ApprovedRosterPanel({
             </li>
           ))}
         </ul>
+      )}
+
+      {pushItemOpen && (
+        <PushItemModal
+          characters={charactersForModal}
+          // Cast: useItems()'s value type carries Zod input-side optionality
+          // on description/raw, so it doesn't satisfy the strict Item output
+          // type. Same pattern as PlayerSheetPanel.tsx.
+          items={(items.data ?? []) as unknown as Item[]}
+          onConfirm={handlePushItem}
+          onClose={() => setPushItemOpen(false)}
+        />
       )}
     </section>
   );
