@@ -10,6 +10,7 @@ import {
   applyEndEncounter,
   applyEndRound,
   applyEndTurn,
+  applyEquipItem,
   applyGainMalice,
   applyGainResource,
   applyJoinLobby,
@@ -85,6 +86,8 @@ export function applyIntent(
       return applyEndRound(state, intent);
     case IntentTypes.EndTurn:
       return applyEndTurn(state, intent);
+    case IntentTypes.EquipItem:
+      return applyEquipItem(state, intent);
     case IntentTypes.GainMalice:
       return applyGainMalice(state, intent);
     case IntentTypes.GainResource:

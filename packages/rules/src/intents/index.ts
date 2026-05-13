@@ -6,6 +6,7 @@ export { applyBringCharacterIntoEncounter } from './bring-character-into-encount
 export { applyClearLobby } from './clear-lobby';
 export { applyDenyCharacter } from './deny-character';
 export { applyEndEncounter } from './end-encounter';
+export { applyEquipItem } from './equip-item';
 export { applyGainMalice } from './gain-malice';
 export { applyGainResource } from './gain-resource';
 export { applyJoinLobby } from './join-lobby';

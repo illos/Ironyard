@@ -59,6 +59,9 @@ export async function handleSideEffect(
       case 'SwapKit':
         await sideEffectSwapKit(intent, env);
         break;
+      case 'EquipItem':
+        await sideEffectEquipItem(intent, env);
+        break;
       case 'Respite':
         if (stateBefore !== undefined) {
           await sideEffectRespite(intent, stateBefore, env);
@@ -228,6 +231,46 @@ async function sideEffectSwapKit(
     return;
   }
   data.kitId = newKitId;
+
+  await conn
+    .update(characters)
+    .set({ data: JSON.stringify(data), updatedAt: intent.timestamp })
+    .where(eq(characters.id, characterId));
+}
+
+// Slice 1 (Epic 2C): flip the targeted inventory entry's `equipped`
+// flag to true on the character blob. Safe to dispatch twice (idempotent
+// — equipping an already-equipped entry is a no-op write). Uses
+// CharacterSchema.parse to keep the blob shape canonical (e.g. fills in
+// any missing defaults) — mirrors sideEffectSwapKit.
+async function sideEffectEquipItem(
+  intent: Intent & { timestamp: number },
+  env: Bindings,
+): Promise<void> {
+  const payload = intent.payload as MutablePayload;
+  const characterId = payload.characterId;
+  const inventoryEntryId = payload.inventoryEntryId;
+  if (typeof characterId !== 'string' || typeof inventoryEntryId !== 'string') return;
+
+  const conn = db(env.DB);
+  const row = await conn
+    .select({ data: characters.data })
+    .from(characters)
+    .where(eq(characters.id, characterId))
+    .get();
+  if (!row) return;
+
+  let data: ReturnType<typeof CharacterSchema.parse>;
+  try {
+    data = CharacterSchema.parse(JSON.parse(row.data));
+  } catch {
+    // Invalid blob — skip silently rather than throwing.
+    return;
+  }
+
+  data.inventory = data.inventory.map((e) =>
+    e.id === inventoryEntryId ? { ...e, equipped: true } : e,
+  );
 
   await conn
     .update(characters)

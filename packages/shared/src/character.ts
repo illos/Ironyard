@@ -113,6 +113,15 @@ export type LevelChoices = z.infer<typeof LevelChoicesSchema>;
 // keep them in sync on every write.
 
 export const InventoryEntrySchema = z.object({
+  // Per-entry stable id. Used by EquipItem / UnequipItem / UseConsumable
+  // intents to target a specific inventory row (rather than itemId, since
+  // a character may carry two stacks of the same itemId — e.g. one
+  // equipped and one carried). Defaults to a fresh UUID when omitted so
+  // older fixtures and freshly authored entries still parse.
+  id: z
+    .string()
+    .min(1)
+    .default(() => crypto.randomUUID()),
   itemId: z.string().min(1),
   // Consumables use quantity > 1. Others default to 1.
   quantity: z.number().int().min(0).default(1),

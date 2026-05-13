@@ -184,6 +184,56 @@ export async function stampSubmitCharacter(
 }
 
 /**
+ * EquipItem — verify the actor owns the character, then look up the
+ * inventory entry on the character blob. Stamps `ownsCharacter` and
+ * `inventoryEntryExists`. Does NOT reject — the reducer is the authority.
+ *
+ * Mirrors stampSubmitCharacter for ownership; in addition parses the
+ * characters.data JSON to confirm the inventory entry id exists. The
+ * actual D1 write (flipping `equipped` to true) happens in the
+ * post-reducer side-effect handler.
+ */
+export async function stampEquipItem(
+  intent: Intent & { timestamp: number },
+  _campaignState: CampaignState,
+  env: Bindings,
+): Promise<StampResult> {
+  const payload = intent.payload as MutablePayload;
+  const characterId = payload.characterId;
+  const inventoryEntryId = payload.inventoryEntryId;
+  if (typeof characterId !== 'string' || typeof inventoryEntryId !== 'string') {
+    return 'invalid_payload: characterId and inventoryEntryId required';
+  }
+
+  const actorId = intent.actor.userId;
+  const conn = db(env.DB);
+
+  const character = await conn
+    .select({ ownerId: characters.ownerId, data: characters.data })
+    .from(characters)
+    .where(eq(characters.id, characterId))
+    .get();
+
+  payload.ownsCharacter = character?.ownerId === actorId;
+
+  // Parse the character.data JSON to find the inventory entry by id.
+  let entryExists = false;
+  if (character?.data) {
+    try {
+      const parsed = JSON.parse(character.data);
+      entryExists =
+        Array.isArray(parsed.inventory) &&
+        parsed.inventory.some((e: { id?: string }) => e.id === inventoryEntryId);
+    } catch {
+      entryExists = false;
+    }
+  }
+  payload.inventoryEntryExists = entryExists;
+
+  return null;
+}
+
+/**
  * KickPlayer — find the campaign_characters rows for the kicked user whose
  * characterIds match participants currently on the roster. Stamp
  * participantIdsToRemove. Does NOT reject — the reducer handles it.
@@ -386,6 +436,8 @@ export async function stampIntent(
       return stampAddMonster(intent, campaignState, env);
     case 'BringCharacterIntoEncounter':
       return stampBringCharacterIntoEncounter(intent, campaignState, env);
+    case 'EquipItem':
+      return stampEquipItem(intent, campaignState, env);
     case 'LoadEncounterTemplate':
       return stampLoadEncounterTemplate(intent, campaignState, env);
     case 'JumpBehindScreen':
