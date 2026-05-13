@@ -176,6 +176,8 @@ export function CombatRun() {
     return map;
   }, [monsterByParticipantId]);
 
+  const handleFocus = useCallback((id: string) => setFocusedId(id), []);
+
   // Header guards — handle loading / unauthenticated / no-session error before
   // touching dispatch helpers.
   if (me.isLoading || session.isLoading) {
@@ -354,8 +356,6 @@ export function CombatRun() {
     setParticipantSnapshotBefore(participants);
     send(IntentTypes.EndEncounter, { encounterId: activeEncounter.encounterId });
   };
-
-  const handleFocus = useCallback((id: string) => setFocusedId(id), []);
 
   const wsClosed = status !== 'open';
   const disabled = wsClosed;

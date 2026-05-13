@@ -1,4 +1,4 @@
-import { AddMonsterPayloadSchema, type Monster, type Participant, ulid } from '@ironyard/shared';
+import { AddMonsterPayloadSchema, type Monster, type Participant } from '@ironyard/shared';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 // Convert a Monster stat block into a lobby Participant. Named separately from
@@ -60,9 +60,18 @@ export function applyAddMonster(state: CampaignState, intent: StampedIntent): In
 
   const { quantity, nameOverride, monster } = parsed.data;
   const baseName = nameOverride ?? monster.name;
+  // Count how many instances of this monster already exist so new instances
+  // get globally unique `${monster.id}-instance-N` ids. CombatRun strips the
+  // suffix to reverse-look up the monster's abilities and level.
+  const existingCount = state.participants.filter(
+    (p) => p.kind === 'monster' && p.id.startsWith(`${monster.id}-instance-`),
+  ).length;
   const newParticipants: Participant[] = Array.from({ length: quantity }).map((_, i) => {
     const suffix = quantity > 1 ? ` ${i + 1}` : '';
-    return participantFromMonster(monster, { id: ulid(), name: `${baseName}${suffix}` });
+    return participantFromMonster(monster, {
+      id: `${monster.id}-instance-${existingCount + i + 1}`,
+      name: `${baseName}${suffix}`,
+    });
   });
 
   return {

@@ -47,6 +47,16 @@ const CHARACTER_MUTATING_INTENTS: ReadonlySet<string> = new Set<string>([
   IntentTypes.Respite,
 ]);
 
+// Intents that write to the campaign_characters D1 table (pending/approved
+// roster). Invalidate the campaign-characters query cache on applied so the
+// lobby screens reflect the DO side-effect without a manual page refresh.
+const CAMPAIGN_MEMBERSHIP_INTENTS: ReadonlySet<string> = new Set<string>([
+  IntentTypes.SubmitCharacter,
+  IntentTypes.ApproveCharacter,
+  IntentTypes.DenyCharacter,
+  IntentTypes.RemoveApprovedCharacter,
+]);
+
 // Payload shape we duck-type-check for a character id to invalidate. Most
 // character-mutating intents key on `characterId`; PushItem (Epic 2C Slice 3)
 // uses `targetCharacterId` because it's director-initiated against another
@@ -128,9 +138,17 @@ function reflect(
     // packages/rules/src/intents/add-monster.ts `participantFromMonster`).
     const { quantity, nameOverride, monster } = payload as AddMonsterPayload;
     const baseName = nameOverride ?? monster.name;
+    // Mirror the reducer's ID convention so CombatRun can reverse-look up
+    // monster abilities by stripping `-instance-N` from the participant id.
+    const existingCount = prev.participants.filter(
+      (p) => isParticipantEntry(p) && p.id.startsWith(`${monster.id}-instance-`),
+    ).length;
     const newParticipants: Participant[] = Array.from({ length: quantity }).map((_, i) => {
       const suffix = quantity > 1 ? ` ${i + 1}` : '';
-      return participantFromMonsterClient(monster, { id: ulid(), name: `${baseName}${suffix}` });
+      return participantFromMonsterClient(monster, {
+        id: `${monster.id}-instance-${existingCount + i + 1}`,
+        name: `${baseName}${suffix}`,
+      });
     });
     return { ...prev, participants: [...prev.participants, ...newParticipants] };
   }
@@ -540,7 +558,10 @@ export function useSessionSocket(sessionId: string | undefined) {
       if (!result.success) return;
       const msg = result.data;
       if (msg.kind === 'member_list') {
-        setMembers(msg.members);
+        // Deduplicate by userId — in dev StrictMode two sockets may briefly
+        // be open at once, causing the same user to appear in the list twice.
+        const seen = new Set<string>();
+        setMembers(msg.members.filter((m) => (seen.has(m.userId) ? false : seen.add(m.userId))));
       } else if (msg.kind === 'member_joined') {
         setMembers((prev) => {
           const without = prev.filter((m) => m.userId !== msg.member.userId);
@@ -554,6 +575,13 @@ export function useSessionSocket(sessionId: string | undefined) {
         // the banner updates without a round-trip to the HTTP metadata endpoint.
         if (msg.intent.type === IntentTypes.JumpBehindScreen) {
           setActiveDirectorId(msg.intent.actor.userId);
+        }
+                // Membership-changing intents (Submit/Approve/Deny/Remove) write to
+        // the campaign_characters D1 table. Invalidate so the pending and
+        // approved lists re-fetch the authoritative state rather than racing
+        // against the async DO side-effect.
+        if (CAMPAIGN_MEMBERSHIP_INTENTS.has(msg.intent.type)) {
+          qc.invalidateQueries({ queryKey: ['campaign-characters'] });
         }
         // Character-mutating intents (Equip/Unequip/SwapKit, more later) write
         // to the D1 character row via reducer side-effects. The WS mirror only

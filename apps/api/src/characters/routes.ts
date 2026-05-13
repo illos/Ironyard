@@ -16,12 +16,12 @@ import {
   UpdateCharacterRequestSchema,
   ulid,
 } from '@ironyard/shared';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { requireAuth } from '../auth/middleware';
 import { db } from '../db';
-import { campaignMemberships, campaigns, characters } from '../db/schema';
+import { campaignCharacters, campaignMemberships, campaigns, characters } from '../db/schema';
 import type { AppEnv } from '../types';
 
 const AttachCharacterRequestSchema = z.object({
@@ -72,15 +72,34 @@ characterRoutes.get('/:id', async (c) => {
     });
   }
 
-  // Otherwise: visible to campaign members if the character has a campaignId.
   const data = CharacterSchema.parse(JSON.parse(row.data));
-  if (data.campaignId) {
+
+  // Visible to any campaign member who shares a campaign with this character.
+  // Two paths to membership:
+  // 1. The character blob has a campaignId (set via invite-code creation or attach).
+  // 2. The character exists in campaign_characters for a campaign the caller
+  //    belongs to (covers characters submitted via SubmitCharacter intent where
+  //    the blob's campaignId was never backfilled).
+  const campaignIds: string[] = [];
+  if (data.campaignId) campaignIds.push(data.campaignId);
+
+  // Also check campaign_characters — authoritative record of campaign membership.
+  const ccRows = await conn
+    .select({ campaignId: campaignCharacters.campaignId })
+    .from(campaignCharacters)
+    .where(eq(campaignCharacters.characterId, id))
+    .all();
+  for (const cc of ccRows) {
+    if (!campaignIds.includes(cc.campaignId)) campaignIds.push(cc.campaignId);
+  }
+
+  if (campaignIds.length > 0) {
     const membership = await conn
       .select()
       .from(campaignMemberships)
       .where(
         and(
-          eq(campaignMemberships.campaignId, data.campaignId),
+          inArray(campaignMemberships.campaignId, campaignIds),
           eq(campaignMemberships.userId, caller.id),
         ),
       )

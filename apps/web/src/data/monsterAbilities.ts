@@ -14,6 +14,7 @@ export function pcFreeStrike(): Ability {
   // AbilitySchema.parse() fills PC-extension defaults (cost, tier, isSubclass,
   // sourceClassId) so this stub stays valid as the Ability type evolves.
   return AbilitySchema.parse({
+    id: 'pc-free-strike',
     name: 'Free Strike',
     type: 'action',
     keywords: ['Melee', 'Strike', 'Weapon'],

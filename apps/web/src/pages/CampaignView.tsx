@@ -1,6 +1,5 @@
 import type {
   ApproveCharacterPayload,
-  CampaignCharacter,
   Character,
   CharacterResponse,
   DenyCharacterPayload,
@@ -25,11 +24,11 @@ import {
   type CampaignMember,
   useApprovedCharactersFull,
   useCampaign,
-  useCampaignCharacters,
   useCampaignMembers,
   useEncounterTemplates,
   useMe,
   useMyCharacters,
+  usePendingCharactersFull,
 } from '../api/queries';
 import { useItems } from '../api/static-data';
 import { useSessionSocket } from '../ws/useSessionSocket';
@@ -603,18 +602,19 @@ function PendingCharactersPanel({
   dispatch: (intent: unknown) => boolean;
   wsOpen: boolean;
 }) {
-  const pending = useCampaignCharacters(campaignId, 'pending');
+  const pending = usePendingCharactersFull(campaignId);
 
   const handleApprove = (characterId: string) => {
     const payload: ApproveCharacterPayload = { characterId };
     dispatch(buildIntent({ campaignId, type: IntentTypes.ApproveCharacter, payload, actor }));
-    void pending.refetch();
+    // Query invalidation happens via the socket's `applied` envelope handler
+    // (CAMPAIGN_MEMBERSHIP_INTENTS in useSessionSocket) so both the pending
+    // and approved lists update after the DO side-effect has committed to D1.
   };
 
   const handleDeny = (characterId: string) => {
     const payload: DenyCharacterPayload = { characterId };
     dispatch(buildIntent({ campaignId, type: IntentTypes.DenyCharacter, payload, actor }));
-    void pending.refetch();
   };
 
   if (pending.isLoading) return null;
@@ -633,10 +633,11 @@ function PendingCharactersPanel({
         Pending characters ({pending.data.length})
       </h2>
       <ul className="space-y-1">
-        {pending.data.map((cc) => (
+        {pending.data.map((cr) => (
           <PendingCharacterRow
-            key={cc.characterId}
-            cc={cc}
+            key={cr.id}
+            id={cr.id}
+            name={cr.name}
             onApprove={handleApprove}
             onDeny={handleDeny}
             disabled={!wsOpen}
@@ -648,24 +649,24 @@ function PendingCharactersPanel({
 }
 
 function PendingCharacterRow({
-  cc,
+  id,
+  name,
   onApprove,
   onDeny,
   disabled,
 }: {
-  cc: CampaignCharacter;
+  id: string;
+  name: string;
   onApprove: (id: string) => void;
   onDeny: (id: string) => void;
   disabled: boolean;
 }) {
   return (
     <li className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2">
-      <span className="flex-1 text-sm font-mono text-neutral-300">
-        {cc.characterId.slice(0, 8)}…
-      </span>
+      <span className="flex-1 text-sm text-neutral-300">{name}</span>
       <button
         type="button"
-        onClick={() => onApprove(cc.characterId)}
+        onClick={() => onApprove(id)}
         disabled={disabled}
         className="min-h-11 px-3 rounded-md bg-emerald-700 text-sm font-medium hover:bg-emerald-600 disabled:opacity-50"
       >
@@ -673,7 +674,7 @@ function PendingCharacterRow({
       </button>
       <button
         type="button"
-        onClick={() => onDeny(cc.characterId)}
+        onClick={() => onDeny(id)}
         disabled={disabled}
         className="min-h-11 px-3 rounded-md border border-rose-800 text-rose-300 text-sm hover:bg-rose-900/40 disabled:opacity-50"
       >

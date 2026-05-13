@@ -107,17 +107,12 @@ export function useCharacter(id: string | undefined) {
   });
 }
 
-// Fetch every approved character's full row for a campaign in parallel.
-// The /api/campaigns/:id/characters endpoint only returns CampaignCharacter
-// rows (ids + status), so callers that need the `data` blob (Respite modal,
-// future sheet pickers) fan out per-id via this helper. Returns a stable
-// `CharacterResponse[]` once every sub-query has resolved; an empty array
-// while any are loading. Errors on a single id silently drop that row —
-// the modal degrades to "no Wyrmplate prompt for that PC" rather than
-// blocking the rest of the respite.
-export function useApprovedCharactersFull(campaignId: string | undefined) {
-  const approved = useCampaignCharacters(campaignId, 'approved');
-  const ids = approved.data?.map((cc) => cc.characterId) ?? [];
+// Fan-out helper: given a CampaignCharacter list, fetch each character's full
+// row in parallel and return a stable array once all resolve. Errors on a
+// single id drop that row silently so one bad character doesn't block the rest.
+function useCharactersFull(campaignId: string | undefined, status: 'approved' | 'pending') {
+  const list = useCampaignCharacters(campaignId, status);
+  const ids = list.data?.map((cc) => cc.characterId) ?? [];
   const queries = useQueries({
     queries: ids.map((id) => ({
       queryKey: ['character', id],
@@ -126,8 +121,16 @@ export function useApprovedCharactersFull(campaignId: string | undefined) {
     })),
   });
   const data = queries.map((q) => q.data).filter((d): d is CharacterResponse => !!d);
-  const isLoading = approved.isLoading || queries.some((q) => q.isLoading);
+  const isLoading = list.isLoading || queries.some((q) => q.isLoading);
   return { data, isLoading };
+}
+
+export function useApprovedCharactersFull(campaignId: string | undefined) {
+  return useCharactersFull(campaignId, 'approved');
+}
+
+export function usePendingCharactersFull(campaignId: string | undefined) {
+  return useCharactersFull(campaignId, 'pending');
 }
 
 // Static monster ingest output. Lives at apps/web/public/data/monsters.json

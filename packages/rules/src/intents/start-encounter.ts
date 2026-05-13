@@ -101,12 +101,14 @@ export function applyStartEncounter(
   });
 
   // Materialize monster participants from DO-stamped monster stat blocks.
+  // IDs use the `${monsterId}-instance-N` convention so CombatRun can
+  // reverse-look up the monster's abilities by stripping the suffix.
   const monsterParticipants: Participant[] = parsed.data.stampedMonsters.flatMap((entry) => {
     const baseName = entry.nameOverride ?? entry.monster.name;
     return Array.from({ length: entry.quantity }, (_, i) => {
       const suffix = entry.quantity > 1 ? ` ${i + 1}` : '';
       return participantFromMonster(entry.monster, {
-        id: ulid(),
+        id: `${entry.monster.id}-instance-${i + 1}`,
         name: `${baseName}${suffix}`,
       });
     });
