@@ -27,6 +27,7 @@ export const canonStatus = {
   'damage-application.recoveries': 'verified',
   'damage-application.object-stamina': 'verified',
   'damage-application.engine-resolution-order': 'verified',
+  'damage-application.healing': 'verified',
   'conditions': 'verified',
   'conditions.what-a-condition-is': 'verified',
   'conditions.durations': 'verified',
@@ -105,6 +106,10 @@ export const canonStatus = {
   'character-attachment-activation.level-pick-attachments': 'drafted',
   'character-attachment-activation.engine-apply-order-and-gating': 'drafted',
   'character-attachment-activation.carry-overs-and-known-shape-gaps': 'drafted',
+  'respite': 'verified',
+  'respite.effects-of-finishing-a-respite': 'verified',
+  'respite.interruption-and-gating': 'verified',
+  'respite.engine-resolution': 'verified',
 } as const satisfies Record<string, CanonStatus>;
 
 export type CanonSlug = keyof typeof canonStatus;

@@ -32,8 +32,8 @@ Anywhere a `rules-canon.md` entry rests on a judgment call rather than a direct 
 | Q11 | Does using a granted ability off-turn consume the recipient's triggered-action quota? | 🟢 | rules-canon § 4.8 |
 | Q12 | Stability application — voluntary (target choice) or automatic up to cap? | 🟢 | rules-canon § 6.9, § 6.12 |
 | Q13 | Opposed power rolls — simultaneous or sequential? | 🟢 | rules-canon § 7.5, § 7.8 |
-| Q14 | Numeric Bleeding rating ("Bleeding 5") — flavor for canon §3.5.1 or per-instance damage? | 🟡 | (parser, not in canon yet) |
-| Q15 | Default duration when a tier outcome names a condition with no marker | 🟡 | (parser, not in canon yet) |
+| Q14 | Numeric Bleeding rating ("Bleeding 5") — flavor for canon §3.5.1 or per-instance damage? | 🟢 | (parser, not in canon yet) |
+| Q15 | Default duration when a tier outcome names a condition with no marker | 🟢 | (parser, not in canon yet) |
 | Q16 | Revenant Tough But Withered — inert state, fire-while-inert death, 12h Stamina recovery | 🟡 | rules-canon § 10.1 |
 | Q17 | Ancestry signature-trait mechanics not modelled by §10.2 — data + engine gaps | 🟡 | rules-canon § 10.2 |
 | Q18 | Class-feature choice slots (Conduit Prayers/Wards, Censor Domains) — pipeline gap | 🟡 | rules-canon § 10.11 |
@@ -334,6 +334,8 @@ The rulebook describes intra-side ordering for both sides, but the cross-side or
 
 **To resolve:** print-rulebook check (does an erratum or a later printing clarify?), or by table convention if we'd rather lock a rule than wait.
 
+Searched PDFs 2026-05-12, no additional rule text found — Heroes Book p.267 (extract line 19815) reproduces the SteelCompendium markdown verbatim. The PDF likewise stops at "any heroes ... decide among themselves ... Then the Director decides the same for creatures they control" and is silent on cross-side ordering.
+
 ---
 
 ## Q11. Granted-ability quota 🟢
@@ -435,7 +437,7 @@ The distinction matters because hero-tokens (Tests.md:97) let a player re-roll a
 
 ---
 
-## Q14. Numeric Bleeding rating ("Bleeding 5") 🟡
+## Q14. Numeric Bleeding rating ("Bleeding 5") 🟢
 
 **Question.** Some monster ability tier text reads `… is Bleeding 5 (save ends)` (canon-equivalent form). Is the `5` a per-instance damage rating that *replaces* the canon §3.5.1 default (`1d6 + level`)? Or is it ornamental flavor, with the Bleeding hook firing canonical damage regardless?
 
@@ -446,15 +448,17 @@ The distinction matters because hero-tokens (Tests.md:97) let a player re-roll a
 - **B.** Per-instance damage — the rating overrides canonical for that instance.
 - **C.** Stacking source — the rating adds to canonical damage.
 
-**Call (provisional).** **A.** The parser preserves the rating in the `ConditionApplicationOutcome.note` field so a director can see it, but the engine doesn't read it. Pending user's printed-rulebook confirmation. If it turns out to be B or C, the schema already has `note: '<name> N'` — extending the engine to consume it is a small lift; needs `ConditionInstance` to carry an optional `rating` field.
+**Call.** **A.** Confirmed by PDF search 2026-05-12: zero occurrences of `Bleeding \d+` in either `/tmp/heroes.txt` or `/tmp/monsters.txt`. Heroes Book glossary (line 544): "Bleeding: A condition that causes a creature to take 1d6 + level damage whenever they use a maneuver or triggered actions, or make a power roll using Might or Agility." Bleeding has no rating mechanic in canonical Draw Steel — the canonical formula always governs. The parser still preserves any `N` it sees in `ConditionApplicationOutcome.note` for director visibility (homebrew-friendly), but the engine never reads it.
 
-**Engine implication.** Today: no engine impact. If revised to B/C: extend `ConditionInstanceSchema` with `rating?: number`, extend the Bleeding hook to prefer instance rating over canonical when present.
+**Engine implication.** Today: no engine impact. Bleeding always uses canonical `1d6 + level` per §3.5.1.
 
-**To revisit if:** printed-rulebook says one of B/C, or future data shows nonzero `Bleeding \d+` occurrences.
+**Resolved:** 2026-05-12, PDF source check.
+
+**To revisit if:** future SteelCompendium snapshots or an MCDM erratum introduces `Bleeding N` as a first-class mechanic.
 
 ---
 
-## Q15. Default duration when a tier outcome names a condition with no marker 🟡
+## Q15. Default duration when a tier outcome names a condition with no marker 🟢
 
 **Question.** When a tier reads `the target is Slowed` (no `(save ends)`, no `(EoT)`, no `until …` marker), what duration does the engine apply?
 
@@ -465,11 +469,21 @@ The distinction matters because hero-tokens (Tests.md:97) let a player re-roll a
 - **B.** Default to `end_of_encounter` — matches canon §3.2 literal.
 - **C.** Default to `save_ends` — never end automatically; force the director to dispatch saves.
 
-**Call (provisional).** **A.** Parser defaults unmarked duration to `EoT`. The wrong default would silently lock conditions on for whole encounters, so we picked the conservative direction; surfacing this for the user's printed-rulebook check.
+**Call.** **B (end_of_encounter).** PDF source check 2026-05-12 resolves the question. Heroes Book p.76 "Ending Effects" (extract lines 6244–6256):
 
-**Engine implication.** Parser-only — engine reads whatever the parser emits. If revised to B, the parser swaps the default; engine is unchanged. Existing markers (`(save ends)`, `until …`) override the default in all cases.
+> "When a creature suffers a lasting effect, whatever ability, feature, hazard, or other mechanic imposed the effect specifies how long the effect lasts. **Unless otherwise noted, all effects and conditions that are imposed on heroes during a combat encounter end when the encounter is over** if the hero wants them to, except for being winded, unconscious, or dying. After combat, effects and conditions imposed on other creatures end when it’s convenient for the heroes…"
 
-**To revisit if:** printed-rulebook §3.2 reads explicitly that monster abilities default end_of_encounter, or playtest finds unmarked conditions should stick longer than EoT.
+The rulebook is explicit: the default duration for an unmarked effect/condition is end-of-encounter. Markers (`(EoT)`, `(save ends)`, `until …`) override the default, as canon §3.2 already specifies.
+
+This **reverses the earlier provisional Call A** (EoT default). The intuition that "unmarked → ephemeral" doesn't survive the source text; Draw Steel's design genuinely is that unmarked conditions persist until the encounter ends unless the affected creature chooses to drop them when the encounter is over.
+
+**Engine implication.** Parser default flips from `EoT` to `end_of_encounter` to match canon §3.2 and the rulebook. Existing markers still override. Engine behavior is unchanged — it consumes whatever the parser emits.
+
+**TODO for rules-canon.md.** Canon §3.2 already documents `end_of_encounter` as the default; no edit needed there. **But** any parser code (or canon entry citing the parser) that currently states the unmarked default is `EoT` needs to be updated to `end_of_encounter`. Search points: §3.2 parser-default note in `rules-canon.md`, and the parser source in `packages/rules/src/conditions/` (or equivalent). Author of the next canon-touching task should verify the parser default matches and patch if not.
+
+**Resolved:** 2026-05-12, PDF source check (Heroes Book p.76 "Ending Effects").
+
+**To revisit if:** playtest finds end-of-encounter defaults cause confusion at the table (e.g. directors forgetting to clear conditions between rooms), or an MCDM erratum reverses the default.
 
 ---
 
@@ -498,6 +512,8 @@ The distinction matters because hero-tokens (Tests.md:97) let a player re-roll a
 
 **To revisit if:** the damage engine grows past its Slice 3 subset to handle winded/dying transitions, OR a Revenant character actually hits negative-winded in a real session and the table needs engine support.
 
+Searched PDFs 2026-05-12, no additional rule text found — Heroes Book Revenant Signature Trait (extract lines 4061–4072) reproduces the same mechanics already cited in this entry (inert state replaces dying, fire-while-inert insta-death, 12-h Stamina recovery, no suffocation / no eat-drink). The question is an engine-gap question (no current `winded/dying` pipeline to host these mechanics), not a source-text ambiguity, so the PDFs don't resolve it.
+
 ---
 
 ## Q17. Ancestry signature-trait mechanics not modelled by § 10.2 🟡
@@ -525,6 +541,8 @@ These signature traits use rules patterns the current engine doesn't model:
 **Status.** 🟡 open. No action required for Epic 2B close. The data gaps (A) are small one-line override edits once the abilities are ingested. The engine gaps (B) are larger work that lands in future engine sections (damage pipeline for triggered passives, test-edge override for Glamor-class traits, ancestry-choices schema extension for Dwarf rune system).
 
 **To revisit if:** any of those engine sections grow to cover the relevant mechanic, or a table hits one of these traits in play and wants engine support.
+
+Searched PDFs 2026-05-12, no additional rule text found — Heroes Book ancestry sections confirm the trait mechanics already enumerated (Human *Detect the Supernatural*, Polder *Shadowmeld*, Orc *Relentless*, Dwarf *Runic Carving*, Wode Elf / High Elf *Glamor*, Devil *Silver Tongue*). The question is an engine-gap question (data-pipeline + test-edge-override + ancestry-choices-schema all need work), not a source-text ambiguity, so the PDFs don't resolve it.
 
 ---
 
@@ -556,6 +574,8 @@ These signature traits use rules patterns the current engine doesn't model:
 **Status.** 🟡 open. No action required for Epic 2B close. The mechanism is well-bounded once the schema slot lands; the long tail of cataloguing every class-feature option is the bulk of the work.
 
 **To revisit if:** a table actually plays a Conduit/Censor/Talent/etc. character and notices the missing stat bonuses, OR a future epic specifically targets class-feature completeness.
+
+Searched PDFs 2026-05-12, no additional rule text found — Heroes Book Conduit Prayers (extract lines 7866–7886) and Censor Domain Features (extract lines 6486–6495) confirm the mechanics already enumerated. The question is an engine-gap question (schema slot + parser path + override-map shape all missing), not a source-text ambiguity, so the PDFs don't resolve it.
 
 ---
 

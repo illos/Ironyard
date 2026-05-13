@@ -10,17 +10,33 @@ Interpretive decisions, deferred ambiguities, and source contradictions are logg
 
 Every entry passes two gates before it is in canon. A rule is **not** authoritative until both have cleared.
 
-1. **Gate 1 — Source check.** Three-tier ladder: (a) read the cloned SteelCompendium markdown at `.reference/data-md/` first (well-structured, easy to grep, faithful ~95% of the time); (b) cross-check against the printed-rulebook PDFs at `.reference/core-rules/Draw_Steel_{Heroes,Monsters}_v1.01.pdf` when SteelCompendium is unclear, silent, or suspected of drift (use `pdftotext -layout <file> -` for extraction); (c) if ambiguity survives both, flag for user review. Citations must be reproducible — file path + line numbers (or PDF section headers), no rulebook reconstruction from class examples alone.
-2. **Gate 2 — Manual review.** A human reads the entry against the printed book and confirms. Only after that explicit confirmation does the entry's status flip to ✅. Where Gate 1 found agreement across all sources, Gate 2 is a quick sign-off; where Gate 1 surfaced ambiguity, Gate 2 is the tiebreaker.
+1. **Gate 1 — SteelCompendium check.** Read the cloned SteelCompendium markdown at `.reference/data-md/` first (well-structured, easy to grep, faithful ~95% of the time). Citations must be reproducible — file path + line numbers, no rulebook reconstruction from class examples alone.
+2. **Gate 2 — Core rulebook cross-check.** Verify the rule against the printed-rulebook PDFs at `.reference/core-rules/` (use the PDF's index and glossary to locate the relevant section; extract with `pdftotext -layout <file> -`). If the two sources agree and the mechanic is unambiguous, the agent marks the entry ✅ and implements it. If there is any disagreement, drift, or ambiguity that survives both sources, the entry stays 🚧 and is flagged for user review with a note explaining what is unclear.
 
-**Editing an existing ✅ entry resets it to 🚧 and re-runs gate 2.** Same rules, no shortcuts. A previously-verified rule that gets touched must be re-verified.
+### Running the gates efficiently
+
+Practical workflow so agents don't relearn it each session:
+
+1. **Extract both PDFs once per session, lazily.** When you first need PDF text:
+   ```sh
+   pdftotext -layout .reference/core-rules/Draw_Steel_Heroes_v1.01.pdf /tmp/heroes.txt
+   pdftotext -layout .reference/core-rules/Draw_Steel_Monsters_v1.01.pdf /tmp/monsters.txt
+   ```
+   ~30k + ~24k lines. Cheap to grep, painful to read top-to-bottom (two-column layout interleaves the main body with sidebars).
+2. **Use the Heroes PDF glossary as a page index.** `GLOSSARY INDEX` starts around `/tmp/heroes.txt:474`; every game term has a "p. NN" suffix pointing at the canonical definition. For a rule check, grep the glossary for the term first to get the page, then grep the surrounding text for the section header. (The Monsters PDF lacks a glossary — grep section headers directly.)
+3. **Navigate in the markdown; quote from the PDF.** SteelCompendium's heading structure and file:line citability make it the right Gate 1 surface. The PDF is column-fragmented and unpleasant to read end-to-end, but `grep` works fine and the wording is canonical. When the entry is mechanically sensitive (exact numbers, "even if X" clauses, edge/bane interactions, opt-in / opt-out gates), quote the PDF verbatim — SteelCompendium sometimes paraphrases or compresses.
+4. **PDF wins conflicts.** SteelCompendium's remaining ~5% drift is usually silent omissions (e.g. the "even if you are dazed" clause on crits — present in Heroes PDF p. 75, missing from the SC mirror) or feature renames (e.g. the Talent's 10th-level *Psion* feature, briefly miscalled "Effortless Mind" via SC drift). When sources disagree, fix the canon entry to match the PDF.
+5. **Cite the PDF page in the `Source:` line.** Format: `Heroes PDF p. N` or `Heroes PDF pp. N–M` (and `Monsters PDF p. N` for encounter math, malice, monster traits) alongside the markdown file:line. Future re-verifications can jump straight to the page.
+6. **Parallelize disjoint sections.** Independent canon sections (e.g. §6 forced movement vs §8 encounter math) can be verified by parallel agents; pre-extracted PDFs are read-only, so there's no conflict risk on the source side. The only contention is in `rules-canon.md` itself — keep each agent's edits scoped to its own subsections.
+
+**Editing an existing ✅ entry resets it to 🚧 and re-runs both gates.** Same rules, no shortcuts. A previously-verified rule that gets touched must be re-verified.
 
 **The engine respects the gate.** Code in `packages/rules` may automate behavior only for ✅ entries. Anything 🚧 or ⛔ is manual-override only — the reducer surfaces a question to the user instead of guessing. This is enforced by reading the section status from this doc (or a derived registry) rather than by trusting the engine author to remember.
 
 ### Section status legend
 
 - ✅ **verified** — passed both gates; engine may automate
-- 🚧 **drafted, awaiting verification** — passed gate 1, not gate 2; engine treats as manual-override
+- 🚧 **drafted, flagged for review** — gate 2 surfaced ambiguity or source disagreement; engine treats as manual-override pending user resolution
 - ⛔ **TBD** — not drafted; engine treats as manual-override
 
 | § | Topic | Status |
@@ -35,12 +51,13 @@ Every entry passes two gates before it is in canon. A rule is **not** authoritat
 | 8 | Encounter math (victories, EV) | ✅ |
 | 9 | Character derivation (Phase 2) | ✅ |
 | 10 | Character attachment activation (Phase 2 Epic 2B) | 🚧 |
+| 11 | Respite | ✅ |
 
 ---
 
 ## 1. Power rolls (resolution) ✅
 
-> **Source:** `.reference/data-md/Rules/Chapters/The Basics.md` lines 109–195. Sections quoted: **Power Rolls**, **Edges and Banes**, **Bonuses and Penalties**, **Automatic Tier Outcomes**, **Downgrade**, **Natural Roll**.
+> **Source:** `.reference/data-md/Rules/Chapters/The Basics.md` lines 109–195 (Heroes PDF pp. 4–5). Sections quoted: **Power Rolls**, **Edges and Banes**, **Bonuses and Penalties**, **Automatic Tier Outcomes**, **Downgrade**, **Natural Roll**.
 
 ### 1.1 The roll
 
@@ -123,9 +140,9 @@ Critical-hit detection runs alongside steps 7–9 and is orthogonal to the final
 
 ### 1.9 Critical hits ✅
 
-> **Source:** user-quoted printed Heroes Book (recorded conversation 2026-05-10); see [Q5](rule-questions.md#q5-is-a-natural-1920-always-a-critical-hit-or-only-on-certain-rolls-) for the rule text and the resolution process. Cross-references: `Combat.md:142` (downgrading a crit), `Combat.md:193` (additional effects alongside auto-tier).
+> **Source:** Heroes PDF p. 75 (chapter 5 *Classes*, "Critical Hit" section); glossary p. 75 entry. SteelCompendium mirror: see `Classes.md` "Critical Hit" subsection. Cross-references: `Combat.md:142` (downgrading a crit), `Combat.md:193` (additional effects alongside auto-tier). See [Q5](rule-questions.md#q5-is-a-natural-1920-always-a-critical-hit-or-only-on-certain-rolls-) for the resolution process.
 
-**Rule.** "When you roll a natural 19 or 20 on a Strike or ability power roll on an ability that uses an action, you can immediately take another action."
+**Rule (verbatim, Heroes p. 75):** "Whenever you make an ability roll as a main action and the roll is a natural 19 or natural 20 — a total of 19 or 20 before adding your characteristic score or other modifiers — you score a critical hit. A critical hit allows you to immediately take an additional main action after resolving the power roll, whether or not it's your turn and **even if you are dazed**. You can't score a critical hit with an ability roll made as a maneuver or any other action type, but you can score a critical hit with a main action you use off your turn. For example, an opportunity attack made as a triggered action or a signature ability used as a free triggered action with the assistance of the tactician's Strike Now ability can be critical hits."
 
 #### 1.9.1 What is a critical hit (vs. critical success)
 
@@ -170,6 +187,7 @@ If the off-turn case applies (e.g. nat-19/20 on an opp attack), the actor takes 
 
 - **Auto-tier (§ 1.6 / Q3).** An auto-tier-1 effect overrides the tier-3 force on a nat 19/20. But Combat.md:193 specifically says additional effects fire alongside auto-tier outcomes ("you can still make the roll to determine if you obtain the additional effect in addition to the automatic outcome"). The crit-hit "extra action" is one such additional effect, and fires even when auto-tier locks the tier to 1.
 - **Voluntary downgrade (§ 1.7 / Combat.md:142).** Downgrading a critical hit preserves the extra-action benefit. The downgrade only changes the *tier* of the effect, not whether the crit-hit fires.
+- **Dazed actor.** The PDF text explicitly says the crit-hit extra main action fires "even if you are dazed." Dazed normally caps the actor to one action of any type per turn (§ 4.9). The crit-hit benefit overrides that cap — the dazed actor gets the bonus main action despite the cap.
 - **Recursion.** A crit on the extra main action grants *another* extra action. The rule is unrestricted as written. Engine: track each extra-action chain; surface to the table if it goes more than a couple deep (a nat-20 chain of 3+ extras is dramatic enough to want the table seeing it loud).
 
 #### 1.9.5 Engine dispatch
@@ -184,7 +202,7 @@ After resolving a `RollPower` per § 1.8:
 
 ## 2. Damage application ✅
 
-> **Source:** `.reference/data-md/Rules/Chapters/Combat.md` lines 609–700 (Damage, Stamina, Recoveries, Winded, Dying, Knock-out, Temporary Stamina, Object Stamina). Rounding rule from `.reference/data-md/Rules/Chapters/The Basics.md` lines 233–235.
+> **Source:** `.reference/data-md/Rules/Chapters/Combat.md` lines 609–700 (Heroes PDF pp. 277–278: Damage, Stamina, Recoveries, Winded, Dying, Knock-out, Temporary Stamina, Object Stamina). Rounding rule from `.reference/data-md/Rules/Chapters/The Basics.md` lines 233–235 (Heroes PDF p. 5, "Always Round Down" sidebar).
 
 ### 2.1 Damage types
 
@@ -337,9 +355,28 @@ Multi-type single source (e.g. ability deals `8 fire + 4 cold`) — engine call 
 
 Damage applied to an object: skip steps 5–7 (objects have no temp stamina); on `currentStamina ≤ 0`, dispatch `ObjectDestroyed`.
 
+### 2.13 Healing (ApplyHeal) ✅
+
+> **Source:** `.reference/data-md/Rules/Chapters/Combat.md` lines ~611–650 (Heroes PDF pp. 277–278: "Stamina", "Recoveries and Recovery Value", "Dying and Death"). All constituent rules are verified at their primary sections: § 2.6 (effective stamina max — "Some effects can also reduce your Stamina maximum, limiting the amount of Stamina you can regain"), § 2.8 (dying ends at stamina > 0), § 2.10 (Recoveries spend mechanic).
+
+This subsection documents the *engine pipeline* that the rules engine uses to implement Draw Steel's regain-stamina paths. It does not introduce new rules — all constituent rule claims are verified at the primary sections listed above. Section is ✅ on the strength of those primary verifications.
+
+**Pipeline.** A general "regain stamina" pipeline distinct from § 2.2 (damage). Used by Catch Breath (§ 2.10), the Heal main action (§ 4.7), recovery-spending abilities, and any future heal-shaped item/ability. The engine surfaces it as the `ApplyHeal` derived intent.
+
+**Engine resolution.** For an `ApplyHeal { targetId, amount }`:
+
+1. `before = target.currentStamina` (may be negative if dying).
+2. `after = min(before + amount, target.maxStamina)` — per § 2.6 ("regained stamina cannot exceed effective max").
+3. `delivered = after - before`. `ApplyHeal` never **reduces** stamina; `amount` is treated as non-negative (`max(0, amount)`).
+4. Recompute stamina state per § 2.7–2.8: a dying hero healed above 0 is no longer dying (and any non-`removable` Bleeding from § 3.5.1's dying clause is cleared by the caller).
+
+**Engine-only invariant.** Step 3's "never reduces" is an engine API contract, not a Draw Steel rule. The rulebook is silent on whether a "regain N stamina" effect with `N ≤ 0` would lower stamina, because the rulebook never expresses heal amounts as negative. The engine clamps `amount` to non-negative defensively so callers can't accidentally pass a damage value through the heal path. This is engine architecture, not rule interpretation, and does not require source verification.
+
+Out of scope for this subsection: the *source* of `amount` (recovery value, fixed number, dice roll). Callers compute that and pass `amount`. Recoveries are spent separately via § 2.10 (`SpendRecovery` derives `ApplyHeal` with `amount = recoveryValue`).
+
 ## 3. Conditions ✅
 
-> **Source:** `.reference/data-md/Rules/Chapters/Classes.md` lines 442–494 (the canonical list). Per-condition files at `.reference/data-md/Rules/Conditions/<Condition>.md` mirror the same text. Duration and saving-throw mechanics: `.reference/data-md/Rules/Chapters/Introduction.md` lines 267, 485, 487 and `Classes.md` lines 404–408.
+> **Source:** `.reference/data-md/Rules/Chapters/Classes.md` lines 442–494 (Heroes PDF pp. 76–77, "Conditions" section — the canonical list). Per-condition files at `.reference/data-md/Rules/Conditions/<Condition>.md` mirror the same text. Duration and saving-throw mechanics: `.reference/data-md/Rules/Chapters/Introduction.md` lines 267, 485, 487 and `Classes.md` lines 404–408 (Heroes PDF p. 75: "Saving Throw (Save Ends)", "End of Next Turn (EoT)", "Ending Effects"). Stacking rule: Heroes PDF p. 75 "Stacking Unique Effects" (e.g. "A character who is grabbed by an enemy can't be grabbed again by another enemy").
 
 ### 3.1 What a condition is
 
@@ -510,7 +547,7 @@ The previous `rules-engine.md` ConditionDef sketch (with only `startTurn` and `e
 
 ## 4. Action economy ✅
 
-> **Source:** `.reference/data-md/Rules/Chapters/Combat.md` lines 62–587 (Combat Round, Taking a Turn, Movement, Move Actions, Maneuvers, Main Actions, Free Strikes).
+> **Source:** `.reference/data-md/Rules/Chapters/Combat.md` lines 62–587 (Heroes PDF pp. 265–275: Combat Round, Taking a Turn, Movement, Move Actions, Maneuvers, Main Actions, Free Strikes). Opportunity-attack gate ("If a creature has a bane or double bane on the power roll against the enemy, they can't make an opportunity attack") on Heroes PDF p. 275.
 
 ### 4.1 Round structure
 
@@ -705,7 +742,7 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 ### 5.3 Talent — Clarity ✅
 
-> **Source:** `Classes/Talent.md` lines 82–104, plus 10th-level feature at lines 1456–1457.
+> **Source:** `Classes/Talent.md` lines 82–104, plus 10th-level Psion feature at lines 1453–1457. Heroes PDF p. 187 (Clarity in Combat), p. 201 (Psion).
 
 - **Floor:** `-(1 + Reason)`. The character can spend Clarity they don't have, going into negative numbers.
 - **Ceiling:** none documented for the in-combat pool.
@@ -719,7 +756,7 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
   - **End of each of the character's turns:** take 1 damage per negative point of clarity. Engine dispatches a derived `ApplyDamage` intent.
 - **Lifecycle:** at end of encounter, remaining positive clarity is lost AND any negative clarity resets to 0.
 - **Outside-of-combat rules:** can't gain clarity outside combat, but can use clarity-costing abilities without paying; cooldown until earning a victory or finishing a respite. Engine note: this is mostly a Phase 2+ surface area; the combat tracker can ignore it for Phase 1.
-- **10th-level feature (Effortless Mind):** can opt out of taking damage from negative clarity, and can opt into a Strained sub-effect even when not strained. Engine note: per-character toggles that suppress the end-of-turn damage dispatch and allow a manual Strained-effect trigger.
+- **10th-level feature (Psion):** at the start of each of the character's turns, gain `1d3 + 2` clarity instead of `1d3 + 1` (which an earlier feature, `Talent.md:1147`, set from `1d3`). The character can also opt out of taking damage from negative clarity, and can opt into a Strained sub-effect even when not strained. Engine note: per-character toggles that suppress the end-of-turn damage dispatch and allow a manual Strained-effect trigger; the per-turn gain formula is configured per-character based on level.
 
 ### 5.4 Other classes ✅
 
@@ -738,7 +775,7 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 #### 5.4.1 Censor — Wrath
 
-> **Source:** `Classes/Censor.md` lines 87–99.
+> **Source:** `Classes/Censor.md` lines 87–99. Heroes PDF p. 79 (Wrath in Combat).
 
 - **Per-turn gain:** **2** wrath.
 - **Class-specific gain triggers:**
@@ -748,7 +785,7 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 #### 5.4.2 Conduit — Piety (+ Divine Power)
 
-> **Source:** `Classes/Conduit.md` lines 74–96.
+> **Source:** `Classes/Conduit.md` lines 74–96. Heroes PDF p. 95 (Piety in Combat).
 
 - **Per-turn gain:** roll **1d3** piety. Optional **"pray to the gods"** mechanic before the roll (no action required):
   - On a 1: gain **+1** piety, but take **`1d6 + level`** psychic damage that cannot be reduced.
@@ -759,7 +796,7 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 #### 5.4.3 Elementalist — Essence
 
-> **Source:** `Classes/Elementalist.md` lines 98–110, plus maintenance rule line 143.
+> **Source:** `Classes/Elementalist.md` lines 98–110, plus maintenance rule line 143. Heroes PDF p. 113 (Essence in Combat).
 
 - **Per-turn gain:** **2** essence.
 - **Class-specific gain trigger:** first time per combat round that you or a creature within 10 squares takes damage that **isn't untyped or holy**: **+1 essence**.
@@ -768,7 +805,7 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 #### 5.4.4 Fury — Ferocity
 
-> **Source:** `Classes/Fury.md` lines 77–94.
+> **Source:** `Classes/Fury.md` lines 77–94. Heroes PDF p. 131 (Ferocity in Combat).
 
 - **Per-turn gain:** roll **1d3** ferocity.
 - **Class-specific gain triggers:**
@@ -777,7 +814,7 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 #### 5.4.5 Null — Discipline
 
-> **Source:** `Classes/Null.md` lines 77–89.
+> **Source:** `Classes/Null.md` lines 77–89. Heroes PDF p. 147 (Discipline in Combat).
 
 - **Per-turn gain:** **2** discipline.
 - **Class-specific gain triggers:**
@@ -788,7 +825,7 @@ Engine note for the second trigger: requires the engine to log Malice spends and
 
 #### 5.4.6 Shadow — Insight
 
-> **Source:** `Classes/Shadow.md` lines 77–91.
+> **Source:** `Classes/Shadow.md` lines 77–91. Heroes PDF p. 161 (Insight in Combat).
 
 - **Per-turn gain:** roll **1d3** insight.
 - **Class-specific gain trigger:** first time per combat round that you deal damage **incorporating 1 or more surges** (§ 5.6): **+1 insight**.
@@ -796,7 +833,7 @@ Engine note for the second trigger: requires the engine to log Malice spends and
 
 #### 5.4.7 Tactician — Focus
 
-> **Source:** `Classes/Tactician.md` lines 77–89.
+> **Source:** `Classes/Tactician.md` lines 77–89. Heroes PDF p. 175 (Focus in Combat).
 
 - **Per-turn gain:** **2** focus.
 - **Class-specific gain triggers:**
@@ -805,7 +842,7 @@ Engine note for the second trigger: requires the engine to log Malice spends and
 
 #### 5.4.8 Troubadour — Drama
 
-> **Source:** `Classes/Troubadour.md` lines 76–101.
+> **Source:** `Classes/Troubadour.md` lines 76–101. Heroes PDF p. 203 (Drama in Combat).
 
 - **Per-turn gain:** roll **1d3** drama.
 - **Class-specific gain triggers** (in addition to the universal):
@@ -840,7 +877,7 @@ The reducer instantiates one of these per character based on their class. Per-ab
 
 ### 5.5 Director's Malice ✅
 
-> **Source:** `.reference/data-md/Bestiary/Monsters/Chapters/Monster Basics.md` lines 331–372 (Malice, Earning Malice, Spending Malice, Basic Malice Features).
+> **Source:** `.reference/data-md/Bestiary/Monsters/Chapters/Monster Basics.md` lines 331–372 (Malice, Earning Malice, Spending Malice, Basic Malice Features). Monsters PDF p. 6.
 
 The Director's equivalent of a heroic resource. **Encounter-scoped pool**; reset at the start of every encounter; lost at end of encounter.
 
@@ -879,7 +916,7 @@ Visibility: Malice may be displayed to players or kept hidden per the Director's
 
 ### 5.6 Surges ✅
 
-> **Source:** `.reference/data-md/Rules/Chapters/Classes.md` lines 365–374.
+> **Source:** `.reference/data-md/Rules/Chapters/Classes.md` lines 365–374. Heroes PDF p. 75 (Surges).
 
 Universal per-character pool, **separate from the heroic resource**. Many abilities grant surges; the holder spends them to enhance ability damage or potency on a per-roll basis.
 
@@ -919,7 +956,7 @@ Validation: total surge spend (`(surgeDamage?.count ?? 0) + 2 * (surgePotency?.l
 
 ## 6. Forced movement ✅
 
-> **Source:** `.reference/data-md/Rules/Chapters/Combat.md` lines 315–398 (Forced Movement and its sub-sections).
+> **Source:** `.reference/data-md/Rules/Chapters/Combat.md` lines 315–398 (Forced Movement and its sub-sections). Heroes PDF pp. 270–272.
 
 ### 6.1 Push, Pull, Slide
 
@@ -1051,7 +1088,7 @@ For one source applying force-move to one target:
 
 ## 7. Saves, resistances, tests ✅
 
-> **Source:** `.reference/data-md/Rules/Chapters/Tests.md` lines 17–587 (tests, difficulty, skills, opposed rolls, reactive tests, assist, hide/sneak, group/montage). Potency mechanic from `Classes.md` lines 293–351. Saving-throw mechanic already covered in [§ 3.3](#33-saving-throws); cross-referenced below.
+> **Source:** `.reference/data-md/Rules/Chapters/Tests.md` lines 17–587 (Heroes PDF pp. 249–262 — tests, difficulty, skills, opposed rolls, reactive tests, assist, hide/sneak, group/montage). Potency mechanic from `Classes.md` lines 293–351 (Heroes PDF pp. 74–75, "Potencies" / "Spending Resources on Potencies"). Saving-throw mechanic (`Classes.md`: "Saving Throw (Save Ends)", Heroes PDF p. 75) already covered in [§ 3.3](#33-saving-throws); cross-referenced below.
 
 This section disambiguates three distinct mechanics that are easy to conflate:
 
@@ -1219,7 +1256,7 @@ When the reducer dispatches the tier outcome of a `RollPower`:
 
 ## 8. Encounter math (victories, EV) ✅
 
-> **Source:** Victories — `.reference/data-md/Rules/Chapters/The Basics.md` lines 268–282. Encounter building — `.reference/data-md/Bestiary/Monsters/Chapters/Monster Basics.md` lines 487–649.
+> **Source:** Victories — `.reference/data-md/Rules/Chapters/The Basics.md` lines 268–282 (Heroes PDF p. 7). Encounter building — `.reference/data-md/Bestiary/Monsters/Chapters/Monster Basics.md` lines 487–649 (Monsters PDF pp. 10–12).
 
 ### 8.1 Victories
 
@@ -1405,10 +1442,10 @@ scaling. Maps to `ClassSchema.recoveries`.
 |---|---|
 | Censor | 12 |
 | Fury | 10 |
-| Null | 10 |
 | Tactician | 10 |
 | Conduit | 8 |
 | Elementalist | 8 |
+| Null | 8 |
 | Shadow | 8 |
 | Talent | 8 |
 | Troubadour | 8 |
@@ -2028,3 +2065,37 @@ skipped entry with `SKIPPED-DEFERRED` for traceability.
   Heraldic Fame would incorrectly get +6 Stamina today. Fix needs a
   `titleBenefitId` slot on `CharacterSchema` and an override map keyed
   on `{titleId}.{benefitId}` instead of plain `{titleId}`.
+
+## 11. Respite ✅
+
+> **Source:** `.reference/data-md/Rules/Chapters/The Basics.md` lines 282–320 (Heroes PDF p. 7, "Respite" section, alongside "Victories Reset" and "Regaining Recoveries"). Cross-references: `.reference/data-md/Rules/Chapters/Kits.md` line 23 (kit-swap is a respite activity); § 5.4.9 / § 5.5 / § 5.6 (respite is *not* an encounter, but most heroic resources reset at end of encounter — orthogonal); § 8.1 (Victories → XP cited there as "§ TBD respite rules" — now resolved here).
+
+A **respite** is 24 uninterrupted hours of rest. Heroes regain all lost Recoveries, restore Stamina to maximum, convert their Victories to XP (then reset Victories to 0), and may undertake **one** respite activity (e.g. project roll, change kit).
+
+### 11.1 Effects of finishing a respite
+
+1. `currentStamina = maxStamina` for every hero in the party. (Basics.md:316.)
+2. `recoveries.current = recoveries.max` for every hero. (Basics.md:310, 316.)
+3. For each hero: `xp += victories`; then `victories = 0`. (Basics.md:282, 286.)
+4. Each hero may declare **one respite activity** (Basics.md:316). Examples: making a project roll (Downtime Projects), changing kit (Kits.md:23), and any class-, ancestry-, or item-granted respite activity.
+
+End-of-encounter resource resets (§ 5.4, § 5.5, § 5.6) are independent of respite — those fire on `EndEncounter`, not on respite.
+
+### 11.2 Interruption and gating
+
+- A respite must be **uninterrupted**; combat, hostile environment events, or similar serious distractions cancel the in-progress respite and forfeit its benefits. (Basics.md:318.)
+- Standard 8-hour sleep is **not** a respite. (Basics.md:320.)
+- Heroes may chain respites back-to-back to accomplish multiple respite activities. (Basics.md:316.)
+- Engine: `Respite` is rejected if `state.encounter !== null`. The dispatcher (UI / Director) is responsible for confirming a safe location; the engine does not model environmental interruptions.
+
+### 11.3 Engine resolution
+
+The `Respite` intent walks the participant roster:
+
+1. For every PC participant: set `recoveries = { current: recoveries.max, max: recoveries.max }`. *(Stamina restoration is logically part of this step too, but Phase 1 ships only the recoveries refill because the lobby doesn't persist PCs between encounters today — Phase 2 will round this out per `participants[pc].currentStamina = maxStamina`.)*
+2. Set `state.partyVictories = 0`. (Per-PC Victories live on the PC in Phase 2; today the lobby tracks a single shared `partyVictories` total.)
+3. Log "Respite: refilled recoveries for N heroes; X XP each" — XP conversion happens in the character sheet, not the reducer; the log records the conversion amount for the audit trail.
+
+Out of scope for this entry: kit-swap (handled by `SwapKit`, which also rejects mid-encounter), the project-roll respite activity, and any class-feature-driven respite hooks (e.g. Censor Virtue gain, Conduit Divine Power gain — both 10th-level epic secondaries, deferred).
+
+**Verification.** ✅ on 2026-05-12. Gate 1 (Basics.md:282–320) and Gate 2 (Heroes PDF p. 7 "Respite") agree verbatim on the procedure, the 24-hour duration, the chainability, the interruption rule, and the "8-hour sleep doesn't count" clause. The engine-architecture observations under § 11.3 (Phase-1 lobby doesn't persist PCs, partyVictories is shared) are implementation notes, not rule disagreements — Phase-2 follow-ups remain: stamina refill on the participant, per-PC Victories, respite-gated immunity-type swaps from § 10.16, respite-gated resource-floor refresh.

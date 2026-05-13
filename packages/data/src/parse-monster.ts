@@ -426,10 +426,13 @@ function detectDuration(clause: string): ConditionDuration {
   for (const p of DURATION_PATTERNS) {
     if (p.re.test(clause)) return p.build();
   }
-  // Default: end of next turn. Canon §3.2 textual default is end_of_encounter,
-  // but tier-outcome strings empirically read as EoT (see docs/rule-questions.md
-  // Q15). Wrong default would silently lock conditions on for whole encounters.
-  return { kind: 'EoT' };
+  // Default: end of encounter. Per Heroes PDF p. 76 "Ending Effects" (and
+  // canon §3.2): "Unless otherwise noted, all effects and conditions that are
+  // imposed on heroes during a combat encounter end when the encounter is
+  // over." Q15 resolved to this on 2026-05-12 (reverses the earlier
+  // provisional EoT default). Explicit markers (EoT, save ends, until …) still
+  // override.
+  return { kind: 'end_of_encounter' };
 }
 
 function normalizeConditionName(raw: string): ConditionType {
