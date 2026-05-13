@@ -193,6 +193,17 @@ export const CharacterSchema = z.object({
   // Items the character owns. Empty default for fresh characters.
   inventory: z.array(InventoryEntrySchema).default([]),
 
+  // ── Runtime-mutable stamina state ─────────────────────────────────────────
+  // Runtime-mutable stamina state. Written by EndEncounter side-effect (current
+  // HP at encounter end) and cleared to null by Respite side-effect. Read by
+  // stampStartEncounter to resume HP across encounters. null = use derived max.
+  currentStamina: z.number().int().nullable().default(null),
+
+  // Recoveries spent since last Respite. Written by EndEncounter side-effect.
+  // Cleared to 0 by Respite side-effect. stampStartEncounter computes
+  // recoveries.current = recoveriesMax - recoveriesUsed.
+  recoveriesUsed: z.number().int().nonnegative().default(0),
+
   // ── Campaign context ──────────────────────────────────────────────────────
   // Set when the character was created using a campaign invite code.
   // Null for standalone characters.

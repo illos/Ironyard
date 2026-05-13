@@ -72,6 +72,8 @@ export function buildFuryL1Fixture(overrides: Partial<Character> = {}): Characte
     inventory: [],
     campaignId: null,
     xp: 0,
+    currentStamina: null,
+    recoveriesUsed: 0,
   };
 }
 
