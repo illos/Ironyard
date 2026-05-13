@@ -25,7 +25,29 @@ import {
   type StartEncounterPayload,
   type StartTurnPayload,
 } from '@ironyard/shared';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
+
+// Character-mutating intents whose `applied` envelope should invalidate the
+// `['character', id]` TanStack Query — the D1-backed character row is the
+// source of truth for fields the WS mirror doesn't carry (kitId, inventory,
+// equipped flags, max stamina derivation). Keeping this set narrow avoids
+// over-invalidating; future intents (UseConsumable, PushItem, Respite that
+// touches Wyrmplate, etc.) get added when they ship.
+const CHARACTER_MUTATING_INTENTS: ReadonlySet<string> = new Set<string>([
+  IntentTypes.EquipItem,
+  IntentTypes.UnequipItem,
+  IntentTypes.SwapKit,
+]);
+
+// Payload shape we duck-type-check for a `characterId` to invalidate. All
+// three intents above use `characterId`; future PushItem variants will use
+// `targetCharacterId` and can be teased apart at that time.
+function characterIdFromPayload(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const id = (payload as { characterId?: unknown }).characterId;
+  return typeof id === 'string' && id.length > 0 ? id : null;
+}
 
 export type ConnectionStatus = 'connecting' | 'open' | 'closed';
 
@@ -393,6 +415,7 @@ function snapshotToEncounter(state: unknown): ActiveEncounter | null {
 }
 
 export function useSessionSocket(sessionId: string | undefined) {
+  const qc = useQueryClient();
   const [members, setMembers] = useState<Member[]>([]);
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const [activeEncounter, setActiveEncounter] = useState<ActiveEncounter | null>(null);
@@ -451,6 +474,17 @@ export function useSessionSocket(sessionId: string | undefined) {
         if (msg.intent.type === IntentTypes.JumpBehindScreen) {
           setActiveDirectorId(msg.intent.actor.userId);
         }
+        // Character-mutating intents (Equip/Unequip/SwapKit, more later) write
+        // to the D1 character row via reducer side-effects. The WS mirror only
+        // tracks combat-side state (HP, conditions, resources); fields like
+        // kitId, inventory, and equipped flags live on the character query.
+        // Invalidate so the sheet re-derives runtime values.
+        if (CHARACTER_MUTATING_INTENTS.has(msg.intent.type)) {
+          const characterId = characterIdFromPayload(msg.intent.payload);
+          if (characterId) {
+            qc.invalidateQueries({ queryKey: ['character', characterId] });
+          }
+        }
         setIntentLog((prev) => [
           ...prev,
           {
@@ -486,7 +520,7 @@ export function useSessionSocket(sessionId: string | undefined) {
       wsRef.current = null;
       ws.close();
     };
-  }, [sessionId]);
+  }, [sessionId, qc]);
 
   const dispatch = useCallback((intent: unknown) => {
     const ws = wsRef.current;
