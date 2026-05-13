@@ -7,7 +7,7 @@ import { InventoryPanel } from './InventoryPanel';
 // into a real DOM. The web app's vitest setup has no jsdom + no
 // @testing-library/react installed — adding them just for these snapshot-style
 // assertions would be heavier than the test deserves at Slice-1 prototype
-// fidelity. Static markup is sufficient: the four assertions below check
+// fidelity. Static markup is sufficient: the assertions below check
 // observable text and structural fragments that exist in the rendered output
 // of a pure render (no effects, no state).
 
@@ -36,7 +36,14 @@ const items: Item[] = [
 
 function renderPanel(): string {
   return renderToStaticMarkup(
-    <InventoryPanel character={character} items={items} onEquip={() => {}} onUnequip={() => {}} />,
+    <InventoryPanel
+      character={character}
+      items={items}
+      onEquip={() => {}}
+      onUnequip={() => {}}
+      participants={[]}
+      onUse={() => {}}
+    />,
   );
 }
 
@@ -59,6 +66,13 @@ describe('InventoryPanel', () => {
   it('shows consumable quantity', () => {
     const html = renderPanel();
     expect(html).toMatch(/×3/);
+  });
+
+  it('renders a Use button for consumables', () => {
+    const html = renderPanel();
+    // The consumable row swaps Equip/Unequip for the UseConsumableButton.
+    // The collapsed render is just a button with the literal text "Use".
+    expect(html).toMatch(/>Use</);
   });
 
   it('flags unknown itemIds with a warning row', () => {
@@ -84,6 +98,8 @@ describe('InventoryPanel', () => {
         items={conflictingItems}
         onEquip={() => {}}
         onUnequip={() => {}}
+        participants={[]}
+        onUse={() => {}}
       />,
     );
     expect(html).toMatch(/Slot conflict: head/);
@@ -106,6 +122,8 @@ describe('InventoryPanel', () => {
         items={okItems}
         onEquip={() => {}}
         onUnequip={() => {}}
+        participants={[]}
+        onUse={() => {}}
       />,
     );
     expect(html).not.toMatch(/Slot conflict/);
@@ -128,6 +146,8 @@ describe('InventoryPanel', () => {
         items={carriedDupItems}
         onEquip={() => {}}
         onUnequip={() => {}}
+        participants={[]}
+        onUse={() => {}}
       />,
     );
     expect(html).not.toMatch(/Slot conflict/);

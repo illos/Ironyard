@@ -1,4 +1,4 @@
-import type { InventoryEntry, Item } from '@ironyard/shared';
+import type { InventoryEntry, Item, Participant } from '@ironyard/shared';
 import { ItemRow } from './ItemRow';
 
 type Row = { entry: InventoryEntry; item: Item | undefined };
@@ -7,6 +7,10 @@ type Props = {
   rows: Row[];
   onEquip: (id: string) => void;
   onUnequip: (id: string) => void;
+  // Slice 2: passed through to ItemRow so consumable rows can offer per-target
+  // Use buttons. Non-consumable rows ignore both `participants` and `onUse`.
+  participants: Participant[];
+  onUse: (inventoryEntryId: string, targetParticipantId?: string) => void;
   // Body slots where two or more equipped trinkets share a slot. Passed down
   // from InventoryPanel so ItemRow can render BodySlotConflictChip without
   // recomputing the set per row.
@@ -15,7 +19,15 @@ type Props = {
 
 // Per-category wrapper. Returns null when empty so the panel doesn't render a
 // hollow section header for categories the character doesn't own.
-export function InventorySection({ title, rows, onEquip, onUnequip, conflictingSlots }: Props) {
+export function InventorySection({
+  title,
+  rows,
+  onEquip,
+  onUnequip,
+  participants,
+  onUse,
+  conflictingSlots,
+}: Props) {
   if (rows.length === 0) return null;
   return (
     <div className="space-y-1">
@@ -28,6 +40,8 @@ export function InventorySection({ title, rows, onEquip, onUnequip, conflictingS
               item={r.item}
               onEquip={onEquip}
               onUnequip={onUnequip}
+              participants={participants}
+              onUse={onUse}
               conflictingSlots={conflictingSlots}
             />
           </li>

@@ -1,4 +1,4 @@
-import type { Character, Item } from '@ironyard/shared';
+import type { Character, Item, Participant } from '@ironyard/shared';
 import { InventorySection } from './InventorySection';
 
 type Props = {
@@ -6,6 +6,11 @@ type Props = {
   items: Item[];
   onEquip: (inventoryEntryId: string) => void;
   onUnequip: (inventoryEntryId: string) => void;
+  // Slice 2: non-self participants in the active encounter, plus the
+  // UseConsumable dispatch. Threaded down to ItemRow so consumable rows can
+  // surface a target picker.
+  participants: Participant[];
+  onUse: (inventoryEntryId: string, targetParticipantId?: string) => void;
 };
 
 // Partition the character's inventory entries by item category. Orphan rows
@@ -46,7 +51,14 @@ function detectTrinketConflicts(character: Character, items: Item[]): Set<string
   return conflicting;
 }
 
-export function InventoryPanel({ character, items, onEquip, onUnequip }: Props) {
+export function InventoryPanel({
+  character,
+  items,
+  onEquip,
+  onUnequip,
+  participants,
+  onUse,
+}: Props) {
   const { artifacts, leveled, trinkets, consumables, orphans } = partition(character, items);
   const conflictingSlots = detectTrinketConflicts(character, items);
   return (
@@ -57,6 +69,8 @@ export function InventoryPanel({ character, items, onEquip, onUnequip }: Props) 
         rows={artifacts}
         onEquip={onEquip}
         onUnequip={onUnequip}
+        participants={participants}
+        onUse={onUse}
         conflictingSlots={conflictingSlots}
       />
       <InventorySection
@@ -64,6 +78,8 @@ export function InventoryPanel({ character, items, onEquip, onUnequip }: Props) 
         rows={leveled}
         onEquip={onEquip}
         onUnequip={onUnequip}
+        participants={participants}
+        onUse={onUse}
         conflictingSlots={conflictingSlots}
       />
       <InventorySection
@@ -71,6 +87,8 @@ export function InventoryPanel({ character, items, onEquip, onUnequip }: Props) 
         rows={trinkets}
         onEquip={onEquip}
         onUnequip={onUnequip}
+        participants={participants}
+        onUse={onUse}
         conflictingSlots={conflictingSlots}
       />
       <InventorySection
@@ -78,6 +96,8 @@ export function InventoryPanel({ character, items, onEquip, onUnequip }: Props) 
         rows={consumables}
         onEquip={onEquip}
         onUnequip={onUnequip}
+        participants={participants}
+        onUse={onUse}
         conflictingSlots={conflictingSlots}
       />
       <InventorySection
@@ -85,6 +105,8 @@ export function InventoryPanel({ character, items, onEquip, onUnequip }: Props) 
         rows={orphans}
         onEquip={onEquip}
         onUnequip={onUnequip}
+        participants={participants}
+        onUse={onUse}
         conflictingSlots={conflictingSlots}
       />
     </section>

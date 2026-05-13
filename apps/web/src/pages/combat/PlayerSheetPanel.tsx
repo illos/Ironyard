@@ -294,10 +294,18 @@ function Inventory({
   // the strict `Item` output type. Same pattern as the abilities cast above.
   const itemList = items.data as unknown as Item[];
 
+  // Other-than-self participants for the UseConsumable target picker. "Self"
+  // is its own button in UseConsumableButton (dispatches with an undefined
+  // targetParticipantId, which the reducer resolves to the character's own
+  // participant), so we filter the self-participant out here.
+  const otherParticipants =
+    sock.activeEncounter?.participants.filter((p) => p.id !== participant.id) ?? [];
+
   return (
     <InventoryPanel
       character={ch.data.data}
       items={itemList}
+      participants={otherParticipants}
       onEquip={(inventoryEntryId) =>
         sock.dispatch(
           buildIntent({
@@ -314,6 +322,16 @@ function Inventory({
             campaignId,
             type: IntentTypes.UnequipItem,
             payload: { characterId, inventoryEntryId },
+            actor,
+          }),
+        )
+      }
+      onUse={(inventoryEntryId, targetParticipantId) =>
+        sock.dispatch(
+          buildIntent({
+            campaignId,
+            type: IntentTypes.UseConsumable,
+            payload: { characterId, inventoryEntryId, targetParticipantId },
             actor,
           }),
         )

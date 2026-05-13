@@ -1,20 +1,34 @@
-import type { InventoryEntry, Item } from '@ironyard/shared';
+import type { InventoryEntry, Item, Participant } from '@ironyard/shared';
 import { BodySlotConflictChip } from './BodySlotConflictChip';
+import { UseConsumableButton } from './UseConsumableButton';
 
 type Props = {
   entry: InventoryEntry;
   item: Item | undefined;
   onEquip: (id: string) => void;
   onUnequip: (id: string) => void;
+  // Slice 2: consumables get a UseConsumableButton instead of Equip/Unequip.
+  // `participants` is the non-self participant list passed through from the
+  // active encounter so the picker can offer per-target buttons.
+  participants: Participant[];
+  onUse: (inventoryEntryId: string, targetParticipantId?: string) => void;
   conflictingSlots: Set<string>;
 };
 
 // Renders one inventory row. Orphan rows (unknown itemId) surface a warning so
-// the player can see the data drift; equip/unequip controls only render for
-// non-consumable categories — consumables get a "Use" button in Slice 2.
-// Trinket rows additionally render a BodySlotConflictChip when their body slot
-// is shared with another equipped trinket.
-export function ItemRow({ entry, item, onEquip, onUnequip, conflictingSlots }: Props) {
+// the player can see the data drift. Consumables render UseConsumableButton;
+// non-consumables render Equip/Unequip. Trinket rows additionally render a
+// BodySlotConflictChip when their body slot is shared with another equipped
+// trinket.
+export function ItemRow({
+  entry,
+  item,
+  onEquip,
+  onUnequip,
+  participants,
+  onUse,
+  conflictingSlots,
+}: Props) {
   if (!item) {
     return (
       <div className="rounded border border-rose-800/40 bg-rose-950/30 px-2 py-1 text-sm text-rose-300">
@@ -43,7 +57,12 @@ export function ItemRow({ entry, item, onEquip, onUnequip, conflictingSlots }: P
         )}
         {isTrinket && <BodySlotConflictChip conflicting={isConflicting} slot={trinketSlot ?? ''} />}
       </div>
-      {!isConsumable && (
+      {isConsumable ? (
+        <UseConsumableButton
+          participants={participants}
+          onUse={(targetId) => onUse(entry.id, targetId)}
+        />
+      ) : (
         <button
           type="button"
           onClick={() => (isEquipped ? onUnequip(entry.id) : onEquip(entry.id))}
