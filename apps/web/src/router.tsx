@@ -1,6 +1,8 @@
 import { Outlet, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 import { Nav } from './components/Nav';
 import { CampaignView } from './pages/CampaignView';
+import { CampaignsList } from './pages/CampaignsList';
+import { CharactersList } from './pages/CharactersList';
 import { CombatRun } from './pages/CombatRun';
 import { EncounterBuilder } from './pages/EncounterBuilder';
 import { Home } from './pages/Home';
@@ -26,10 +28,22 @@ const indexRoute = createRoute({
   component: Home,
 });
 
+const campaignsListRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/campaigns',
+  component: CampaignsList,
+});
+
 const campaignRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/campaigns/$id',
   component: CampaignView,
+});
+
+const charactersListRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/characters',
+  component: CharactersList,
 });
 
 const encounterBuilderRoute = createRoute({
@@ -73,9 +87,11 @@ const sheetRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
+  campaignsListRoute,
   campaignRoute,
   encounterBuilderRoute,
   combatRunRoute,
+  charactersListRoute,
   foesRoute,
   wizardNewRoute,
   wizardEditRoute,

@@ -2,26 +2,15 @@ import { Link, useLocation } from '@tanstack/react-router';
 
 // Global top-of-page navigation. Rendered above the route outlet by rootRoute.
 //
-// Scope decision (Phase 2 prototype, see CLAUDE.md "UI is prototype-grade
-// until the planned overhaul"): rather than introduce new /campaigns and
-// /characters list routes (which would duplicate the sections already on
-// Home), the Campaigns and Characters links both land on `/`. The Home page
-// shows both lists side-by-side; once Phase 5's UI rebuild splits Home apart
-// the link targets here become the natural anchors. The plan brief calls out
-// this trade-off explicitly as the documented ALTERNATIVE.
-//
-// "Encounter builder" is intentionally absent from the global nav — it's
-// scoped to a campaign id and has no sensible link target without one.
+// "Encounter builder" is intentionally absent — it's scoped to a campaign id
+// and has no sensible link target without one.
 
 type NavLink = { to: string; label: string; matchPrefix?: string };
 
 const LINKS: NavLink[] = [
   { to: '/', label: 'Home' },
-  // Both /campaigns and /characters resolve to Home today; the matchPrefix
-  // still highlights them when the active route is a campaign or character
-  // detail page, so the user gets context for "where am I in the app."
-  { to: '/', label: 'Campaigns', matchPrefix: '/campaigns' },
-  { to: '/', label: 'Characters', matchPrefix: '/characters' },
+  { to: '/campaigns', label: 'Campaigns', matchPrefix: '/campaigns' },
+  { to: '/characters', label: 'Characters', matchPrefix: '/characters' },
   { to: '/foes', label: 'Foes', matchPrefix: '/foes' },
 ];
 

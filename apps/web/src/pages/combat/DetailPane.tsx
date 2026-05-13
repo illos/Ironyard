@@ -1,3 +1,4 @@
+import { type StaticDataBundle, deriveCharacterRuntime } from '@ironyard/rules';
 import {
   type Ability,
   type ConditionInstance,
@@ -18,6 +19,8 @@ import {
   type SpendSurgePayload,
 } from '@ironyard/shared';
 import { useEffect, useMemo, useState } from 'react';
+import { useCharacter } from '../../api/queries';
+import { useWizardStaticData } from '../../api/static-data';
 import { pcFreeStrike } from '../../data/monsterAbilities';
 import { useLongPress } from '../../lib/longPress';
 import { AbilityCard } from './AbilityCard';
@@ -145,16 +148,45 @@ function DetailBody({
     }
   }, [targetId, candidates]);
 
-  // Pull real abilities from the cached monsters.json for monster focus; PC
-  // falls back to the single Free Strike stub until Phase 2 character sheets.
-  // Only abilities with a powerRoll are rollable from the combat run; pure
-  // traits (e.g. Crafty) are out-of-scope for the auto-roll loop.
+  // Pull real abilities from the cached monsters.json for monster focus, or
+  // from the focused PC's derived runtime (mirrors PlayerSheetPanel). The PC
+  // free-strike stub remains as a fallback when the character row isn't
+  // attached or no rollable abilities are recorded. Only abilities with a
+  // powerRoll are rollable from the combat run; pure traits / active-only
+  // maneuvers stay on the sheet, not in the director's roll list.
+  const focusedCharacter = useCharacter(
+    focused.kind === 'pc' ? (focused.characterId ?? undefined) : undefined,
+  );
+  const staticData = useWizardStaticData();
+
   const abilities: Ability[] = useMemo(() => {
-    if (focused.kind !== 'monster') return [pcFreeStrike()];
-    const monster = monsterByParticipantId.get(focused.id);
-    if (!monster) return [];
-    return monster.abilities.filter((a) => a.powerRoll !== undefined);
-  }, [focused, monsterByParticipantId]);
+    if (focused.kind === 'monster') {
+      const monster = monsterByParticipantId.get(focused.id);
+      if (!monster) return [];
+      return monster.abilities.filter((a) => a.powerRoll !== undefined);
+    }
+    // PC focus.
+    if (!focusedCharacter.data || !staticData) return [pcFreeStrike()];
+    const bundle: StaticDataBundle = {
+      ancestries: staticData.ancestries as StaticDataBundle['ancestries'],
+      careers: staticData.careers as StaticDataBundle['careers'],
+      classes: staticData.classes as StaticDataBundle['classes'],
+      kits: staticData.kits as StaticDataBundle['kits'],
+      abilities: staticData.abilities as StaticDataBundle['abilities'],
+      items: staticData.items as StaticDataBundle['items'],
+      titles: staticData.titles as StaticDataBundle['titles'],
+    };
+    const runtime = deriveCharacterRuntime(focusedCharacter.data.data, bundle);
+    const resolved = runtime.abilityIds
+      .map((id) => bundle.abilities.get(id))
+      .filter((a): a is Ability => !!a && a.powerRoll !== undefined);
+    return resolved.length > 0 ? resolved : [pcFreeStrike()];
+  }, [focused, monsterByParticipantId, focusedCharacter.data, staticData]);
+
+  // Show the Quick-PC placeholder copy only while we're still on the stub —
+  // either no character is attached, or the character has no rollable abilities.
+  const showQuickPcCopy =
+    focused.kind === 'pc' && (abilities.length === 0 || abilities[0]?.id === 'pc-free-strike');
 
   const hpLongPress = useLongPress(() => setHpEditOpen(true), 500);
 
@@ -313,10 +345,10 @@ function DetailBody({
             </label>
           )}
         </div>
-        {focused.kind === 'pc' && (
+        {showQuickPcCopy && (
           <p className="mt-1 text-xs text-neutral-500">
-            Quick-PC. Full sheet lands in Phase 2; for now the generic free strike keeps the loop
-            testable.
+            No class abilities ingested for this character — falling back to the generic free
+            strike. Pick abilities in the wizard to populate the list.
           </p>
         )}
         <div className="mt-3 grid gap-3">
