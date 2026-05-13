@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { buildIntent } from '../../api/dispatch';
 import { useCharacter, useMe } from '../../api/queries';
 import { useItems, useKits, useWizardStaticData } from '../../api/static-data';
-import { useSessionSocket } from '../../ws/useSessionSocket';
+import { isParticipantEntry, useSessionSocket } from '../../ws/useSessionSocket';
 import { AbilityCard } from './AbilityCard';
 import { ConditionChip } from './ConditionChip';
 import { HpBar } from './HpBar';
@@ -298,8 +298,9 @@ function Inventory({
   // is its own button in UseConsumableButton (dispatches with an undefined
   // targetParticipantId, which the reducer resolves to the character's own
   // participant), so we filter the self-participant out here.
-  const otherParticipants =
-    sock.activeEncounter?.participants.filter((p) => p.id !== participant.id) ?? [];
+  const otherParticipants: Participant[] = (sock.activeEncounter?.participants ?? []).filter(
+    (p): p is Participant => isParticipantEntry(p) && p.id !== participant.id,
+  );
 
   return (
     <InventoryPanel

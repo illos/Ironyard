@@ -27,7 +27,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildIntent } from '../api/dispatch';
 import { useCampaign, useMe, useMonsters } from '../api/queries';
 import { describeIntent, findLatestUndoable } from '../lib/intentDescribe';
-import { type MirrorIntent, useSessionSocket } from '../ws/useSessionSocket';
+import { type MirrorIntent, isParticipantEntry, useSessionSocket } from '../ws/useSessionSocket';
 import { DetailPane } from './combat/DetailPane';
 import { InitiativePanel } from './combat/InitiativePanel';
 import { PlayerSheetPanel } from './combat/PlayerSheetPanel';
@@ -61,8 +61,12 @@ export function CombatRun() {
     }
     if (!focusedId && activeEncounter.activeParticipantId) {
       setFocusedId(activeEncounter.activeParticipantId);
-    } else if (!focusedId && activeEncounter.participants[0]) {
-      setFocusedId(activeEncounter.participants[0].id);
+    } else if (!focusedId) {
+      // CombatRun runs after StartEncounter, so any roster entry of interest
+      // is a materialized Participant — placeholders should be gone. Skip
+      // any stragglers when defaulting the focus target.
+      const firstParticipant = activeEncounter.participants.find(isParticipantEntry);
+      if (firstParticipant) setFocusedId(firstParticipant.id);
     }
   }, [activeEncounter, focusedId]);
 
@@ -118,7 +122,9 @@ export function CombatRun() {
     // Capture the post-apply snapshot for the NEXT round of attribution. The
     // current participants list is what the next intent should see as "before"
     // since it'll have already applied (we capture in effect, not render).
-    setParticipantSnapshotBefore(activeEncounter?.participants ?? []);
+    // Snapshot only actual Participants — placeholder entries don't carry the
+    // fields toast attribution needs (id, name, currentStamina, …).
+    setParticipantSnapshotBefore((activeEncounter?.participants ?? []).filter(isParticipantEntry));
   }, [intentLog, lastToastedSeq, participantSnapshotBefore, activeEncounter]);
 
   // Auto-dismiss toasts.
@@ -153,7 +159,7 @@ export function CombatRun() {
     const map = new Map<string, Monster>();
     if (!monsters.data || !activeEncounter) return map;
     for (const p of activeEncounter.participants) {
-      if (p.kind !== 'monster') continue;
+      if (!isParticipantEntry(p) || p.kind !== 'monster') continue;
       // Participant ids look like `${monsterId}-instance-N` per slice 10.
       const base = p.id.replace(/-instance-\d+$/, '');
       const m = monsters.data.monsters.find((mm) => mm.id === base);
@@ -209,7 +215,11 @@ export function CombatRun() {
     userId: me.data.user.id,
     role: (session.data.isDirector ? 'director' : 'player') as 'director' | 'player',
   };
-  const participants = activeEncounter?.participants ?? [];
+  // CombatRun assumes a materialized roster. Filter out any stray pc-placeholders
+  // (they're cleared by StartEncounter, but the type system can't prove that).
+  const participants: Participant[] = (activeEncounter?.participants ?? []).filter(
+    isParticipantEntry,
+  );
   const focused = participants.find((p) => p.id === focusedId) ?? null;
   const isAtTurnEnd =
     !!activeEncounter &&

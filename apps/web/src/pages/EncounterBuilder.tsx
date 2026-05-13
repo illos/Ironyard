@@ -13,7 +13,7 @@ import { useMemo, useState } from 'react';
 import { buildIntent } from '../api/dispatch';
 import { useCreateEncounterTemplate, useDeleteEncounterTemplate } from '../api/mutations';
 import { useCampaign, useEncounterTemplates, useMe, useMonsters } from '../api/queries';
-import { useSessionSocket } from '../ws/useSessionSocket';
+import { type RosterEntry, isParticipantEntry, useSessionSocket } from '../ws/useSessionSocket';
 
 const CHARACTERISTIC_KEYS = ['might', 'agility', 'reason', 'intuition', 'presence'] as const;
 
@@ -82,8 +82,10 @@ export function EncounterBuilder() {
     userId: me.data.user.id,
     role: (session.data.isDirector ? 'director' : 'player') as 'director' | 'player',
   };
-  const participants = activeEncounter?.participants ?? [];
-  const monsterParticipants = participants.filter((p) => p.kind === 'monster');
+  const participants: RosterEntry[] = activeEncounter?.participants ?? [];
+  const monsterParticipants = participants.filter(
+    (p): p is Participant => isParticipantEntry(p) && p.kind === 'monster',
+  );
   const isDirector = session.data.isDirector;
 
   const handleAddMonster = (monster: Monster) => {
@@ -472,7 +474,7 @@ function EncounterList({
   participants,
   hasEncounter,
 }: {
-  participants: Participant[];
+  participants: RosterEntry[];
   hasEncounter: boolean;
 }) {
   return (
@@ -500,24 +502,57 @@ function EncounterList({
       )}
 
       <ul className="space-y-2">
-        {participants.map((p) => (
-          <li key={p.id} className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2">
-            <span
-              className={`shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
-                p.kind === 'monster' ? 'bg-rose-900/40 text-rose-200' : 'bg-sky-900/40 text-sky-200'
-              }`}
-              aria-label={p.kind}
+        {participants.map((p) => {
+          if (p.kind === 'pc-placeholder') {
+            // pc-placeholder — appears between BringCharacterIntoEncounter and
+            // StartEncounter. No stat block until StartEncounter materializes
+            // the character from D1; just show the id stub + a hint label.
+            return (
+              <li
+                key={`pcph-${p.characterId}`}
+                className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
+              >
+                <span
+                  className="shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold bg-sky-900/40 text-sky-200"
+                  aria-label="pc placeholder"
+                >
+                  PC
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="truncate font-medium font-mono text-neutral-300">
+                    {p.characterId.slice(0, 8)}…
+                  </p>
+                  <p className="text-xs text-neutral-500">
+                    Waiting for Start the fight to materialize
+                  </p>
+                </div>
+              </li>
+            );
+          }
+          return (
+            <li
+              key={p.id}
+              className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
             >
-              {p.kind === 'monster' ? 'M' : 'PC'}
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="truncate font-medium">{p.name}</p>
-              <p className="text-xs text-neutral-500 font-mono tabular-nums">
-                {p.currentStamina}/{p.maxStamina} stamina
-              </p>
-            </div>
-          </li>
-        ))}
+              <span
+                className={`shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
+                  p.kind === 'monster'
+                    ? 'bg-rose-900/40 text-rose-200'
+                    : 'bg-sky-900/40 text-sky-200'
+                }`}
+                aria-label={p.kind}
+              >
+                {p.kind === 'monster' ? 'M' : 'PC'}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="truncate font-medium">{p.name}</p>
+                <p className="text-xs text-neutral-500 font-mono tabular-nums">
+                  {p.currentStamina}/{p.maxStamina} stamina
+                </p>
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

@@ -1,4 +1,5 @@
 import {
+  type AddMonsterPayload,
   type ApplyDamagePayload,
   type ApplyHealPayload,
   type BringCharacterIntoEncounterPayload,
@@ -8,10 +9,13 @@ import {
   type GainResourcePayload,
   type Intent,
   IntentTypes,
+  type LoadEncounterTemplatePayload,
   type MaliceState,
   type Member,
+  type Monster,
   type Participant,
   type RemoveConditionPayload,
+  type RemoveParticipantPayload,
   type ResourceRef,
   type RollPowerPayload,
   ServerMsgSchema,
@@ -24,6 +28,7 @@ import {
   type SpendSurgePayload,
   type StartEncounterPayload,
   type StartTurnPayload,
+  ulid,
 } from '@ironyard/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -56,9 +61,30 @@ function characterIdFromPayload(payload: unknown): string | null {
 
 export type ConnectionStatus = 'connecting' | 'open' | 'closed';
 
+// PC roster entry that hasn't been materialized into a full Participant yet.
+// Mirrors the server-side `PcPlaceholder` from @ironyard/rules — the lobby roster
+// can hold these between BringCharacterIntoEncounter and StartEncounter.
+// We keep an explicit copy here rather than importing from @ironyard/rules so
+// the web app doesn't take a dependency on the engine package's internal types.
+export type PcPlaceholderEntry = {
+  kind: 'pc-placeholder';
+  characterId: string;
+  ownerId: string;
+  position: number;
+};
+
+export type RosterEntry = Participant | PcPlaceholderEntry;
+
+/** Type guard — narrows a roster entry to a full Participant. */
+export function isParticipantEntry(e: RosterEntry): e is Participant {
+  return e.kind === 'pc' || e.kind === 'monster';
+}
+
 export type ActiveEncounter = {
   encounterId: string;
-  participants: Participant[];
+  // Phase 2: widened from Participant[] to RosterEntry[] so the mirror can
+  // hold pc-placeholders between BringCharacterIntoEncounter and StartEncounter.
+  participants: RosterEntry[];
   // Slice 11 mirror additions — surface the live turn state for the play screen.
   currentRound: number | null;
   turnOrder: string[];
@@ -112,13 +138,61 @@ function reflect(
   if (!prev) return prev;
 
   if (type === IntentTypes.BringCharacterIntoEncounter) {
-    // Phase 2: BCIE now creates a pc-placeholder in the lobby roster.
+    // Phase 2: BCIE appends a pc-placeholder onto the lobby roster.
     // Placeholders are materialized into full participants at StartEncounter.
-    // The optimistic mirror does not update participants here; the server
-    // snapshot after StartEncounter will reflect the materialized PCs.
-    const _typed = payload as BringCharacterIntoEncounterPayload; // type-check only
-    void _typed;
+    // Mirror the reducer's append exactly (see
+    // packages/rules/src/intents/bring-character-into-encounter.ts:61-66).
+    const { characterId, ownerId, position } = payload as BringCharacterIntoEncounterPayload;
+    // Idempotency: if a placeholder for this characterId already exists, the
+    // server reducer rejects the intent. The DO won't broadcast applied in
+    // that case, so we don't need to guard here — but a defensive check
+    // costs nothing and keeps the optimistic mirror well-behaved.
+    if (
+      prev.participants.some((p) => p.kind === 'pc-placeholder' && p.characterId === characterId)
+    ) {
+      return prev;
+    }
+    const placeholder: PcPlaceholderEntry = {
+      kind: 'pc-placeholder',
+      characterId,
+      ownerId,
+      position: position ?? prev.participants.length,
+    };
+    return { ...prev, participants: [...prev.participants, placeholder] };
+  }
+
+  if (type === IntentTypes.AddMonster) {
+    // The DO stamps the full Monster blob onto the payload before broadcast;
+    // we synthesize Participants matching the reducer's behaviour (see
+    // packages/rules/src/intents/add-monster.ts `participantFromMonster`).
+    const { quantity, nameOverride, monster } = payload as AddMonsterPayload;
+    const baseName = nameOverride ?? monster.name;
+    const newParticipants: Participant[] = Array.from({ length: quantity }).map((_, i) => {
+      const suffix = quantity > 1 ? ` ${i + 1}` : '';
+      return participantFromMonsterClient(monster, { id: ulid(), name: `${baseName}${suffix}` });
+    });
+    return { ...prev, participants: [...prev.participants, ...newParticipants] };
+  }
+
+  if (type === IntentTypes.LoadEncounterTemplate) {
+    // LoadEncounterTemplate is a fan-out intent: the reducer emits a derived
+    // AddMonster per entry. The DO re-feeds those derived intents and the
+    // socket receives one `applied` envelope per AddMonster, which the
+    // AddMonster branch above handles. So the mirror has nothing to do here.
+    // (Acknowledge the payload for type-checking.)
+    void (payload as LoadEncounterTemplatePayload);
     return prev;
+  }
+
+  if (type === IntentTypes.RemoveParticipant) {
+    const { participantId } = payload as RemoveParticipantPayload;
+    return {
+      ...prev,
+      participants: prev.participants.filter(
+        (p) => !isParticipantEntry(p) || p.id !== participantId,
+      ),
+      turnOrder: prev.turnOrder.filter((id) => id !== participantId),
+    };
   }
 
   if (type === IntentTypes.StartRound) {
@@ -156,7 +230,9 @@ function reflect(
     return {
       ...prev,
       participants: prev.participants.map((p) =>
-        p.id === targetId ? { ...p, currentStamina: Math.max(0, p.currentStamina - amount) } : p,
+        isParticipantEntry(p) && p.id === targetId
+          ? { ...p, currentStamina: Math.max(0, p.currentStamina - amount) }
+          : p,
       ),
     };
   }
@@ -166,7 +242,7 @@ function reflect(
     return {
       ...prev,
       participants: prev.participants.map((p) => {
-        if (p.id !== data.targetId) return p;
+        if (!isParticipantEntry(p) || p.id !== data.targetId) return p;
         // Idempotent on same {type, source.id}, otherwise append. The real
         // reducer enforces canon §3.4 stacking; the mirror just deduplicates.
         const exists = p.conditions.some(
@@ -190,7 +266,7 @@ function reflect(
     return {
       ...prev,
       participants: prev.participants.map((p) =>
-        p.id === data.targetId
+        isParticipantEntry(p) && p.id === data.targetId
           ? { ...p, conditions: p.conditions.filter((c) => c.type !== data.condition) }
           : p,
       ),
@@ -202,7 +278,7 @@ function reflect(
     return {
       ...prev,
       participants: prev.participants.map((p) => {
-        if (p.id !== participantId) return p;
+        if (!isParticipantEntry(p) || p.id !== participantId) return p;
         const nextMax = maxStamina ?? p.maxStamina;
         const nextCurrent = currentStamina ?? Math.min(p.currentStamina, nextMax);
         return { ...p, currentStamina: nextCurrent, maxStamina: nextMax };
@@ -215,7 +291,7 @@ function reflect(
     return {
       ...prev,
       participants: prev.participants.map((p) =>
-        p.id === targetId
+        isParticipantEntry(p) && p.id === targetId
           ? { ...p, currentStamina: Math.min(p.maxStamina, p.currentStamina + amount) }
           : p,
       ),
@@ -230,7 +306,7 @@ function reflect(
     return {
       ...prev,
       participants: prev.participants.map((p) =>
-        p.id === participantId
+        isParticipantEntry(p) && p.id === participantId
           ? {
               ...p,
               recoveries: { ...p.recoveries, current: Math.max(0, p.recoveries.current - 1) },
@@ -245,7 +321,9 @@ function reflect(
     return {
       ...prev,
       participants: prev.participants.map((p) =>
-        p.id === participantId ? { ...p, surges: Math.max(0, p.surges - count) } : p,
+        isParticipantEntry(p) && p.id === participantId
+          ? { ...p, surges: Math.max(0, p.surges - count) }
+          : p,
       ),
     };
   }
@@ -257,7 +335,9 @@ function reflect(
   ) {
     return {
       ...prev,
-      participants: prev.participants.map((p) => applyResourceMirror(p, type, payload)),
+      participants: prev.participants.map((p) =>
+        isParticipantEntry(p) ? applyResourceMirror(p, type, payload) : p,
+      ),
     };
   }
 
@@ -284,6 +364,40 @@ function reflect(
   void (payload as RollPowerPayload | undefined);
 
   return prev;
+}
+
+// Mirror of `participantFromMonster` in packages/rules/src/intents/add-monster.ts.
+// The DO stamps the full Monster blob onto the AddMonster payload before
+// broadcasting `applied`; the client constructs the participant locally with a
+// fresh ulid (one per quantity unit) so the optimistic mirror picks up the new
+// rows immediately. The server's authoritative ids will replace these on the
+// next snapshot — toasts and HP edits within the same connection lifetime
+// don't survive the swap, but for builder-grade actions (add/remove monsters)
+// this is fine: the builder list re-renders from `participants` on every applied.
+function participantFromMonsterClient(
+  monster: Monster,
+  opts: { id: string; name: string },
+): Participant {
+  return {
+    id: opts.id,
+    name: opts.name,
+    kind: 'monster',
+    level: monster.level,
+    currentStamina: monster.stamina.base,
+    maxStamina: monster.stamina.base,
+    characteristics: monster.characteristics,
+    immunities: monster.immunities,
+    weaknesses: monster.weaknesses,
+    conditions: [],
+    heroicResources: [],
+    extras: [],
+    surges: 0,
+    recoveries: { current: 0, max: 0 },
+    recoveryValue: 0,
+    ownerId: null,
+    characterId: null,
+    weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
+  };
 }
 
 // Slice 7 mirror helper. Mutates the heroic / extras resource arrays on a
@@ -385,11 +499,11 @@ function snapshotToEncounter(state: unknown): ActiveEncounter | null {
   if (!state || typeof state !== 'object') return null;
   const s = state as {
     encounter?: unknown;
-    participants?: Participant[];
+    participants?: RosterEntry[];
   };
 
-  // Top-level participants (new shape)
-  const topParticipants = Array.isArray(s.participants) ? (s.participants as Participant[]) : null;
+  // Top-level participants (new shape) — pc-placeholders ride along too.
+  const topParticipants = Array.isArray(s.participants) ? (s.participants as RosterEntry[]) : null;
 
   const e = s.encounter;
   if (!e || typeof e !== 'object') return null;
@@ -397,7 +511,7 @@ function snapshotToEncounter(state: unknown): ActiveEncounter | null {
   const enc = e as {
     id?: string;
     // Old shape had participants on encounter; new shape has them at top level.
-    participants?: Participant[];
+    participants?: RosterEntry[];
     currentRound?: number | null;
     turnOrder?: string[];
     activeParticipantId?: string | null;
