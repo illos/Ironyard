@@ -39,3 +39,4 @@ export {
   applyStartTurn,
 } from './turn';
 export { applyUndo } from './undo';
+export { applyUnequipItem } from './unequip-item';

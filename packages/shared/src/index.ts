@@ -76,6 +76,7 @@ export {
   SubmitCharacterPayloadSchema,
   SwapKitPayloadSchema,
   UndoPayloadSchema,
+  UnequipItemPayloadSchema,
 } from './intents';
 export type {
   AddMonsterPayload,
@@ -120,6 +121,7 @@ export type {
   SubmitCharacterPayload,
   SwapKitPayload,
   UndoPayload,
+  UnequipItemPayload,
 } from './intents';
 
 export {

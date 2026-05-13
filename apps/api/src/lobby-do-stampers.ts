@@ -234,6 +234,55 @@ export async function stampEquipItem(
 }
 
 /**
+ * UnequipItem — verify the actor owns the character, then look up the
+ * inventory entry on the character blob. Stamps `ownsCharacter` and
+ * `inventoryEntryExists`. Does NOT reject — the reducer is the authority.
+ *
+ * Logic identical to stampEquipItem (the dispatch switch routes to the
+ * right stamper); the post-reducer side-effect handler flips `equipped`
+ * to false instead of true.
+ */
+export async function stampUnequipItem(
+  intent: Intent & { timestamp: number },
+  _campaignState: CampaignState,
+  env: Bindings,
+): Promise<StampResult> {
+  const payload = intent.payload as MutablePayload;
+  const characterId = payload.characterId;
+  const inventoryEntryId = payload.inventoryEntryId;
+  if (typeof characterId !== 'string' || typeof inventoryEntryId !== 'string') {
+    return 'invalid_payload: characterId and inventoryEntryId required';
+  }
+
+  const actorId = intent.actor.userId;
+  const conn = db(env.DB);
+
+  const character = await conn
+    .select({ ownerId: characters.ownerId, data: characters.data })
+    .from(characters)
+    .where(eq(characters.id, characterId))
+    .get();
+
+  payload.ownsCharacter = character?.ownerId === actorId;
+
+  // Parse the character.data JSON to find the inventory entry by id.
+  let entryExists = false;
+  if (character?.data) {
+    try {
+      const parsed = JSON.parse(character.data);
+      entryExists =
+        Array.isArray(parsed.inventory) &&
+        parsed.inventory.some((e: { id?: string }) => e.id === inventoryEntryId);
+    } catch {
+      entryExists = false;
+    }
+  }
+  payload.inventoryEntryExists = entryExists;
+
+  return null;
+}
+
+/**
  * KickPlayer — find the campaign_characters rows for the kicked user whose
  * characterIds match participants currently on the roster. Stamp
  * participantIdsToRemove. Does NOT reject — the reducer handles it.
@@ -450,6 +499,8 @@ export async function stampIntent(
       return stampKickPlayer(intent, campaignState, env);
     case 'SwapKit':
       return stampSwapKit(intent, campaignState, env);
+    case 'UnequipItem':
+      return stampUnequipItem(intent, campaignState, env);
     // No stamping needed for these — they carry all required data or rely
     // solely on reducer authority checks.
     default:

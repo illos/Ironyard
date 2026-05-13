@@ -39,6 +39,7 @@ import {
   applySubmitCharacter,
   applySwapKit,
   applyUndo,
+  applyUnequipItem,
 } from './intents';
 import type { CampaignState, IntentResult, ReducerContext, StampedIntent } from './types';
 
@@ -142,6 +143,8 @@ export function applyIntent(
       return applySubmitCharacter(state, intent);
     case IntentTypes.SwapKit:
       return applySwapKit(state, intent);
+    case IntentTypes.UnequipItem:
+      return applyUnequipItem(state, intent);
     case IntentTypes.Undo:
       return applyUndo(state, intent);
     default:
