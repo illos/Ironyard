@@ -1,12 +1,13 @@
-import { type Participant, IntentTypes } from '@ironyard/shared';
-import { deriveCharacterRuntime, type StaticDataBundle } from '@ironyard/rules';
+import { type StaticDataBundle, deriveCharacterRuntime } from '@ironyard/rules';
+import { IntentTypes, type Item, type Participant } from '@ironyard/shared';
 import { buildIntent } from '../../api/dispatch';
 import { useCharacter, useMe } from '../../api/queries';
-import { useWizardStaticData } from '../../api/static-data';
+import { useItems, useWizardStaticData } from '../../api/static-data';
 import { useSessionSocket } from '../../ws/useSessionSocket';
-import { HpBar } from './HpBar';
-import { ConditionChip } from './ConditionChip';
 import { AbilityCard } from './AbilityCard';
+import { ConditionChip } from './ConditionChip';
+import { HpBar } from './HpBar';
+import { InventoryPanel } from './inventory/InventoryPanel';
 
 export function PlayerSheetPanel({ campaignId }: { campaignId: string }) {
   const me = useMe();
@@ -46,6 +47,7 @@ export function PlayerSheetPanel({ campaignId }: { campaignId: string }) {
       <ResourcePanel participant={myParticipant} campaignId={campaignId} userId={userId} />
       <RecoveryButton participant={myParticipant} campaignId={campaignId} userId={userId} />
       <Abilities participant={myParticipant} campaignId={campaignId} userId={userId} />
+      <Inventory participant={myParticipant} campaignId={campaignId} userId={userId} />
     </aside>
   );
 }
@@ -258,5 +260,61 @@ function Abilities({
         })}
       </div>
     </div>
+  );
+}
+
+// Inventory: look up the character by characterId, fetch the static item
+// catalogue, and dispatch EquipItem / UnequipItem intents directly via the
+// socket (no hook wrapper — same pattern as the Respite dispatch in
+// CampaignView). Renders nothing until both the character row and the item
+// bundle have loaded, and is a no-op for PCs without an attached character.
+function Inventory({
+  participant,
+  campaignId,
+  userId,
+}: {
+  participant: Participant;
+  campaignId: string;
+  userId: string;
+}) {
+  const ch = useCharacter(participant.characterId ?? undefined);
+  const items = useItems();
+  const sock = useSessionSocket(campaignId);
+
+  if (!participant.characterId || !ch.data || !items.data) return null;
+
+  const characterId = participant.characterId;
+  const actor = { userId, role: 'player' as const };
+
+  // Cast: useItems()'s value type carries Zod input-side optionality on
+  // `description`/`raw` (which default at parse time), so it doesn't satisfy
+  // the strict `Item` output type. Same pattern as the abilities cast above.
+  const itemList = items.data as unknown as Item[];
+
+  return (
+    <InventoryPanel
+      character={ch.data.data}
+      items={itemList}
+      onEquip={(inventoryEntryId) =>
+        sock.dispatch(
+          buildIntent({
+            campaignId,
+            type: IntentTypes.EquipItem,
+            payload: { characterId, inventoryEntryId },
+            actor,
+          }),
+        )
+      }
+      onUnequip={(inventoryEntryId) =>
+        sock.dispatch(
+          buildIntent({
+            campaignId,
+            type: IntentTypes.UnequipItem,
+            payload: { characterId, inventoryEntryId },
+            actor,
+          }),
+        )
+      }
+    />
   );
 }
