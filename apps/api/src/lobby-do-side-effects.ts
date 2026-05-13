@@ -14,9 +14,8 @@
 // the reducer drained it to 0. Non-hybrid intents leave `stateBefore` undefined.
 
 import type { CampaignState } from '@ironyard/rules';
-import { isParticipant } from '@ironyard/rules';
 import { CharacterSchema, type RespitePayload, RespitePayloadSchema } from '@ironyard/shared';
-import type { Intent } from '@ironyard/shared';
+import type { Intent, Participant } from '@ironyard/shared';
 import { and, eq, inArray } from 'drizzle-orm';
 import { db } from './db';
 import { campaignCharacters, campaignMemberships, characters } from './db/schema';
@@ -437,39 +436,47 @@ async function sideEffectEndEncounter(
   stateBefore: CampaignState,
   env: Bindings,
 ): Promise<void> {
-  const pcParticipants = stateBefore.participants
-    .filter(isParticipant)
-    .filter((p) => p.kind === 'pc' && p.characterId !== null);
+  const pcParticipants = stateBefore.participants.filter(
+    (p): p is Participant & { characterId: string } =>
+      p.kind === 'pc' && p.characterId !== null,
+  );
 
   if (pcParticipants.length === 0) return;
 
   const conn = db(env.DB);
+  const charIds = pcParticipants.map((p) => p.characterId);
 
-  for (const participant of pcParticipants) {
-    const charId = participant.characterId as string;
-    const row = await conn
-      .select({ data: characters.data })
-      .from(characters)
-      .where(eq(characters.id, charId))
-      .get();
-    if (!row) continue;
+  const rows = await conn
+    .select({ id: characters.id, data: characters.data })
+    .from(characters)
+    .where(inArray(characters.id, charIds))
+    .all();
+  const rowById = new Map(rows.map((r) => [r.id, r.data]));
 
-    let data: ReturnType<typeof CharacterSchema.parse>;
-    try {
-      data = CharacterSchema.parse(JSON.parse(row.data));
-    } catch {
-      console.error(`[side-effect] EndEncounter: skipping character ${charId} — invalid blob`);
-      continue;
-    }
+  await Promise.all(
+    pcParticipants.map(async (participant) => {
+      const raw = rowById.get(participant.characterId);
+      if (!raw) return;
 
-    data.currentStamina = participant.currentStamina;
-    data.recoveriesUsed = participant.recoveries.max - participant.recoveries.current;
+      let data: ReturnType<typeof CharacterSchema.parse>;
+      try {
+        data = CharacterSchema.parse(JSON.parse(raw));
+      } catch {
+        console.error(
+          `[side-effect] EndEncounter: skipping character ${participant.characterId} — invalid blob`,
+        );
+        return;
+      }
 
-    await conn
-      .update(characters)
-      .set({ data: JSON.stringify(data), updatedAt: intent.timestamp })
-      .where(eq(characters.id, charId));
-  }
+      data.currentStamina = participant.currentStamina;
+      data.recoveriesUsed = participant.recoveries.max - participant.recoveries.current;
+
+      await conn
+        .update(characters)
+        .set({ data: JSON.stringify(data), updatedAt: intent.timestamp })
+        .where(eq(characters.id, participant.characterId));
+    }),
+  );
 }
 
 // Hybrid side-effect: writes per-character XP increments to D1 using the
@@ -478,9 +485,6 @@ async function sideEffectEndEncounter(
 // damage-type changes (Dragon Knight ancestry). The two writes are
 // folded into one UPDATE per affected character to keep D1 round-trips
 // bounded.
-//
-// PC participant ids in the roster follow the convention `pc:<characterId>`.
-// We strip the prefix to get the D1 `characters` primary key.
 async function sideEffectRespite(
   intent: Intent & { timestamp: number },
   stateBefore: CampaignState,
@@ -493,77 +497,84 @@ async function sideEffectRespite(
   const xpAwarded = stateBefore.partyVictories;
   const wyrmplateChoices = parsed.data.wyrmplateChoices;
 
-  // Collect character ids for every PC participant that was in the roster
-  // before the respite. Use characterId directly (populated at StartEncounter).
   const pcCharIds = stateBefore.participants
-    .filter(isParticipant)
-    .filter((p) => p.kind === 'pc' && p.characterId !== null)
-    .map((p) => p.characterId as string);
+    .filter(
+      (p): p is Participant & { characterId: string } =>
+        p.kind === 'pc' && p.characterId !== null,
+    )
+    .map((p) => p.characterId);
+  const pcCharIdSet = new Set(pcCharIds);
 
   // Union of (a) characters in the lobby that gain XP and (b)
   // characters with a Wyrmplate damage-type pick. The pick can target a
   // character that isn't in the lobby roster (it's a respite-time
   // bookkeeping change, not an encounter action).
-  const affectedCharIds = new Set<string>([...pcCharIds, ...Object.keys(wyrmplateChoices)]);
+  const affectedCharIds = [...new Set<string>([...pcCharIds, ...Object.keys(wyrmplateChoices)])];
 
-  if (affectedCharIds.size === 0) return;
+  if (affectedCharIds.length === 0) return;
   // Skip entirely when there's nothing to write — no XP and no picks.
   if (xpAwarded === 0 && Object.keys(wyrmplateChoices).length === 0) return;
 
   const conn = db(env.DB);
 
-  for (const charId of affectedCharIds) {
-    const row = await conn
-      .select({ data: characters.data })
-      .from(characters)
-      .where(eq(characters.id, charId))
-      .get();
-    if (!row) continue;
+  const rows = await conn
+    .select({ id: characters.id, data: characters.data })
+    .from(characters)
+    .where(inArray(characters.id, affectedCharIds))
+    .all();
+  const rowById = new Map(rows.map((r) => [r.id, r.data]));
 
-    let data: ReturnType<typeof CharacterSchema.parse>;
-    try {
-      data = CharacterSchema.parse(JSON.parse(row.data));
-    } catch {
-      // Corrupt blob — skip this character rather than failing the whole batch.
-      console.error(`[side-effect] Respite: skipping character ${charId} — invalid blob`);
-      continue;
-    }
+  await Promise.all(
+    affectedCharIds.map(async (charId) => {
+      const raw = rowById.get(charId);
+      if (!raw) return;
 
-    let mutated = false;
+      let data: ReturnType<typeof CharacterSchema.parse>;
+      try {
+        data = CharacterSchema.parse(JSON.parse(raw));
+      } catch {
+        // Corrupt blob — skip this character rather than failing the whole batch.
+        console.error(`[side-effect] Respite: skipping character ${charId} — invalid blob`);
+        return;
+      }
 
-    // XP increment — only for PCs that were in the lobby roster.
-    if (xpAwarded > 0 && pcCharIds.includes(charId)) {
-      data.xp = (data.xp ?? 0) + xpAwarded;
-      mutated = true;
-    }
+      let mutated = false;
+      const inLobby = pcCharIdSet.has(charId);
 
-    // Respite resets stamina and recoveries to default (null → re-derived at
-    // next StartEncounter; 0 recoveries used → full pool restored).
-    if (pcCharIds.includes(charId)) {
-      data.currentStamina = null;
-      data.recoveriesUsed = 0;
-      mutated = true;
-    }
+      // XP increment — only for PCs that were in the lobby roster.
+      if (xpAwarded > 0 && inLobby) {
+        data.xp = (data.xp ?? 0) + xpAwarded;
+        mutated = true;
+      }
 
-    // Wyrmplate damage-type change — only applies to Dragon Knights.
-    // Non-Dragon-Knight characters are silently skipped so a stale or
-    // mistargeted pick can't corrupt another ancestry's blob.
-    const newType = wyrmplateChoices[charId];
-    if (typeof newType === 'string' && data.ancestryId === 'dragon-knight') {
-      data.ancestryChoices = {
-        ...data.ancestryChoices,
-        wyrmplateType: newType,
-      };
-      mutated = true;
-    }
+      // Respite resets stamina and recoveries to default (null → re-derived at
+      // next StartEncounter; 0 recoveries used → full pool restored).
+      if (inLobby) {
+        data.currentStamina = null;
+        data.recoveriesUsed = 0;
+        mutated = true;
+      }
 
-    if (!mutated) continue;
+      // Wyrmplate damage-type change — only applies to Dragon Knights.
+      // Non-Dragon-Knight characters are silently skipped so a stale or
+      // mistargeted pick can't corrupt another ancestry's blob.
+      const newType = wyrmplateChoices[charId];
+      if (typeof newType === 'string' && data.ancestryId === 'dragon-knight') {
+        data.ancestryChoices = {
+          ...data.ancestryChoices,
+          wyrmplateType: newType,
+        };
+        mutated = true;
+      }
 
-    await conn
-      .update(characters)
-      .set({ data: JSON.stringify(data), updatedAt: intent.timestamp })
-      .where(eq(characters.id, charId));
-  }
+      if (!mutated) return;
+
+      await conn
+        .update(characters)
+        .set({ data: JSON.stringify(data), updatedAt: intent.timestamp })
+        .where(eq(characters.id, charId));
+    }),
+  );
 }
 
 // Re-export RespitePayload type for consumers that need to reference it.

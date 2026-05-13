@@ -217,7 +217,7 @@ EncounterTemplateDataSchema = z.object({
 });
 ```
 
-Templates are **monsters only** — heroes are added separately via `BringCharacterIntoEncounter`. Loading a template mid-combat is additive (new monsters land at the end of the turn order for the next round).
+Templates are **monsters only** — heroes are selected by the director per encounter and dispatched together with the monsters in a single `StartEncounter` intent. Loading a template mid-combat is additive (new monsters land at the end of the turn order for the next round).
 
 ### Why JSON blobs for character / snapshot / intent?
 

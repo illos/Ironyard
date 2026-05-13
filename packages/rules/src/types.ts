@@ -1,12 +1,11 @@
 import type { Intent, MaliceState, Member, Participant } from '@ironyard/shared';
 import type { StaticDataBundle } from './static-data';
 
-// After Epic 2D: the roster only holds fully-materialized participants.
-// PcPlaceholder was removed — participants are now created atomically
-// at StartEncounter, not pre-staged via BringCharacterIntoEncounter.
+// The lobby roster is a flat list of fully-materialized participants.
+// `RosterEntry` exists as a forward-compatible seam for any future roster
+// variant (e.g. pre-staged join requests); today it is structurally `Participant`.
 export type RosterEntry = Participant;
 
-/** Type guard — kept for call-site compatibility; always true after Epic 2D. */
 export function isParticipant(e: RosterEntry): e is Participant {
   return e.kind === 'pc' || e.kind === 'monster';
 }

@@ -2,8 +2,8 @@ import { SubmitCharacterPayloadSchema } from '@ironyard/shared';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
 // Side-effect intent: the reducer validates and logs; D1 write happens in the DO.
-// state.participants is not touched — characters are not yet participants until
-// the director brings them in via BringCharacterIntoEncounter.
+// state.participants is not touched — characters become participants only when
+// the director includes them in a StartEncounter payload.
 export function applySubmitCharacter(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = SubmitCharacterPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {

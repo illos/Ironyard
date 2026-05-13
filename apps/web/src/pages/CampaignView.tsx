@@ -49,7 +49,6 @@ export function CampaignView() {
     activeDirectorId: liveActiveDirectorId,
   } = useSessionSocket(id);
 
-
   if (me.isLoading || campaign.isLoading) {
     return (
       <main className="mx-auto max-w-2xl p-6">

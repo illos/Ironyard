@@ -5,7 +5,7 @@
 // Stampers that cannot reject (JumpBehindScreen, SubmitCharacter, KickPlayer)
 // still return null on success — the reducer performs the authority check.
 
-import { CONSUMABLE_HEAL_AMOUNTS, isParticipant } from '@ironyard/rules';
+import { CONSUMABLE_HEAL_AMOUNTS } from '@ironyard/rules';
 import type { CampaignState } from '@ironyard/rules';
 import {
   CharacterSchema,
@@ -422,8 +422,7 @@ export async function stampPushItem(
  *
  * Strategy: query campaign_characters joined with characters to get all
  * character IDs owned by the kicked user in this campaign, then intersect
- * with participant IDs already in state (participants.id === characterId
- * by convention for hero participants added via BringCharacterIntoEncounter).
+ * with PC participants currently in state by matching `Participant.characterId`.
  */
 export async function stampKickPlayer(
   intent: Intent & { timestamp: number },
@@ -451,12 +450,10 @@ export async function stampKickPlayer(
 
   const ownedCharacterIds = new Set(rows.map((r) => r.characterId));
 
-  // Intersect with current roster participants.
-  // Only full Participants (not placeholders) have `id`; filter with the type guard.
   const participantIdsToRemove = campaignState.participants
     .filter(
       (p): p is import('@ironyard/shared').Participant =>
-        isParticipant(p) && p.kind === 'pc' && ownedCharacterIds.has(p.id),
+        p.kind === 'pc' && p.characterId !== null && ownedCharacterIds.has(p.characterId),
     )
     .map((p) => p.id);
 
@@ -556,8 +553,7 @@ export async function stampStartEncounter(
 /**
  * SwapKit — look up characters.owner_id for the given characterId in D1 and
  * stamp ownerId onto the payload. Rejects if the character row does not exist
- * (prevents a client from claiming any ownerId). Matches the BringCharacterIntoEncounter
- * pattern.
+ * (prevents a client from claiming any ownerId).
  */
 export async function stampSwapKit(
   intent: Intent & { timestamp: number },

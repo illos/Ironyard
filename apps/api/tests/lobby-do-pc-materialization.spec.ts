@@ -54,7 +54,7 @@ function makeState(overrides: Partial<CampaignState> = {}): CampaignState {
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 describe('StartEncounter PC materialization (ReducerContext wiring)', () => {
-  it('materializes a PC placeholder with maxStamina > 0 when class data is present in the bundle', () => {
+  it('materializes a PC with maxStamina > 0 when class data is present in the bundle', () => {
     const state = makeState({
       participants: [],
     });
@@ -111,7 +111,7 @@ describe('StartEncounter PC materialization (ReducerContext wiring)', () => {
     expect(materialized.recoveryValue).toBe(7); // floor(21 / 3)
   });
 
-  it('materializes a PC placeholder with maxStamina = 0 when EMPTY_BUNDLE is used (documents the bug)', () => {
+  it('materializes a PC with maxStamina = 0 when EMPTY_BUNDLE is used (documents the bug)', () => {
     // This test documents the old (broken) behaviour: calling applyIntent
     // without ctx causes EMPTY_BUNDLE to be used, yielding zero-derived values.
     const state = makeState({

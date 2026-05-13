@@ -295,7 +295,7 @@ describe('stampKickPlayer', () => {
     const state = makeCampaignState({
       participants: [
         {
-          id: 'char-001',
+          id: 'pc:char-001',
           name: 'Mira',
           kind: 'pc',
           level: 1,
@@ -310,12 +310,13 @@ describe('stampKickPlayer', () => {
           surges: 0,
           recoveries: { current: 3, max: 3 },
           recoveryValue: 10,
-          ownerId: null as string | null,
-          characterId: null as string | null,
+          ownerId: 'user-alice' as string | null,
+          characterId: 'char-001' as string | null,
           weaponDamageBonus: {
             melee: [0, 0, 0] as [number, number, number],
             ranged: [0, 0, 0] as [number, number, number],
           },
+          activeAbilities: [],
         },
         {
           id: 'monster-xyz',
@@ -339,6 +340,7 @@ describe('stampKickPlayer', () => {
             melee: [0, 0, 0] as [number, number, number],
             ranged: [0, 0, 0] as [number, number, number],
           },
+          activeAbilities: [],
         },
       ],
     });
@@ -347,7 +349,7 @@ describe('stampKickPlayer', () => {
     const result = await stampKickPlayer(intent, state, mockEnv);
     expect(result).toBeNull();
     const payload = intent.payload as { participantIdsToRemove?: string[] };
-    expect(payload.participantIdsToRemove).toContain('char-001');
+    expect(payload.participantIdsToRemove).toContain('pc:char-001');
     // Should NOT include the monster participant
     expect(payload.participantIdsToRemove).not.toContain('monster-xyz');
   });

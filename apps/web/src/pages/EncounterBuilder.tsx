@@ -130,9 +130,9 @@ export function EncounterBuilder() {
     setSelectedMonsters((prev) => {
       const next = [...prev];
       for (const entry of template.data.monsters) {
-        const idx = next.findIndex((m) => m.monsterId === entry.monsterId);
-        if (idx >= 0) {
-          next[idx] = { ...next[idx]!, quantity: next[idx]!.quantity + entry.quantity };
+        const existing = next.find((m) => m.monsterId === entry.monsterId);
+        if (existing) {
+          existing.quantity += entry.quantity;
         } else {
           next.push({ monsterId: entry.monsterId, quantity: entry.quantity });
         }

@@ -4,25 +4,46 @@
 
 import type { CampaignState } from '@ironyard/rules';
 import type { Intent } from '@ironyard/shared';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mock DB layer ──────────────────────────────────────────────────────────
 //
-// sideEffectRespite does N sequential get → update pairs (one per PC).
-// We track the sequence of .get() calls and .set() calls so assertions can
-// verify per-character XP increments.
+// sideEffectRespite issues one bulk `select … where inArray(id, ids).all()`
+// followed by `Promise.all` of per-id update statements. The mock tracks the
+// pool of rows the bulk select returns plus the list of writes performed.
+//
+// `mockGetResults` is queued in the same order tests push character rows; the
+// mock pairs each queued entry with the corresponding id passed to .all(). A
+// null entry yields no row for that id (skipped).
 
 type MockRow = { data: string } | null;
 
 const mockGetResults: MockRow[] = [];
+const mockSelectIds: string[] = [];
 const capturedUpdates: { data: string; updatedAt: number }[] = [];
+
+vi.mock('drizzle-orm', () => ({
+  and: (...args: unknown[]) => args,
+  eq: (..._args: unknown[]) => ({}),
+  inArray: (_col: unknown, values: string[]) => {
+    mockSelectIds.push(...values);
+    return {};
+  },
+}));
 
 vi.mock('../src/db', () => ({
   db: () => ({
     select: () => ({
       from: () => ({
         where: () => ({
-          get: async () => mockGetResults.shift() ?? null,
+          all: async () => {
+            const rows = mockSelectIds.map((id, i) => {
+              const row = mockGetResults[i];
+              return row ? { id, data: row.data } : null;
+            });
+            mockSelectIds.length = 0;
+            return rows.filter((r): r is { id: string; data: string } => r !== null);
+          },
         }),
       }),
     }),
@@ -104,6 +125,7 @@ function makePcParticipant(id: string) {
       melee: [0, 0, 0] as [number, number, number],
       ranged: [0, 0, 0] as [number, number, number],
     },
+    activeAbilities: [],
   };
 }
 
@@ -112,6 +134,12 @@ const mockEnv = {} as Parameters<typeof handleSideEffect>[2];
 // ── handleSideEffect (Respite) ─────────────────────────────────────────────
 
 describe('handleSideEffect Respite', () => {
+  beforeEach(() => {
+    mockGetResults.length = 0;
+    mockSelectIds.length = 0;
+    capturedUpdates.length = 0;
+  });
+
   it('increments xp for each PC character by partyVictories (3 PCs, 2 victories)', async () => {
     // stateBefore: 3 PCs, partyVictories = 2
     const stateBefore = makeCampaignState({
@@ -206,6 +234,7 @@ describe('handleSideEffect Respite', () => {
             melee: [0, 0, 0] as [number, number, number],
             ranged: [0, 0, 0] as [number, number, number],
           },
+          activeAbilities: [],
         },
       ],
     });
@@ -230,7 +259,7 @@ describe('handleSideEffect Respite', () => {
     expect(capturedUpdates).toHaveLength(0);
   });
 
-  it('strips the pc: prefix from participant id to get the D1 character id', async () => {
+  it('uses Participant.characterId (not Participant.id) to address the D1 row', async () => {
     const stateBefore = makeCampaignState({
       partyVictories: 1,
       participants: [makePcParticipant('pc:char-alpha')],

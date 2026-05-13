@@ -45,7 +45,7 @@ export function applyRespite(state: CampaignState, intent: StampedIntent): Inten
   //     floor reset — the per-encounter clarity floor is `-(1+Reason)`,
   //     so a hero who finished an encounter with negative clarity has
   //     it cleared on respite).
-  // Monsters, pc-placeholders, and any other roster entries are untouched.
+  // Monsters and any other roster entries are untouched.
   const newParticipants = state.participants.map((entry) => {
     if (!isParticipant(entry) || entry.kind !== 'pc') return entry;
     const fixedResources = entry.heroicResources.map((r) => (r.value < 0 ? { ...r, value: 0 } : r));

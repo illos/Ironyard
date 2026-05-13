@@ -121,6 +121,10 @@ Carry-overs deferred (each tracked in canon § 10.16 or a separate Q-entry):
 - **`magic-damage-bonus` AttachmentEffect variant** — implement-style leveled treasures need this; tracked in § 10.16 carry-overs.
 - **Per-tier `stat-mod` scaling** — armor leveled treasures author L1 baseline only; per-tier scaling is § 10.16 carry-over.
 
+**Sub-epic 2D — encounter lifecycle cleanup** ([plan](superpowers/plans/2026-05-13-phase-2-epic-2d-encounter-lifecycle-cleanup.md)) — **shipping**
+
+Unplanned cleanup epic born out of Epic 1 / 2C playtesting. Killed the two-step `BringCharacterIntoEncounter` + `PcPlaceholder` model in favor of an atomic `StartEncounter` that takes `characterIds[] + monsters[]`, with the DO stamping both PC blobs (from D1) and monster stat blocks (from static data) before the reducer materializes participants in one pass. Lobby roster is replaced wholesale at each encounter start. Added `CharacterSchema.currentStamina` + `recoveriesUsed` runtime fields; `EndEncounter` writes them back to D1, `Respite` resets them. `EncounterBuilder` is now a local-draft UI (checklist + monster picker) with no per-step lobby intents. Concludes Phase 2 feature work.
+
 ## Phase 3 — Collaborative campaign capabilities
 
 **Goal:** "The campaign feels like a place, and people can share characters and entities with each other."

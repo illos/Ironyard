@@ -27,7 +27,7 @@ The full list lives in `packages/shared/src/intents.ts`. This is the conceptual 
 
 ### Combat lifecycle
 
-- `StartEncounter { encounterId?, stampedPcs: StartEncounterStampedPc[] }` — DO loads each PC placeholder's character blob from D1 and stamps them onto `stampedPcs`; reducer materializes each placeholder into a full `Participant` via `deriveCharacterRuntime`, preserving runtime state from a prior encounter if present.
+- `StartEncounter { encounterId?, characterIds[], monsters[], stampedPcs[], stampedMonsters[] }` — atomic encounter setup. Client sends `characterIds` + `monsters`; the DO resolves each PC's character blob from D1 (→ `stampedPcs`) and each monster entry's stat block from static data (→ `stampedMonsters`). The reducer materializes a full `Participant` for every PC (via `deriveCharacterRuntime`) and every monster instance, then REPLACES the lobby roster with the new encounter's participants. PC runtime state (`currentStamina`, `recoveriesUsed`) persists in the `characters` row between encounters; `EndEncounter` writes it back, `Respite` resets it.
 - `EndEncounter`
 - `StartRound`
 - `EndRound`
@@ -62,7 +62,7 @@ Why the dice live in the payload: the reducer is pure (see below), so randomness
 
 ### Character-runtime
 
-- `SwapKit { characterId, newKitId, ownerId }` — side-effect intent. `ownerId` is stamped by the DO from D1 (mirrors `BringCharacterIntoEncounter`). Mutates `characters.data.kitId` in D1. Rejected if `state.encounter !== null`. Authority: character owner OR active director. Next `StartEncounter` re-derives with the new kit.
+- `SwapKit { characterId, newKitId, ownerId }` — side-effect intent. `ownerId` is stamped by the DO from D1 (the character row is the source of truth for ownership). Mutates `characters.data.kitId` in D1. Rejected if `state.encounter !== null`. Authority: character owner OR active director. Next `StartEncounter` re-derives with the new kit.
 - `Respite` — hybrid intent (state-mutating AND D1 side-effect). State: refills `recoveries.current = max` on every PC participant; drains `state.partyVictories` to 0. D1: increments each PC's character `data.xp` by `partyVictories` (1:1 conversion). Rejected if `state.encounter !== null`. Not undoable.
 
 ### Manual override
@@ -75,7 +75,6 @@ Why the dice live in the payload: the reducer is pure (see below), so randomness
 
 - `JoinLobby { userId, characterId? }` — server-only; DO emits when a WebSocket connects
 - `LeaveLobby { userId }` — server-only; DO emits on disconnect
-- `BringCharacterIntoEncounter { characterId, ownerId, position }` — adds a `PcPlaceholder` to the lobby roster. The placeholder is materialized into a full `Participant` at the next `StartEncounter`; structural fields are re-derived from the character via `deriveCharacterRuntime` each time, while runtime state (`currentStamina`, `recoveries.current`) carries over between encounters within the lobby session. DO stamps `ownerId` from D1 before reducer.
 - `AddMonster { monsterId, quantity, nameOverride? }` — active-director gated; DO stamps the resolved monster payload from `monsters.json` before the reducer sees it
 - `RemoveParticipant { participantId }` — active-director gated; rejected if the participant is the currently active turn participant
 - `ClearLobby` — active-director gated; rejected while an encounter is active
@@ -127,9 +126,8 @@ Examples:
 | `LoadEncounterTemplate` | Reads `encounter_templates` row from D1; stamps `{ monsters: [...] }` |
 | `JumpBehindScreen` | Reads `campaign_memberships.is_director` for the actor; stamps `{ permitted: boolean }` |
 | `AddMonster` | Resolves monster data from `monsters.json`; stamps the full monster payload |
-| `StartEncounter` | Reads each PC placeholder's `characters` row from D1; stamps `stampedPcs[]` with `{ characterId, ownerId, character: CharacterSchema }` |
-| `BringCharacterIntoEncounter` | Reads the `characters` row from D1 to verify ownership; stamps `ownerId` |
-| `SwapKit` | Reads `characters.owner_id` from D1; stamps `ownerId` (mirrors `BringCharacterIntoEncounter`'s pattern) |
+| `StartEncounter` | Reads each `characters` row in `characterIds[]` from D1 (→ `stampedPcs[]`); resolves each entry in `monsters[]` from `monsters.json` (→ `stampedMonsters[]`) |
+| `SwapKit` | Reads `characters.owner_id` from D1; stamps `ownerId` |
 
 The pattern generalises: whenever the reducer needs external data to make a decision, the DO attaches it to the payload at the boundary. The intent then contains its full context and can be replayed faithfully from the log.
 
