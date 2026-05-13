@@ -1,15 +1,20 @@
 import { Outlet, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
+import { Nav } from './components/Nav';
 import { CampaignView } from './pages/CampaignView';
 import { CombatRun } from './pages/CombatRun';
 import { EncounterBuilder } from './pages/EncounterBuilder';
 import { Home } from './pages/Home';
 import { MonsterBrowser } from './pages/MonsterBrowser';
-import { Wizard } from './pages/characters/Wizard';
 import { Sheet } from './pages/characters/Sheet';
+import { Wizard } from './pages/characters/Wizard';
 
 const rootRoute = createRootRoute({
   component: () => (
     <div className="min-h-screen bg-neutral-950 text-neutral-100">
+      {/* Global nav. Per the Task C decision we leave it on every route for
+          now (combat run + wizard included); revisit during the Phase 5 UI
+          rebuild if either screen wants a dedicated chrome. */}
+      <Nav />
       <Outlet />
     </div>
   ),
