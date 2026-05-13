@@ -17,7 +17,11 @@ describe('collectFromTitle — stat-mod (knight)', () => {
     const out = collectFromTitle(char, BUNDLE_STUB);
     expect(out).toEqual([
       {
-        source: { kind: 'title', id: 'knight' },
+        source: {
+          kind: 'title',
+          id: 'knight',
+          requireCanonSlug: 'character-attachment-activation.title-grant-attachments',
+        },
         effect: { kind: 'stat-mod', stat: 'maxStamina', delta: 6 },
       },
     ]);
@@ -42,7 +46,11 @@ describe('collectFromTitle — grant-ability (zombie-slayer)', () => {
     const out = collectFromTitle(char, BUNDLE_STUB);
     expect(out).toEqual([
       {
-        source: { kind: 'title', id: 'zombie-slayer' },
+        source: {
+          kind: 'title',
+          id: 'zombie-slayer',
+          requireCanonSlug: 'character-attachment-activation.title-grant-attachments',
+        },
         effect: { kind: 'grant-ability', abilityId: 'zombie-slayer-holy-terror' },
       },
     ]);
