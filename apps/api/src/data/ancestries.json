@@ -297,7 +297,7 @@
     "defaultSize": "1M",
     "defaultSpeed": 5,
     "grantedImmunities": [],
-    "signatureTraitAbilityId": null
+    "signatureTraitAbilityId": "human.detect-the-supernatural"
   },
   {
     "id": "memonek",
@@ -453,7 +453,7 @@
     "defaultSize": "1S",
     "defaultSpeed": 5,
     "grantedImmunities": [],
-    "signatureTraitAbilityId": null
+    "signatureTraitAbilityId": "polder.shadowmeld"
   },
   {
     "id": "revenant",

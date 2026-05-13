@@ -1,5 +1,6 @@
 import matter from 'gray-matter';
-import type { Kit } from '@ironyard/shared';
+import { type Ability, AbilitySchema, type AbilityType, type Kit } from '@ironyard/shared';
+import { parsePowerRollFromContent } from './parse-ability';
 
 // Slugify a kit reference: "Pain for Pain" -> "pain-for-pain". Prefixed with
 // the kit slug for global uniqueness when referenced from abilities.json.
@@ -143,4 +144,88 @@ export function parseKitMarkdown(md: string): Kit | null {
     signatureAbilityId,
     keywords,
   };
+}
+
+// ── Kit signature ability extractor ──────────────────────────────────────────
+//
+// Kit signature abilities live inline in the kit markdown (under the H6
+// heading inside `##### Signature Ability`) rather than under
+// `Rules/Abilities/`. The walking parser doesn't see them, so we extract them
+// here and emit them as Ability records in build.ts. Resolves the "kit
+// signature ability id is in runtime.abilityIds but bundle.abilities doesn't
+// have it" gap surfaced when kit attachments started granting abilities.
+//
+// Parsing is regex-driven and intentionally lenient — any field we can't
+// confidently parse becomes undefined / null and the rendered card falls back
+// to the raw markdown. The caller wraps the returned Ability through
+// AbilitySchema.parse() so defaults fill in.
+
+function parseKitActionType(actionLabel: string): AbilityType {
+  const lc = actionLabel.toLowerCase();
+  if (lc.includes('maneuver')) return 'maneuver';
+  if (lc.includes('free triggered')) return 'free-triggered';
+  if (lc.includes('triggered')) return 'triggered';
+  // 'main action', 'move action', 'free action', plain 'action' — all map to 'action'.
+  return 'action';
+}
+
+export function parseKitSignatureAbility(kitId: string, kitMarkdown: string): Ability | null {
+  const { content } = matter(kitMarkdown);
+  // `#####` is a *prefix* of `######` (H6), so a naive `(?=#####)` lookahead
+  // fires on the H6 ability heading. Anchor to a line-start H5 (newline + 5
+  // hashes + space) to disambiguate from the H6 heading inside the section.
+  const sigBlockMatch = content.match(
+    /#####\s+Signature Ability\s*\n([\s\S]*?)(?=\n##### |$)/,
+  );
+  if (!sigBlockMatch?.[1]) return null;
+  const sigBlock = sigBlockMatch[1];
+
+  // H6 heading is the ability name. Strip any costs in parens (none today on
+  // signature abilities, but be defensive).
+  const nameMatch = sigBlock.match(/######\s+([^\n]+)/);
+  if (!nameMatch?.[1]) return null;
+  const name = nameMatch[1].trim();
+
+  // Header row: | **<keywords...>** | **<action label>** |
+  // Strip leading/trailing pipes and split on the inner pipe.
+  const headerRow = sigBlock.match(/\|\s*\*\*([^|*]+)\*\*\s*\|\s*\*\*([^|*]+)\*\*\s*\|/);
+  const keywords = headerRow?.[1]
+    ? headerRow[1]
+        .split(/,\s*/)
+        .map((k) => k.trim())
+        .filter((k) => k.length > 0)
+    : [];
+  const actionLabel = headerRow?.[2]?.trim() ?? '';
+  const type = parseKitActionType(actionLabel);
+
+  // Distance / target row: 📏 cell and 🎯 cell.
+  const distanceMatch = sigBlock.match(/\|\s*\*\*📏\s*([^*]+)\*\*\s*\|/);
+  const targetMatch = sigBlock.match(/\|\s*\*\*🎯\s*([^*]+)\*\*\s*\|/);
+  const distance = distanceMatch?.[1]?.trim() || undefined;
+  const target = targetMatch?.[1]?.trim() || undefined;
+
+  const powerRoll = parsePowerRollFromContent(sigBlock);
+
+  const id = `${kitId}-${name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')}`;
+
+  const result = AbilitySchema.safeParse({
+    id,
+    name,
+    type,
+    keywords,
+    distance,
+    target,
+    powerRoll,
+    raw: sigBlock.trim(),
+    cost: 0, // kit signature abilities are always 0-cost (signature)
+    tier: null,
+    isSubclass: false,
+    sourceClassId: null,
+  });
+  if (!result.success) return null;
+  return result.data;
 }

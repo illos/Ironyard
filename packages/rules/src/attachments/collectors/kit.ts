@@ -54,6 +54,15 @@ export function collectFromKit(
     });
   }
 
+  // Kit's signature ability — grants the ability to the character so it
+  // appears in runtime.abilityIds and on the sheet / combat tracker.
+  if (kit.signatureAbilityId) {
+    out.push({
+      source: { kind: 'kit', id: `${kit.id}.signature` },
+      effect: { kind: 'grant-ability', abilityId: kit.signatureAbilityId },
+    });
+  }
+
   // ── Hand-authored overrides (kit-keyword-gated leveled treasures etc.) ──
   // Populated in Task 4.6. Empty today is a no-op.
   const override = KIT_OVERRIDES[kit.id];

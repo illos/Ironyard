@@ -22,13 +22,14 @@ import { ANCESTRY_OVERRIDES } from './overrides/ancestries';
 import { ITEM_OVERRIDES } from './overrides/items';
 import { KIT_OVERRIDES } from './overrides/kits';
 import { ABILITY_OVERRIDES } from './overrides/abilities';
+import { SYNTHETIC_ABILITIES } from './overrides/synthetic-abilities';
 import { TITLE_OVERRIDES } from './overrides/titles';
 import { parseAncestryMarkdown } from './src/parse-ancestry';
 import { parseCareerMarkdown } from './src/parse-career';
 import { parseClassMarkdown } from './src/parse-class';
 import { parseComplicationMarkdown } from './src/parse-complication';
 import { parseItemMarkdown } from './src/parse-item';
-import { parseKitMarkdown } from './src/parse-kit';
+import { parseKitMarkdown, parseKitSignatureAbility } from './src/parse-kit';
 import { parseAbilityMarkdown } from './src/parse-ability';
 import { parseMonsterMarkdown } from './src/parse-monster';
 import { parseTitleMarkdown } from './src/parse-title';
@@ -537,6 +538,28 @@ function buildAbilities(): void {
     else abilityFailures.push(path);
   }
 
+  // Synthetic abilities live in ancestry markdown (e.g. Human Detect the
+  // Supernatural) and aren't picked up by walking Rules/Abilities. Append them
+  // before sorting so they appear in the same bundle.
+  abilities.push(...SYNTHETIC_ABILITIES);
+
+  // Kit signature abilities live inline in kit markdown under `Rules/Kits/`.
+  // The abilities walker only sees `Rules/Abilities/`, so we re-scan the kits
+  // tree and extract each signature ability statblock.
+  const kitsDir = join(RULES_DIR, 'Kits');
+  try {
+    const kitFiles = readdirSync(kitsDir).filter((f) => f.endsWith('.md'));
+    for (const entry of kitFiles) {
+      const kitContent = readFileSync(join(kitsDir, entry), 'utf-8');
+      const kit = parseKitMarkdown(kitContent);
+      if (!kit) continue;
+      const sig = parseKitSignatureAbility(kit.id, kitContent);
+      if (sig) abilities.push(sig);
+    }
+  } catch {
+    // kits dir missing — buildKits will have already errored.
+  }
+
   abilities.sort(
     (a, b) =>
       (a.sourceClassId ?? '').localeCompare(b.sourceClassId ?? '') ||
@@ -633,7 +656,7 @@ function buildClasses(version: string): void {
 }
 
 // Override maps imported for future 2B wiring. No-op in 2A.
-void ITEM_OVERRIDES; void KIT_OVERRIDES; void ABILITY_OVERRIDES; void TITLE_OVERRIDES;
+void ITEM_OVERRIDES; void KIT_OVERRIDES; void ABILITY_OVERRIDES; void TITLE_OVERRIDES; void SYNTHETIC_ABILITIES;
 
 // ── Title build ───────────────────────────────────────────────────────────────
 

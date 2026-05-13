@@ -129,7 +129,7 @@ function parseIsSubclass(filePath: string, typeField: string): boolean {
 // but PC tiers often include characteristic abbreviations ("4 + M damage")
 // that the damage regex won't match — raw text is always preserved in .raw so
 // the UI still shows the correct text.
-function parsePowerRollFromContent(content: string): PowerRoll | undefined {
+export function parsePowerRollFromContent(content: string): PowerRoll | undefined {
   const lines = content.split(/\r?\n/);
   let bonus: string | null = null;
   let tier1Raw: string | null = null;
