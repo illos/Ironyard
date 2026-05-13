@@ -348,6 +348,16 @@ export class LobbyDO implements DurableObject {
     const attached: Attached = { userId, displayName, role };
     this.sockets.set(server, attached);
 
+    // Send current state snapshot so the connecting client gets authoritative
+    // participant/encounter data immediately without replaying all intents.
+    if (this.campaignState) {
+      this.sendTo(server, {
+        kind: 'snapshot',
+        state: this.campaignState,
+        seq: this.campaignState.seq,
+      });
+    }
+
     // Phase 0 lobby envelopes — kept for web app compatibility this slice.
     this.sendTo(server, { kind: 'member_list', members: this.snapshotMembers() });
     this.broadcastExcept({ kind: 'member_joined', member: { userId, displayName } }, server);

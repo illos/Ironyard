@@ -698,7 +698,7 @@ function ApprovedRosterPanel({
   wsOpen: boolean;
   isDirector: boolean;
 }) {
-  const approved = useCampaignCharacters(campaignId, 'approved');
+  const approved = useApprovedCharactersFull(campaignId);
   const items = useItems();
   const [pushItemOpen, setPushItemOpen] = useState(false);
 
@@ -718,9 +718,9 @@ function ApprovedRosterPanel({
   };
 
   const charactersForModal =
-    approved.data?.map((cc) => ({
-      id: cc.characterId,
-      name: `${cc.characterId.slice(0, 8)}…`,
+    approved.data?.map((cr) => ({
+      id: cr.id,
+      name: cr.name,
     })) ?? [];
 
   return (
@@ -743,13 +743,13 @@ function ApprovedRosterPanel({
       )}
       {approved.data && approved.data.length > 0 && (
         <ul className="space-y-1">
-          {approved.data.map((cc) => (
+          {approved.data.map((cr) => (
             <li
-              key={cc.characterId}
+              key={cr.id}
               className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
             >
-              <span className="flex-1 text-sm font-mono text-neutral-300">
-                {cc.characterId.slice(0, 8)}…
+              <span className="flex-1 text-sm text-neutral-300">
+                {cr.name}
               </span>
             </li>
           ))}

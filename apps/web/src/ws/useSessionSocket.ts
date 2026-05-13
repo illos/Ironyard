@@ -521,10 +521,10 @@ export function useSessionSocket(sessionId: string | undefined) {
 
     ws.onopen = () => {
       setStatus('open');
-      // Replay the intent log so the page reflects pre-existing encounter state
-      // (e.g. after a page reload). The DO streams matching `applied` envelopes
-      // which feed the mini-reducer below.
-      ws.send(JSON.stringify({ kind: 'sync', sinceSeq: 0 }));
+      // The DO sends a `snapshot` on connect with the authoritative campaign
+      // state (participants, encounter phase, etc.). No sync needed — the
+      // snapshot populates activeEncounter correctly and new intents arrive
+      // as `applied` envelopes from this point forward.
     };
     ws.onclose = () => setStatus('closed');
     ws.onerror = () => setStatus('closed');
