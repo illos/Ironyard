@@ -49,6 +49,7 @@ function pc(over: Partial<Participant> = {}): Participant {
     recoveryValue: 0,
     ownerId: null,
     characterId: null,
+    weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
     ...over,
   };
 }
@@ -72,6 +73,7 @@ function monster(over: Partial<Participant> = {}): Participant {
     recoveryValue: 0,
     ownerId: null,
     characterId: null,
+    weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
     ...over,
   };
 }

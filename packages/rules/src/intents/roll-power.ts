@@ -46,6 +46,7 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
     rolls,
     ladder,
     bleedingD6,
+    abilityKeywords,
   } = parsed.data;
 
   const participants = state.participants.filter(isParticipant);
@@ -115,6 +116,23 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
 
   const tierEffect = outcome.tier === 1 ? ladder.t1 : outcome.tier === 2 ? ladder.t2 : ladder.t3;
 
+  // Slice 6 / Epic 2C § 10.8: fold the attacker's per-tier weapon damage bonus
+  // into the rolled damage when the ability has Weapon + Melee or Ranged
+  // keywords. Snapshot lives on the participant; populated by StartEncounter
+  // from the derived CharacterRuntime. Matching is case-insensitive because
+  // dispatchers pass keywords through unchanged from AbilitySchema (capitalized
+  // in source markdown).
+  const lowerKeywords = abilityKeywords.map((k) => k.toLowerCase());
+  const hasWeapon = lowerKeywords.includes('weapon');
+  const isMelee = lowerKeywords.includes('melee');
+  const isRanged = lowerKeywords.includes('ranged');
+  let kitDamageBonus = 0;
+  if (hasWeapon && (isMelee || isRanged)) {
+    const slot: 'melee' | 'ranged' = isMelee ? 'melee' : 'ranged';
+    kitDamageBonus = attacker.weaponDamageBonus[slot][outcome.tier - 1] ?? 0;
+  }
+  const finalDamage = tierEffect.damage + kitDamageBonus;
+
   // Emit one ApplyDamage per target.
   const derived: DerivedIntent[] = targetIds.map((targetId) => ({
     actor: intent.actor,
@@ -122,7 +140,7 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
     type: IntentTypes.ApplyDamage,
     payload: {
       targetId,
-      amount: tierEffect.damage,
+      amount: finalDamage,
       damageType: tierEffect.damageType,
       sourceIntentId: intent.id,
     },
@@ -216,9 +234,7 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
     log: [
       {
         kind: 'info',
-        text:
-          `${attacker.name} rolls ${outcome.total} (t${outcome.tier}) via ${abilityId} ` +
-          `vs ${targetIds.length} target(s) → ${tierEffect.damage} ${tierEffect.damageType}`,
+        text: `${attacker.name} rolls ${outcome.total} (t${outcome.tier}) via ${abilityId} vs ${targetIds.length} target(s) → ${finalDamage} ${tierEffect.damageType}${kitDamageBonus !== 0 ? ` (kit +${kitDamageBonus})` : ''}`,
         intentId: intent.id,
       },
       ...contributionLog,

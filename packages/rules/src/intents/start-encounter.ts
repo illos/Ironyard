@@ -109,6 +109,8 @@ export function applyStartEncounter(
         max: runtime.recoveriesMax,
       },
       recoveryValue: runtime.recoveryValue,
+      // Slice 6 / Epic 2C § 10.8: snapshot the derived per-tier weapon bonus.
+      weaponDamageBonus: runtime.weaponDamageBonus,
     };
     return materialized;
   });

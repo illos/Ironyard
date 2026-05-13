@@ -57,5 +57,16 @@ export const ParticipantSchema = z.object({
     })
     .default({ current: 0, max: 0 }),
   recoveryValue: z.number().int().min(0).default(0),
+  // Slice 6 / Epic 2C § 10.8: per-tier weapon damage bonus, snapshot from the
+  // derived runtime at materialization (StartEncounter). RollPower reads
+  // `weaponDamageBonus.{melee,ranged}[tier - 1]` and adds it to ability damage
+  // when the ability has Weapon + Melee/Ranged keywords. Defaults keep older
+  // snapshots and monster fixtures parseable (monsters carry zeros).
+  weaponDamageBonus: z
+    .object({
+      melee: z.tuple([z.number().int(), z.number().int(), z.number().int()]),
+      ranged: z.tuple([z.number().int(), z.number().int(), z.number().int()]),
+    })
+    .default({ melee: [0, 0, 0], ranged: [0, 0, 0] }),
 });
 export type Participant = z.infer<typeof ParticipantSchema>;

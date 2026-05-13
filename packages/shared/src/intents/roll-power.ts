@@ -39,5 +39,11 @@ export const RollPowerPayloadSchema = z.object({
   // Bleeding; absent ⇒ engine logs `manual_override_required` and skips auto
   // damage so the table can roll manually.
   bleedingD6: z.number().int().min(1).max(6).optional(),
+  // Slice 6 / Epic 2C § 10.8: the ability's keywords (lowercased or original-cased
+  // per AbilitySchema). The engine inspects these for `Weapon` + (`Melee`/`Ranged`)
+  // to decide whether the attacker's `weaponDamageBonus[slot][tier - 1]` adds
+  // to the tier outcome. Default [] keeps older payloads parseable — those just
+  // skip the kit-bonus fold.
+  abilityKeywords: z.array(z.string()).default([]),
 });
 export type RollPowerPayload = z.infer<typeof RollPowerPayloadSchema>;

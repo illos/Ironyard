@@ -100,6 +100,10 @@ function makePcParticipant(id: string) {
     recoveryValue: 10,
     ownerId: null as string | null,
     characterId: null as string | null,
+    weaponDamageBonus: {
+      melee: [0, 0, 0] as [number, number, number],
+      ranged: [0, 0, 0] as [number, number, number],
+    },
   };
 }
 
@@ -198,6 +202,10 @@ describe('handleSideEffect Respite', () => {
           recoveryValue: 0,
           ownerId: null as string | null,
           characterId: null as string | null,
+          weaponDamageBonus: {
+            melee: [0, 0, 0] as [number, number, number],
+            ranged: [0, 0, 0] as [number, number, number],
+          },
         },
       ],
     });

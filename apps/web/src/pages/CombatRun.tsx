@@ -273,6 +273,9 @@ export function CombatRun() {
       banes: 0,
       rolls: { d10: args.rolls },
       ladder,
+      // Slice 6 / Epic 2C § 10.8: keywords drive the kit weapon-damage-bonus
+      // fold. The engine looks for Weapon + Melee/Ranged on these.
+      abilityKeywords: args.ability.keywords ?? [],
     };
     // The DO override of `source` is always 'manual' regardless of what we
     // send (see session-do.ts handleDispatch). To preserve manual-vs-auto

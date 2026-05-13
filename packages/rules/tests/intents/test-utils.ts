@@ -49,6 +49,7 @@ export function makeHeroParticipant(id: string, overrides: Partial<Participant> 
     recoveryValue: 10,
     ownerId: null,
     characterId: null,
+    weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
     ...overrides,
   };
 }
@@ -75,6 +76,7 @@ export function makeMonsterParticipant(
     recoveryValue: 0,
     ownerId: null,
     characterId: null,
+    weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
     ...overrides,
   };
 }

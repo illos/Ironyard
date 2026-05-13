@@ -313,6 +313,10 @@ describe('stampKickPlayer', () => {
           recoveryValue: 10,
           ownerId: null as string | null,
           characterId: null as string | null,
+          weaponDamageBonus: {
+            melee: [0, 0, 0] as [number, number, number],
+            ranged: [0, 0, 0] as [number, number, number],
+          },
         },
         {
           id: 'monster-xyz',
@@ -332,6 +336,10 @@ describe('stampKickPlayer', () => {
           recoveryValue: 0,
           ownerId: null as string | null,
           characterId: null as string | null,
+          weaponDamageBonus: {
+            melee: [0, 0, 0] as [number, number, number],
+            ranged: [0, 0, 0] as [number, number, number],
+          },
         },
       ],
     });
@@ -412,6 +420,10 @@ describe('stampKickPlayer', () => {
           recoveryValue: 10,
           ownerId: null as string | null,
           characterId: null as string | null,
+          weaponDamageBonus: {
+            melee: [0, 0, 0] as [number, number, number],
+            ranged: [0, 0, 0] as [number, number, number],
+          },
         },
         // pc-placeholder for char-placeholder-2 (not yet materialized)
         {
