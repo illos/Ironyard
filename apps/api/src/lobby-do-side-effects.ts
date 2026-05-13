@@ -425,7 +425,10 @@ async function sideEffectPushItem(
 
 // Hybrid side-effect: writes per-character XP increments to D1 using the
 // partyVictories count that existed BEFORE the reducer drained it to 0.
-// Skips the write entirely when xpAwarded === 0 (no D1 round-trips needed).
+// Also processes Slice 4 (Epic 2C) extensions: per-character Wyrmplate
+// damage-type changes (Dragon Knight ancestry). The two writes are
+// folded into one UPDATE per affected character to keep D1 round-trips
+// bounded.
 //
 // PC participant ids in the roster follow the convention `pc:<characterId>`.
 // We strip the prefix to get the D1 `characters` primary key.
@@ -439,8 +442,7 @@ async function sideEffectRespite(
   if (!parsed.success) return;
 
   const xpAwarded = stateBefore.partyVictories;
-  // Nothing to write when there are no victories to award.
-  if (xpAwarded === 0) return;
+  const wyrmplateChoices = parsed.data.wyrmplateChoices;
 
   // Collect character ids for every PC participant that was in the roster
   // before the respite. Participant ids are `pc:<characterId>`.
@@ -451,11 +453,19 @@ async function sideEffectRespite(
     .filter((p) => p.kind === 'pc')
     .map((p) => p.id.replace(/^pc:/, ''));
 
-  if (pcCharIds.length === 0) return;
+  // Union of (a) characters in the lobby that gain XP and (b)
+  // characters with a Wyrmplate damage-type pick. The pick can target a
+  // character that isn't in the lobby roster (it's a respite-time
+  // bookkeeping change, not an encounter action).
+  const affectedCharIds = new Set<string>([...pcCharIds, ...Object.keys(wyrmplateChoices)]);
+
+  if (affectedCharIds.size === 0) return;
+  // Skip entirely when there's nothing to write — no XP and no picks.
+  if (xpAwarded === 0 && Object.keys(wyrmplateChoices).length === 0) return;
 
   const conn = db(env.DB);
 
-  for (const charId of pcCharIds) {
+  for (const charId of affectedCharIds) {
     const row = await conn
       .select({ data: characters.data })
       .from(characters)
@@ -472,7 +482,27 @@ async function sideEffectRespite(
       continue;
     }
 
-    data.xp = (data.xp ?? 0) + xpAwarded;
+    let mutated = false;
+
+    // XP increment — only for PCs that were in the lobby roster.
+    if (xpAwarded > 0 && pcCharIds.includes(charId)) {
+      data.xp = (data.xp ?? 0) + xpAwarded;
+      mutated = true;
+    }
+
+    // Wyrmplate damage-type change — only applies to Dragon Knights.
+    // Non-Dragon-Knight characters are silently skipped so a stale or
+    // mistargeted pick can't corrupt another ancestry's blob.
+    const newType = wyrmplateChoices[charId];
+    if (typeof newType === 'string' && data.ancestryId === 'dragon-knight') {
+      data.ancestryChoices = {
+        ...data.ancestryChoices,
+        wyrmplateType: newType,
+      };
+      mutated = true;
+    }
+
+    if (!mutated) continue;
 
     await conn
       .update(characters)

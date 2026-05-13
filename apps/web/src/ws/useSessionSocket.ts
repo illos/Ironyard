@@ -40,6 +40,7 @@ const CHARACTER_MUTATING_INTENTS: ReadonlySet<string> = new Set<string>([
   IntentTypes.SwapKit,
   IntentTypes.UseConsumable,
   IntentTypes.PushItem,
+  IntentTypes.Respite,
 ]);
 
 // Payload shape we duck-type-check for a character id to invalidate. Most
@@ -483,7 +484,16 @@ export function useSessionSocket(sessionId: string | undefined) {
         // tracks combat-side state (HP, conditions, resources); fields like
         // kitId, inventory, and equipped flags live on the character query.
         // Invalidate so the sheet re-derives runtime values.
-        if (CHARACTER_MUTATING_INTENTS.has(msg.intent.type)) {
+        //
+        // Respite is the broad-stroke case — it can touch every PC in the
+        // lobby (XP increment) plus any number of off-roster Dragon Knight
+        // characters (Wyrmplate damage-type pick), so we invalidate the
+        // entire character query keyspace rather than picking ids out of
+        // the payload. Every other character-mutating intent keys on a
+        // single character.
+        if (msg.intent.type === IntentTypes.Respite) {
+          qc.invalidateQueries({ queryKey: ['character'] });
+        } else if (CHARACTER_MUTATING_INTENTS.has(msg.intent.type)) {
           const characterId = characterIdFromPayload(msg.intent.payload);
           if (characterId) {
             qc.invalidateQueries({ queryKey: ['character', characterId] });

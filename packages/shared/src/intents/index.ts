@@ -54,7 +54,7 @@ export type { PushItemPayload } from './push-item';
 export { RemoveApprovedCharacterPayloadSchema } from './remove-approved-character';
 export type { RemoveApprovedCharacterPayload } from './remove-approved-character';
 export { RespitePayloadSchema } from './respite';
-export type { RespitePayload } from './respite';
+export type { RespitePayload, SafelyCarryWarning } from './respite';
 export { RemoveConditionPayloadSchema } from './remove-condition';
 export type { RemoveConditionPayload } from './remove-condition';
 export { RemoveParticipantPayloadSchema } from './remove-participant';

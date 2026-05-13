@@ -7,7 +7,7 @@ import type { CampaignState } from '@ironyard/rules';
 import type { Intent } from '@ironyard/shared';
 import { describe, expect, it, vi } from 'vitest';
 
-// ── Mock data/index (monsters lookup) ──────────────────────────────────────
+// ── Mock data/index (monsters + items lookup) ──────────────────────────────
 vi.mock('../src/data/index', () => ({
   loadMonsterById: (id: string) => {
     if (id === 'goblin-soldier-l1') {
@@ -33,6 +33,31 @@ vi.mock('../src/data/index', () => ({
         weaknesses: [],
         weaknessNote: null,
         abilities: [],
+      };
+    }
+    return null;
+  },
+  loadItemById: (id: string) => {
+    // Treasure items used by the Slice 4 (Epic 2C) Respite stamper test.
+    if (id.startsWith('treasure-')) {
+      return {
+        id,
+        name: id,
+        description: '',
+        raw: '',
+        category: 'leveled-treasure',
+        echelon: 1,
+        kitKeyword: null,
+      };
+    }
+    if (id.startsWith('trinket-')) {
+      return {
+        id,
+        name: id,
+        description: '',
+        raw: '',
+        category: 'trinket',
+        bodySlot: null,
       };
     }
     return null;
@@ -325,7 +350,10 @@ describe('stampKickPlayer', () => {
     const intent = makeIntent('KickPlayer', { userId: 'user-nobody' });
     const result = await stampKickPlayer(intent, makeCampaignState(), mockEnv);
     expect(result).toBeNull();
-    const payload = intent.payload as { participantIdsToRemove?: string[]; placeholderCharacterIdsToRemove?: string[] };
+    const payload = intent.payload as {
+      participantIdsToRemove?: string[];
+      placeholderCharacterIdsToRemove?: string[];
+    };
     expect(payload.participantIdsToRemove).toEqual([]);
     expect(payload.placeholderCharacterIdsToRemove).toEqual([]);
   });
@@ -336,7 +364,12 @@ describe('stampKickPlayer', () => {
     const state = makeCampaignState({
       participants: [
         // pc-placeholder owned by the kicked user
-        { kind: 'pc-placeholder', characterId: 'char-placeholder-1', ownerId: 'user-alice', position: 0 },
+        {
+          kind: 'pc-placeholder',
+          characterId: 'char-placeholder-1',
+          ownerId: 'user-alice',
+          position: 0,
+        },
         // pc-placeholder owned by a different user — must NOT appear
         { kind: 'pc-placeholder', characterId: 'char-other', ownerId: 'user-bob', position: 1 },
       ],
@@ -345,7 +378,10 @@ describe('stampKickPlayer', () => {
     const intent = makeIntent('KickPlayer', { userId: 'user-alice' });
     const result = await stampKickPlayer(intent, state, mockEnv);
     expect(result).toBeNull();
-    const payload = intent.payload as { participantIdsToRemove?: string[]; placeholderCharacterIdsToRemove?: string[] };
+    const payload = intent.payload as {
+      participantIdsToRemove?: string[];
+      placeholderCharacterIdsToRemove?: string[];
+    };
     expect(payload.participantIdsToRemove).toEqual([]);
     expect(payload.placeholderCharacterIdsToRemove).toContain('char-placeholder-1');
     expect(payload.placeholderCharacterIdsToRemove).not.toContain('char-other');
@@ -378,14 +414,22 @@ describe('stampKickPlayer', () => {
           characterId: null as string | null,
         },
         // pc-placeholder for char-placeholder-2 (not yet materialized)
-        { kind: 'pc-placeholder', characterId: 'char-placeholder-2', ownerId: 'user-alice', position: 1 },
+        {
+          kind: 'pc-placeholder',
+          characterId: 'char-placeholder-2',
+          ownerId: 'user-alice',
+          position: 1,
+        },
       ],
     });
 
     const intent = makeIntent('KickPlayer', { userId: 'user-alice' });
     const result = await stampKickPlayer(intent, state, mockEnv);
     expect(result).toBeNull();
-    const payload = intent.payload as { participantIdsToRemove?: string[]; placeholderCharacterIdsToRemove?: string[] };
+    const payload = intent.payload as {
+      participantIdsToRemove?: string[];
+      placeholderCharacterIdsToRemove?: string[];
+    };
     expect(payload.participantIdsToRemove).toContain('char-full');
     expect(payload.placeholderCharacterIdsToRemove).toContain('char-placeholder-2');
   });
@@ -499,5 +543,88 @@ describe('stampIntent', () => {
     const intent = makeIntent('SetStamina', { participantId: 'p1', stamina: 10 });
     const result = await stampIntent(intent, makeCampaignState(), mockEnv);
     expect(result).toBeNull();
+  });
+});
+
+// ── stampRespite — Slice 4 (Epic 2C) safely-carry warnings ────────────────
+
+describe('stampRespite', () => {
+  it('stamps a safelyCarryWarnings entry for a hero carrying > 3 equipped treasures', async () => {
+    // Mock the campaign-characters join query: 1 approved character whose
+    // inventory holds 4 equipped leveled treasures + 1 unequipped treasure.
+    mockDbResult = [
+      {
+        id: 'char-1',
+        name: 'Aria',
+        data: JSON.stringify({
+          name: 'Aria',
+          ancestryId: 'human',
+          inventory: [
+            { id: 'inv-1', itemId: 'treasure-amulet', quantity: 1, equipped: true },
+            { id: 'inv-2', itemId: 'treasure-cloak', quantity: 1, equipped: true },
+            { id: 'inv-3', itemId: 'treasure-ring', quantity: 1, equipped: true },
+            { id: 'inv-4', itemId: 'treasure-boots', quantity: 1, equipped: true },
+            // Unequipped — must NOT count toward the limit (canon § 10.17).
+            { id: 'inv-5', itemId: 'treasure-helm', quantity: 1, equipped: false },
+            // Non-treasure — must NOT count.
+            { id: 'inv-6', itemId: 'trinket-luckcharm', quantity: 1, equipped: true },
+          ],
+        }),
+      },
+    ];
+    const intent = makeIntent('Respite', {});
+    const result = await stampIntent(intent, makeCampaignState(), mockEnv);
+    expect(result).toBeNull();
+
+    const payload = intent.payload as {
+      safelyCarryWarnings?: Array<{ characterId: string; count: number; items: string[] }>;
+    };
+    expect(payload.safelyCarryWarnings).toHaveLength(1);
+    expect(payload.safelyCarryWarnings?.[0]?.characterId).toBe('char-1');
+    expect(payload.safelyCarryWarnings?.[0]?.count).toBe(4);
+  });
+
+  it('emits no warnings when every approved hero is at or below the limit', async () => {
+    mockDbResult = [
+      {
+        id: 'char-1',
+        name: 'Aria',
+        data: JSON.stringify({
+          name: 'Aria',
+          ancestryId: 'human',
+          inventory: [
+            { id: 'inv-1', itemId: 'treasure-amulet', quantity: 1, equipped: true },
+            { id: 'inv-2', itemId: 'treasure-cloak', quantity: 1, equipped: true },
+            { id: 'inv-3', itemId: 'treasure-ring', quantity: 1, equipped: true },
+          ],
+        }),
+      },
+    ];
+    const intent = makeIntent('Respite', {});
+    const result = await stampIntent(intent, makeCampaignState(), mockEnv);
+    expect(result).toBeNull();
+
+    const payload = intent.payload as { safelyCarryWarnings?: unknown[] };
+    expect(payload.safelyCarryWarnings).toHaveLength(0);
+  });
+
+  it('defaults wyrmplateChoices to {} when the client omits it', async () => {
+    mockDbResult = [];
+    const intent = makeIntent('Respite', {});
+    const result = await stampIntent(intent, makeCampaignState(), mockEnv);
+    expect(result).toBeNull();
+
+    const payload = intent.payload as { wyrmplateChoices?: Record<string, string> };
+    expect(payload.wyrmplateChoices).toEqual({});
+  });
+
+  it('preserves an explicitly-supplied wyrmplateChoices record', async () => {
+    mockDbResult = [];
+    const intent = makeIntent('Respite', { wyrmplateChoices: { 'char-dk': 'fire' } });
+    const result = await stampIntent(intent, makeCampaignState(), mockEnv);
+    expect(result).toBeNull();
+
+    const payload = intent.payload as { wyrmplateChoices?: Record<string, string> };
+    expect(payload.wyrmplateChoices).toEqual({ 'char-dk': 'fire' });
   });
 });

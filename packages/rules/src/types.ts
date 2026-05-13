@@ -89,7 +89,7 @@ export type CampaignState = {
 };
 
 export type LogEntry = {
-  kind: 'info' | 'error';
+  kind: 'info' | 'error' | 'warning';
   text: string;
   intentId: string;
 };

@@ -13,6 +13,7 @@ import {
   EncounterTemplateDataSchema,
   type Intent,
   type LoadEncounterTemplatePayload,
+  type SafelyCarryWarning,
   type SwapKitPayload,
 } from '@ironyard/shared';
 import { and, eq, inArray } from 'drizzle-orm';
@@ -603,6 +604,87 @@ export async function stampSwapKit(
 }
 
 /**
+ * Respite — Slice 4 (Epic 2C). Scans every approved character in the
+ * campaign and computes per-character "safely-carry" warnings per
+ * canon § 10.17 (a hero carrying > 3 equipped leveled treasures
+ * triggers a Presence power roll at respite). The reducer consumes
+ * the stamped `safelyCarryWarnings` array and logs each entry — the
+ * roll + consequences are dispatched separately.
+ *
+ * Does NOT reject — an empty warnings array is a normal outcome.
+ * `wyrmplateChoices` passes through untouched; the reducer validates
+ * it and the side-effect handler writes Dragon Knight character blobs.
+ */
+export async function stampRespite(
+  intent: Intent & { timestamp: number },
+  campaignState: CampaignState,
+  env: Bindings,
+): Promise<StampResult> {
+  const payload = intent.payload as MutablePayload;
+
+  const conn = db(env.DB);
+
+  // Pull every approved character in this campaign — that's the cohort
+  // who can be carrying treasures during a respite. Pending submissions
+  // are excluded.
+  const rows = await conn
+    .select({ id: characters.id, name: characters.name, data: characters.data })
+    .from(characters)
+    .innerJoin(campaignCharacters, eq(campaignCharacters.characterId, characters.id))
+    .where(
+      and(
+        eq(campaignCharacters.campaignId, campaignState.campaignId),
+        eq(campaignCharacters.status, 'approved'),
+      ),
+    )
+    .all();
+
+  const warnings: SafelyCarryWarning[] = [];
+  for (const row of rows) {
+    let parsed: ReturnType<typeof CharacterSchema.parse>;
+    try {
+      parsed = CharacterSchema.parse(JSON.parse(row.data));
+    } catch {
+      // Invalid blob — skip silently (the character was authored before
+      // the current schema version, or the row is corrupt).
+      continue;
+    }
+
+    // Count equipped inventory entries that resolve to a leveled
+    // treasure in the static catalog. Owned-but-unequipped items are
+    // explicitly allowed by canon § 10.17.
+    const equippedTreasureItemIds: string[] = [];
+    for (const entry of parsed.inventory) {
+      if (!entry.equipped) continue;
+      const item = loadItemById(entry.itemId);
+      if (!item) continue;
+      if (item.category === 'leveled-treasure') {
+        equippedTreasureItemIds.push(item.id);
+      }
+    }
+
+    if (equippedTreasureItemIds.length > 3) {
+      warnings.push({
+        characterId: row.id,
+        characterName: row.name,
+        count: equippedTreasureItemIds.length,
+        items: equippedTreasureItemIds,
+      });
+    }
+  }
+
+  payload.safelyCarryWarnings = warnings;
+
+  // Pass wyrmplateChoices through unchanged (default to {} so the
+  // reducer's payload parse always succeeds even if the client omits it).
+  if (payload.wyrmplateChoices === undefined) {
+    payload.wyrmplateChoices = {};
+  }
+
+  return null;
+}
+
+/**
  * Dispatch table — called by LobbyDO.handleDispatch before applyAndBroadcast.
  * Returns null (proceed) or a rejection reason (send rejected envelope).
  */
@@ -630,6 +712,8 @@ export async function stampIntent(
       return stampKickPlayer(intent, campaignState, env);
     case 'PushItem':
       return stampPushItem(intent, campaignState, env);
+    case 'Respite':
+      return stampRespite(intent, campaignState, env);
     case 'SwapKit':
       return stampSwapKit(intent, campaignState, env);
     case 'UnequipItem':

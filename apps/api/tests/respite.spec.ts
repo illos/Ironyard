@@ -238,4 +238,53 @@ describe('handleSideEffect Respite', () => {
     const parsed = JSON.parse(capturedUpdates[0]?.data ?? '{}') as { xp?: number };
     expect(parsed.xp).toBe(11); // 10 + 1
   });
+
+  // Slice 4 (Epic 2C): Wyrmplate damage-type pick is applied to Dragon Knight
+  // characters via the side-effect handler. Non-Dragon-Knight characters are
+  // silently skipped — a stale or mistargeted pick must not corrupt another
+  // ancestry's blob.
+  it('writes ancestryChoices.wyrmplateType for Dragon Knight characters', async () => {
+    const stateBefore = makeCampaignState({ partyVictories: 0, participants: [] });
+
+    // Off-roster Dragon Knight pick — no participant in the lobby.
+    mockGetResults.push({
+      data: JSON.stringify({
+        ancestryId: 'dragon-knight',
+        ancestryChoices: { wyrmplateType: 'fire' },
+        xp: 4,
+      }),
+    });
+    capturedUpdates.length = 0;
+
+    const intent = makeIntent('Respite', {
+      wyrmplateChoices: { 'char-dk': 'cold' },
+    });
+    await handleSideEffect(intent, 'campaign-123', mockEnv, stateBefore);
+
+    expect(capturedUpdates).toHaveLength(1);
+    const parsed = JSON.parse(capturedUpdates[0]?.data ?? '{}') as {
+      ancestryChoices?: { wyrmplateType?: string };
+    };
+    expect(parsed.ancestryChoices?.wyrmplateType).toBe('cold');
+  });
+
+  it('does NOT write wyrmplateType when ancestry is not dragon-knight', async () => {
+    const stateBefore = makeCampaignState({ partyVictories: 0, participants: [] });
+
+    // Non-Dragon-Knight character — pick must be silently dropped.
+    mockGetResults.push({
+      data: JSON.stringify({
+        ancestryId: 'human',
+        xp: 0,
+      }),
+    });
+    capturedUpdates.length = 0;
+
+    const intent = makeIntent('Respite', {
+      wyrmplateChoices: { 'char-human': 'fire' },
+    });
+    await handleSideEffect(intent, 'campaign-123', mockEnv, stateBefore);
+
+    expect(capturedUpdates).toHaveLength(0);
+  });
 });

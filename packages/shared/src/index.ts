@@ -107,6 +107,7 @@ export type {
   RemoveApprovedCharacterPayload,
   RemoveConditionPayload,
   RespitePayload,
+  SafelyCarryWarning,
   RemoveParticipantPayload,
   RollPowerPayload,
   RollResistancePayload,
