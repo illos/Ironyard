@@ -38,6 +38,7 @@ const CHARACTER_MUTATING_INTENTS: ReadonlySet<string> = new Set<string>([
   IntentTypes.EquipItem,
   IntentTypes.UnequipItem,
   IntentTypes.SwapKit,
+  IntentTypes.UseConsumable,
 ]);
 
 // Payload shape we duck-type-check for a `characterId` to invalidate. All

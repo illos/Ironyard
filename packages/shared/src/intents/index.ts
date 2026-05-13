@@ -101,6 +101,8 @@ export { UnequipItemPayloadSchema } from './unequip-item';
 export type { UnequipItemPayload } from './unequip-item';
 export { UndoPayloadSchema } from './undo';
 export type { UndoPayload } from './undo';
+export { UseConsumablePayloadSchema } from './use-consumable';
+export type { UseConsumablePayload } from './use-consumable';
 
 export const IntentTypes = {
   AddMonster: 'AddMonster',
@@ -143,5 +145,6 @@ export const IntentTypes = {
   SwapKit: 'SwapKit',
   UnequipItem: 'UnequipItem',
   Undo: 'Undo',
+  UseConsumable: 'UseConsumable',
 } as const;
 export type KnownIntentType = (typeof IntentTypes)[keyof typeof IntentTypes];

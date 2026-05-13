@@ -5,25 +5,26 @@
 // with the full SteelCompendium ingest — see .gitignore for the skip-worktree
 // instructions that suppress those diffs.
 
+import type { StaticDataBundle } from '@ironyard/rules';
+import { ResolvedKitSchema } from '@ironyard/rules';
 import {
   AbilitySchema,
   AncestrySchema,
   CareerSchema,
   ClassSchema,
+  type Item,
   ItemSchema,
   type Monster,
   MonsterFileSchema,
   TitleSchema,
 } from '@ironyard/shared';
-import type { StaticDataBundle } from '@ironyard/rules';
-import { ResolvedKitSchema } from '@ironyard/rules';
-import monstersJson from './monsters.json';
-import classesRaw from './classes.json';
-import kitsRaw from './kits.json';
+import abilitiesRaw from './abilities.json';
 import ancestriesRaw from './ancestries.json';
 import careersRaw from './careers.json';
-import abilitiesRaw from './abilities.json';
+import classesRaw from './classes.json';
 import itemsRaw from './items.json';
+import kitsRaw from './kits.json';
+import monstersJson from './monsters.json';
 import titlesRaw from './titles.json';
 
 // ── Monsters ────────────────────────────────────────────────────────────────
@@ -56,6 +57,28 @@ function ensureMonsterCache(): Map<string, Monster> {
 
 export function loadMonsterById(id: string): Monster | null {
   return ensureMonsterCache().get(id) ?? null;
+}
+
+// ── Items ───────────────────────────────────────────────────────────────────
+// Parsed lazily on first access — same pattern as the monster cache. The
+// stampUseConsumable handler reads this to look up an item's `effectKind`
+// without having to re-parse items.json on every dispatch.
+
+let itemCache: Map<string, Item> | null = null;
+
+function ensureItemCache(): Map<string, Item> {
+  if (itemCache) return itemCache;
+  const map = new Map<string, Item>();
+  for (const raw of itemsRaw as unknown[]) {
+    const parsed = ItemSchema.safeParse(raw);
+    if (parsed.success) map.set(parsed.data.id, parsed.data);
+  }
+  itemCache = map;
+  return itemCache;
+}
+
+export function loadItemById(id: string): Item | null {
+  return ensureItemCache().get(id) ?? null;
 }
 
 // ── StaticDataBundle ─────────────────────────────────────────────────────────

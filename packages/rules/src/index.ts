@@ -36,3 +36,8 @@ export type { ResolvedKit } from './static-data';
 
 export { deriveCharacterRuntime } from './derive-character-runtime';
 export type { CharacterRuntime } from './derive-character-runtime';
+
+// Re-export hand-authored override tables that consumers outside `@ironyard/data`
+// (e.g. the API Worker, which only depends on `@ironyard/rules` + `@ironyard/shared`)
+// still need at intent-stamping time.
+export { CONSUMABLE_HEAL_AMOUNTS } from '@ironyard/data';

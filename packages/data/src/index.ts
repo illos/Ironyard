@@ -16,6 +16,7 @@ export { KIT_OVERRIDES } from '../overrides/kits';
 export { ABILITY_OVERRIDES } from '../overrides/abilities';
 export { TITLE_OVERRIDES } from '../overrides/titles';
 export { ANCESTRY_TRAIT_OVERRIDES } from '../overrides/ancestry-traits';
+export { CONSUMABLE_HEAL_AMOUNTS } from '../overrides/consumable-heal-amounts';
 export type {
   ItemOverride,
   KitOverride,

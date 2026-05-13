@@ -65,6 +65,9 @@ export async function handleSideEffect(
       case 'UnequipItem':
         await sideEffectUnequipItem(intent, env);
         break;
+      case 'UseConsumable':
+        await sideEffectUseConsumable(intent, env);
+        break;
       case 'Respite':
         if (stateBefore !== undefined) {
           await sideEffectRespite(intent, stateBefore, env);
@@ -313,6 +316,52 @@ async function sideEffectUnequipItem(
   data.inventory = data.inventory.map((e) =>
     e.id === inventoryEntryId ? { ...e, equipped: false } : e,
   );
+
+  await conn
+    .update(characters)
+    .set({ data: JSON.stringify(data), updatedAt: intent.timestamp })
+    .where(eq(characters.id, characterId));
+}
+
+// Slice 2 (Epic 2C): decrement the targeted inventory entry's quantity by 1.
+// When the resulting quantity reaches 0 the entry is removed entirely. Mirrors
+// sideEffectEquipItem's CharacterSchema.parse → mutate → persist pattern;
+// uses immutable `flatMap` so the inventory stays canonically shaped.
+//
+// Not strictly idempotent — re-dispatching this side-effect would over-decrement
+// — but the DO never re-dispatches a successfully-reduced intent. If quantity
+// is already at 0 (e.g. due to a stale entry), the entry is removed instead of
+// going negative.
+async function sideEffectUseConsumable(
+  intent: Intent & { timestamp: number },
+  env: Bindings,
+): Promise<void> {
+  const payload = intent.payload as MutablePayload;
+  const characterId = payload.characterId;
+  const inventoryEntryId = payload.inventoryEntryId;
+  if (typeof characterId !== 'string' || typeof inventoryEntryId !== 'string') return;
+
+  const conn = db(env.DB);
+  const row = await conn
+    .select({ data: characters.data })
+    .from(characters)
+    .where(eq(characters.id, characterId))
+    .get();
+  if (!row) return;
+
+  let data: ReturnType<typeof CharacterSchema.parse>;
+  try {
+    data = CharacterSchema.parse(JSON.parse(row.data));
+  } catch {
+    return;
+  }
+
+  data.inventory = data.inventory.flatMap((e) => {
+    if (e.id !== inventoryEntryId) return [e];
+    const newQty = e.quantity - 1;
+    if (newQty <= 0) return [];
+    return [{ ...e, quantity: newQty }];
+  });
 
   await conn
     .update(characters)

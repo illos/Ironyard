@@ -77,6 +77,7 @@ export {
   SwapKitPayloadSchema,
   UndoPayloadSchema,
   UnequipItemPayloadSchema,
+  UseConsumablePayloadSchema,
 } from './intents';
 export type {
   AddMonsterPayload,
@@ -122,6 +123,7 @@ export type {
   SwapKitPayload,
   UndoPayload,
   UnequipItemPayload,
+  UseConsumablePayload,
 } from './intents';
 
 export {

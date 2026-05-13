@@ -5,7 +5,7 @@
 // Stampers that cannot reject (JumpBehindScreen, SubmitCharacter, KickPlayer)
 // still return null on success — the reducer performs the authority check.
 
-import { isParticipant } from '@ironyard/rules';
+import { CONSUMABLE_HEAL_AMOUNTS, isParticipant } from '@ironyard/rules';
 import type { CampaignState, PcPlaceholder } from '@ironyard/rules';
 import {
   type BringCharacterIntoEncounterPayload,
@@ -16,7 +16,7 @@ import {
   type SwapKitPayload,
 } from '@ironyard/shared';
 import { and, eq, inArray } from 'drizzle-orm';
-import { loadMonsterById } from './data/index';
+import { loadItemById, loadMonsterById } from './data/index';
 import { db } from './db';
 import {
   campaignCharacters,
@@ -283,6 +283,82 @@ export async function stampUnequipItem(
 }
 
 /**
+ * UseConsumable — verify the actor owns the character, locate the inventory
+ * entry, and look up the item's category + `effectKind` in the static items
+ * catalog. Stamps `ownsCharacter`, `inventoryEntryExists`, `itemIsConsumable`,
+ * `effectKind`, and `healAmount`. Does NOT reject — the reducer is the
+ * authority.
+ *
+ * `healAmount` is sourced from the hand-authored
+ * `CONSUMABLE_HEAL_AMOUNTS` override table (populated in Slice 5). Items not
+ * yet listed there stamp 0 — the reducer's `instant` branch falls through to
+ * the manual-log path when healAmount is 0, so the slice is non-functional
+ * until Slice 5 wires up the table.
+ */
+export async function stampUseConsumable(
+  intent: Intent & { timestamp: number },
+  _campaignState: CampaignState,
+  env: Bindings,
+): Promise<StampResult> {
+  const payload = intent.payload as MutablePayload;
+  const characterId = payload.characterId;
+  const inventoryEntryId = payload.inventoryEntryId;
+  if (typeof characterId !== 'string' || typeof inventoryEntryId !== 'string') {
+    return 'invalid_payload: characterId and inventoryEntryId required';
+  }
+
+  const actorId = intent.actor.userId;
+  const conn = db(env.DB);
+
+  const character = await conn
+    .select({ ownerId: characters.ownerId, data: characters.data })
+    .from(characters)
+    .where(eq(characters.id, characterId))
+    .get();
+
+  payload.ownsCharacter = character?.ownerId === actorId;
+
+  // Find the inventory entry on the character blob to recover its itemId.
+  let entry: { id: string; itemId: string } | null = null;
+  if (character?.data) {
+    try {
+      const parsed = JSON.parse(character.data);
+      if (Array.isArray(parsed.inventory)) {
+        const match = parsed.inventory.find(
+          (e: { id?: string; itemId?: string }) => e.id === inventoryEntryId,
+        );
+        if (match && typeof match.itemId === 'string') {
+          entry = { id: match.id, itemId: match.itemId };
+        }
+      }
+    } catch {
+      // entry stays null
+    }
+  }
+  payload.inventoryEntryExists = entry !== null;
+
+  // Look up the item in the static catalog to confirm category +
+  // resolve effectKind. Heal amount comes from the hand-authored
+  // override table (empty until Slice 5).
+  let itemIsConsumable = false;
+  let effectKind: 'instant' | 'duration' | 'two-phase' | 'attack' | 'area' | 'unknown' = 'unknown';
+  let healAmount = 0;
+  if (entry) {
+    const item = loadItemById(entry.itemId);
+    if (item && item.category === 'consumable') {
+      itemIsConsumable = true;
+      effectKind = item.effectKind ?? 'unknown';
+      healAmount = CONSUMABLE_HEAL_AMOUNTS[item.id] ?? 0;
+    }
+  }
+  payload.itemIsConsumable = itemIsConsumable;
+  payload.effectKind = effectKind;
+  payload.healAmount = healAmount;
+
+  return null;
+}
+
+/**
  * KickPlayer — find the campaign_characters rows for the kicked user whose
  * characterIds match participants currently on the roster. Stamp
  * participantIdsToRemove. Does NOT reject — the reducer handles it.
@@ -501,6 +577,8 @@ export async function stampIntent(
       return stampSwapKit(intent, campaignState, env);
     case 'UnequipItem':
       return stampUnequipItem(intent, campaignState, env);
+    case 'UseConsumable':
+      return stampUseConsumable(intent, campaignState, env);
     // No stamping needed for these — they carry all required data or rely
     // solely on reducer authority checks.
     default:
