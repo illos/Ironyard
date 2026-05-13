@@ -20,6 +20,7 @@ function baseRuntime(overrides: Partial<CharacterRuntime> = {}): CharacterRuntim
     size: '1M',
     stability: 0,
     freeStrikeDamage: 2,
+    weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
     ...overrides,
   };
 }

@@ -19,6 +19,14 @@ export type CharacterRuntime = {
   size: string;
   stability: number;
   freeStrikeDamage: number;
+  // Slice 6 / Epic 2C § 10.8: per-tier weapon damage bonus. Index 0 = tier 1,
+  // 1 = tier 2, 2 = tier 3. Summed across all sources (kit, kit-keyword treasure,
+  // etc.) by the applier. RollPower picks `[tier - 1]` when an ability has
+  // Weapon + Melee/Ranged keywords.
+  weaponDamageBonus: {
+    melee: [number, number, number];
+    ranged: [number, number, number];
+  };
 };
 
 // Canonical order the 5 characteristic scores always map into.
@@ -47,14 +55,11 @@ export function deriveCharacterRuntime(
 ): CharacterRuntime {
   const base = deriveBaseRuntime(character, staticData);
   const attachments = collectAttachments(character, staticData);
-  const kit = character.kitId ? staticData.kits.get(character.kitId) ?? null : null;
+  const kit = character.kitId ? (staticData.kits.get(character.kitId) ?? null) : null;
   return applyAttachments(base, attachments, { character, kit });
 }
 
-function deriveBaseRuntime(
-  character: Character,
-  staticData: StaticDataBundle,
-): CharacterRuntime {
+function deriveBaseRuntime(character: Character, staticData: StaticDataBundle): CharacterRuntime {
   const cls = character.classId ? staticData.classes.get(character.classId) : null;
   const ancestry = character.ancestryId ? staticData.ancestries.get(character.ancestryId) : null;
 
@@ -137,6 +142,13 @@ function deriveBaseRuntime(
   const stability = 0;
   const freeStrikeDamage = 2; // canon: free-strike base 2
 
+  // Slice 6: weapon damage bonus starts at zero per tier. Kit + treasure
+  // attachments add into these via `weapon-damage-bonus` effects.
+  const weaponDamageBonus: CharacterRuntime['weaponDamageBonus'] = {
+    melee: [0, 0, 0],
+    ranged: [0, 0, 0],
+  };
+
   return {
     characteristics,
     maxStamina,
@@ -152,6 +164,7 @@ function deriveBaseRuntime(
     size,
     stability,
     freeStrikeDamage,
+    weaponDamageBonus,
   };
 }
 

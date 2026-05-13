@@ -70,6 +70,16 @@ export const AttachmentEffectSchema = z.discriminatedUnion('kind', [
     value: z.union([z.number().int().nonnegative(), z.literal('level')]),
   }),
   z.object({ kind: z.literal('free-strike-damage'), delta: z.number().int() }),
+  // Slice 6 / Epic 2C § 10.8: per-tier weapon damage bonus. Emitted by the kit
+  // collector (one per appliesTo with non-zero values) and by kit-keyword-gated
+  // leveled treasure overrides. The applier sums these into
+  // `runtime.weaponDamageBonus.{melee,ranged}`; the RollPower handler reads the
+  // tier-N slot at roll time when the ability has Weapon + Melee/Ranged.
+  z.object({
+    kind: z.literal('weapon-damage-bonus'),
+    appliesTo: z.enum(['melee', 'ranged']),
+    perTier: z.tuple([z.number().int(), z.number().int(), z.number().int()]),
+  }),
 ]);
 export type AttachmentEffect = z.infer<typeof AttachmentEffectSchema>;
 

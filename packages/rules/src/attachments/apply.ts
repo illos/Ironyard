@@ -102,5 +102,18 @@ function applyEffect(out: CharacterRuntime, effect: AttachmentEffect, ctx: Apply
     case 'free-strike-damage':
       out.freeStrikeDamage += effect.delta;
       return;
+    case 'weapon-damage-bonus': {
+      // Slice 6 / Epic 2C § 10.8: sum per-tier bonuses across sources. Canon
+      // §10.10 "only the higher applies" stacking for kit-keyword treasures
+      // is deferred to a follow-up engine fix — see § 10.16 carry-overs.
+      const slot = effect.appliesTo;
+      const current = out.weaponDamageBonus[slot];
+      out.weaponDamageBonus[slot] = [
+        current[0] + effect.perTier[0],
+        current[1] + effect.perTier[1],
+        current[2] + effect.perTier[2],
+      ];
+      return;
+    }
   }
 }
