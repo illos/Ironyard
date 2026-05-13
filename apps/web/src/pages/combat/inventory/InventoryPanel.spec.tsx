@@ -66,4 +66,70 @@ describe('InventoryPanel', () => {
     expect(html).toMatch(/orphan-item-id/);
     expect(html).toMatch(/Unknown item/i);
   });
+
+  it('flags body-slot conflicts when two equipped trinkets share a slot', () => {
+    const conflictingCharacter = {
+      inventory: [
+        { id: 'inv-1', itemId: 'helm-a', quantity: 1, equipped: true },
+        { id: 'inv-2', itemId: 'helm-b', quantity: 1, equipped: true },
+      ],
+    } as unknown as Character;
+    const conflictingItems: Item[] = [
+      { id: 'helm-a', name: 'Helm A', category: 'trinket', bodySlot: 'head' } as unknown as Item,
+      { id: 'helm-b', name: 'Helm B', category: 'trinket', bodySlot: 'head' } as unknown as Item,
+    ];
+    const html = renderToStaticMarkup(
+      <InventoryPanel
+        character={conflictingCharacter}
+        items={conflictingItems}
+        onEquip={() => {}}
+        onUnequip={() => {}}
+      />,
+    );
+    expect(html).toMatch(/Slot conflict: head/);
+  });
+
+  it('does not flag when only one trinket per slot is equipped', () => {
+    const okCharacter = {
+      inventory: [
+        { id: 'inv-1', itemId: 'helm', quantity: 1, equipped: true },
+        { id: 'inv-2', itemId: 'belt', quantity: 1, equipped: true },
+      ],
+    } as unknown as Character;
+    const okItems: Item[] = [
+      { id: 'helm', name: 'Helm', category: 'trinket', bodySlot: 'head' } as unknown as Item,
+      { id: 'belt', name: 'Belt', category: 'trinket', bodySlot: 'waist' } as unknown as Item,
+    ];
+    const html = renderToStaticMarkup(
+      <InventoryPanel
+        character={okCharacter}
+        items={okItems}
+        onEquip={() => {}}
+        onUnequip={() => {}}
+      />,
+    );
+    expect(html).not.toMatch(/Slot conflict/);
+  });
+
+  it('does not flag unequipped duplicate trinkets', () => {
+    const carriedDupCharacter = {
+      inventory: [
+        { id: 'inv-1', itemId: 'helm-a', quantity: 1, equipped: true },
+        { id: 'inv-2', itemId: 'helm-b', quantity: 1, equipped: false },
+      ],
+    } as unknown as Character;
+    const carriedDupItems: Item[] = [
+      { id: 'helm-a', name: 'Helm A', category: 'trinket', bodySlot: 'head' } as unknown as Item,
+      { id: 'helm-b', name: 'Helm B', category: 'trinket', bodySlot: 'head' } as unknown as Item,
+    ];
+    const html = renderToStaticMarkup(
+      <InventoryPanel
+        character={carriedDupCharacter}
+        items={carriedDupItems}
+        onEquip={() => {}}
+        onUnequip={() => {}}
+      />,
+    );
+    expect(html).not.toMatch(/Slot conflict/);
+  });
 });

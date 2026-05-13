@@ -1,16 +1,20 @@
 import type { InventoryEntry, Item } from '@ironyard/shared';
+import { BodySlotConflictChip } from './BodySlotConflictChip';
 
 type Props = {
   entry: InventoryEntry;
   item: Item | undefined;
   onEquip: (id: string) => void;
   onUnequip: (id: string) => void;
+  conflictingSlots: Set<string>;
 };
 
 // Renders one inventory row. Orphan rows (unknown itemId) surface a warning so
 // the player can see the data drift; equip/unequip controls only render for
 // non-consumable categories — consumables get a "Use" button in Slice 2.
-export function ItemRow({ entry, item, onEquip, onUnequip }: Props) {
+// Trinket rows additionally render a BodySlotConflictChip when their body slot
+// is shared with another equipped trinket.
+export function ItemRow({ entry, item, onEquip, onUnequip, conflictingSlots }: Props) {
   if (!item) {
     return (
       <div className="rounded border border-rose-800/40 bg-rose-950/30 px-2 py-1 text-sm text-rose-300">
@@ -20,8 +24,12 @@ export function ItemRow({ entry, item, onEquip, onUnequip }: Props) {
   }
 
   const isConsumable = item.category === 'consumable';
+  const isTrinket = item.category === 'trinket';
   const isEquipped = entry.equipped;
   const qtyLabel = isConsumable && entry.quantity > 1 ? ` ×${entry.quantity}` : '';
+  // Only trinkets carry a bodySlot; chip stays hidden for other categories.
+  const trinketSlot = isTrinket ? item.bodySlot : null;
+  const isConflicting = isEquipped && !!trinketSlot && conflictingSlots.has(trinketSlot);
 
   return (
     <div className="flex items-center justify-between rounded border border-neutral-800 bg-neutral-900 px-2 py-1 text-sm">
@@ -33,6 +41,7 @@ export function ItemRow({ entry, item, onEquip, onUnequip }: Props) {
             Equipped
           </span>
         )}
+        {isTrinket && <BodySlotConflictChip conflicting={isConflicting} slot={trinketSlot ?? ''} />}
       </div>
       {!isConsumable && (
         <button
