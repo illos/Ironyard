@@ -28,6 +28,47 @@
 - **Canon-status registry:** new canon entries require `pnpm canon:gen` to regenerate `packages/rules/src/canon-status.generated.ts`. Slice close runs `pnpm canon:gen` and asserts the diff is intentional.
 - **Auto mode:** plans authored for autonomous execution. Each task self-contained; subagent has the spec + plan + repo, no other context needed.
 
+## Architectural pattern — character-side mutations are "ratification intents"
+
+(Added after Task 1.1; clarifies the design for Tasks 1.2, 1.3, 2.2, 3.2, 4.5.)
+
+Characters are **D1-persisted**, not in `CampaignState`. The intent reducer operates on lobby state (`participants`, `encounter`, `malice`). Character-side mutations (`EquipItem`, `UnequipItem`, `UseConsumable`, `PushItem`, Respite's Wyrmplate change) follow the **`SubmitCharacter` ratification pattern** already in the codebase:
+
+```
+[1] Stamper  (apps/api/src/lobby-do-stampers.ts)
+       reads D1, stamps payload with auth/lookup metadata
+       (e.g. payload.ownsCharacter = character?.ownerId === actor)
+            ↓
+[2] Reducer  (packages/rules/src/intents/<name>.ts)
+       pure function, validates the stamped payload,
+       logs the action, NEVER mutates character state
+       (state.participants may still be touched for
+        derived intents like ApplyHeal)
+            ↓
+[3] Side-effect  (apps/api/src/lobby-do-side-effects.ts)
+       runs after the reducer commits in-memory state;
+       writes the character mutation to D1
+       (e.g. UPDATE characters SET data = ? WHERE id = ?)
+```
+
+**Reference implementations to mirror:**
+- Stamper: `stampSubmitCharacter` at `lobby-do-stampers.ts:150-184` (stamps `ownsCharacter` + `isCampaignMember`). Also `stampJumpBehindScreen` at `:140-144` for the simpler director-permitted boolean.
+- Reducer: `applySubmitCharacter` at `packages/rules/src/intents/submit-character.ts` — validates stamped booleans, logs, doesn't touch state.participants/characters.
+- Side-effect: `sideEffectSubmitCharacter` at `lobby-do-side-effects.ts:77-97` (INSERT OR IGNORE on D1).
+
+**Payload schema additions for ratification intents:**
+- `ownsCharacter: boolean` (default `false`) — stamped by stamper from D1.
+- Additional lookup booleans as needed (`inventoryEntryExists`, `itemExistsInCatalog`, etc.) — stamper computes; reducer validates.
+- `isDirectorPermitted: boolean` (for director-only intents like `PushItem`).
+
+The reducer treats these flags as the source of truth — it can't query D1 itself, so it trusts the stamper.
+
+**Client-side cache invalidation.** When the WebSocket receives the intent ack, the web app invalidates the affected `useCharacter` TanStack Query, which refetches and re-renders. `deriveCharacterRuntime` re-runs naturally on the new character data.
+
+**InventoryEntry `id` field.** Per the plan's Task 1.2 Step 2 anticipation: `InventoryEntrySchema` needs an `id` field for stable addressing of entries (multiple inventory entries of the same itemId are valid). Add as part of Task 1.2.
+
+**Affected tasks below.** Where a task body shows reducer code mutating `state.characters`, treat that as superseded by the ratification pattern — the reducer validates flags and logs, the stamper + side-effect do the real work.
+
 ## File structure (full list of files created or modified)
 
 ### Created
