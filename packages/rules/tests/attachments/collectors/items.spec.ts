@@ -21,7 +21,11 @@ describe('collectFromItems — leveled treasure (lightning-treads)', () => {
     const out = collectFromItems(char, BUNDLE_STUB);
     expect(out).toEqual([
       {
-        source: { kind: 'item', id: 'lightning-treads' },
+        source: {
+          kind: 'item',
+          id: 'lightning-treads',
+          requireCanonSlug: 'character-attachment-activation.item-grant-attachments',
+        },
         effect: { kind: 'stat-mod', stat: 'speed', delta: 2 },
       },
     ]);
@@ -44,7 +48,11 @@ describe('collectFromItems — trinket (color-cloak-yellow)', () => {
     const out = collectFromItems(char, BUNDLE_STUB);
     expect(out).toEqual([
       {
-        source: { kind: 'item', id: 'color-cloak-yellow' },
+        source: {
+          kind: 'item',
+          id: 'color-cloak-yellow',
+          requireCanonSlug: 'character-attachment-activation.item-grant-attachments',
+        },
         effect: { kind: 'immunity', damageKind: 'lightning', value: 'level' },
       },
     ]);
