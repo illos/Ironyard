@@ -23,6 +23,8 @@ export { DenyCharacterPayloadSchema } from './deny-character';
 export type { DenyCharacterPayload } from './deny-character';
 export { EndEncounterPayloadSchema } from './end-encounter';
 export type { EndEncounterPayload } from './end-encounter';
+export { EquipItemPayloadSchema } from './equip-item';
+export type { EquipItemPayload } from './equip-item';
 export { GainMalicePayloadSchema } from './gain-malice';
 export type { GainMalicePayload } from './gain-malice';
 export { GainResourcePayloadSchema } from './gain-resource';
@@ -95,6 +97,8 @@ export { SubmitCharacterPayloadSchema } from './submit-character';
 export type { SubmitCharacterPayload } from './submit-character';
 export { SwapKitPayloadSchema } from './swap-kit';
 export type { SwapKitPayload } from './swap-kit';
+export { UnequipItemPayloadSchema } from './unequip-item';
+export type { UnequipItemPayload } from './unequip-item';
 export { UndoPayloadSchema } from './undo';
 export type { UndoPayload } from './undo';
 
@@ -109,6 +113,7 @@ export const IntentTypes = {
   EndEncounter: 'EndEncounter',
   EndRound: 'EndRound',
   EndTurn: 'EndTurn',
+  EquipItem: 'EquipItem',
   GainMalice: 'GainMalice',
   GainResource: 'GainResource',
   JoinLobby: 'JoinLobby',
@@ -136,6 +141,7 @@ export const IntentTypes = {
   StartTurn: 'StartTurn',
   SubmitCharacter: 'SubmitCharacter',
   SwapKit: 'SwapKit',
+  UnequipItem: 'UnequipItem',
   Undo: 'Undo',
 } as const;
 export type KnownIntentType = (typeof IntentTypes)[keyof typeof IntentTypes];
