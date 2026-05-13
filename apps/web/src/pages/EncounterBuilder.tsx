@@ -89,19 +89,8 @@ export function EncounterBuilder() {
   const isDirector = session.data.isDirector;
 
   const handleAddMonster = (monster: Monster) => {
-    if (!activeEncounter) {
-      const startPayload: StartEncounterPayload = { encounterId: ulid(), stampedPcs: [] };
-      dispatch(
-        buildIntent({
-          campaignId: sessionId,
-          type: IntentTypes.StartEncounter,
-          payload: startPayload,
-          actor,
-        }),
-      );
-    }
-
-    // DO stamps the full monster blob from static data by monsterId.
+    // AddMonster goes straight onto the lobby roster — no encounter required.
+    // The encounter starts explicitly via "Start the fight" (see handleStartFight).
     const addPayload: AddMonsterPayload = {
       monsterId: monster.id,
       quantity: 1,
@@ -123,18 +112,8 @@ export function EncounterBuilder() {
   // For now, route through AddMonster (DO stamps the monster blob, but we also
   // include the participant shape directly so the optimistic mirror works).
   const handleAddPc = (participant: Participant) => {
-    if (!activeEncounter) {
-      const startPayload: StartEncounterPayload = { encounterId: ulid(), stampedPcs: [] };
-      dispatch(
-        buildIntent({
-          campaignId: sessionId,
-          type: IntentTypes.StartEncounter,
-          payload: startPayload,
-          actor,
-        }),
-      );
-    }
-    // Prototype: add the quick-PC as a participant via AddMonster.
+    // Same as handleAddMonster — Quick PCs go onto the lobby roster directly.
+    // The encounter starts explicitly via "Start the fight".
     // The DO stamps the monster blob from static data; since there's no
     // "quick PC" intent, we synthesise a minimal monster shape here.
     const addPayload: AddMonsterPayload = {
@@ -173,17 +152,38 @@ export function EncounterBuilder() {
   };
 
   const handleStartFight = () => {
-    if (!activeEncounter || participants.length === 0) return;
-    const payload: StartRoundPayload = {};
-    const ok = dispatch(
+    if (participants.length === 0) return;
+
+    // Step 1: if no encounter is active yet, dispatch StartEncounter.
+    // The DO stamper fills in `stampedPcs` by reading D1 for every
+    // pc-placeholder in the roster; the reducer materializes them into
+    // full PC participants.
+    if (!activeEncounter) {
+      const startPayload: StartEncounterPayload = { encounterId: ulid(), stampedPcs: [] };
+      const startOk = dispatch(
+        buildIntent({
+          campaignId: sessionId,
+          type: IntentTypes.StartEncounter,
+          payload: startPayload,
+          actor,
+        }),
+      );
+      if (!startOk) return;
+    }
+
+    // Step 2: kick off round 1. (Intents are serialized server-side, so this
+    // arrives after StartEncounter even though we fire it immediately.)
+    const roundOk = dispatch(
       buildIntent({
         campaignId: sessionId,
         type: IntentTypes.StartRound,
-        payload,
+        payload: {} as StartRoundPayload,
         actor,
       }),
     );
-    if (ok) {
+
+    // Step 3: send the user to the play screen.
+    if (roundOk) {
       navigate({ to: '/campaigns/$id/play', params: { id: sessionId } });
     }
   };
@@ -268,10 +268,15 @@ export function EncounterBuilder() {
           <button
             type="button"
             onClick={handleStartFight}
-            disabled={!activeEncounter || participants.length === 0 || status !== 'open'}
+            disabled={participants.length === 0 || status !== 'open'}
             className="min-h-11 rounded-md bg-emerald-500 text-neutral-950 px-4 py-2 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            title={
+              !activeEncounter
+                ? 'Starts the encounter (materializing PC placeholders) and begins round 1.'
+                : 'Begins round 1.'
+            }
           >
-            Start the fight
+            {activeEncounter ? 'Start round 1 →' : 'Start the fight →'}
           </button>
         </div>
       </header>
