@@ -15,6 +15,7 @@ export { applyKickPlayer } from './kick-player';
 export { applyLeaveLobby } from './leave-lobby';
 export { applyLoadEncounterTemplate } from './load-encounter-template';
 export { applyNote } from './note';
+export { applyPushItem } from './push-item';
 export { applyRemoveApprovedCharacter } from './remove-approved-character';
 export { applyRespite } from './respite';
 export { applyRemoveCondition } from './remove-condition';

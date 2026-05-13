@@ -39,14 +39,17 @@ const CHARACTER_MUTATING_INTENTS: ReadonlySet<string> = new Set<string>([
   IntentTypes.UnequipItem,
   IntentTypes.SwapKit,
   IntentTypes.UseConsumable,
+  IntentTypes.PushItem,
 ]);
 
-// Payload shape we duck-type-check for a `characterId` to invalidate. All
-// three intents above use `characterId`; future PushItem variants will use
-// `targetCharacterId` and can be teased apart at that time.
+// Payload shape we duck-type-check for a character id to invalidate. Most
+// character-mutating intents key on `characterId`; PushItem (Epic 2C Slice 3)
+// uses `targetCharacterId` because it's director-initiated against another
+// user's character — we fall back to that field when `characterId` is absent.
 function characterIdFromPayload(payload: unknown): string | null {
   if (!payload || typeof payload !== 'object') return null;
-  const id = (payload as { characterId?: unknown }).characterId;
+  const obj = payload as { characterId?: unknown; targetCharacterId?: unknown };
+  const id = obj.characterId ?? obj.targetCharacterId;
   return typeof id === 'string' && id.length > 0 ? id : null;
 }
 

@@ -68,6 +68,9 @@ export async function handleSideEffect(
       case 'UseConsumable':
         await sideEffectUseConsumable(intent, env);
         break;
+      case 'PushItem':
+        await sideEffectPushItem(intent, env);
+        break;
       case 'Respite':
         if (stateBefore !== undefined) {
           await sideEffectRespite(intent, stateBefore, env);
@@ -367,6 +370,57 @@ async function sideEffectUseConsumable(
     .update(characters)
     .set({ data: JSON.stringify(data), updatedAt: intent.timestamp })
     .where(eq(characters.id, characterId));
+}
+
+// Slice 3 (Epic 2C): director pushes an item into a player's inventory.
+// Stacks the quantity onto an existing inventory entry with the same itemId
+// (preserving its id + equipped flag) or appends a new entry. Equipped is
+// always set to false on a newly created entry — the player chooses when to
+// equip via EquipItem. Uses CharacterSchema.parse → mutate → persist, mirror
+// of sideEffectEquipItem.
+async function sideEffectPushItem(
+  intent: Intent & { timestamp: number },
+  env: Bindings,
+): Promise<void> {
+  const payload = intent.payload as MutablePayload;
+  const targetCharacterId = payload.targetCharacterId;
+  const itemId = payload.itemId;
+  const quantity = payload.quantity;
+  if (
+    typeof targetCharacterId !== 'string' ||
+    typeof itemId !== 'string' ||
+    typeof quantity !== 'number'
+  ) {
+    return;
+  }
+
+  const conn = db(env.DB);
+  const row = await conn
+    .select({ data: characters.data })
+    .from(characters)
+    .where(eq(characters.id, targetCharacterId))
+    .get();
+  if (!row) return;
+
+  let data: ReturnType<typeof CharacterSchema.parse>;
+  try {
+    data = CharacterSchema.parse(JSON.parse(row.data));
+  } catch {
+    return;
+  }
+
+  const existingIdx = data.inventory.findIndex((e) => e.itemId === itemId);
+  data.inventory =
+    existingIdx >= 0
+      ? data.inventory.map((e, i) =>
+          i === existingIdx ? { ...e, quantity: e.quantity + quantity } : e,
+        )
+      : [...data.inventory, { id: crypto.randomUUID(), itemId, quantity, equipped: false }];
+
+  await conn
+    .update(characters)
+    .set({ data: JSON.stringify(data), updatedAt: intent.timestamp })
+    .where(eq(characters.id, targetCharacterId));
 }
 
 // Hybrid side-effect: writes per-character XP increments to D1 using the

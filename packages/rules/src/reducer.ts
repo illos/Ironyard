@@ -19,6 +19,7 @@ import {
   applyLeaveLobby,
   applyLoadEncounterTemplate,
   applyNote,
+  applyPushItem,
   applyRemoveApprovedCharacter,
   applyRemoveCondition,
   applyRemoveParticipant,
@@ -106,6 +107,8 @@ export function applyIntent(
       return applyLoadEncounterTemplate(state, intent);
     case IntentTypes.Note:
       return applyNote(state, intent);
+    case IntentTypes.PushItem:
+      return applyPushItem(state, intent);
     case IntentTypes.RemoveApprovedCharacter:
       return applyRemoveApprovedCharacter(state, intent);
     case IntentTypes.Respite:

@@ -359,6 +359,61 @@ export async function stampUseConsumable(
 }
 
 /**
+ * PushItem — director pushes an item into a player's inventory. Stamps:
+ *   - `isDirectorPermitted` from campaign_memberships.is_director (owner is
+ *     always permitted — short-circuit before the D1 read).
+ *   - `targetCharacterExists` from the characters row.
+ *   - `itemExists` from the static items catalog.
+ * Does NOT reject — the reducer is the authority on all three flags.
+ */
+export async function stampPushItem(
+  intent: Intent & { timestamp: number },
+  campaignState: CampaignState,
+  env: Bindings,
+): Promise<StampResult> {
+  const payload = intent.payload as MutablePayload;
+  const targetCharacterId = payload.targetCharacterId;
+  const itemId = payload.itemId;
+  if (typeof targetCharacterId !== 'string' || typeof itemId !== 'string') {
+    return 'invalid_payload: targetCharacterId and itemId required';
+  }
+
+  const actorId = intent.actor.userId;
+  const conn = db(env.DB);
+
+  // Director permission: owner is always permitted; otherwise read the
+  // campaign_memberships row's is_director flag. Mirrors stampJumpBehindScreen.
+  if (actorId === campaignState.ownerId) {
+    payload.isDirectorPermitted = true;
+  } else {
+    const membership = await conn
+      .select({ isDirector: campaignMemberships.isDirector })
+      .from(campaignMemberships)
+      .where(
+        and(
+          eq(campaignMemberships.campaignId, campaignState.campaignId),
+          eq(campaignMemberships.userId, actorId),
+        ),
+      )
+      .get();
+    payload.isDirectorPermitted = membership?.isDirector === 1;
+  }
+
+  // Target character existence — does a row exist for this id?
+  const character = await conn
+    .select({ id: characters.id })
+    .from(characters)
+    .where(eq(characters.id, targetCharacterId))
+    .get();
+  payload.targetCharacterExists = character !== undefined;
+
+  // Item exists in the static catalog?
+  payload.itemExists = loadItemById(itemId) !== null;
+
+  return null;
+}
+
+/**
  * KickPlayer — find the campaign_characters rows for the kicked user whose
  * characterIds match participants currently on the roster. Stamp
  * participantIdsToRemove. Does NOT reject — the reducer handles it.
@@ -573,6 +628,8 @@ export async function stampIntent(
       return stampSubmitCharacter(intent, campaignState, env);
     case 'KickPlayer':
       return stampKickPlayer(intent, campaignState, env);
+    case 'PushItem':
+      return stampPushItem(intent, campaignState, env);
     case 'SwapKit':
       return stampSwapKit(intent, campaignState, env);
     case 'UnequipItem':
