@@ -1,6 +1,12 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { useCreateCampaign, useDevLogin, useJoinCampaign, useLogout } from '../api/mutations';
+import {
+  useCreateCampaign,
+  useDeleteCharacter,
+  useDevLogin,
+  useJoinCampaign,
+  useLogout,
+} from '../api/mutations';
 import { useMe, useMyCampaigns, useMyCharacters } from '../api/queries';
 
 export function Home() {
@@ -229,6 +235,7 @@ function CampaignsPanel({ user }: { user: { displayName: string; email: string }
 
 function YourCharactersList() {
   const chars = useMyCharacters();
+  const deleteCharacter = useDeleteCharacter();
   if (chars.isLoading) return <p className="mt-3 text-sm text-neutral-500">Loading…</p>;
   if (!chars.data || chars.data.length === 0) {
     return <p className="mt-3 text-sm text-neutral-500">No characters yet.</p>;
@@ -236,15 +243,36 @@ function YourCharactersList() {
   return (
     <ul className="mt-3 space-y-2">
       {chars.data.map((c) => (
-        <li key={c.id}>
+        <li
+          key={c.id}
+          className="flex items-stretch gap-2 rounded-md bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800"
+        >
           <Link
             to="/characters/$id"
             params={{ id: c.id }}
-            className="flex items-center gap-3 rounded-md bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 px-4 py-3 min-h-11"
+            className="flex items-center gap-3 px-4 py-3 min-h-11 flex-1"
           >
             <span className="flex-1 font-medium">{c.name}</span>
             <span className="text-xs text-neutral-500">L{c.data.level}</span>
           </Link>
+          <button
+            type="button"
+            onClick={() => {
+              if (
+                !window.confirm(
+                  `Delete character "${c.name}"? This permanently removes the character and detaches it from any campaigns.`,
+                )
+              ) {
+                return;
+              }
+              deleteCharacter.mutate(c.id);
+            }}
+            disabled={deleteCharacter.isPending}
+            className="my-2 mr-2 min-h-11 px-3 rounded-md border border-rose-700 text-rose-300 text-xs hover:bg-rose-900/30 disabled:opacity-50"
+            aria-label={`Delete ${c.name}`}
+          >
+            Delete
+          </button>
         </li>
       ))}
     </ul>

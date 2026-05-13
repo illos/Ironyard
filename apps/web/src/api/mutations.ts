@@ -46,6 +46,20 @@ export function useJoinCampaign() {
   });
 }
 
+// DELETE /api/campaigns/:id — owner-only on the server. Invalidates the
+// caller's campaign list and evicts the per-campaign detail cache. Mirrors
+// useDeleteCharacter's pattern.
+export function useDeleteCampaign() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete<{ ok: true }>(`/api/campaigns/${id}`),
+    onSuccess: (_, id) => {
+      qc.invalidateQueries({ queryKey: ['my-campaigns'] });
+      qc.removeQueries({ queryKey: ['campaign', id] });
+    },
+  });
+}
+
 export function useCreateEncounterTemplate(campaignId: string) {
   const qc = useQueryClient();
   return useMutation({

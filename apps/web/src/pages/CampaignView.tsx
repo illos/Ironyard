@@ -12,11 +12,12 @@ import type {
   SubmitCharacterPayload,
 } from '@ironyard/shared';
 import { IntentTypes, ulid } from '@ironyard/shared';
-import { Link, useParams } from '@tanstack/react-router';
+import { Link, useNavigate, useParams } from '@tanstack/react-router';
 import { useRef, useState } from 'react';
 import { buildIntent } from '../api/dispatch';
 import {
   useCreateCharacter,
+  useDeleteCampaign,
   useDeleteEncounterTemplate,
   useGrantDirectorPermission,
   useRevokeDirectorPermission,
@@ -38,8 +39,10 @@ import { PushItemModal } from './director/PushItemModal';
 
 export function CampaignView() {
   const { id } = useParams({ from: '/campaigns/$id' });
+  const navigate = useNavigate();
   const me = useMe();
   const campaign = useCampaign(id);
+  const deleteCampaign = useDeleteCampaign();
   const {
     members,
     status,
@@ -132,6 +135,27 @@ export function CampaignView() {
           <Link to="/" className="text-sm text-neutral-400 hover:text-neutral-200">
             Leave
           </Link>
+          {campaign.data.isOwner && (
+            <button
+              type="button"
+              onClick={() => {
+                if (
+                  !window.confirm(
+                    `Delete campaign "${campaign.data?.name}"? This will permanently remove the lobby, all encounter templates, snapshots, and intent history. Player characters that are members of this campaign are detached but not deleted.`,
+                  )
+                ) {
+                  return;
+                }
+                deleteCampaign.mutate(id, {
+                  onSuccess: () => navigate({ to: '/' }),
+                });
+              }}
+              disabled={deleteCampaign.isPending}
+              className="min-h-11 px-3 rounded-md border border-rose-700 text-rose-300 text-xs hover:bg-rose-900/30 disabled:opacity-50"
+            >
+              {deleteCampaign.isPending ? 'Deleting…' : 'Delete campaign'}
+            </button>
+          )}
         </div>
       </header>
 
