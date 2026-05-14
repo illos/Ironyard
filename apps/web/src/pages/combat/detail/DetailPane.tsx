@@ -54,6 +54,10 @@ type Props = {
   dispatchSpendSurge: (payload: SpendSurgePayload) => void;
   dispatchSpendRecovery: (payload: SpendRecoveryPayload) => void;
   dispatchMarkActionUsed: (payload: MarkActionUsedPayload) => void;
+  /** True when the focused participant is the active turn-holder. */
+  isActiveTurn?: boolean;
+  /** Fired by the Turn-flow Skip-turn / End-turn affordances. */
+  onEndTurn?: () => void;
 };
 
 export type DetailPaneProps = Props;
@@ -78,6 +82,8 @@ export function DetailPane({
   dispatchSpendSurge,
   dispatchSpendRecovery,
   dispatchMarkActionUsed,
+  isActiveTurn,
+  onEndTurn,
 }: Props) {
   if (viewerRole === 'player' && !selfParticipantId) {
     return (
@@ -128,6 +134,8 @@ export function DetailPane({
         dispatchSpendSurge={dispatchSpendSurge}
         dispatchSpendRecovery={dispatchSpendRecovery}
         dispatchMarkActionUsed={dispatchMarkActionUsed}
+        isActiveTurn={isActiveTurn}
+        onEndTurn={onEndTurn}
       />
     </div>
   );
@@ -158,6 +166,8 @@ function DetailBody({
   dispatchSpendSurge,
   dispatchSpendRecovery,
   dispatchMarkActionUsed,
+  isActiveTurn,
+  onEndTurn,
 }: Props & { focused: Participant; canEdit: boolean; resolvedTarget: Participant | null }) {
   const [tab, setTab] = useState<TabId>(viewerRole === 'player' ? 'turn-flow' : 'full-sheet');
 
@@ -200,6 +210,8 @@ function DetailBody({
           }
           target={resolvedTarget ?? focused}
           canRoll={canEdit}
+          isActiveTurn={isActiveTurn ?? false}
+          onEndTurn={onEndTurn ?? (() => {})}
         />
       ) : (
         <FullSheetTab

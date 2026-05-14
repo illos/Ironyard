@@ -20,6 +20,12 @@ export interface TurnFlowTabProps {
   /** The resolved target participant — needed to dispatch the roll. Falls back to focused (self-target). */
   target: Participant;
   canRoll: boolean;
+  /** True when the focused participant currently holds the turn. Drives the
+   *  Skip-turn affordance + the End-turn CTA. */
+  isActiveTurn: boolean;
+  /** Fired by the End-turn CTA when all three slots are complete (or by the
+   *  Skip-turn header button after it marks slots done). */
+  onEndTurn: () => void;
 }
 
 export function TurnFlowTab({
@@ -29,6 +35,8 @@ export function TurnFlowTab({
   onAbilityRoll,
   target,
   canRoll,
+  isActiveTurn,
+  onEndTurn,
 }: TurnFlowTabProps) {
   // Mirror the abilities derivation from FullSheetTab so both tabs see the
   // same list without requiring a FullSheetTab re-render.
@@ -96,8 +104,31 @@ export function TurnFlowTab({
     onAbilityRoll(ability, args, target);
   };
 
+  const allSlotsDone = usage.main && usage.maneuver && usage.move;
+  const handleSkipTurn = () => {
+    // Mark each pending slot so the UI is consistent post-end, then end the turn.
+    if (!usage.main) onMarkUsed({ participantId: focused.id, slot: 'main', used: true });
+    if (!usage.maneuver) onMarkUsed({ participantId: focused.id, slot: 'maneuver', used: true });
+    if (!usage.move) onMarkUsed({ participantId: focused.id, slot: 'move', used: true });
+    onEndTurn();
+  };
+
   return (
     <div className="space-y-3">
+      {isActiveTurn && !allSlotsDone && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleSkipTurn}
+            disabled={!canRoll}
+            className="font-mono uppercase tracking-[0.08em] text-[10px] px-2 py-1 border border-line text-text-dim hover:text-text hover:border-text-dim disabled:opacity-40"
+            aria-label="Skip rest of turn"
+          >
+            Skip turn
+          </button>
+        </div>
+      )}
+
       <TurnFlowSection
         index={1}
         label="Main"
@@ -146,6 +177,25 @@ export function TurnFlowTab({
         skipDisabled={!canRoll}
         onSkip={() => onMarkUsed({ participantId: focused.id, slot: 'move', used: true })}
       />
+
+      {isActiveTurn && allSlotsDone && (
+        <div className="border border-accent bg-ink-1 p-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="font-semibold text-text">Turn complete.</p>
+            <p className="text-xs text-text-mute mt-0.5">
+              Main, Maneuver, and Move are all used. End the turn to pass priority.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onEndTurn}
+            disabled={!canRoll}
+            className="min-h-11 px-4 bg-accent text-ink-0 font-semibold hover:bg-accent-strong disabled:opacity-40"
+          >
+            End turn
+          </button>
+        </div>
+      )}
     </div>
   );
 }

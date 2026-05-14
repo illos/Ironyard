@@ -605,6 +605,10 @@ export function DirectorCombat() {
               targetParticipantId={targetParticipantId}
               selfParticipantId={selfParticipantId}
               viewerRole={viewerRole}
+              isActiveTurn={
+                !!focused && activeEncounter.activeParticipantId === focused.id
+              }
+              onEndTurn={handleEndTurn}
               dispatchRoll={dispatchRoll}
               dispatchSetCondition={dispatchSetCondition}
               dispatchRemoveCondition={dispatchRemoveCondition}
