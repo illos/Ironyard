@@ -61,7 +61,11 @@ export function TurnFlowTab({
     return resolved.length > 0 ? resolved : [pcFreeStrike()];
   }, [focused, monsterByParticipantId, focusedCharacter.data, staticData]);
 
-  const usage = focused.turnActionUsage;
+  // Defensive default: encounters that were started before Task 1 landed don't
+  // carry turnActionUsage on their participants (the WS mirror builds participant
+  // snapshots without running them through ParticipantSchema.parse, so the
+  // .default() never fires). Treat absence as all-false.
+  const usage = focused.turnActionUsage ?? { main: false, maneuver: false, move: false };
 
   // Pick the lowest-index pending slot as "active".
   const activeSlot: 'main' | 'maneuver' | 'move' = !usage.main
