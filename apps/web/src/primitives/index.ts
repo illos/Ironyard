@@ -36,3 +36,5 @@ export { AccountMenu } from './AccountMenu';
 export type { AccountMenuProps } from './AccountMenu';
 export { ActiveCharacterChip } from './ActiveCharacterChip';
 export type { ActiveCharacterChipProps } from './ActiveCharacterChip';
+export { TopBar } from './TopBar';
+export type { TopBarProps, TopBarMode } from './TopBar';
