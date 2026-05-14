@@ -1,0 +1,86 @@
+import type { OpenAction } from '@ironyard/shared';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, expect, it } from 'vitest';
+import { OpenActionsList } from './OpenActionsList';
+
+function fakeOA(overrides: Partial<OpenAction> = {}): OpenAction {
+  return {
+    id: 'oa-1',
+    kind: '__sentinel_2b_0__',
+    participantId: 'pc-1',
+    raisedAtRound: 1,
+    raisedByIntentId: 'i-1',
+    expiresAtRound: null,
+    payload: {},
+    ...overrides,
+  } as OpenAction;
+}
+
+describe('OpenActionsList', () => {
+  it('renders the empty state when the list is empty', () => {
+    const html = renderToStaticMarkup(
+      <OpenActionsList
+        openActions={[]}
+        currentUserId="alice"
+        activeDirectorId="alice"
+        participantOwnerLookup={() => 'alice'}
+        onClaim={() => {}}
+      />,
+    );
+    expect(html).toMatch(/no open actions/i);
+  });
+
+  it('renders an entry with a generic title when the kind has no copy registered', () => {
+    const html = renderToStaticMarkup(
+      <OpenActionsList
+        openActions={[fakeOA()]}
+        currentUserId="alice"
+        activeDirectorId="alice"
+        participantOwnerLookup={() => 'alice'}
+        onClaim={() => {}}
+      />,
+    );
+    expect(html).toContain('__sentinel_2b_0__');
+  });
+
+  it('renders the Claim button enabled for the targeted PC\'s owner', () => {
+    const html = renderToStaticMarkup(
+      <OpenActionsList
+        openActions={[fakeOA({ participantId: 'pc-1' })]}
+        currentUserId="alice"
+        activeDirectorId="gm"
+        participantOwnerLookup={(pid) => (pid === 'pc-1' ? 'alice' : null)}
+        onClaim={() => {}}
+      />,
+    );
+    // Button is rendered without `disabled=""` for the eligible owner.
+    expect(html).toContain('<button');
+    expect(html).not.toMatch(/disabled=""[^>]*>Claim</);
+  });
+
+  it('renders the Claim button enabled for the active director', () => {
+    const html = renderToStaticMarkup(
+      <OpenActionsList
+        openActions={[fakeOA({ participantId: 'pc-1' })]}
+        currentUserId="gm"
+        activeDirectorId="gm"
+        participantOwnerLookup={(pid) => (pid === 'pc-1' ? 'alice' : null)}
+        onClaim={() => {}}
+      />,
+    );
+    expect(html).not.toMatch(/disabled=""[^>]*>Claim</);
+  });
+
+  it('renders the Claim button disabled for non-eligible users', () => {
+    const html = renderToStaticMarkup(
+      <OpenActionsList
+        openActions={[fakeOA({ participantId: 'pc-1' })]}
+        currentUserId="bob"
+        activeDirectorId="gm"
+        participantOwnerLookup={(pid) => (pid === 'pc-1' ? 'alice' : null)}
+        onClaim={() => {}}
+      />,
+    );
+    expect(html).toMatch(/disabled=""/);
+  });
+});
