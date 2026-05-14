@@ -1,13 +1,19 @@
 import {
   type AdjustVictoriesPayload,
   type ApplyDamagePayload,
+  type ApplyHealPayload,
   type EndTurnPayload,
+  type GainResourcePayload,
   IntentTypes,
   type MarkActionUsedPayload,
   type Participant,
   type RemoveConditionPayload,
   type RollPowerPayload,
   type SetConditionPayload,
+  type SetStaminaPayload,
+  type SpendRecoveryPayload,
+  type SpendResourcePayload,
+  type SpendSurgePayload,
   type StartRoundPayload,
   type StartTurnPayload,
 } from '@ironyard/shared';
@@ -101,8 +107,49 @@ export function describeIntent(args: DescribeArgs): string {
       const word = count === 1 ? 'victory' : 'victories';
       return `Director ${verb} ${count} ${word}`;
     }
+    case IntentTypes.SpendRecovery: {
+      const { participantId } = intent.payload as SpendRecoveryPayload;
+      return `${nameOf(participantsBefore, participantId)} spent a recovery`;
+    }
+    case IntentTypes.SpendResource: {
+      const { participantId, amount, name } = intent.payload as SpendResourcePayload;
+      return `${nameOf(participantsBefore, participantId)} spent ${amount} ${name}`;
+    }
+    case IntentTypes.GainResource: {
+      const { participantId, amount, name } = intent.payload as GainResourcePayload;
+      const verb = amount >= 0 ? 'gained' : 'lost';
+      return `${nameOf(participantsBefore, participantId)} ${verb} ${Math.abs(amount)} ${name}`;
+    }
+    case IntentTypes.SpendSurge: {
+      const { participantId, count } = intent.payload as SpendSurgePayload;
+      const word = count === 1 ? 'surge' : 'surges';
+      return `${nameOf(participantsBefore, participantId)} spent ${count} ${word}`;
+    }
+    case IntentTypes.SetStamina: {
+      const { participantId, currentStamina, maxStamina } = intent.payload as SetStaminaPayload;
+      const name = nameOf(participantsBefore, participantId);
+      if (currentStamina !== undefined && maxStamina !== undefined) {
+        return `${name} stamina set to ${currentStamina}/${maxStamina}`;
+      }
+      if (currentStamina !== undefined) return `${name} stamina set to ${currentStamina}`;
+      if (maxStamina !== undefined) return `${name} max stamina set to ${maxStamina}`;
+      return `${name} stamina updated`;
+    }
+    case IntentTypes.ApplyHeal: {
+      const { targetId, amount } = intent.payload as ApplyHealPayload;
+      return `${nameOf(participantsBefore, targetId)} healed ${amount}`;
+    }
+    case IntentTypes.GainMalice: {
+      const { amount } = intent.payload as { amount: number };
+      const verb = amount >= 0 ? 'gained' : 'lost';
+      return `Director ${verb} ${Math.abs(amount)} Malice`;
+    }
+    case IntentTypes.SpendMalice: {
+      const { amount } = intent.payload as { amount: number };
+      return `Director spent ${amount} Malice`;
+    }
     default:
-      return `${intent.actor.userId} dispatched ${intent.type}`;
+      return `Dispatched ${intent.type}`;
   }
 }
 
