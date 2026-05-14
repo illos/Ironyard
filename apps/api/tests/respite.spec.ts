@@ -131,6 +131,7 @@ function makePcParticipant(id: string) {
     },
     activeAbilities: [],
     victories: 0,
+    turnActionUsage: { main: false, maneuver: false, move: false },
   };
 }
 
@@ -241,6 +242,7 @@ describe('handleSideEffect Respite', () => {
           },
           activeAbilities: [],
           victories: 0,
+          turnActionUsage: { main: false, maneuver: false, move: false },
         },
       ],
     });

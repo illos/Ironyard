@@ -324,6 +324,7 @@ describe('stampKickPlayer', () => {
           },
           activeAbilities: [],
           victories: 0,
+          turnActionUsage: { main: false, maneuver: false, move: false },
         },
         {
           id: 'monster-xyz',
@@ -349,6 +350,7 @@ describe('stampKickPlayer', () => {
           },
           activeAbilities: [],
           victories: 0,
+          turnActionUsage: { main: false, maneuver: false, move: false },
         },
       ],
     });
