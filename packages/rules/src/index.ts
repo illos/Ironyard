@@ -7,7 +7,7 @@ export const PACKAGE = '@ironyard/rules' as const;
 
 export { applyIntent } from './reducer';
 export { emptyCampaignState, isParticipant } from './types';
-export { sumPartyVictories } from './state-helpers';
+export { sumPartyVictories, aliveHeroes, averageVictoriesAlive, windedValue } from './state-helpers';
 export type {
   ActiveEncounter,
   CampaignState,
