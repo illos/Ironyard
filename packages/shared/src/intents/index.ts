@@ -9,6 +9,14 @@ export { ApplyDamagePayloadSchema } from './apply-damage';
 export type { ApplyDamagePayload } from './apply-damage';
 export { ApplyHealPayloadSchema } from './apply-heal';
 export type { ApplyHealPayload } from './apply-heal';
+export {
+  RaiseOpenActionPayloadSchema,
+  ClaimOpenActionPayloadSchema,
+} from './raise-open-action';
+export type {
+  RaiseOpenActionPayload,
+  ClaimOpenActionPayload,
+} from './raise-open-action';
 export { ClearLobbyPayloadSchema } from './clear-lobby';
 export type { ClearLobbyPayload } from './clear-lobby';
 export { DenyCharacterPayloadSchema } from './deny-character';
@@ -126,6 +134,7 @@ export const IntentTypes = {
   ApplyDamage: 'ApplyDamage',
   ApplyHeal: 'ApplyHeal',
   ApproveCharacter: 'ApproveCharacter',
+  ClaimOpenAction: 'ClaimOpenAction',
   ClearLobby: 'ClearLobby',
   DenyCharacter: 'DenyCharacter',
   EndEncounter: 'EndEncounter',
@@ -146,6 +155,7 @@ export const IntentTypes = {
   RemoveApprovedCharacter: 'RemoveApprovedCharacter',
   RemoveCondition: 'RemoveCondition',
   RemoveParticipant: 'RemoveParticipant',
+  RaiseOpenAction: 'RaiseOpenAction',
   RollPower: 'RollPower',
   RollResistance: 'RollResistance',
   SetCondition: 'SetCondition',
