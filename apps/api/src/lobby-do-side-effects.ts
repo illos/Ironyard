@@ -18,7 +18,7 @@ import { CharacterSchema, type RespitePayload, RespitePayloadSchema } from '@iro
 import type { Intent, Participant } from '@ironyard/shared';
 import { and, eq, inArray } from 'drizzle-orm';
 import { db } from './db';
-import { campaignCharacters, campaignMemberships, characters } from './db/schema';
+import { campaignCharacters, campaignMemberships, campaigns, characters, sessions } from './db/schema';
 import type { Bindings } from './types';
 
 type MutablePayload = { [key: string]: unknown };
@@ -37,6 +37,7 @@ export async function handleSideEffect(
   campaignId: string,
   env: Bindings,
   stateBefore?: CampaignState,
+  stateAfter?: CampaignState,
 ): Promise<void> {
   try {
     switch (intent.type) {
@@ -78,6 +79,21 @@ export async function handleSideEffect(
       case 'Respite':
         if (stateBefore !== undefined) {
           await sideEffectRespite(intent, stateBefore, env);
+        }
+        break;
+      case 'StartSession':
+        if (stateAfter !== undefined) {
+          await sideEffectStartSession(intent, stateAfter, env);
+        }
+        break;
+      case 'EndSession':
+        if (stateBefore !== undefined) {
+          await sideEffectEndSession(intent, stateBefore, env);
+        }
+        break;
+      case 'UpdateSessionAttendance':
+        if (stateAfter !== undefined) {
+          await sideEffectUpdateSessionAttendance(intent, stateAfter, env);
         }
         break;
       default:
@@ -575,6 +591,66 @@ async function sideEffectRespite(
         .where(eq(characters.id, charId));
     }),
   );
+}
+
+// StartSession — INSERT sessions row + UPDATE campaigns.current_session_id.
+async function sideEffectStartSession(
+  intent: Intent & { timestamp: number },
+  stateAfter: CampaignState,
+  env: Bindings,
+): Promise<void> {
+  if (stateAfter.currentSessionId === null) return; // reducer rejected; nothing to do
+  const payload = intent.payload as {
+    name: string;
+    attendingCharacterIds: string[];
+  };
+  const conn = db(env.DB);
+  await conn.insert(sessions).values({
+    id: stateAfter.currentSessionId,
+    campaignId: stateAfter.campaignId,
+    name: payload.name,
+    startedAt: intent.timestamp,
+    endedAt: null,
+    attendingCharacterIds: JSON.stringify(stateAfter.attendingCharacterIds),
+    heroTokensStart: stateAfter.heroTokens,
+    heroTokensEnd: null,
+  });
+  await conn
+    .update(campaigns)
+    .set({ currentSessionId: stateAfter.currentSessionId, updatedAt: intent.timestamp })
+    .where(eq(campaigns.id, stateAfter.campaignId));
+}
+
+// EndSession — UPDATE sessions.ended_at + hero_tokens_end + UPDATE campaigns.
+async function sideEffectEndSession(
+  intent: Intent & { timestamp: number },
+  stateBefore: CampaignState,
+  env: Bindings,
+): Promise<void> {
+  if (stateBefore.currentSessionId === null) return;
+  const conn = db(env.DB);
+  await conn
+    .update(sessions)
+    .set({ endedAt: intent.timestamp, heroTokensEnd: stateBefore.heroTokens })
+    .where(eq(sessions.id, stateBefore.currentSessionId));
+  await conn
+    .update(campaigns)
+    .set({ currentSessionId: null, updatedAt: intent.timestamp })
+    .where(eq(campaigns.id, stateBefore.campaignId));
+}
+
+// UpdateSessionAttendance — UPDATE sessions.attending_character_ids.
+async function sideEffectUpdateSessionAttendance(
+  _intent: Intent & { timestamp: number },
+  stateAfter: CampaignState,
+  env: Bindings,
+): Promise<void> {
+  if (stateAfter.currentSessionId === null) return;
+  const conn = db(env.DB);
+  await conn
+    .update(sessions)
+    .set({ attendingCharacterIds: JSON.stringify(stateAfter.attendingCharacterIds) })
+    .where(eq(sessions.id, stateAfter.currentSessionId));
 }
 
 // Re-export RespitePayload type for consumers that need to reference it.

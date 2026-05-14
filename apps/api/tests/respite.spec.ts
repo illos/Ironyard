@@ -98,6 +98,9 @@ function makeCampaignState(overrides: Partial<CampaignState> = {}): CampaignStat
     participants: [],
     encounter: null,
     partyVictories: 0,
+    currentSessionId: null,
+    attendingCharacterIds: [],
+    heroTokens: 0,
     ...overrides,
   };
 }

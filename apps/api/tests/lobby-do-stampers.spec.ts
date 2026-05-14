@@ -93,6 +93,7 @@ vi.mock('../src/db/schema', () => ({
   campaignCharacters: {},
   characters: {},
   encounterTemplates: {},
+  sessions: {},
 }));
 
 // ── Import stampers after mocks are set up ─────────────────────────────────
@@ -103,6 +104,7 @@ import {
   stampKickPlayer,
   stampLoadEncounterTemplate,
   stampStartEncounter,
+  stampStartSession,
   stampSubmitCharacter,
 } from '../src/lobby-do-stampers';
 
@@ -135,6 +137,9 @@ function makeCampaignState(overrides: Partial<CampaignState> = {}): CampaignStat
     participants: [],
     encounter: null,
     partyVictories: 0,
+    currentSessionId: null,
+    attendingCharacterIds: [],
+    heroTokens: 0,
     ...overrides,
   };
 }
@@ -554,5 +559,58 @@ describe('stampRespite', () => {
 
     const payload = intent.payload as { wyrmplateChoices?: Record<string, string> };
     expect(payload.wyrmplateChoices).toEqual({ 'char-dk': 'fire' });
+  });
+});
+
+// ── stampStartSession ─────────────────────────────────────────────────────
+
+describe('stampStartSession', () => {
+  it('validates attending characters and stamps the default name', async () => {
+    // Set the mock to return approved-character rows for the first query (.all()).
+    // The second query (.get() for session count) receives the same mockDbResult
+    // which is an array — countRow?.count is undefined → falls back to 0 → "Session 1".
+    mockDbResult = [
+      { characterId: 'c1' },
+      { characterId: 'c2' },
+    ];
+    const intent = makeIntent('StartSession', {
+      attendingCharacterIds: ['c1', 'c2'],
+    });
+    const result = await stampStartSession(intent, makeCampaignState(), mockEnv);
+    expect(result).toBeNull();
+    const payload = intent.payload as {
+      name?: string;
+      attendingCharacterIds: string[];
+    };
+    expect(payload.name).toMatch(/^Session/);
+    expect(payload.attendingCharacterIds).toEqual(['c1', 'c2']);
+  });
+
+  it('rejects an unknown character id', async () => {
+    mockDbResult = [{ characterId: 'c1' }]; // only c1 approved
+    const intent = makeIntent('StartSession', {
+      attendingCharacterIds: ['c1', 'c-ghost'],
+    });
+    const result = await stampStartSession(intent, makeCampaignState(), mockEnv);
+    expect(result).toMatch(/^unknown_character/);
+  });
+
+  it('rejects when attendingCharacterIds is empty', async () => {
+    mockDbResult = [];
+    const intent = makeIntent('StartSession', { attendingCharacterIds: [] });
+    const result = await stampStartSession(intent, makeCampaignState(), mockEnv);
+    expect(result).toMatch(/^invalid_payload/);
+  });
+
+  it('preserves an explicitly-supplied name', async () => {
+    mockDbResult = [{ characterId: 'c1' }];
+    const intent = makeIntent('StartSession', {
+      attendingCharacterIds: ['c1'],
+      name: 'The Bandit Camp',
+    });
+    const result = await stampStartSession(intent, makeCampaignState(), mockEnv);
+    expect(result).toBeNull();
+    const payload = intent.payload as { name?: string };
+    expect(payload.name).toBe('The Bandit Camp');
   });
 });

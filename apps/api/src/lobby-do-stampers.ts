@@ -17,7 +17,7 @@ import {
   type StartEncounterStampedPc,
   type SwapKitPayload,
 } from '@ironyard/shared';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { loadItemById, loadMonsterById } from './data/index';
 import { db } from './db';
 import {
@@ -25,6 +25,7 @@ import {
   campaignMemberships,
   characters,
   encounterTemplates,
+  sessions,
 } from './db/schema';
 import type { Bindings } from './types';
 
@@ -667,6 +668,55 @@ export async function stampRespite(
 }
 
 /**
+ * StartSession — validates that every attendingCharacterId references a
+ * campaign-approved character (queries campaign_characters), assigns a
+ * default 'Session N' name when omitted, and stamps both onto the payload.
+ * Hero tokens default is computed by the reducer, not stamped here.
+ */
+export async function stampStartSession(
+  intent: Intent & { timestamp: number },
+  campaignState: CampaignState,
+  env: Bindings,
+): Promise<StampResult> {
+  const payload = intent.payload as MutablePayload;
+  const requested = Array.isArray(payload.attendingCharacterIds)
+    ? payload.attendingCharacterIds.filter((id): id is string => typeof id === 'string' && id.length > 0)
+    : [];
+  if (requested.length === 0) return 'invalid_payload: attendingCharacterIds required';
+
+  const conn = db(env.DB);
+
+  // Validate every id is approved on this campaign.
+  const approvedRows = await conn
+    .select({ characterId: campaignCharacters.characterId })
+    .from(campaignCharacters)
+    .where(
+      and(
+        eq(campaignCharacters.campaignId, campaignState.campaignId),
+        eq(campaignCharacters.status, 'approved'),
+      ),
+    )
+    .all();
+  const approvedSet = new Set(approvedRows.map((r) => r.characterId));
+  for (const id of requested) {
+    if (!approvedSet.has(id)) return `unknown_character: ${id}`;
+  }
+
+  // Default name: 'Session N' where N = sessions count for this campaign + 1.
+  if (typeof payload.name !== 'string' || payload.name.trim().length === 0) {
+    const countRow = await conn
+      .select({ count: sql<number>`count(*)` })
+      .from(sessions)
+      .where(eq(sessions.campaignId, campaignState.campaignId))
+      .get();
+    const n = (countRow?.count ?? 0) + 1;
+    payload.name = `Session ${n}`;
+  }
+  payload.attendingCharacterIds = requested;
+  return null;
+}
+
+/**
  * Dispatch table — called by LobbyDO.handleDispatch before applyAndBroadcast.
  * Returns null (proceed) or a rejection reason (send rejected envelope).
  */
@@ -694,6 +744,8 @@ export async function stampIntent(
       return stampPushItem(intent, campaignState, env);
     case 'Respite':
       return stampRespite(intent, campaignState, env);
+    case 'StartSession':
+      return stampStartSession(intent, campaignState, env);
     case 'SwapKit':
       return stampSwapKit(intent, campaignState, env);
     case 'UnequipItem':

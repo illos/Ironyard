@@ -12,6 +12,7 @@ import {
   campaignSnapshots,
   campaigns,
   intents as intentsTable,
+  sessions,
 } from './db/schema';
 import { getStaticDataBundle } from './data';
 import { buildServerStampedIntent } from './lobby-do-build-intent';
@@ -137,6 +138,34 @@ export class LobbyDO implements DurableObject {
     // sockets (which are all gone on cold start). Clear it; reconnecting
     // clients will re-emit JoinLobby via the WS connect path.
     state = { ...state, connectedMembers: [] };
+
+    // Forward-compat: load active session data from D1 so the in-memory
+    // state mirrors the persisted session row. Covers both the snapshot and
+    // empty-state branches since the replay may not include a StartSession
+    // intent (pre-2E snapshots) or may have diverged from D1.
+    const campaignRow = await conn
+      .select({ currentSessionId: campaigns.currentSessionId })
+      .from(campaigns)
+      .where(eq(campaigns.id, campaignId))
+      .get();
+    const currentSessionId = campaignRow?.currentSessionId ?? null;
+    if (currentSessionId) {
+      const sessionRow = await conn
+        .select()
+        .from(sessions)
+        .where(eq(sessions.id, currentSessionId))
+        .get();
+      if (sessionRow) {
+        state.currentSessionId = currentSessionId;
+        state.attendingCharacterIds = JSON.parse(sessionRow.attendingCharacterIds) as string[];
+        // heroTokens stays at whatever the snapshot/replay produced — that's
+        // the live mutable pool. The D1 row only stores hero_tokens_start.
+      } else {
+        // Orphan currentSessionId pointer — clear it.
+        state.currentSessionId = null;
+        state.attendingCharacterIds = [];
+      }
+    }
 
     this.campaignId = campaignId;
     this.campaignState = state;
@@ -287,7 +316,7 @@ export class LobbyDO implements DurableObject {
           await this.persistSnapshot(now);
         }
         this.broadcast({ kind: 'applied', intent, seq });
-        await handleSideEffect(intent, this.campaignId, this.env, stateBefore);
+        await handleSideEffect(intent, this.campaignId, this.env, stateBefore, this.campaignState);
         for (const derived of result.derived) {
           const stampedDerived: Intent & { timestamp: number } = {
             ...derived,
@@ -646,7 +675,7 @@ export class LobbyDO implements DurableObject {
     // but do not re-throw — in-memory state has advanced, recovery is re-dispatch.
     // `stateBefore` is passed for hybrid intents (Respite) that need pre-reducer
     // state; non-hybrid side-effects ignore it.
-    await handleSideEffect(intent, this.campaignId, this.env, stateBefore);
+    await handleSideEffect(intent, this.campaignId, this.env, stateBefore, this.campaignState);
 
     // Derived intents inherit campaignId and run through the same pipeline. They
     // get their own ids/timestamps and a fresh seq. Recursive cascades stay
