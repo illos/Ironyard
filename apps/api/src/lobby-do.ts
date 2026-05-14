@@ -476,7 +476,7 @@ export class LobbyDO implements DurableObject {
   // Intents the client can never dispatch directly. These are emitted by the
   // DO (campaign lifecycle) or by the reducer as derived intents (apply damage).
   // D6.4: confirmed names post-rename (JoinSession/LeaveSession → JoinLobby/LeaveLobby).
-  private readonly SERVER_ONLY_INTENTS = new Set(['JoinLobby', 'LeaveLobby', 'ApplyDamage']);
+  private readonly SERVER_ONLY_INTENTS = new Set(['JoinLobby', 'LeaveLobby', 'ApplyDamage', 'RaiseOpenAction']);
 
   private async handleDispatch(socket: CFWebSocket, clientIntent: Intent) {
     const attached = this.sockets.get(socket);

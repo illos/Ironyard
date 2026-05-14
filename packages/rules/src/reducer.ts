@@ -4,6 +4,7 @@ import {
   applyApplyDamage,
   applyApplyHeal,
   applyApproveCharacter,
+  applyClaimOpenAction,
   applyClearLobby,
   applyDenyCharacter,
   applyEndEncounter,
@@ -21,6 +22,7 @@ import {
   applyLoadEncounterTemplate,
   applyNote,
   applyPushItem,
+  applyRaiseOpenAction,
   applyRemoveApprovedCharacter,
   applyRemoveCondition,
   applyRemoveParticipant,
@@ -78,6 +80,8 @@ export function applyIntent(
       return applyAddMonster(state, intent);
     case IntentTypes.ApproveCharacter:
       return applyApproveCharacter(state, intent);
+    case IntentTypes.ClaimOpenAction:
+      return applyClaimOpenAction(state, intent);
     case IntentTypes.ApplyDamage:
       return applyApplyDamage(state, intent);
     case IntentTypes.ApplyHeal:
@@ -116,6 +120,8 @@ export function applyIntent(
       return applyNote(state, intent);
     case IntentTypes.PushItem:
       return applyPushItem(state, intent);
+    case IntentTypes.RaiseOpenAction:
+      return applyRaiseOpenAction(state, intent);
     case IntentTypes.RemoveApprovedCharacter:
       return applyRemoveApprovedCharacter(state, intent);
     case IntentTypes.Respite:
