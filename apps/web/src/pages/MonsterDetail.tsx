@@ -1,6 +1,7 @@
 import type { Ability, Monster } from '@ironyard/shared';
 import { Link, useParams } from '@tanstack/react-router';
 import { useMonsters } from '../api/queries';
+import { Chip, Section } from '../primitives';
 
 const CHARACTERISTIC_ORDER = [
   'might',
@@ -15,11 +16,11 @@ export function MonsterDetail() {
   const monsters = useMonsters();
 
   if (monsters.isLoading) {
-    return <main className="mx-auto max-w-4xl p-6 text-neutral-400">Loading…</main>;
+    return <main className="mx-auto max-w-4xl p-6 text-text-dim">Loading…</main>;
   }
   if (monsters.error) {
     return (
-      <main className="mx-auto max-w-4xl p-6 text-rose-400">
+      <main className="mx-auto max-w-4xl p-6 text-foe">
         {(monsters.error as Error).message}
       </main>
     );
@@ -28,8 +29,8 @@ export function MonsterDetail() {
   if (!monster) {
     return (
       <main className="mx-auto max-w-4xl p-6 space-y-3">
-        <p className="text-rose-400">Monster not found.</p>
-        <Link to="/foes" className="text-sm text-neutral-400 hover:text-neutral-200 underline">
+        <p className="text-foe">Monster not found.</p>
+        <Link to="/foes" className="text-sm text-text-dim hover:text-text underline">
           ← Back to foes
         </Link>
       </main>
@@ -51,7 +52,7 @@ export function MonsterDetail() {
 function BackLink() {
   return (
     <div className="pt-2">
-      <Link to="/foes" className="text-sm text-neutral-400 hover:text-neutral-200 underline">
+      <Link to="/foes" className="text-sm text-text-dim hover:text-text underline">
         ← Back to foes
       </Link>
     </div>
@@ -71,12 +72,12 @@ function StatblockHeader({ monster }: { monster: Monster }) {
   const roleLine = `Level ${monster.level}${monster.roles.length > 0 ? ` ${monster.roles.join(' ')}` : ''}`;
 
   return (
-    <header className="space-y-1 border-b border-neutral-800 pb-3">
+    <header className="space-y-1 border-b border-line pb-3">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h1 className="text-2xl font-semibold">{monster.name}</h1>
-        <p className="text-sm text-neutral-300 font-medium">{roleLine}</p>
+        <h1 className="text-2xl font-semibold text-text">{monster.name}</h1>
+        <p className="text-sm text-text-dim font-medium">{roleLine}</p>
       </div>
-      <div className="flex flex-wrap items-baseline justify-between gap-3 text-xs text-neutral-400">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 text-xs text-text-dim">
         <p>{monster.ancestry.length > 0 ? monster.ancestry.join(', ') : '—'}</p>
         <p>
           {evLabel}
@@ -100,12 +101,9 @@ function StatsStrip({ monster }: { monster: Monster }) {
   return (
     <dl className="grid grid-cols-5 gap-2 text-center">
       {cells.map(([label, value]) => (
-        <div
-          key={label}
-          className="rounded-md bg-neutral-900/60 border border-neutral-800 px-2 py-3"
-        >
-          <dd className="font-mono tabular-nums text-2xl">{value}</dd>
-          <dt className="text-[10px] uppercase tracking-wider text-neutral-500 mt-1">{label}</dt>
+        <div key={label} className="bg-ink-2 border border-line px-2 py-3">
+          <dd className="font-mono tabular-nums text-2xl text-text">{value}</dd>
+          <dt className="text-[10px] uppercase tracking-wider text-text-mute mt-1">{label}</dt>
         </div>
       ))}
     </dl>
@@ -134,24 +132,24 @@ function ResistanceRow({ monster }: { monster: Monster }) {
     // (Most statblocks carry one or the other.)
   }
   return (
-    <div className="rounded-md bg-neutral-900/40 border border-neutral-800 p-3 text-sm">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+    <Section heading="Resistances">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">
         <Pair label="Immunity" value={immunityText} />
         <Pair label="Weakness" value={weaknessText} />
         <Pair label="Movement" value={movementText} />
         <Pair label="With Captain" value={withCaptainText} />
       </div>
-    </div>
+    </Section>
   );
 }
 
 function Pair({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline gap-2">
-      <span className="text-xs uppercase tracking-wider text-neutral-500 w-28 flex-shrink-0">
+      <span className="text-xs uppercase tracking-wider text-text-mute w-28 flex-shrink-0">
         {label}
       </span>
-      <span className="text-neutral-200">{value}</span>
+      <span className="text-text">{value}</span>
     </div>
   );
 }
@@ -164,12 +162,9 @@ function Characteristics({ monster }: { monster: Monster }) {
       {CHARACTERISTIC_ORDER.map((ch) => {
         const v = monster.characteristics[ch];
         return (
-          <div
-            key={ch}
-            className="rounded-md bg-neutral-900/60 border border-neutral-800 px-2 py-2"
-          >
-            <dt className="text-[10px] uppercase tracking-wider text-neutral-500">{ch}</dt>
-            <dd className="font-mono tabular-nums text-xl mt-0.5">
+          <div key={ch} className="bg-ink-2 border border-line px-2 py-2">
+            <dt className="text-[10px] uppercase tracking-wider text-text-mute">{ch}</dt>
+            <dd className="font-mono tabular-nums text-xl mt-0.5 text-text">
               {v > 0 ? `+${v}` : v}
             </dd>
           </div>
@@ -183,14 +178,13 @@ function Characteristics({ monster }: { monster: Monster }) {
 
 function Abilities({ abilities }: { abilities: Ability[] }) {
   return (
-    <section className="space-y-3">
-      <h2 className="text-sm uppercase tracking-wider text-neutral-400">Abilities</h2>
+    <Section heading="Abilities">
       <ul className="space-y-3">
         {abilities.map((a, idx) => (
           <AbilityRow key={`${a.id ?? a.name}-${idx}`} ability={a} />
         ))}
       </ul>
-    </section>
+    </Section>
   );
 }
 
@@ -200,45 +194,48 @@ function AbilityRow({ ability: a }: { ability: Ability }) {
   const bonus = a.powerRoll?.bonus;
   const rightLabel = a.costLabel ?? a.type;
   return (
-    <li className="rounded-md border border-neutral-800 bg-neutral-900/40 p-3 space-y-1">
+    <li className="border border-line bg-ink-2 p-3 space-y-1">
       <header className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="font-medium text-neutral-100">
+        <h3 className="font-medium text-text">
           {a.name}
           {bonus && (
-            <span className="ml-2 font-mono text-xs text-neutral-400">2d10 {bonus}</span>
+            <span className="ml-2 font-mono text-xs text-text-dim">2d10 {bonus}</span>
           )}
         </h3>
-        <span className="text-xs text-neutral-400 uppercase tracking-wider">{rightLabel}</span>
+        <span className="text-xs text-text-dim uppercase tracking-wider">{rightLabel}</span>
       </header>
       {(a.keywords && a.keywords.length > 0) || a.distance || a.target ? (
-        <p className="text-xs text-neutral-500">
-          {a.keywords && a.keywords.length > 0 && (
-            <span className="mr-2">{a.keywords.join(' · ')}</span>
-          )}
-          {a.distance && <span className="mr-2">📏 {a.distance}</span>}
+        <p className="text-xs text-text-mute flex flex-wrap items-center gap-1.5">
+          {a.keywords && a.keywords.length > 0 &&
+            a.keywords.map((k) => (
+              <Chip key={k} size="xs">
+                {k}
+              </Chip>
+            ))}
+          {a.distance && <span className="ml-1">📏 {a.distance}</span>}
           {a.target && <span>🎯 {a.target}</span>}
         </p>
       ) : null}
       {a.powerRoll && (
-        <div className="text-xs font-mono text-neutral-300 space-y-0.5 mt-1">
+        <div className="text-xs font-mono text-text space-y-0.5 mt-1">
           <div>
-            <span className="text-neutral-500 mr-2">≤11</span>
+            <span className="text-text-mute mr-2">≤11</span>
             {a.powerRoll.tier1.raw}
           </div>
           <div>
-            <span className="text-neutral-500 mr-2">12-16</span>
+            <span className="text-text-mute mr-2">12-16</span>
             {a.powerRoll.tier2.raw}
           </div>
           <div>
-            <span className="text-neutral-500 mr-2">17+</span>
+            <span className="text-text-mute mr-2">17+</span>
             {a.powerRoll.tier3.raw}
           </div>
         </div>
       )}
-      {a.effect && <p className="text-sm text-neutral-300 whitespace-pre-wrap">{a.effect}</p>}
+      {a.effect && <p className="text-sm text-text whitespace-pre-wrap">{a.effect}</p>}
       {a.trigger && (
-        <p className="text-xs text-neutral-400">
-          <span className="uppercase tracking-wider text-neutral-500 mr-1">Trigger:</span>
+        <p className="text-xs text-text-dim">
+          <span className="uppercase tracking-wider text-text-mute mr-1">Trigger:</span>
           {a.trigger}
         </p>
       )}
