@@ -9,10 +9,20 @@ export interface AppShellProps {
   children?: ReactNode;
 }
 
+// Routes that own the full viewport and render their own header (e.g. the
+// combat tracker's InlineHeader). The shell's TopBar collapses on these so
+// the page can pin its content to 100vh without fighting for chrome height.
+const FULL_VIEWPORT_PATTERNS = [/^\/campaigns\/[^/]+\/play$/];
+
+function isFullViewportRoute(pathname: string): boolean {
+  return FULL_VIEWPORT_PATTERNS.some((re) => re.test(pathname));
+}
+
 export function AppShell({ children }: AppShellProps) {
   const { activeCampaignId } = useActiveContext();
   const isActiveDirector = useIsActingAsDirector(activeCampaignId);
-  const _location = useLocation();
+  const location = useLocation();
+  const fullViewport = isFullViewportRoute(location.pathname);
 
   let mode: TopBarMode;
   if (activeCampaignId === null) mode = 'A';
@@ -22,7 +32,7 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <ThemeProvider>
       <div className="min-h-screen flex flex-col bg-ink-0 text-text">
-        <TopBar mode={mode} />
+        {!fullViewport && <TopBar mode={mode} />}
         <main className="flex-1 min-h-0">{children ?? <Outlet />}</main>
       </div>
     </ThemeProvider>

@@ -513,12 +513,12 @@ export function DirectorCombat() {
   }
 
   // ── live encounter — SplitPane layout ─────────────────────────────────────
-  // Layout note: main is min-h-screen, NOT h-screen, so the below-fold
-  // PlayerSheetPanel + OpenActionsList can extend the page and scroll the
-  // window naturally. The SplitPane gets a min-h so the rails always have
-  // room even when the below-fold panels are tall.
+  // Layout: main is pinned to the viewport (h-screen) under the InlineHeader
+  // (3rem). SplitPane fills the remaining height with each pane scrolling
+  // independently. OpenActionsList sits at the top of the right pane and
+  // collapses entirely when the queue is empty.
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="h-screen flex flex-col">
       <InlineHeader
         campaignName={campaignName}
         sessionLabel={sessionLabel}
@@ -546,7 +546,7 @@ export function DirectorCombat() {
       <SplitPane
         ratio="1.18fr 1fr"
         gap={14}
-        className="min-h-[calc(100vh-3rem)] p-3.5"
+        className="flex-1 min-h-0 p-3.5"
         left={
           <>
             <PartyRail
@@ -572,53 +572,53 @@ export function DirectorCombat() {
           </>
         }
         right={
-          <DetailPane
-            focused={focused}
-            participants={participants}
-            monsterLevelById={monsterLevelById}
-            monsterByParticipantId={monsterByParticipantId}
-            disabled={disabled}
-            campaignId={campaignId}
-            targetParticipantId={targetParticipantId}
-            selfParticipantId={selfParticipantId}
-            viewerRole={viewerRole}
-            dispatchRoll={dispatchRoll}
-            dispatchSetCondition={dispatchSetCondition}
-            dispatchRemoveCondition={dispatchRemoveCondition}
-            dispatchSetStamina={dispatchSetStamina}
-            dispatchGainResource={dispatchGainResource}
-            dispatchSpendResource={dispatchSpendResource}
-            dispatchSetResource={dispatchSetResource}
-            dispatchSpendSurge={dispatchSpendSurge}
-            dispatchSpendRecovery={dispatchSpendRecovery}
-            dispatchMarkActionUsed={dispatchMarkActionUsed}
-          />
+          <>
+            {openActions.length > 0 && (
+              <section className="border border-line bg-ink-1 p-3.5">
+                <OpenActionsList
+                  openActions={openActions}
+                  currentUserId={me.data.user.id}
+                  activeDirectorId={activeDirectorId ?? campaign.data.activeDirectorId ?? ''}
+                  participantOwnerLookup={(pid) => {
+                    const p = activeEncounter.participants.find(
+                      (entry) => isParticipantEntry(entry) && entry.id === pid,
+                    );
+                    return p && isParticipantEntry(p) ? p.ownerId : null;
+                  }}
+                  onClaim={(id) =>
+                    dispatch({
+                      id: ulid(),
+                      type: IntentTypes.ClaimOpenAction,
+                      payload: { openActionId: id },
+                    })
+                  }
+                />
+              </section>
+            )}
+            <DetailPane
+              focused={focused}
+              participants={participants}
+              monsterLevelById={monsterLevelById}
+              monsterByParticipantId={monsterByParticipantId}
+              disabled={disabled}
+              campaignId={campaignId}
+              targetParticipantId={targetParticipantId}
+              selfParticipantId={selfParticipantId}
+              viewerRole={viewerRole}
+              dispatchRoll={dispatchRoll}
+              dispatchSetCondition={dispatchSetCondition}
+              dispatchRemoveCondition={dispatchRemoveCondition}
+              dispatchSetStamina={dispatchSetStamina}
+              dispatchGainResource={dispatchGainResource}
+              dispatchSpendResource={dispatchSpendResource}
+              dispatchSetResource={dispatchSetResource}
+              dispatchSpendSurge={dispatchSpendSurge}
+              dispatchSpendRecovery={dispatchSpendRecovery}
+              dispatchMarkActionUsed={dispatchMarkActionUsed}
+            />
+          </>
         }
       />
-
-      {/* Below-fold panel: open-actions queue. */}
-      <div className="px-3.5 pb-3.5 space-y-3">
-        <section className="border border-line bg-ink-1 p-3.5">
-          <OpenActionsList
-            openActions={openActions}
-            currentUserId={me.data.user.id}
-            activeDirectorId={activeDirectorId ?? campaign.data.activeDirectorId ?? ''}
-            participantOwnerLookup={(pid) => {
-              const p = activeEncounter.participants.find(
-                (entry) => isParticipantEntry(entry) && entry.id === pid,
-              );
-              return p && isParticipantEntry(p) ? p.ownerId : null;
-            }}
-            onClaim={(id) =>
-              dispatch({
-                id: ulid(),
-                type: IntentTypes.ClaimOpenAction,
-                payload: { openActionId: id },
-              })
-            }
-          />
-        </section>
-      </div>
 
       <ToastStack toasts={toasts} onUndo={handleToastUndo} onDismiss={handleToastDismiss} />
     </main>
