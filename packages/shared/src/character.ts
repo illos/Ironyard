@@ -137,6 +137,8 @@ export const CharacterSchema = z.object({
   level: z.number().int().min(1).max(10).default(1),
   // ── XP (Phase 2 addition) ────────────────────────────────────────────────
   xp: z.number().int().min(0).default(0),
+  // ── Victories (Phase 2b addition) ────────────────────────────────────────
+  victories: z.number().int().min(0).default(0),
 
   // ── Narrative details ─────────────────────────────────────────────────────
   details: CharacterDetailsSchema.default({}),

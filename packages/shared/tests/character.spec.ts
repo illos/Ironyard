@@ -308,6 +308,22 @@ describe('CharacterSchema.titleId', () => {
   });
 });
 
+describe('CharacterSchema.victories', () => {
+  it('defaults to 0 when omitted', () => {
+    const parsed = CharacterSchema.parse({});
+    expect(parsed.victories).toBe(0);
+  });
+
+  it('accepts a non-negative integer', () => {
+    const parsed = CharacterSchema.parse({ victories: 5 });
+    expect(parsed.victories).toBe(5);
+  });
+
+  it('rejects negative victories', () => {
+    expect(() => CharacterSchema.parse({ victories: -1 })).toThrow();
+  });
+});
+
 describe('CreateCharacterRequestSchema', () => {
   it('accepts name only', () => {
     expect(CreateCharacterRequestSchema.parse({ name: 'Ash' })).toBeDefined();
