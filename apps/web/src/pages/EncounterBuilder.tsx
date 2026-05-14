@@ -7,7 +7,7 @@ import type {
 } from '@ironyard/shared';
 import { IntentTypes, ulid } from '@ironyard/shared';
 import { Link, useNavigate, useParams } from '@tanstack/react-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { buildIntent } from '../api/dispatch';
 import { useCreateEncounterTemplate, useDeleteEncounterTemplate } from '../api/mutations';
 import {
@@ -26,26 +26,20 @@ export function EncounterBuilder() {
   const navigate = useNavigate();
   const me = useMe();
   const session = useCampaign(sessionId);
-  const { status, dispatch } = useSessionSocket(sessionId);
+  const { status, dispatch, currentSessionId, attendingCharacterIds } =
+    useSessionSocket(sessionId);
   const templates = useEncounterTemplates(sessionId);
   const createTemplate = useCreateEncounterTemplate(sessionId);
   const deleteTemplate = useDeleteEncounterTemplate(sessionId);
   const { data: approvedChars = [], isLoading: approvedLoading } =
     useApprovedCharactersFull(sessionId);
 
-  const [selectedCharacterIds, setSelectedCharacterIds] = useState<Set<string>>(new Set());
+  const [selectedCharacterIds, setSelectedCharacterIds] = useState<Set<string>>(
+    () => new Set(attendingCharacterIds),
+  );
   const [selectedMonsters, setSelectedMonsters] = useState<MonsterPick[]>([]);
-  const [didInitChars, setDidInitChars] = useState(false);
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [templateName, setTemplateName] = useState('');
-
-  // Default-check all approved characters once they load.
-  useEffect(() => {
-    if (!approvedLoading && approvedChars.length > 0 && !didInitChars) {
-      setSelectedCharacterIds(new Set(approvedChars.map((c) => c.id)));
-      setDidInitChars(true);
-    }
-  }, [approvedLoading, approvedChars, didInitChars]);
 
   const monsters = useMonsters();
 
@@ -85,6 +79,22 @@ export function EncounterBuilder() {
         <Link to="/" className="underline text-neutral-300">
           Back home
         </Link>
+      </main>
+    );
+  }
+
+  if (currentSessionId === null) {
+    return (
+      <main className="mx-auto max-w-3xl p-6">
+        <div className="rounded-md border border-amber-800/60 bg-amber-950/30 p-4 text-sm text-amber-200">
+          <p className="font-medium">No active session.</p>
+          <p className="mt-1">
+            Start a session before building an encounter.{' '}
+            <Link to="/campaigns/$id" params={{ id: sessionId }} className="underline">
+              Go to campaign page →
+            </Link>
+          </p>
+        </div>
       </main>
     );
   }
@@ -304,7 +314,9 @@ export function EncounterBuilder() {
         <section className="lg:col-span-4 space-y-4">
           <div className="rounded-lg border border-neutral-800 bg-neutral-950 p-4">
             <CharacterChecklist
-              characters={approvedChars}
+              characters={approvedChars.filter((c) =>
+                attendingCharacterIds.includes(c.id),
+              )}
               isLoading={approvedLoading}
               selectedIds={selectedCharacterIds}
               onToggle={handleToggleCharacter}
