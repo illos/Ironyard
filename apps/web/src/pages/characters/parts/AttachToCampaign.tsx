@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAttachCharacterToCampaign } from '../../../api/mutations';
+import { Button } from '../../../primitives';
 
 export function AttachToCampaign({ characterId }: { characterId: string }) {
   const [code, setCode] = useState('');
@@ -11,9 +12,9 @@ export function AttachToCampaign({ characterId }: { characterId: string }) {
     attach.mutate({ campaignCode: c });
   };
   return (
-    <form onSubmit={onSubmit} className="rounded-md border border-neutral-800 p-4 space-y-3">
-      <h3 className="font-medium">Attach to a campaign</h3>
-      <p className="text-xs text-neutral-500">
+    <form onSubmit={onSubmit} className="bg-ink-1 border border-line p-4 flex flex-col gap-3">
+      <h3 className="font-medium text-text">Attach to a campaign</h3>
+      <p className="text-xs text-text-mute">
         Paste an invite code to join the campaign and submit this character to the director.
       </p>
       <div className="flex gap-2">
@@ -22,19 +23,18 @@ export function AttachToCampaign({ characterId }: { characterId: string }) {
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           maxLength={6}
           placeholder="ABCDEF"
-          className="flex-1 rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 uppercase tracking-widest min-h-11"
+          className="flex-1 bg-ink-2 border border-line text-text px-3 py-2 uppercase tracking-widest font-mono min-h-11 outline-none focus:border-accent"
         />
-        <button
+        <Button
           type="submit"
+          variant="primary"
           disabled={attach.isPending || code.trim().length !== 6}
-          className="min-h-11 px-4 py-2 rounded-md bg-neutral-100 text-neutral-900 font-medium disabled:opacity-50"
+          className="min-h-11 disabled:opacity-50"
         >
           Attach
-        </button>
+        </Button>
       </div>
-      {attach.error && (
-        <p className="text-sm text-rose-400">{(attach.error as Error).message}</p>
-      )}
+      {attach.error && <p className="text-sm text-foe">{(attach.error as Error).message}</p>}
     </form>
   );
 }
