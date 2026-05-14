@@ -47,6 +47,10 @@ const furyBundle: ReducerContext['staticData'] = {
 function makeState(overrides: Partial<CampaignState> = {}): CampaignState {
   return {
     ...emptyCampaignState('campaign-test', 'owner-1'),
+    // Seed an active session so the no_active_session precondition on
+    // StartEncounter doesn't trigger. Tests that exercise the gate pass
+    // currentSessionId: null explicitly via overrides.
+    currentSessionId: 'sess-test',
     ...overrides,
   };
 }
