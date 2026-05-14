@@ -18,6 +18,7 @@ export { applyLoadEncounterTemplate } from './load-encounter-template';
 export { applyNote } from './note';
 export { applyPushItem } from './push-item';
 export { applyRemoveApprovedCharacter } from './remove-approved-character';
+export { applyRaiseOpenAction } from './raise-open-action';
 export { applyRespite } from './respite';
 export { applyRemoveCondition } from './remove-condition';
 export { applyRemoveParticipant } from './remove-participant';
