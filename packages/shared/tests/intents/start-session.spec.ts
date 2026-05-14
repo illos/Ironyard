@@ -81,3 +81,67 @@ describe('UpdateSessionAttendancePayloadSchema', () => {
     expect(() => UpdateSessionAttendancePayloadSchema.parse({})).toThrow();
   });
 });
+
+import { GainHeroTokenPayloadSchema } from '../../src/intents/gain-hero-token';
+import { SpendHeroTokenPayloadSchema } from '../../src/intents/spend-hero-token';
+
+describe('GainHeroTokenPayloadSchema', () => {
+  it('parses positive amount', () => {
+    const p = GainHeroTokenPayloadSchema.parse({ amount: 2 });
+    expect(p.amount).toBe(2);
+  });
+
+  it('rejects zero or negative', () => {
+    expect(() => GainHeroTokenPayloadSchema.parse({ amount: 0 })).toThrow();
+    expect(() => GainHeroTokenPayloadSchema.parse({ amount: -1 })).toThrow();
+  });
+});
+
+describe('SpendHeroTokenPayloadSchema', () => {
+  it('parses surge_burst with amount 1', () => {
+    const p = SpendHeroTokenPayloadSchema.parse({
+      amount: 1,
+      reason: 'surge_burst',
+      participantId: 'pc:alice',
+    });
+    expect(p.reason).toBe('surge_burst');
+  });
+
+  it('parses regain_stamina with amount 2', () => {
+    const p = SpendHeroTokenPayloadSchema.parse({
+      amount: 2,
+      reason: 'regain_stamina',
+      participantId: 'pc:bob',
+    });
+    expect(p.amount).toBe(2);
+  });
+
+  it('parses narrative with arbitrary positive amount', () => {
+    const p = SpendHeroTokenPayloadSchema.parse({
+      amount: 3,
+      reason: 'narrative',
+      participantId: 'pc:cleric',
+    });
+    expect(p.amount).toBe(3);
+  });
+
+  it('rejects unknown reason', () => {
+    expect(() =>
+      SpendHeroTokenPayloadSchema.parse({
+        amount: 1,
+        reason: 'whatever',
+        participantId: 'pc:x',
+      }),
+    ).toThrow();
+  });
+
+  it('rejects amount < 1', () => {
+    expect(() =>
+      SpendHeroTokenPayloadSchema.parse({
+        amount: 0,
+        reason: 'narrative',
+        participantId: 'pc:x',
+      }),
+    ).toThrow();
+  });
+});

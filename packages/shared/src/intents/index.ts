@@ -19,6 +19,8 @@ export { EndSessionPayloadSchema } from './end-session';
 export type { EndSessionPayload } from './end-session';
 export { EquipItemPayloadSchema } from './equip-item';
 export type { EquipItemPayload } from './equip-item';
+export { GainHeroTokenPayloadSchema } from './gain-hero-token';
+export type { GainHeroTokenPayload } from './gain-hero-token';
 export { GainMalicePayloadSchema } from './gain-malice';
 export type { GainMalicePayload } from './gain-malice';
 export { GainResourcePayloadSchema } from './gain-resource';
@@ -63,6 +65,8 @@ export { SetResourcePayloadSchema } from './set-resource';
 export type { SetResourcePayload } from './set-resource';
 export { SetStaminaPayloadSchema } from './set-stamina';
 export type { SetStaminaPayload } from './set-stamina';
+export { SpendHeroTokenPayloadSchema } from './spend-hero-token';
+export type { SpendHeroTokenPayload } from './spend-hero-token';
 export { SpendMalicePayloadSchema } from './spend-malice';
 export type { SpendMalicePayload } from './spend-malice';
 export { SpendRecoveryPayloadSchema } from './spend-recovery';
@@ -129,6 +133,7 @@ export const IntentTypes = {
   EndSession: 'EndSession',
   EndTurn: 'EndTurn',
   EquipItem: 'EquipItem',
+  GainHeroToken: 'GainHeroToken',
   GainMalice: 'GainMalice',
   GainResource: 'GainResource',
   JoinLobby: 'JoinLobby',
@@ -147,6 +152,7 @@ export const IntentTypes = {
   SetInitiative: 'SetInitiative',
   SetResource: 'SetResource',
   SetStamina: 'SetStamina',
+  SpendHeroToken: 'SpendHeroToken',
   SpendMalice: 'SpendMalice',
   SpendRecovery: 'SpendRecovery',
   SpendResource: 'SpendResource',
