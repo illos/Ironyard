@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { Button, Stat } from '../../../primitives';
 import { MalicePill } from './MalicePill';
+import { VictoriesPill } from './VictoriesPill';
 
 // ──────────────────────────────────────────────────────────────────────────
 // InlineHeader — Mode-B style breadcrumb + Round/Victories/Malice +
@@ -67,7 +68,7 @@ export function InlineHeader({
       </span>
       <span className="flex-1" />
       <Stat label="Round" value={round ?? '—'} />
-      <Stat label="Victories" value={victories} />
+      <VictoriesPill victories={victories} />
       {malice !== null && (
         <MalicePill malice={malice} onGain={onMaliceGain} onSpend={onMaliceSpend} disabled={wsClosed} />
       )}
