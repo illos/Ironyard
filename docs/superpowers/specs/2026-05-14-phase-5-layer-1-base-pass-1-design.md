@@ -355,6 +355,18 @@ The active row also uses `border-accent` instead of `border-line` so it's visual
 
 **Lesson.** When wiring a new component that combines TanStack-Query guard returns with derived `useMemo` state, lift every hook above every return. Cheap check: `grep -n` for hook calls and `return` statements; all hook line numbers should be lower than all return line numbers.
 
+### 7. DirectorCombat SplitPane collapsed to zero height when player + director on the same account
+
+**Symptom.** Loaded `/campaigns/$id/play` with an active encounter; the InlineHeader rendered at top, the user's own character sheet rendered directly under it, and the PartyRail + EncounterRail + DetailPane were nowhere to be seen. Looked like only the user's character was loading; reproduced specifically when the same account was both the director AND owned a participating character (so PlayerSheetPanel had a lot of content to render below the SplitPane).
+
+**Diagnosis.** `<main>` was `h-screen flex flex-col`, the SplitPane was `flex-1`, and the below-fold panels (`PlayerSheetPanel`, `OpenActionsList`) sat inside the same flex column. When PlayerSheetPanel's natural height (full sheet + abilities + hero tokens + inventory ≈ 1500px) exceeded the viewport, the `flex-1` SplitPane shrank toward zero to make room — and since its internal panes have `overflow-y-auto`, that meant the rails were technically rendered but with no vertical space, so visually you saw the header stacked directly on the below-fold sheet.
+
+**Fix** ([`9f624e7`](../../..)). Two-line change in `DirectorCombat.tsx`:
+- `<main>` → `min-h-screen flex flex-col` (was `h-screen flex flex-col`) so the page can grow taller than the viewport and the window scrolls naturally.
+- SplitPane className → `min-h-[calc(100vh-3rem)] p-3.5` (was `flex-1 p-3.5`) so the rails always get at least viewport-minus-header height regardless of below-fold content.
+
+**Lesson.** When a `flex-col` parent mixes one `flex-1` child with one or more siblings whose natural height can exceed the viewport, the `flex-1` child can collapse to zero. Either pin its size with `min-h-*`, or restructure so the variable-height sibling lives inside a scrollable region rather than competing for viewport space.
+
 ### Side-fallout (no spec change required)
 
 - `TopBar.spec.tsx` had to widen its `@tanstack/react-router` mock to cover `useLocation` and `useNavigate` (AccountMenu now reaches into them transitively via `useActiveContext`), plus stub `useActiveContext` and `useMyCampaigns`. Test logic is unchanged.
