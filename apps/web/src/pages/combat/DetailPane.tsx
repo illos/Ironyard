@@ -22,9 +22,8 @@ import { useWizardStaticData } from '../../api/static-data';
 import { pcFreeStrike } from '../../data/monsterAbilities';
 import { useLongPress } from '../../lib/longPress';
 import { AbilityCard } from './AbilityCard';
-import { Button, HpBar, Section } from '../../primitives';
-import { ConditionPickerPopover } from './detail/ConditionPickerPopover';
-import { StaminaEditPopover } from './detail/StaminaEditPopover';
+import { Button, Section } from '../../primitives';
+import { DetailHeader } from './detail/DetailHeader';
 
 type Props = {
   focused: Participant | null;
@@ -121,8 +120,6 @@ function DetailBody({
   );
   const [targetId, setTargetId] = useState<string | null>(candidates[0]?.id ?? null);
   const target = candidates.find((p) => p.id === targetId) ?? null;
-  const [hpEditOpen, setHpEditOpen] = useState(false);
-
   // Resilient fallback if the currently-picked target leaves the encounter
   // (or focus shifts and the candidate list changes). Runs after render so we
   // don't set state inside the render path.
@@ -188,52 +185,13 @@ function DetailBody({
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span
-              className={`inline-flex h-6 px-2 items-center justify-center rounded-full text-[10px] font-semibold uppercase tracking-wider ${
-                focused.kind === 'monster'
-                  ? 'bg-foe text-ink-0'
-                  : 'bg-accent text-ink-0'
-              }`}
-            >
-              {focused.kind}
-            </span>
-            {focused.kind === 'monster' && monsterLevelById.get(focused.id) !== undefined && (
-              <span className="text-xs text-text-mute font-mono tabular-nums">
-                L{monsterLevelById.get(focused.id)}
-              </span>
-            )}
-          </div>
-          <h2 className="text-2xl font-semibold mt-1 text-text">{focused.name}</h2>
-        </div>
-      </header>
-
-      <Section heading="Stamina" aria-label="stamina">
-        <div className="flex items-baseline justify-between mb-2">
-          <button
-            type="button"
-            onClick={() => setHpEditOpen(true)}
-            className="text-2xl font-mono tabular-nums font-semibold select-none cursor-pointer px-2 -mx-2 hover:bg-ink-2 active:bg-ink-3 text-text"
-            title="Click to edit"
-          >
-            {focused.currentStamina}
-            <span className="text-text-mute text-base"> / {focused.maxStamina}</span>
-          </button>
-        </div>
-        <HpBar current={focused.currentStamina} max={focused.maxStamina} size="lg" />
-        {hpEditOpen && (
-          <StaminaEditPopover
-            participantId={focused.id}
-            current={focused.currentStamina}
-            max={focused.maxStamina}
-            disabled={disabled}
-            onApply={dispatchSetStamina}
-            onClose={() => setHpEditOpen(false)}
-          />
-        )}
-      </Section>
+      <DetailHeader
+        focused={focused}
+        monsterLevel={monsterLevelById.get(focused.id) ?? null}
+        dispatchSetStamina={dispatchSetStamina}
+        dispatchSetCondition={dispatchSetCondition}
+        dispatchRemoveCondition={dispatchRemoveCondition}
+      />
 
       {focused.kind === 'pc' && (
         <ResourcesSection
@@ -246,16 +204,6 @@ function DetailBody({
           dispatchSpendRecovery={dispatchSpendRecovery}
         />
       )}
-
-      <Section heading="Conditions" aria-label="conditions">
-        <ConditionPickerPopover
-          participantId={focused.id}
-          conditions={focused.conditions}
-          disabled={disabled}
-          dispatchSetCondition={dispatchSetCondition}
-          dispatchRemoveCondition={dispatchRemoveCondition}
-        />
-      </Section>
 
       <Section heading="Characteristics" aria-label="characteristics">
         <dl className="grid grid-cols-5 gap-1.5 text-center">
