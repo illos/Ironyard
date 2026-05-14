@@ -21,6 +21,7 @@ export type InlineHeaderProps = {
   canUndo: boolean;
   isAtTurnEnd: boolean;
   hasEncounter: boolean;
+  isActingAsDirector: boolean;
   onStartRound: () => void;
   onEndTurn: () => void;
   onEndRound: () => void;
@@ -28,6 +29,8 @@ export type InlineHeaderProps = {
   onMaliceGain: () => void;
   onMaliceSpend: () => void;
   onEndEncounter: () => void;
+  onVictoriesGain: () => void;
+  onVictoriesSpend: () => void;
 };
 
 export function InlineHeader({
@@ -42,6 +45,7 @@ export function InlineHeader({
   canUndo,
   isAtTurnEnd,
   hasEncounter,
+  isActingAsDirector,
   onStartRound,
   onEndTurn,
   onEndRound,
@@ -49,6 +53,8 @@ export function InlineHeader({
   onMaliceGain,
   onMaliceSpend,
   onEndEncounter,
+  onVictoriesGain,
+  onVictoriesSpend,
 }: InlineHeaderProps) {
   const wsClosed = status !== 'open';
   return (
@@ -68,20 +74,34 @@ export function InlineHeader({
       </span>
       <span className="flex-1" />
       <Stat label="Round" value={round ?? '—'} />
-      <VictoriesPill victories={victories} />
+      <VictoriesPill
+        victories={victories}
+        editable={isActingAsDirector}
+        disabled={wsClosed}
+        onIncrement={onVictoriesGain}
+        onDecrement={onVictoriesSpend}
+      />
       {malice !== null && (
-        <MalicePill malice={malice} onGain={onMaliceGain} onSpend={onMaliceSpend} disabled={wsClosed} />
+        <MalicePill
+          malice={malice}
+          editable={isActingAsDirector}
+          onGain={onMaliceGain}
+          onSpend={onMaliceSpend}
+          disabled={wsClosed}
+        />
       )}
-      <Button
-        type="button"
-        onClick={onUndo}
-        disabled={!canUndo}
-        size="sm"
-        className="min-h-9"
-      >
-        Undo
-      </Button>
-      {hasEncounter && (
+      {isActingAsDirector && (
+        <Button
+          type="button"
+          onClick={onUndo}
+          disabled={!canUndo}
+          size="sm"
+          className="min-h-9"
+        >
+          Undo
+        </Button>
+      )}
+      {isActingAsDirector && hasEncounter && (
         <Button
           type="button"
           onClick={onEndEncounter}
@@ -94,7 +114,7 @@ export function InlineHeader({
           End encounter
         </Button>
       )}
-      {hasEncounter && round !== null && !isAtTurnEnd && (
+      {isActingAsDirector && hasEncounter && round !== null && !isAtTurnEnd && (
         <Button
           type="button"
           onClick={onEndTurn}
@@ -106,7 +126,7 @@ export function InlineHeader({
           End turn
         </Button>
       )}
-      {hasEncounter && round !== null && isAtTurnEnd && (
+      {isActingAsDirector && hasEncounter && round !== null && isAtTurnEnd && (
         <Button
           type="button"
           onClick={onEndRound}
@@ -118,7 +138,7 @@ export function InlineHeader({
           End round
         </Button>
       )}
-      {hasEncounter && round !== null && isAtTurnEnd && (
+      {isActingAsDirector && hasEncounter && round !== null && isAtTurnEnd && (
         <Button
           type="button"
           onClick={onStartRound}

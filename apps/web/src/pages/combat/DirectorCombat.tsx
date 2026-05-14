@@ -1,5 +1,6 @@
 import {
   type Ability,
+  type AdjustVictoriesPayload,
   type Characteristic,
   type ConditionApplicationDispatch,
   type DamageType,
@@ -402,6 +403,11 @@ export function DirectorCombat() {
     setParticipantSnapshotBefore(participants);
     send(IntentTypes.SpendMalice, { amount });
   };
+  const dispatchAdjustVictories = (delta: number) => {
+    setParticipantSnapshotBefore(participants);
+    const payload: AdjustVictoriesPayload = { delta };
+    send(IntentTypes.AdjustVictories, payload);
+  };
   const handleEndEncounter = () => {
     if (!activeEncounter) return;
     setParticipantSnapshotBefore(participants);
@@ -424,6 +430,7 @@ export function DirectorCombat() {
           canUndo={false}
           isAtTurnEnd={false}
           hasEncounter={false}
+          isActingAsDirector={isActingAsDirector}
           onStartRound={handleStartRound}
           onEndTurn={handleEndTurn}
           onEndRound={handleEndRound}
@@ -431,6 +438,8 @@ export function DirectorCombat() {
           onMaliceGain={() => dispatchGainMalice(1)}
           onMaliceSpend={() => dispatchSpendMalice(1)}
           onEndEncounter={handleEndEncounter}
+          onVictoriesGain={() => dispatchAdjustVictories(1)}
+          onVictoriesSpend={() => dispatchAdjustVictories(-1)}
         />
         <section className="mt-6 border border-dashed border-line p-6 text-center">
           <p className="text-sm text-text-dim">No encounter yet.</p>
@@ -466,6 +475,7 @@ export function DirectorCombat() {
           canUndo={!!undoable && !wsClosed}
           isAtTurnEnd={false}
           hasEncounter={true}
+          isActingAsDirector={isActingAsDirector}
           onStartRound={handleStartRound}
           onEndTurn={handleEndTurn}
           onEndRound={handleEndRound}
@@ -473,6 +483,8 @@ export function DirectorCombat() {
           onMaliceGain={() => dispatchGainMalice(1)}
           onMaliceSpend={() => dispatchSpendMalice(1)}
           onEndEncounter={handleEndEncounter}
+          onVictoriesGain={() => dispatchAdjustVictories(1)}
+          onVictoriesSpend={() => dispatchAdjustVictories(-1)}
         />
         <section className="mt-6 border border-line bg-ink-1 p-6 flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -516,6 +528,7 @@ export function DirectorCombat() {
         canUndo={!!undoable && !wsClosed}
         isAtTurnEnd={isAtTurnEnd}
         hasEncounter={true}
+        isActingAsDirector={isActingAsDirector}
         onStartRound={handleStartRound}
         onEndTurn={handleEndTurn}
         onEndRound={handleEndRound}
@@ -523,6 +536,8 @@ export function DirectorCombat() {
         onMaliceGain={() => dispatchGainMalice(1)}
         onMaliceSpend={() => dispatchSpendMalice(1)}
         onEndEncounter={handleEndEncounter}
+        onVictoriesGain={() => dispatchAdjustVictories(1)}
+        onVictoriesSpend={() => dispatchAdjustVictories(-1)}
       />
 
       <SplitPane
