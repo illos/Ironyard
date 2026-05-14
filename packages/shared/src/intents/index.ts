@@ -47,6 +47,8 @@ export { RemoveApprovedCharacterPayloadSchema } from './remove-approved-characte
 export type { RemoveApprovedCharacterPayload } from './remove-approved-character';
 export { RespitePayloadSchema } from './respite';
 export type { RespitePayload, SafelyCarryWarning } from './respite';
+export { StartSessionPayloadSchema } from './start-session';
+export type { StartSessionPayload } from './start-session';
 export { RemoveConditionPayloadSchema } from './remove-condition';
 export type { RemoveConditionPayload } from './remove-condition';
 export { RemoveParticipantPayloadSchema } from './remove-participant';
@@ -145,6 +147,7 @@ export const IntentTypes = {
   Respite: 'Respite',
   SpendSurge: 'SpendSurge',
   StartEncounter: 'StartEncounter',
+  StartSession: 'StartSession',
   StartRound: 'StartRound',
   StartTurn: 'StartTurn',
   SubmitCharacter: 'SubmitCharacter',
