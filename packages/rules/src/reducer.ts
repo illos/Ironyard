@@ -42,6 +42,7 @@ import {
   applySwapKit,
   applyUndo,
   applyUnequipItem,
+  applyUpdateSessionAttendance,
   applyUseAbility,
   applyUseConsumable,
 } from './intents';
@@ -155,6 +156,8 @@ export function applyIntent(
       return applyUnequipItem(state, intent);
     case IntentTypes.Undo:
       return applyUndo(state, intent);
+    case IntentTypes.UpdateSessionAttendance:
+      return applyUpdateSessionAttendance(state, intent);
     case IntentTypes.UseAbility:
       return applyUseAbility(state, intent);
     case IntentTypes.UseConsumable:

@@ -42,5 +42,6 @@ export {
 } from './turn';
 export { applyUndo } from './undo';
 export { applyUnequipItem } from './unequip-item';
+export { applyUpdateSessionAttendance } from './update-session-attendance';
 export { applyUseAbility } from './use-ability';
 export { applyUseConsumable } from './use-consumable';
