@@ -7,6 +7,7 @@ import {
   MonsterFileSchema,
 } from '@ironyard/shared';
 import { useQueries, useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { ApiError, api } from './client';
 
 export type CampaignDetail = {
@@ -120,7 +121,17 @@ function useCharactersFull(campaignId: string | undefined, status: 'approved' | 
       enabled: !!id,
     })),
   });
-  const data = queries.map((q) => q.data).filter((d): d is CharacterResponse => !!d);
+  // Memoize on a stable signature of the resolved character ids so consumers
+  // get a referentially stable array — without this, useEffect deps that
+  // reference `data` fire every render and infinite-loop.
+  const dataSignature = queries.map((q) => q.data?.id ?? '').join('|');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional — depend on
+  // a signature of the resolved character ids rather than the queries array itself,
+  // since the array's reference changes every render even when contents are stable.
+  const data = useMemo(
+    () => queries.map((q) => q.data).filter((d): d is CharacterResponse => !!d),
+    [dataSignature],
+  );
   const isLoading = list.isLoading || queries.some((q) => q.isLoading);
   return { data, isLoading };
 }

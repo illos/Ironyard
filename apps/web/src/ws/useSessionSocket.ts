@@ -535,204 +535,256 @@ export function useSessionSocket(sessionId: string | undefined) {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [attendingCharacterIds, setAttendingCharacterIds] = useState<string[]>([]);
   const [heroTokens, setHeroTokens] = useState<number>(0);
+  // Phase 2b.0 — lobby-visible Open Actions queue (claim or auto-expire).
   const [openActions, setOpenActions] = useState<OpenAction[]>([]);
+  // Last server-side rejection. The DO emits `kind: 'rejected'` envelopes when
+  // an intent fails stamper validation or reducer preconditions; the UI reads
+  // this so callers can surface the reason instead of silently swallowing it.
+  const [lastRejection, setLastRejection] = useState<{
+    intentId: string;
+    reason: string;
+  } | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     if (!sessionId) return;
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${proto}//${window.location.host}/api/campaigns/${sessionId}/socket`);
-    wsRef.current = ws;
-    setStatus('connecting');
-    setActiveEncounter(null);
-    setIntentLog([]);
-    setLastSeq(0);
-    setActiveDirectorId(null);
-    setCurrentSessionId(null);
-    setAttendingCharacterIds([]);
-    setHeroTokens(0);
-    setOpenActions([]);
+    // Vite's http-proxy can't reliably hold a WebSocket upgrade against
+    // wrangler's dev server, so in dev we bypass the proxy and talk to the
+    // API worker directly.
+    const host =
+      window.location.port === '5173' ? `${window.location.hostname}:8787` : window.location.host;
 
-    ws.onopen = () => {
-      setStatus('open');
-      // The DO sends a `snapshot` on connect with the authoritative campaign
-      // state (participants, encounter phase, etc.). No sync needed — the
-      // snapshot populates activeEncounter correctly and new intents arrive
-      // as `applied` envelopes from this point forward.
-    };
-    ws.onclose = () => setStatus('closed');
-    ws.onerror = () => setStatus('closed');
+    // Defer socket creation so React 18 StrictMode's discarded first mount
+    // cancels the connection before it actually opens, rather than firing a
+    // doomed handshake that logs a noisy "closed before established" error.
+    let ws: WebSocket | null = null;
+    let cancelled = false;
+    const connectTimer = setTimeout(() => {
+      if (cancelled) return;
+      ws = new WebSocket(`${proto}//${host}/api/campaigns/${sessionId}/socket`);
+      wsRef.current = ws;
+      setStatus('connecting');
+      setActiveEncounter(null);
+      setIntentLog([]);
+      setLastSeq(0);
+      setActiveDirectorId(null);
+      setCurrentSessionId(null);
+      setAttendingCharacterIds([]);
+      setHeroTokens(0);
+      setOpenActions([]);
+      setLastRejection(null);
+      wireSocket(ws);
+    }, 0);
 
-    ws.onmessage = (event) => {
-      let raw: unknown;
-      try {
-        raw = JSON.parse(event.data);
-      } catch {
-        return;
-      }
-      const result = ServerMsgSchema.safeParse(raw);
-      if (!result.success) return;
-      const msg = result.data;
-      if (msg.kind === 'member_list') {
-        // Deduplicate by userId — in dev StrictMode two sockets may briefly
-        // be open at once, causing the same user to appear in the list twice.
-        const seen = new Set<string>();
-        setMembers(msg.members.filter((m) => (seen.has(m.userId) ? false : seen.add(m.userId))));
-      } else if (msg.kind === 'member_joined') {
-        setMembers((prev) => {
-          const without = prev.filter((m) => m.userId !== msg.member.userId);
-          return [...without, msg.member];
-        });
-      } else if (msg.kind === 'member_left') {
-        setMembers((prev) => prev.filter((m) => m.userId !== msg.member.userId));
-      } else if (msg.kind === 'applied') {
-        setActiveEncounter((prev) => reflect(prev, msg.intent.type, msg.intent.payload));
-        // JumpBehindScreen mutates state.activeDirectorId; mirror it locally so
-        // the banner updates without a round-trip to the HTTP metadata endpoint.
-        if (msg.intent.type === IntentTypes.JumpBehindScreen) {
-          setActiveDirectorId(msg.intent.actor.userId);
+    function wireSocket(socket: WebSocket) {
+      socket.onopen = () => {
+        setStatus('open');
+        // The DO sends a `snapshot` on connect with the authoritative campaign
+        // state (participants, encounter phase, etc.). No sync needed — the
+        // snapshot populates activeEncounter correctly and new intents arrive
+        // as `applied` envelopes from this point forward.
+      };
+      // Only flip status when this specific socket is the live one — a stale
+      // close from a discarded StrictMode socket otherwise clobbers a healthy
+      // `connecting`/`open` status on the live socket.
+      socket.onclose = () => {
+        if (wsRef.current === socket) setStatus('closed');
+      };
+      socket.onerror = () => {
+        if (wsRef.current === socket) setStatus('closed');
+      };
+
+      socket.onmessage = (event) => {
+        let raw: unknown;
+        try {
+          raw = JSON.parse(event.data);
+        } catch {
+          return;
         }
-        // Session + hero-token intent mirrors (Epic 2E).
-        if (msg.intent.type === IntentTypes.StartSession) {
-          const payload = msg.intent.payload as StartSessionPayload;
-          // Client-suggested sessionId is on the payload (see Task 3 schema,
-          // used to keep optimistic mirror in sync without a snapshot round-trip).
-          // The CampaignView dispatch site (Task 15) generates it ahead of dispatch.
-          if (payload.sessionId) {
-            setCurrentSessionId(payload.sessionId);
-          }
-          setAttendingCharacterIds(payload.attendingCharacterIds);
-          const tokens = payload.heroTokens ?? payload.attendingCharacterIds.length;
-          setHeroTokens(tokens);
+        const result = ServerMsgSchema.safeParse(raw);
+        if (!result.success) return;
+        const msg = result.data;
+        if (msg.kind === 'rejected') {
+          // Surface server-side rejection so the UI can display the reason
+          // (e.g. "session_already_active", "unknown_character"). Without
+          // this branch the rejection was silently dropped and the action
+          // appeared to do nothing.
+          setLastRejection({ intentId: msg.intentId, reason: msg.reason });
+          return;
         }
-        if (msg.intent.type === IntentTypes.EndSession) {
-          setCurrentSessionId(null);
-          setAttendingCharacterIds([]);
-          // heroTokens left as-is; the next StartSession overwrites
-        }
-        if (msg.intent.type === IntentTypes.UpdateSessionAttendance) {
-          const payload = msg.intent.payload as UpdateSessionAttendancePayload;
-          setAttendingCharacterIds((prev) => {
-            const removeSet = new Set(payload.remove ?? []);
-            const next = prev.filter((id) => !removeSet.has(id));
-            for (const id of payload.add ?? []) if (!next.includes(id)) next.push(id);
-            return next;
+        if (msg.kind === 'member_list') {
+          // Deduplicate by userId — in dev StrictMode two sockets may briefly
+          // be open at once, causing the same user to appear in the list twice.
+          const seen = new Set<string>();
+          setMembers(msg.members.filter((m) => (seen.has(m.userId) ? false : seen.add(m.userId))));
+        } else if (msg.kind === 'member_joined') {
+          setMembers((prev) => {
+            const without = prev.filter((m) => m.userId !== msg.member.userId);
+            return [...without, msg.member];
           });
-        }
-        // OpenAction mirror (Phase 2b.0).
-        // RaiseOpenAction is server-only so we never see its envelope on the
-        // dispatch path; it only arrives via snapshot or as a derived intent
-        // — both rare-but-supported. Snapshot replay overwrites everything.
-        if (msg.intent.type === IntentTypes.ClaimOpenAction) {
-          const payload = msg.intent.payload as { openActionId?: string };
-          if (payload.openActionId) {
-            setOpenActions((prev) => prev.filter((o) => o.id !== payload.openActionId));
+        } else if (msg.kind === 'member_left') {
+          setMembers((prev) => prev.filter((m) => m.userId !== msg.member.userId));
+        } else if (msg.kind === 'applied') {
+          setActiveEncounter((prev) => reflect(prev, msg.intent.type, msg.intent.payload));
+          // JumpBehindScreen mutates state.activeDirectorId; mirror it locally so
+          // the banner updates without a round-trip to the HTTP metadata endpoint.
+          if (msg.intent.type === IntentTypes.JumpBehindScreen) {
+            setActiveDirectorId(msg.intent.actor.userId);
           }
-        }
-        if (msg.intent.type === IntentTypes.EndRound) {
-          const round = activeEncounter?.currentRound;
-          if (round !== null && round !== undefined) {
-            setOpenActions((prev) =>
-              prev.filter((o) => o.expiresAtRound === null || o.expiresAtRound !== round),
+          // Session + hero-token intent mirrors (Epic 2E).
+          if (msg.intent.type === IntentTypes.StartSession) {
+            const payload = msg.intent.payload as StartSessionPayload;
+            // Client-suggested sessionId is on the payload (see Task 3 schema,
+            // used to keep optimistic mirror in sync without a snapshot round-trip).
+            // The CampaignView dispatch site (Task 15) generates it ahead of dispatch.
+            if (payload.sessionId) {
+              setCurrentSessionId(payload.sessionId);
+            }
+            setAttendingCharacterIds(payload.attendingCharacterIds);
+            const tokens = payload.heroTokens ?? payload.attendingCharacterIds.length;
+            setHeroTokens(tokens);
+          }
+          if (msg.intent.type === IntentTypes.EndSession) {
+            setCurrentSessionId(null);
+            setAttendingCharacterIds([]);
+            // heroTokens left as-is; the next StartSession overwrites
+          }
+          if (msg.intent.type === IntentTypes.UpdateSessionAttendance) {
+            const payload = msg.intent.payload as UpdateSessionAttendancePayload;
+            setAttendingCharacterIds((prev) => {
+              const removeSet = new Set(payload.remove ?? []);
+              const next = prev.filter((id) => !removeSet.has(id));
+              for (const id of payload.add ?? []) if (!next.includes(id)) next.push(id);
+              return next;
+            });
+          }
+          if (msg.intent.type === IntentTypes.GainHeroToken) {
+            const payload = msg.intent.payload as GainHeroTokenPayload;
+            setHeroTokens((prev) => prev + payload.amount);
+          }
+          if (msg.intent.type === IntentTypes.SpendHeroToken) {
+            const payload = msg.intent.payload as SpendHeroTokenPayload;
+            setHeroTokens((prev) => Math.max(0, prev - payload.amount));
+            // surge_burst / regain_stamina derived intents flow through their own reflect cases
+          }
+          // OpenAction mirror (Phase 2b.0). RaiseOpenAction is server-only so
+          // we never see its envelope on the dispatch path; it only arrives
+          // via snapshot — snapshot replay handles the recovery case.
+          if (msg.intent.type === IntentTypes.ClaimOpenAction) {
+            const payload = msg.intent.payload as { openActionId?: string };
+            if (payload.openActionId) {
+              setOpenActions((prev) => prev.filter((o) => o.id !== payload.openActionId));
+            }
+          }
+          if (msg.intent.type === IntentTypes.EndRound) {
+            // EndRound expires OAs whose expiresAtRound matches the round
+            // being ended. Read currentRound from the closed-over
+            // activeEncounter state.
+            const round = activeEncounter?.currentRound;
+            if (round !== null && round !== undefined) {
+              setOpenActions((prev) =>
+                prev.filter((o) => o.expiresAtRound === null || o.expiresAtRound !== round),
+              );
+            }
+          }
+          if (msg.intent.type === IntentTypes.EndEncounter) {
+            setOpenActions([]);
+          }
+          // Membership-changing intents (Submit/Approve/Deny/Remove) write to
+          // the campaign_characters D1 table. Invalidate so the pending and
+          // approved lists re-fetch the authoritative state rather than racing
+          // against the async DO side-effect.
+          if (CAMPAIGN_MEMBERSHIP_INTENTS.has(msg.intent.type)) {
+            qc.invalidateQueries({ queryKey: ['campaign-characters'] });
+          }
+          // Character-mutating intents (Equip/Unequip/SwapKit, more later) write
+          // to the D1 character row via reducer side-effects. The WS mirror only
+          // tracks combat-side state (HP, conditions, resources); fields like
+          // kitId, inventory, and equipped flags live on the character query.
+          // Invalidate so the sheet re-derives runtime values.
+          //
+          // Respite is the broad-stroke case — it can touch every PC in the
+          // lobby (XP increment) plus any number of off-roster Dragon Knight
+          // characters (Wyrmplate damage-type pick), so we invalidate the
+          // entire character query keyspace rather than picking ids out of
+          // the payload. Every other character-mutating intent keys on a
+          // single character.
+          if (msg.intent.type === IntentTypes.Respite) {
+            qc.invalidateQueries({ queryKey: ['character'] });
+          } else if (CHARACTER_MUTATING_INTENTS.has(msg.intent.type)) {
+            const characterId = characterIdFromPayload(msg.intent.payload);
+            if (characterId) {
+              qc.invalidateQueries({ queryKey: ['character', characterId] });
+            }
+          }
+          setIntentLog((prev) => [
+            ...prev,
+            {
+              id: msg.intent.id,
+              seq: msg.seq,
+              type: msg.intent.type,
+              payload: msg.intent.payload,
+              actor: msg.intent.actor,
+              source: msg.intent.source,
+              causedBy: msg.intent.causedBy,
+              voided: false,
+            },
+          ]);
+          setLastSeq(msg.seq);
+        } else if (msg.kind === 'snapshot') {
+          // Sent after Undo (and possibly future server-pushed resets). Replace
+          // the mirror wholesale rather than reconciling per-intent.
+          setActiveEncounter(snapshotToEncounter(msg.state));
+          setLastSeq(msg.seq);
+          // Pull activeDirectorId off the snapshot when present.
+          const s = msg.state as
+            | {
+                activeDirectorId?: unknown;
+                currentSessionId?: unknown;
+                attendingCharacterIds?: unknown;
+                heroTokens?: unknown;
+                openActions?: unknown;
+              }
+            | undefined;
+          if (s && typeof s.activeDirectorId === 'string') {
+            setActiveDirectorId(s.activeDirectorId);
+          }
+          // Session + hero-token fields from snapshot (Epic 2E).
+          if (s) {
+            setCurrentSessionId(typeof s.currentSessionId === 'string' ? s.currentSessionId : null);
+            setAttendingCharacterIds(
+              Array.isArray(s.attendingCharacterIds)
+                ? (s.attendingCharacterIds as string[]).filter((id) => typeof id === 'string')
+                : [],
             );
+            setHeroTokens(typeof s.heroTokens === 'number' ? s.heroTokens : 0);
+            setOpenActions(Array.isArray(s.openActions) ? (s.openActions as OpenAction[]) : []);
           }
+          // The intent log can't be perfectly reconstructed from a snapshot,
+          // but we can mark everything past the snapshot seq as voided so the
+          // Undo button + toasts don't try to undo a now-voided intent.
+          setIntentLog((prev) => prev.map((i) => (i.seq > msg.seq ? { ...i, voided: true } : i)));
         }
-        if (msg.intent.type === IntentTypes.EndEncounter) {
-          setOpenActions([]);
-        }
-        if (msg.intent.type === IntentTypes.GainHeroToken) {
-          const payload = msg.intent.payload as GainHeroTokenPayload;
-          setHeroTokens((prev) => prev + payload.amount);
-        }
-        if (msg.intent.type === IntentTypes.SpendHeroToken) {
-          const payload = msg.intent.payload as SpendHeroTokenPayload;
-          setHeroTokens((prev) => Math.max(0, prev - payload.amount));
-          // surge_burst / regain_stamina derived intents flow through their own reflect cases
-        }
-                // Membership-changing intents (Submit/Approve/Deny/Remove) write to
-        // the campaign_characters D1 table. Invalidate so the pending and
-        // approved lists re-fetch the authoritative state rather than racing
-        // against the async DO side-effect.
-        if (CAMPAIGN_MEMBERSHIP_INTENTS.has(msg.intent.type)) {
-          qc.invalidateQueries({ queryKey: ['campaign-characters'] });
-        }
-        // Character-mutating intents (Equip/Unequip/SwapKit, more later) write
-        // to the D1 character row via reducer side-effects. The WS mirror only
-        // tracks combat-side state (HP, conditions, resources); fields like
-        // kitId, inventory, and equipped flags live on the character query.
-        // Invalidate so the sheet re-derives runtime values.
-        //
-        // Respite is the broad-stroke case — it can touch every PC in the
-        // lobby (XP increment) plus any number of off-roster Dragon Knight
-        // characters (Wyrmplate damage-type pick), so we invalidate the
-        // entire character query keyspace rather than picking ids out of
-        // the payload. Every other character-mutating intent keys on a
-        // single character.
-        if (msg.intent.type === IntentTypes.Respite) {
-          qc.invalidateQueries({ queryKey: ['character'] });
-        } else if (CHARACTER_MUTATING_INTENTS.has(msg.intent.type)) {
-          const characterId = characterIdFromPayload(msg.intent.payload);
-          if (characterId) {
-            qc.invalidateQueries({ queryKey: ['character', characterId] });
-          }
-        }
-        setIntentLog((prev) => [
-          ...prev,
-          {
-            id: msg.intent.id,
-            seq: msg.seq,
-            type: msg.intent.type,
-            payload: msg.intent.payload,
-            actor: msg.intent.actor,
-            source: msg.intent.source,
-            causedBy: msg.intent.causedBy,
-            voided: false,
-          },
-        ]);
-        setLastSeq(msg.seq);
-      } else if (msg.kind === 'snapshot') {
-        // Sent after Undo (and possibly future server-pushed resets). Replace
-        // the mirror wholesale rather than reconciling per-intent.
-        setActiveEncounter(snapshotToEncounter(msg.state));
-        setLastSeq(msg.seq);
-        // Pull activeDirectorId off the snapshot when present.
-        const s = msg.state as {
-          activeDirectorId?: unknown;
-          currentSessionId?: unknown;
-          attendingCharacterIds?: unknown;
-          heroTokens?: unknown;
-          openActions?: unknown;
-        } | undefined;
-        if (s && typeof s.activeDirectorId === 'string') {
-          setActiveDirectorId(s.activeDirectorId);
-        }
-        // Session + hero-token fields from snapshot (Epic 2E).
-        if (s) {
-          setCurrentSessionId(typeof s.currentSessionId === 'string' ? s.currentSessionId : null);
-          setAttendingCharacterIds(
-            Array.isArray(s.attendingCharacterIds)
-              ? (s.attendingCharacterIds as string[]).filter((id) => typeof id === 'string')
-              : [],
-          );
-          setHeroTokens(typeof s.heroTokens === 'number' ? s.heroTokens : 0);
-          setOpenActions(Array.isArray(s.openActions) ? (s.openActions as OpenAction[]) : []);
-        }
-        // The intent log can't be perfectly reconstructed from a snapshot,
-        // but we can mark everything past the snapshot seq as voided so the
-        // Undo button + toasts don't try to undo a now-voided intent.
-        setIntentLog((prev) => prev.map((i) => (i.seq > msg.seq ? { ...i, voided: true } : i)));
-      }
-    };
+      };
+    }
 
     return () => {
-      wsRef.current = null;
-      ws.close();
+      cancelled = true;
+      clearTimeout(connectTimer);
+      if (ws) {
+        if (wsRef.current === ws) wsRef.current = null;
+        ws.close();
+      }
     };
   }, [sessionId, qc]);
 
   const dispatch = useCallback((intent: unknown) => {
     const ws = wsRef.current;
     if (!ws || ws.readyState !== WebSocket.OPEN) return false;
+    // Clear any prior rejection so callers can distinguish a fresh failure
+    // from a stale one.
+    setLastRejection(null);
     ws.send(JSON.stringify({ kind: 'dispatch', intent }));
     return true;
   }, []);
@@ -749,5 +801,6 @@ export function useSessionSocket(sessionId: string | undefined) {
     attendingCharacterIds,
     heroTokens,
     openActions,
+    lastRejection,
   };
 }

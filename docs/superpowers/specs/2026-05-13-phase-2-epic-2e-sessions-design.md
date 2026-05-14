@@ -340,3 +340,21 @@ This epic touches three docs alongside code:
 ## Open questions
 
 None at design time. All scope decisions locked in brainstorming. The retroactive hero-token spend epic and the Combat-Completeness epic (2F) are separately specified.
+
+## PS — implementation notes (2026-05-13, post-shipping bug-bash)
+
+The first end-to-end test of the Start Session button surfaced four bugs that weren't visible from the design alone. Capturing them here so they don't re-emerge:
+
+1. **`useCharactersFull` returned a fresh array reference every render.** The hook does `queries.map(...).filter(...)` over the `useQueries` result. The contents are referentially stable (TanStack Query caches each row) but the outer array is not. Any consumer using the array in a `useEffect` dependency list — `StartSessionPanel` seeds `selected` from `approvedFull.data` — fires the effect every render and infinite-loops. **Fix:** memoize the array inside the hook against a stable signature of the resolved character ids. See `apps/web/src/api/queries.ts`.
+
+2. **Vite's HTTP proxy doesn't reliably hold a WebSocket upgrade against `wrangler dev`.** The handshake completes (server returns `101`) but the proxy then drops the connection with `ECONNRESET`/`EPIPE`. **Fix:** in dev, route the WebSocket directly at `localhost:8787`, bypassing the Vite proxy. Same-site cookies on `localhost` ignore port, so auth still flows. See `apps/web/src/ws/useSessionSocket.ts`.
+
+3. **React 18 StrictMode's double-effect logged a noisy "WebSocket is closed before the connection is established" on every mount.** The first WS was created, then force-closed mid-handshake by the cleanup. **Fix:** defer socket creation by one `setTimeout(0)` tick and let the cleanup cancel the timer before the WS is even constructed. Also gate `onclose`/`onerror` on `wsRef.current === socket` so a stale discarded socket doesn't clobber the live one's status.
+
+4. **The DO's `kind: 'rejected'` envelope had no client-side handler.** Every server-side rejection (`session_already_active`, `unknown_character`, stamper failures, etc.) was silently dropped by `useSessionSocket.onmessage` — the button appeared to do nothing. **Fix:** added a `rejected` branch that stores `{ intentId, reason }` as `lastRejection` on the hook; `StartSessionPanel` renders the reason inline. Cleared on every fresh dispatch and on reconnect.
+
+In addition, a recovery path landed in `StartSessionPanel` for a divergent client/server state: if the panel is showing (client mirror says no active session) but the server rejects with `end the active session first`, an explicit **"End the active session"** button appears next to the rejection. It dispatches `EndSession` against the campaign so the director can always recover without DB surgery.
+
+### Still-open follow-up
+
+There is a real bug not yet fixed: the DO's `snapshot` envelope carries `currentSessionId` from D1 on connect, but in at least one case the client's mirror still reads `null` (which is why the recovery button above was needed in the first place). Likely candidates: snapshot arrives before the message handler is wired, snapshot's `state` is shaped slightly differently than the client's narrow type expects, or the in-memory `campaignState` is reset by my StrictMode-defer (the connect effect sets `setCurrentSessionId(null)` *before* the snapshot lands and may race the message). File a follow-up; the recovery button buys time.

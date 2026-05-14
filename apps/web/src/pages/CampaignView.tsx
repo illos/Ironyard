@@ -52,6 +52,7 @@ export function CampaignView() {
     currentSessionId,
     attendingCharacterIds,
     heroTokens,
+    lastRejection,
   } = useSessionSocket(id);
 
   if (me.isLoading || campaign.isLoading) {
@@ -243,12 +244,14 @@ export function CampaignView() {
       )}
 
       {/* Session management — director only */}
-      {campaign.data.isDirector && (
-        currentSessionId === null ? (
+      {campaign.data.isDirector &&
+        (currentSessionId === null ? (
           <StartSessionPanel
             campaignId={id}
             actor={actor}
             dispatch={dispatch}
+            wsOpen={status === 'open'}
+            serverRejection={lastRejection?.reason ?? null}
           />
         ) : (
           <ActiveSessionBadge
@@ -259,8 +262,7 @@ export function CampaignView() {
             actor={actor}
             dispatch={dispatch}
           />
-        )
-      )}
+        ))}
 
       {/* Approved roster */}
       <ApprovedRosterPanel
@@ -755,17 +757,20 @@ function ApprovedRosterPanel({
       ? allApproved.filter((c) => attendingCharacterIds.includes(c.id))
       : allApproved;
 
-  const charactersForModal =
-    allApproved.map((cr) => ({
-      id: cr.id,
-      name: cr.name,
-    }));
+  const charactersForModal = allApproved.map((cr) => ({
+    id: cr.id,
+    name: cr.name,
+  }));
 
   return (
     <section className="rounded-lg border border-neutral-800 p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-sm">
-          Approved roster ({displayed.length}{currentSessionId !== null && allApproved.length !== displayed.length ? ` / ${allApproved.length} total` : ''})
+          Approved roster ({displayed.length}
+          {currentSessionId !== null && allApproved.length !== displayed.length
+            ? ` / ${allApproved.length} total`
+            : ''}
+          )
         </h2>
         {isDirector && (
           <button
@@ -790,9 +795,7 @@ function ApprovedRosterPanel({
               key={cr.id}
               className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
             >
-              <span className="flex-1 text-sm text-neutral-300">
-                {cr.name}
-              </span>
+              <span className="flex-1 text-sm text-neutral-300">{cr.name}</span>
             </li>
           ))}
         </ul>
@@ -897,11 +900,16 @@ function StartSessionPanel({
   campaignId,
   actor,
   dispatch,
+  wsOpen,
+  serverRejection,
 }: {
   campaignId: string;
   actor: { userId: string; role: 'director' | 'player' };
   dispatch: (intent: unknown) => boolean;
+  wsOpen: boolean;
+  serverRejection: string | null;
 }) {
+  const [error, setError] = useState<string | null>(null);
   const approvedFull = useApprovedCharactersFull(campaignId);
   const approvedCharacters: CharacterResponse[] = approvedFull.data ?? [];
 
@@ -925,7 +933,15 @@ function StartSessionPanel({
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selected.size === 0) return;
+    setError(null);
+    if (selected.size === 0) {
+      setError('Select at least one attending character.');
+      return;
+    }
+    if (!wsOpen) {
+      setError('Still connecting to the lobby — try again in a moment.');
+      return;
+    }
     const payload: Omit<StartSessionPayload, 'sessionId'> & { sessionId: string } = {
       sessionId: `sess_${ulid()}`,
       attendingCharacterIds: Array.from(selected),
@@ -934,7 +950,7 @@ function StartSessionPanel({
     if (name.trim()) {
       (payload as StartSessionPayload).name = name.trim();
     }
-    dispatch(
+    const sent = dispatch(
       buildIntent({
         campaignId,
         type: IntentTypes.StartSession,
@@ -942,6 +958,9 @@ function StartSessionPanel({
         actor,
       }),
     );
+    if (!sent) {
+      setError('Failed to send — lobby connection dropped. Refresh and retry.');
+    }
   };
 
   return (
@@ -1000,12 +1019,42 @@ function StartSessionPanel({
           />
           <span className="ml-2 text-xs text-neutral-500">default: # attending</span>
         </label>
+        {(serverRejection || error) && (
+          <div className="space-y-2" role="alert">
+            <p className="text-sm text-rose-400">
+              {serverRejection ? `Server rejected: ${serverRejection}` : error}
+            </p>
+            {/* Recovery path: when the server reports a stuck-active session
+                but the client mirror doesn't reflect it (so the normal
+                ActiveSessionBadge "End session" button isn't visible), give
+                the director a direct EndSession dispatch right here. */}
+            {serverRejection === 'end the active session first' && (
+              <button
+                type="button"
+                onClick={() => {
+                  dispatch(
+                    buildIntent({
+                      campaignId,
+                      type: IntentTypes.EndSession,
+                      payload: {},
+                      actor,
+                    }),
+                  );
+                }}
+                disabled={!wsOpen}
+                className="min-h-11 px-3 rounded-md border border-rose-700 text-rose-300 text-xs hover:bg-rose-900/30 disabled:opacity-50"
+              >
+                End the active session
+              </button>
+            )}
+          </div>
+        )}
         <button
           type="submit"
-          disabled={selected.size === 0}
+          disabled={selected.size === 0 || !wsOpen}
           className="min-h-11 rounded-md bg-neutral-100 text-neutral-900 px-4 py-2 font-medium disabled:opacity-60"
         >
-          Start session
+          {wsOpen ? 'Start session' : 'Connecting…'}
         </button>
       </form>
     </section>
