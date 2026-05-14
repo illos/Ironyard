@@ -5,6 +5,7 @@ export { applyApproveCharacter } from './approve-character';
 export { applyClearLobby } from './clear-lobby';
 export { applyDenyCharacter } from './deny-character';
 export { applyEndEncounter } from './end-encounter';
+export { applyEndSession } from './end-session';
 export { applyEquipItem } from './equip-item';
 export { applyGainMalice } from './gain-malice';
 export { applyGainResource } from './gain-resource';

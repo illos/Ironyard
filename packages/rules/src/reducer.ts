@@ -7,6 +7,7 @@ import {
   applyClearLobby,
   applyDenyCharacter,
   applyEndEncounter,
+  applyEndSession,
   applyEndRound,
   applyEndTurn,
   applyEquipItem,
@@ -84,6 +85,8 @@ export function applyIntent(
       return applyDenyCharacter(state, intent);
     case IntentTypes.EndEncounter:
       return applyEndEncounter(state, intent);
+    case IntentTypes.EndSession:
+      return applyEndSession(state, intent);
     case IntentTypes.EndRound:
       return applyEndRound(state, intent);
     case IntentTypes.EndTurn:
