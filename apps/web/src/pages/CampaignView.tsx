@@ -7,11 +7,13 @@ import type {
   JumpBehindScreenPayload,
   KickPlayerPayload,
   PushItemPayload,
+  StartSessionPayload,
   SubmitCharacterPayload,
+  UpdateSessionAttendancePayload,
 } from '@ironyard/shared';
 import { IntentTypes, ulid } from '@ironyard/shared';
 import { Link, useNavigate, useParams } from '@tanstack/react-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { buildIntent } from '../api/dispatch';
 import {
   useCreateCharacter,
@@ -47,6 +49,9 @@ export function CampaignView() {
     activeEncounter,
     dispatch,
     activeDirectorId: liveActiveDirectorId,
+    currentSessionId,
+    attendingCharacterIds,
+    heroTokens,
   } = useSessionSocket(id);
 
   if (me.isLoading || campaign.isLoading) {
@@ -237,6 +242,26 @@ export function CampaignView() {
         />
       )}
 
+      {/* Session management — director only */}
+      {campaign.data.isDirector && (
+        currentSessionId === null ? (
+          <StartSessionPanel
+            campaignId={id}
+            actor={actor}
+            dispatch={dispatch}
+          />
+        ) : (
+          <ActiveSessionBadge
+            sessionId={currentSessionId}
+            attendingCharacterIds={attendingCharacterIds}
+            heroTokens={heroTokens}
+            campaignId={id}
+            actor={actor}
+            dispatch={dispatch}
+          />
+        )
+      )}
+
       {/* Approved roster */}
       <ApprovedRosterPanel
         campaignId={id}
@@ -244,6 +269,8 @@ export function CampaignView() {
         dispatch={dispatch}
         wsOpen={status === 'open'}
         isDirector={campaign.data.isDirector}
+        currentSessionId={currentSessionId}
+        attendingCharacterIds={attendingCharacterIds}
       />
 
       {/* Saved encounter templates */}
@@ -691,12 +718,16 @@ function ApprovedRosterPanel({
   dispatch,
   wsOpen,
   isDirector,
+  currentSessionId,
+  attendingCharacterIds,
 }: {
   campaignId: string;
   actor: { userId: string; role: 'director' | 'player' };
   dispatch: (intent: unknown) => boolean;
   wsOpen: boolean;
   isDirector: boolean;
+  currentSessionId: string | null;
+  attendingCharacterIds: string[];
 }) {
   const approved = useApprovedCharactersFull(campaignId);
   const items = useItems();
@@ -717,33 +748,44 @@ function ApprovedRosterPanel({
     setPushItemOpen(false);
   };
 
+  const allApproved = approved.data ?? [];
+  // During an active session filter the roster to attending characters only.
+  const displayed =
+    currentSessionId !== null
+      ? allApproved.filter((c) => attendingCharacterIds.includes(c.id))
+      : allApproved;
+
   const charactersForModal =
-    approved.data?.map((cr) => ({
+    allApproved.map((cr) => ({
       id: cr.id,
       name: cr.name,
-    })) ?? [];
+    }));
 
   return (
     <section className="rounded-lg border border-neutral-800 p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-sm">Approved roster ({approved.data?.length ?? 0})</h2>
+        <h2 className="font-semibold text-sm">
+          Approved roster ({displayed.length}{currentSessionId !== null && allApproved.length !== displayed.length ? ` / ${allApproved.length} total` : ''})
+        </h2>
         {isDirector && (
           <button
             type="button"
             onClick={() => setPushItemOpen(true)}
-            disabled={!wsOpen || !items.data || (approved.data?.length ?? 0) === 0}
+            disabled={!wsOpen || !items.data || allApproved.length === 0}
             className="min-h-11 px-3 rounded-md border border-neutral-700 text-xs hover:bg-neutral-800 disabled:opacity-50"
           >
             Push item to player
           </button>
         )}
       </div>
-      {(!approved.data || approved.data.length === 0) && (
-        <p className="text-xs text-neutral-500">No approved characters yet.</p>
+      {displayed.length === 0 && (
+        <p className="text-xs text-neutral-500">
+          {currentSessionId !== null ? 'No attending characters.' : 'No approved characters yet.'}
+        </p>
       )}
-      {approved.data && approved.data.length > 0 && (
+      {displayed.length > 0 && (
         <ul className="space-y-1">
-          {approved.data.map((cr) => (
+          {displayed.map((cr) => (
             <li
               key={cr.id}
               className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
@@ -845,6 +887,279 @@ function OwnerAdminPanel({
           );
         })}
       </ul>
+    </section>
+  );
+}
+
+// ─── Start Session Panel ──────────────────────────────────────────────────────
+
+function StartSessionPanel({
+  campaignId,
+  actor,
+  dispatch,
+}: {
+  campaignId: string;
+  actor: { userId: string; role: 'director' | 'player' };
+  dispatch: (intent: unknown) => boolean;
+}) {
+  const approvedFull = useApprovedCharactersFull(campaignId);
+  const approvedCharacters: CharacterResponse[] = approvedFull.data ?? [];
+
+  const [name, setName] = useState('');
+  const [selected, setSelected] = useState<Set<string>>(
+    () => new Set(approvedCharacters.map((c) => c.id)),
+  );
+  const [tokens, setTokens] = useState(approvedCharacters.length);
+
+  // Seed selected + tokens when approved list loads (first render may be empty).
+  useEffect(() => {
+    setSelected(new Set(approvedCharacters.map((c) => c.id)));
+    setTokens(approvedCharacters.length);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [approvedFull.data]);
+
+  // Keep tokens synced to the selected count while user edits checkboxes.
+  useEffect(() => {
+    setTokens(selected.size);
+  }, [selected]);
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selected.size === 0) return;
+    const payload: Omit<StartSessionPayload, 'sessionId'> & { sessionId: string } = {
+      sessionId: `sess_${ulid()}`,
+      attendingCharacterIds: Array.from(selected),
+      heroTokens: tokens,
+    };
+    if (name.trim()) {
+      (payload as StartSessionPayload).name = name.trim();
+    }
+    dispatch(
+      buildIntent({
+        campaignId,
+        type: IntentTypes.StartSession,
+        payload,
+        actor,
+      }),
+    );
+  };
+
+  return (
+    <section className="rounded-lg border border-neutral-800 p-5 space-y-4">
+      <h2 className="font-semibold">Start a new session</h2>
+      <form onSubmit={submit} className="space-y-4">
+        <label className="block text-sm">
+          Session name (optional)
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Bandit Camp"
+            className="mt-1 w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2"
+          />
+        </label>
+        <div>
+          <h3 className="text-sm text-neutral-300 mb-2">Who&apos;s playing tonight?</h3>
+          {approvedCharacters.length === 0 ? (
+            <p className="text-sm text-neutral-500">
+              No approved characters yet — approve at least one to start a session.
+            </p>
+          ) : (
+            <ul className="space-y-1">
+              {approvedCharacters.map((c) => (
+                <li key={c.id}>
+                  <label className="flex items-center gap-3 min-h-11">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(c.id)}
+                      onChange={(e) => {
+                        const next = new Set(selected);
+                        if (e.target.checked) next.add(c.id);
+                        else next.delete(c.id);
+                        setSelected(next);
+                      }}
+                      className="h-5 w-5"
+                    />
+                    <span className="flex-1">
+                      <span className="font-medium">{c.name}</span>
+                      <span className="ml-2 text-xs text-neutral-500">L{c.data.level}</span>
+                    </span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <label className="block text-sm">
+          Hero tokens at start
+          <input
+            type="number"
+            min={0}
+            value={tokens}
+            onChange={(e) => setTokens(Math.max(0, parseInt(e.target.value || '0', 10)))}
+            className="mt-1 w-24 rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 font-mono"
+          />
+          <span className="ml-2 text-xs text-neutral-500">default: # attending</span>
+        </label>
+        <button
+          type="submit"
+          disabled={selected.size === 0}
+          className="min-h-11 rounded-md bg-neutral-100 text-neutral-900 px-4 py-2 font-medium disabled:opacity-60"
+        >
+          Start session
+        </button>
+      </form>
+    </section>
+  );
+}
+
+// ─── Active Session Badge ─────────────────────────────────────────────────────
+
+function ActiveSessionBadge({
+  sessionId,
+  attendingCharacterIds,
+  heroTokens,
+  campaignId,
+  actor,
+  dispatch,
+}: {
+  sessionId: string;
+  attendingCharacterIds: string[];
+  heroTokens: number;
+  campaignId: string;
+  actor: { userId: string; role: 'director' | 'player' };
+  dispatch: (intent: unknown) => boolean;
+}) {
+  const approvedFull = useApprovedCharactersFull(campaignId);
+  const approvedCharacters: CharacterResponse[] = approvedFull.data ?? [];
+
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<Set<string>>(new Set(attendingCharacterIds));
+  const [bonus, setBonus] = useState(1);
+
+  // Keep the draft in sync with the live attendance when the panel opens.
+  useEffect(() => {
+    if (editing) setDraft(new Set(attendingCharacterIds));
+  }, [editing, attendingCharacterIds]);
+
+  const commitAttendance = () => {
+    const add = Array.from(draft).filter((id) => !attendingCharacterIds.includes(id));
+    const remove = attendingCharacterIds.filter((id) => !draft.has(id));
+    if (add.length === 0 && remove.length === 0) {
+      setEditing(false);
+      return;
+    }
+    const payload: UpdateSessionAttendancePayload = {};
+    if (add.length) payload.add = add;
+    if (remove.length) payload.remove = remove;
+    dispatch(
+      buildIntent({
+        campaignId,
+        type: IntentTypes.UpdateSessionAttendance,
+        payload,
+        actor,
+      }),
+    );
+    setEditing(false);
+  };
+
+  void sessionId; // preserved for future log linking
+
+  return (
+    <section className="rounded-lg border border-emerald-800 bg-emerald-950/30 p-4 space-y-3">
+      <header className="flex flex-wrap items-baseline justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-wider text-emerald-300">Session active</p>
+          <p className="text-sm text-neutral-200 mt-1">
+            {attendingCharacterIds.length} attending · {heroTokens} hero tokens
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setEditing((v) => !v)}
+            className="min-h-11 px-3 rounded-md border border-neutral-700 text-sm hover:bg-neutral-900"
+          >
+            {editing ? 'Cancel' : 'Edit attendance'}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm('End this session?')) {
+                dispatch(
+                  buildIntent({
+                    campaignId,
+                    type: IntentTypes.EndSession,
+                    payload: {},
+                    actor,
+                  }),
+                );
+              }
+            }}
+            className="min-h-11 px-3 rounded-md border border-rose-700 text-rose-300 text-sm hover:bg-rose-900/30"
+          >
+            End session
+          </button>
+        </div>
+      </header>
+
+      {editing && (
+        <div className="space-y-3 border-t border-neutral-800 pt-3">
+          <ul className="space-y-1">
+            {approvedCharacters.map((c) => (
+              <li key={c.id}>
+                <label className="flex items-center gap-3 min-h-11">
+                  <input
+                    type="checkbox"
+                    checked={draft.has(c.id)}
+                    onChange={(e) => {
+                      const next = new Set(draft);
+                      if (e.target.checked) next.add(c.id);
+                      else next.delete(c.id);
+                      setDraft(next);
+                    }}
+                    className="h-5 w-5"
+                  />
+                  <span className="flex-1 text-sm">{c.name}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={commitAttendance}
+            className="min-h-11 px-3 rounded-md bg-neutral-100 text-neutral-900 text-sm font-medium"
+          >
+            Save attendance
+          </button>
+        </div>
+      )}
+
+      <div className="flex items-center gap-2 border-t border-neutral-800 pt-3">
+        <span className="text-xs text-neutral-400">Award tokens:</span>
+        <input
+          type="number"
+          min={1}
+          value={bonus}
+          onChange={(e) => setBonus(Math.max(1, parseInt(e.target.value || '1', 10)))}
+          className="w-16 rounded-md bg-neutral-900 border border-neutral-800 px-2 py-1 text-sm font-mono"
+        />
+        <button
+          type="button"
+          onClick={() =>
+            dispatch(
+              buildIntent({
+                campaignId,
+                type: IntentTypes.GainHeroToken,
+                payload: { amount: bonus },
+                actor,
+              }),
+            )
+          }
+          className="min-h-9 px-3 rounded-md bg-violet-500 text-neutral-900 text-xs font-medium"
+        >
+          + Grant
+        </button>
+      </div>
     </section>
   );
 }
