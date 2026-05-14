@@ -7,6 +7,7 @@ export { applyDenyCharacter } from './deny-character';
 export { applyEndEncounter } from './end-encounter';
 export { applyEndSession } from './end-session';
 export { applyEquipItem } from './equip-item';
+export { applyGainHeroToken } from './gain-hero-token';
 export { applyGainMalice } from './gain-malice';
 export { applyGainResource } from './gain-resource';
 export { applyJoinLobby } from './join-lobby';

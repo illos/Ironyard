@@ -11,6 +11,7 @@ import {
   applyEndSession,
   applyEndTurn,
   applyEquipItem,
+  applyGainHeroToken,
   applyGainMalice,
   applyGainResource,
   applyJoinLobby,
@@ -94,6 +95,8 @@ export function applyIntent(
       return applyEndTurn(state, intent);
     case IntentTypes.EquipItem:
       return applyEquipItem(state, intent);
+    case IntentTypes.GainHeroToken:
+      return applyGainHeroToken(state, intent);
     case IntentTypes.GainMalice:
       return applyGainMalice(state, intent);
     case IntentTypes.GainResource:
