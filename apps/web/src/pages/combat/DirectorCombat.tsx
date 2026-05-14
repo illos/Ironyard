@@ -27,6 +27,7 @@ import { Link, useParams } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildIntent } from '../../api/dispatch';
 import { useCampaign, useMe, useMonsters } from '../../api/queries';
+import { useIsActingAsDirector } from '../../lib/active-director';
 import { describeIntent, findLatestUndoable } from '../../lib/intentDescribe';
 import { Button, SplitPane } from '../../primitives';
 import { InlineHeader } from './combat-header/InlineHeader';
@@ -194,6 +195,22 @@ export function DirectorCombat() {
     for (let i = 0; i < idx; i++) ids.add(turnOrder[i]!);
     return ids;
   }, [activeEncounter]);
+
+  // Phase 5 Pass 2a — role-asymmetric rendering.
+  // Must live ABOVE guard-returns (Rules of Hooks).
+  const isActingAsDirector = useIsActingAsDirector(campaignId);
+  const viewerRole: 'director' | 'player' = isActingAsDirector ? 'director' : 'player';
+  const selfParticipantId = useMemo(() => {
+    return (
+      (activeEncounter?.participants ?? []).find(
+        (p) => isParticipantEntry(p) && p.kind === 'pc' && 'ownerId' in p && p.ownerId === me.data?.user.id,
+      )?.id ?? null
+    );
+  }, [activeEncounter, me.data?.user.id]);
+  const [targetParticipantId, setTargetParticipantId] = useState<string | null>(null);
+  // setTargetParticipantId is wired in Task 23; referenced here to satisfy
+  // the linter. The state IS consumed via the prop passed to the rails.
+  void setTargetParticipantId;
 
   // ── header guards ─────────────────────────────────────────────────────────
   if (me.isLoading || campaign.isLoading) {
@@ -504,6 +521,9 @@ export function DirectorCombat() {
               selectedParticipantId={selectedId}
               onSelect={handleSelect}
               actedIds={actedIds}
+              viewerRole={viewerRole}
+              selfParticipantId={selfParticipantId}
+              targetParticipantId={targetParticipantId}
             />
             <EncounterRail
               foes={liveFoes}
@@ -511,6 +531,9 @@ export function DirectorCombat() {
               activeParticipantId={activeEncounter.activeParticipantId}
               selectedParticipantId={selectedId}
               onSelect={handleSelect}
+              viewerRole={viewerRole}
+              selfParticipantId={selfParticipantId}
+              targetParticipantId={targetParticipantId}
             />
           </>
         }

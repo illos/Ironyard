@@ -8,6 +8,10 @@ export interface EncounterRailProps {
   activeParticipantId: string | null;
   selectedParticipantId: string | null;
   onSelect: (id: string) => void;
+  // Phase 5 Pass 2a — role-asymmetric rendering + target signal.
+  viewerRole: 'director' | 'player';
+  selfParticipantId: string | null;
+  targetParticipantId: string | null;
 }
 
 export function EncounterRail({
@@ -16,6 +20,9 @@ export function EncounterRail({
   activeParticipantId,
   selectedParticipantId,
   onSelect,
+  viewerRole,
+  selfParticipantId,
+  targetParticipantId,
 }: EncounterRailProps) {
   const heading = `ENCOUNTER · ${foes.length} ACTIVE`;
   const right = `${defeatedCount} defeated`;

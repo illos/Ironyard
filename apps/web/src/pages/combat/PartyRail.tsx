@@ -9,6 +9,10 @@ export interface PartyRailProps {
   onSelect: (id: string) => void;
   /** Set of participant ids who've already acted this round. */
   actedIds: Set<string>;
+  // Phase 5 Pass 2a — role-asymmetric rendering + target signal.
+  viewerRole: 'director' | 'player';
+  selfParticipantId: string | null;
+  targetParticipantId: string | null;
 }
 
 export function PartyRail({
@@ -17,6 +21,9 @@ export function PartyRail({
   selectedParticipantId,
   onSelect,
   actedIds,
+  viewerRole,
+  selfParticipantId,
+  targetParticipantId,
 }: PartyRailProps) {
   const heading = `PARTY · ${heroes.length} HEROES`;
   return (
