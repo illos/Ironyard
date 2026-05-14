@@ -1,5 +1,6 @@
 import {
   type AddMonsterPayload,
+  type AdjustVictoriesPayload,
   type ApplyDamagePayload,
   type ApplyHealPayload,
   type ConditionInstance,
@@ -11,6 +12,7 @@ import {
   IntentTypes,
   type LoadEncounterTemplatePayload,
   type MaliceState,
+  type MarkActionUsedPayload,
   type Member,
   type Monster,
   type OpenAction,
@@ -337,6 +339,30 @@ function reflect(
     return {
       ...prev,
       malice: { ...prev.malice, current: prev.malice.current - amount },
+    };
+  }
+
+  if (type === IntentTypes.AdjustVictories) {
+    const { delta } = payload as AdjustVictoriesPayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) =>
+        isParticipantEntry(p) && p.kind === 'pc'
+          ? { ...p, victories: Math.max(0, (p.victories ?? 0) + delta) }
+          : p,
+      ),
+    };
+  }
+
+  if (type === IntentTypes.MarkActionUsed) {
+    const { participantId, slot, used } = payload as MarkActionUsedPayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== participantId) return p;
+        const usage = p.turnActionUsage ?? { main: false, maneuver: false, move: false };
+        return { ...p, turnActionUsage: { ...usage, [slot]: used } };
+      }),
     };
   }
 

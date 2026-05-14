@@ -276,7 +276,10 @@ export function DirectorCombat() {
   const malice = activeEncounter?.malice.current ?? 0;
   // Victories aren't tracked on the encounter — we surface the party total,
   // which is what the Director cares about for canonical Respite math.
-  const victories = heroes.reduce((sum, p) => sum + (p.victories ?? 0), 0);
+  // Per-character victories are bumped in lockstep by AdjustVictories (canon
+  // § 8.1 — the whole party gains a victory together), so any one hero's value
+  // is the canonical party victories. Summing would inflate by party size.
+  const victories = heroes[0]?.victories ?? 0;
 
   const focused = participants.find((p) => p.id === selectedId) ?? null;
   const isAtTurnEnd =
