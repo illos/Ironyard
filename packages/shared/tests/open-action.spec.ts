@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { OpenActionSchema, OpenActionKindSchema } from '../src/open-action';
+import { OpenActionKindSchema, OpenActionSchema } from '../src/open-action';
 
 describe('OpenActionKindSchema', () => {
   it('is an empty enum in 2b.0 (consumers register kinds in 2b.0.1)', () => {

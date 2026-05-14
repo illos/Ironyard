@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  RaiseOpenActionPayloadSchema,
   ClaimOpenActionPayloadSchema,
+  RaiseOpenActionPayloadSchema,
 } from '../../src/intents/raise-open-action';
 
 describe('RaiseOpenActionPayloadSchema', () => {
@@ -41,9 +41,7 @@ describe('ClaimOpenActionPayloadSchema', () => {
     expect(
       ClaimOpenActionPayloadSchema.safeParse({ openActionId: '01H', choice: 'a' }).success,
     ).toBe(true);
-    expect(
-      ClaimOpenActionPayloadSchema.safeParse({ openActionId: '01H' }).success,
-    ).toBe(true);
+    expect(ClaimOpenActionPayloadSchema.safeParse({ openActionId: '01H' }).success).toBe(true);
   });
 
   it('rejects empty openActionId', () => {
