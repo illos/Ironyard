@@ -129,6 +129,56 @@ Unplanned cleanup epic born out of Epic 1 / 2C playtesting. Killed the two-step 
 
 Introduces a play-session boundary as a thin scaffold: new `sessions` D1 table, `currentSessionId` pointer on Campaign, five new intents (`StartSession` / `EndSession` / `UpdateSessionAttendance` / `GainHeroToken` / `SpendHeroToken`). Hero tokens initialize from session attendance per canon (party size at session start); two cheap spend paths land in this epic (+2 surges, regain stamina). Retroactive variants (reroll, succeed-on-fail-save) defer to a follow-up epic. `StartEncounter` now requires an active session. Forward-compatible with Phase 3 character sharing.
 
+## Phase 2b — Combat completeness
+
+**Goal:** "Every combat rule the printed Draw Steel rulebook ships with produces the correct behavior in the engine — Malice and heroic resources generate at the right boundaries, every modeled ancestry/kit/title/treasure folds to the correct runtime number, the damage state machine (winded/dying/dead) runs, and conditional/triggered attachments fold when their conditions hold."
+
+**UI quality bar:** same prototype-grade rule as Phases 1–2. The visual / interaction / motion pass happens in **Phase 5 (UI rebuild)**. Don't over-invest here.
+
+**Origin.** The Epic 2A–2E sweep landed the attachment engine and inventory mechanics but explicitly deferred a list of mechanics into [`rules-canon.md § 10.16`](rules-canon.md) and [`rule-questions.md`](rule-questions.md). A mid-roadmap review also surfaced that `§ 5 Heroic resources & surges` is canon-✅ but engine-≈0%: `StartEncounter` initializes both `heroicResources: []` (every PC) and `malice: { current: 0 }` (every encounter), and no `StartRound` / `StartTurn` hook generates the per-round / per-turn gains. The Director sits down to play and cannot spend Malice; the Talent cannot spend Clarity. Phase 2b is the umbrella for closing the full list.
+
+**Note on naming.** "Phase 2b" (lowercase b) is distinct from "Epic 2B" (uppercase B; shipping under Phase 2 above). They are different scopes; the lowercase letter is a sub-phase suffix, not an epic identifier.
+
+### Sub-epics
+
+The decomposition below is sequenced for shipping; each gets its own spec → plan → implementation cycle.
+
+| # | Sub-epic | Touches | Status |
+|---|---|---|---|
+| **2b.0** | **Combat-resource framework foundation** ([spec](superpowers/specs/2026-05-13-phase-2b-0-resource-framework-foundation-design.md)) — Open Actions framework (state + 3 intents + minimal UI; no consumers in 2b.0); per-character `character.victories` refactor (canon § 8.1); `StartEncounter` heroic resource preload from victories; encounter + round-start Malice generation (`floor(avgVictoriesAlive)` + `aliveHeroes + N`, permissive alive-check); universal per-turn heroic resource gain via `StartTurn` payload extension (flat or `rolls.d3`); end-of-encounter zeroing of all heroic resources + surges; static `HEROIC_RESOURCES` config table for all 9 classes' baseline shape | `StartEncounter`, `StartRound`, `StartTurn`, `EndEncounter`, `Respite`, `EndRound` reducers; new `RaiseOpenAction` / `ClaimOpenAction` / `DismissOpenAction` intents; new `state.openActions` field; new `character.victories` field | 🚧 |
+| **2b.0.1** | **Class δ triggers + class-internal affordances** — class-specific gain triggers ("first time per round X happens": Censor judged-target, Fury took-damage, Tactician marked-creature damaged, Shadow surge-damage, Null malice-spend, Talent force-move broadcast); Open Action raisers for spatial triggers (Elementalist, Tactician ally-heroic, Null Field, Troubadour line-of-effect) and Conduit *Pray to the Gods*; Elementalist *Maintenance* state machine; Troubadour posthumous Drama gain + auto-revive at 30 (uses `bodyIntact` flag, refined by 2b.5); Talent class-internal affordances (strained-spend confirm UI, 10th-level Psion opt-into-strained / opt-out-of-clarity-damage toggles); 10th-level Psion's `1d3+2` per-turn gain | event hooks in event-source intents (`ApplyDamage`, `RollPower`, `Push/Pull/Slide`, `SpendMalice`); per-round flag bookkeeping on participant; new `StartMaintenance` / `StopMaintenance` intents; `bodyIntact` flag; OA copy registry populated | 🚧 |
+| **2b.1** | **Attachment schema-shape gaps with visible runtime bugs** — per-echelon `stat-mod` scaling (Dwarf *Spark Off Your Skin*, per-tier armor leveled treasures); level+N immunity (Polder *Corruption Immunity*); title benefit-choice slot (Knight Heraldic Fame / Knightly Aegis / Knightly Challenge; Zombie Slayer; etc.) | `AttachmentEffect` schema; override file re-authoring; `CharacterSchema.titleBenefitId` field + wizard step | 🚧 |
+| **2b.2** | **Stacking + magic-damage-bonus** — § 10.10 "only the higher applies" reduction rule per effect kind; new `magic-damage-bonus` AttachmentEffect variant with power-roll integration (mirrors `weapon-damage-bonus` from 2C Slice 5) | applier reduction logic; `intents/roll-power.ts` | 🚧 |
+| **2b.3** | **Kit completeness** — ranged-damage-bonus emission (6 silent kits today: Arcane Archer, Cloak and Dagger, Raider, Ranger, Rapid-Fire, Sniper); kit distance bonus (parser + targeting layer); kit disengage bonus (parser + move-action engine); kit-keyword leveled-treasure bonuses plumbing | parser; targeting; move-action engine | 🚧 |
+| **2b.4** | **Conditional / triggered attachments** — extend `AttachmentCondition` beyond `kit-has-keyword` / `item-equipped`; per-encounter evaluation for Devil *Wings* (only while flying), Color Cloak triggered weakness conversion, Orc *Bloodfire Rush* (round you took damage), Revenant *Bloodless* (save modifier), Encepter aura, power-roll floors (Encepter tier-3 floor on Presence), turn-economy modifiers (Mortal Coil +1 main action) | new condition kinds; runtime-eval seam; new effect variants | 🚧 |
+| **2b.5** | **Damage-engine state transitions § 2.7–2.9** — Winded threshold transitions, Dying state (death saves), Dead state, KO/unconscious. Prerequisite for 2b.6 and lifts the "hero death stops Malice generation" + "becoming winded triggers Fury and Troubadour gains" hooks left permissive in 2b.0 | `Participant.stamina` state machine; new intents (e.g. `SaveAgainstDeath`); event hooks for becoming-winded / dying / dead | 🚧 |
+| **2b.6** | **Q16 Revenant inert / 12h Stamina recovery** — Revenant signature trait layered on top of 2b.5's damage-state transitions | new attachment effect or per-class transition rule | 🚧 — blocked by 2b.5 |
+| **2b.7** | **Q18 class-feature choice pipeline** — Conduit Prayers/Wards, Censor Domains. Schema slot for choice ids, parser for inline class-chapter blocks, override map keyed on the new id. Real stat effects today miss the runtime (Prayer of Steel's +6 Stamina + +1 stability doesn't apply) | `CharacterSchema` extension; new parser; override file | 🚧 |
+| **2b.8** | **Q17B ancestry signature-trait engine gaps** — audit each ancestry signature trait that today fails to fold; classify each as (a) modelable with existing schema, (b) needs new effect/condition shape (likely overlaps 2b.4), or (c) permanent-defer | per-ancestry, varies | 🚧 |
+| **2b.9** | **Q10 cross-side ordering of simultaneous triggered actions** — when both a hero and a monster have a triggered action that fires on the same event, what order do they resolve in? Currently undefined in the engine | action-economy resolution rules | 🚧 |
+| **2b.10** | **Canon housekeeping** — flip § 5 + § 10 parent flags now that subsections are ✅; refresh § 10.16 to reflect what's been closed each sub-epic; update the 2C spec status header (currently stale "Designed, awaiting plan." → shipped). Rides alongside every sub-epic | docs only | trivial |
+
+### Sequencing notes
+
+- **2b.0 first, then 2b.0.1.** Engine-≈0% on § 5 generation is the most visible playability hole — sit down to play and the Director can't spend Malice, the Talent can't spend Clarity, no class can fire a premium ability on turn 1. 2b.0 wires the universal mechanics + the foundational Open Actions framework; 2b.0.1 then attaches the class-specific triggers and affordances on top. 2b.0 is a prerequisite for any meaningful playtest of subsequent attachment work.
+- **2b.1 → 2b.2 → 2b.3 are independent of 2b.5 / 2b.6.** Can interleave in any order; recommended order is "schema gaps first (biggest visible-bug win) → stacking + magic-damage (small) → kit completeness (medium)".
+- **2b.5 gates 2b.6.** Q16 Revenant explicitly waits on the damage state machine.
+- **2b.5 also unlocks better 2b.0 + 2b.0.1 triggers.** Fury "becoming winded → +1d3 ferocity", Troubadour "any hero becomes winded → +2 drama", Malice "hero death stops generation". 2b.0 + 2b.0.1 ship with a permissive `currentStamina > -windedValue` alive-check and a simple `bodyIntact` participant flag; 2b.5 lifts these to the formal state machine.
+- **2b.4 is the deepest architectural change.** Some conditional attachments need per-encounter state (flight, recent damage) which forces the applier to re-evaluate mid-encounter rather than statically on character build. May want to split 2b.4 further once we brainstorm it.
+- **2b.7, 2b.8, 2b.9 are independent of everything else.** Can slot in any time.
+- **2b.10 rides alongside every sub-epic** — each delivers a piece of canon ✅ that updates the doc.
+
+### Acceptance
+
+Phase 2b is done when:
+
+1. Every § 5 sub-section (resources, malice, surges) runs end-to-end in the engine without manual intervention.
+2. Every § 10 effect category folds correctly; § 10.16 has no remaining 🚧 carry-overs except items explicitly tagged as permanent defer.
+3. Damage-engine §§ 2.7–2.9 (winded / dying / dead) state transitions run; the participant stamina state machine matches the rulebook.
+4. `rule-questions.md` has no open 🟡 entries except those explicitly tagged permanent defer.
+5. Every modeled ancestry × kit × title × treasure combination at level 1–10 produces the correct runtime number on a representative fixture sweep.
+6. `pnpm test`, `pnpm typecheck`, `pnpm lint` clean repo-wide.
+
 ## Phase 3 — Collaborative campaign capabilities
 
 **Goal:** "The campaign feels like a place, and people can share characters and entities with each other."
