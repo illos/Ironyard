@@ -1,0 +1,131 @@
+/* Phase 5 Layer 1 — design tokens.
+ * Expressed as CSS variables in OKLCH.
+ * Surfaced to Tailwind v4 via @theme; surface ramps and accent are overridable
+ * at runtime by data-theme and data-pack attributes on the document root.
+ */
+
+:root {
+  /* Surface elevation — warm charcoal */
+  --ink-0: oklch(0.20 0.003 80);
+  --ink-1: oklch(0.235 0.003 80);
+  --ink-2: oklch(0.275 0.003 80);
+  --ink-3: oklch(0.32 0.003 80);
+  --ink-4: oklch(0.40 0.003 80);
+  --line: oklch(0.44 0.003 80 / 0.7);
+  --line-soft: oklch(0.44 0.003 80 / 0.35);
+
+  /* Text */
+  --text: oklch(0.90 0.003 80);
+  --text-dim: oklch(0.70 0.004 80);
+  --text-mute: oklch(0.54 0.004 80);
+
+  /* Side tones */
+  --hero: oklch(0.78 0.04 220);
+  --foe:  oklch(0.62 0.16 25);
+
+  /* Stamina states */
+  --hp-good: oklch(0.76 0.16 150);
+  --hp-warn: oklch(0.82 0.18 80);
+  --hp-bad:  oklch(0.66 0.22 25);
+
+  /* Accent — default = Lightning. Overridden by [data-pack=...] below. */
+  --accent:        oklch(0.82 0.16 230);
+  --accent-strong: oklch(0.90 0.18 220);
+  --accent-glow:   oklch(0.78 0.18 230 / 0.5);
+}
+
+:root[data-theme="light"] {
+  /* Pass 1 ships dark only; light is a placeholder slot for Layer 2.
+   * Re-derive tokens here when a designer pass authors the light palette.
+   */
+  --ink-0: oklch(0.985 0.002 80);
+  --ink-1: oklch(0.965 0.003 80);
+  --ink-2: oklch(0.94 0.004 80);
+  --ink-3: oklch(0.90 0.005 80);
+  --ink-4: oklch(0.84 0.006 80);
+  --line: oklch(0.78 0.006 80 / 0.7);
+  --line-soft: oklch(0.78 0.006 80 / 0.35);
+  --text: oklch(0.22 0.005 80);
+  --text-dim: oklch(0.42 0.005 80);
+  --text-mute: oklch(0.58 0.005 80);
+  --hero: oklch(0.50 0.08 230);
+  --foe: oklch(0.52 0.18 28);
+}
+
+:root[data-pack="lightning"] {
+  --accent: oklch(0.82 0.16 230);
+  --accent-strong: oklch(0.90 0.18 220);
+  --accent-glow: oklch(0.78 0.18 230 / 0.5);
+}
+:root[data-pack="shadow"] {
+  --accent: oklch(0.62 0.20 305);
+  --accent-strong: oklch(0.72 0.24 305);
+  --accent-glow: oklch(0.55 0.22 305 / 0.5);
+}
+:root[data-pack="fireball"] {
+  --accent: oklch(0.74 0.20 50);
+  --accent-strong: oklch(0.84 0.22 55);
+  --accent-glow: oklch(0.70 0.22 45 / 0.5);
+}
+:root[data-pack="chrome"] {
+  --accent: oklch(0.84 0.025 240);
+  --accent-strong: oklch(0.92 0.04 240);
+  --accent-glow: oklch(0.78 0.10 240 / 0.4);
+}
+
+/* Per-element pack scoping — used inside the combat tracker so each row
+ * can carry its character's pack color when Layer 2 wires per-character packs.
+ * Pass 1: the .pack-* classes are not yet applied; components fall back to
+ * --accent. The classes exist so future work can light them up without
+ * touching every component.
+ */
+.pack-lightning { --pk: oklch(0.82 0.16 230); --pk-strong: oklch(0.90 0.18 220); --pk-glow: oklch(0.78 0.18 230 / 0.5); }
+.pack-shadow    { --pk: oklch(0.62 0.20 305); --pk-strong: oklch(0.72 0.24 305); --pk-glow: oklch(0.55 0.22 305 / 0.5); }
+.pack-fireball  { --pk: oklch(0.74 0.20 50);  --pk-strong: oklch(0.84 0.22 55);  --pk-glow: oklch(0.70 0.22 45 / 0.5); }
+.pack-chrome    { --pk: oklch(0.84 0.025 240); --pk-strong: oklch(0.92 0.04 240); --pk-glow: oklch(0.78 0.10 240 / 0.4); }
+
+/* Tailwind v4 theme — expose the CSS variables as theme tokens so utility
+ * classes like bg-ink-1 / text-text-dim / border-line work. The defaults
+ * above remain authoritative; Tailwind just references them.
+ */
+@theme {
+  --color-ink-0: var(--ink-0);
+  --color-ink-1: var(--ink-1);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-text: var(--text);
+  --color-text-dim: var(--text-dim);
+  --color-text-mute: var(--text-mute);
+  --color-hero: var(--hero);
+  --color-foe: var(--foe);
+  --color-hp-good: var(--hp-good);
+  --color-hp-warn: var(--hp-warn);
+  --color-hp-bad: var(--hp-bad);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-glow: var(--accent-glow);
+  --color-pk: var(--pk, var(--accent));
+  --color-pk-strong: var(--pk-strong, var(--accent-strong));
+  --color-pk-glow: var(--pk-glow, var(--accent-glow));
+
+  --font-sans: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+}
+
+html, body {
+  background: var(--ink-0);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "ss02", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }

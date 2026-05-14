@@ -1,17 +1,10 @@
 @import "tailwindcss";
+@import "./theme/tokens.css";
 
 /* Slice 11: tiny toast slide-in. Keeps animation in CSS instead of pulling
    tailwindcss-animate as a dep. */
 @keyframes ironyard-toast-enter {
-  from {
-    transform: translateY(8px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
-.toast-enter {
-  animation: ironyard-toast-enter 180ms ease-out;
-}
+.toast-enter { animation: ironyard-toast-enter 180ms ease-out; }
