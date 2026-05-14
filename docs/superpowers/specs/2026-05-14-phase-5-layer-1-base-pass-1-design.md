@@ -299,3 +299,73 @@ Pass 1 is done when:
 - The schema migration for `active_*` columns is **not** part of Pass 1's work.
 - DirectorCombat's mid-encounter interactions (drag-reorder initiative, gestural target picking, ability-card layout deepening) are Pass 2.
 - Foes browser content / IA changes are out — only the gating + re-theme.
+
+## PS — Pass-1 follow-up fixes (2026-05-14, post-shipping)
+
+After the 35-task plan landed and the dev server came up, eye-testing surfaced gaps that weren't visible at design time. Each is a small change layered on top of the Pass-1 plan. Capturing them here so the spec stays a complete record of what shipped.
+
+### 1. Active campaign needed an actual UI affordance and persistence
+
+**Symptom.** Spec said active-context was URL-inferred in Pass 1, with persistence deferred. In practice that meant: no visible signal that a campaign was active, no way to set or unset one explicitly, and Home's redirect-to-active-campaign couldn't latch because the only "active" signal was the current URL — which was Home itself.
+
+**Fix** ([`7a1dba0`](../../..)). Promoted `useActiveContext` from URL-only to **localStorage-backed** (`ironyard:activeCampaignId`), with URL inference as a fallback when storage is empty. Added a `setActiveCampaignId(id | null)` setter, a same-tab `'ironyard:active-context-change'` event so multiple consumers stay in sync, and a `storage` listener for cross-tab. Auto-promote on URL visit only writes when storage is empty so an explicit Make-active choice isn't clobbered.
+
+DB columns (`users.active_campaign_id`, `campaign_memberships.active_character_id`) remain deferred — localStorage is the Pass-1.5 wire.
+
+### 2. Home was an empty CTA stub; users couldn't get anywhere useful
+
+**Symptom.** Home's no-active-campaign branch showed `Start campaign` / `Join campaign` buttons that both just routed to `/campaigns`. Users on a fresh open had to click through twice to do anything.
+
+**Fix** ([`7a1dba0`](../../..)). Home's no-active-campaign branch now renders **YOUR CAMPAIGNS** inline:
+- One row per owned + joined campaign, with role chip (owner / director / player), invite code, and a per-row **Make active** button (sets active and navigates to `/campaigns/$id`).
+- Empty-state copy when the user is in zero campaigns.
+- Below the list: **+ Start a new campaign** (primary, → `/campaigns/new`) and **Join with code** (opens a Modal with an invite-code field; on success, sets the joined campaign active and navigates).
+
+The DevLoginPanel (unauthenticated branch) and the active-campaign redirect branch are unchanged.
+
+### 3. New `/campaigns/new` route
+
+**Symptom.** Create-campaign was a form embedded in the `/campaigns` list page, which doesn't compose with Home's "Start a new campaign" CTA.
+
+**Fix** ([`7a1dba0`](../../..)). Added a dedicated `/campaigns/new` route + `apps/web/src/pages/CampaignNew.tsx`. Single name field; on submit calls `useCreateCampaign`, sets the new campaign active, and navigates to its detail page. The legacy create-form still lives in `/campaigns` for direct entry.
+
+Router note: `/campaigns/new` is registered **before** the parameterized `/campaigns/$id` route in `addChildren` to make the static-vs-param ordering explicit (TanStack Router prefers static segments, but explicit ordering is cheaper than a future surprise).
+
+### 4. Test harness gap: Node 25's experimental built-in `localStorage`
+
+**Symptom.** Adding the storage-backed active context's tests revealed that Node 25.9 ships an experimental built-in `localStorage` global that *shadows* jsdom's. The methods aren't actually present on the built-in, so storage-touching code threw at test time.
+
+**Fix** ([`7a1dba0`](../../..)). Added an in-memory `Storage` shim to `apps/web/src/test-setup.ts` that restores `getItem` / `setItem` / `removeItem` / `clear` semantics. Activates only inside the vitest setup file.
+
+### 5. No way to deactivate an active campaign
+
+**Symptom.** Once a campaign was active, clicking Home redirected straight back into it. No affordance to "step out."
+
+**Fix** ([`5feba6d`](../../..) and [`8327186`](../../..)). Two surfaces:
+- **AccountMenu** dropdown now shows an `ACTIVE CAMPAIGN` block at the top when one is set: campaign name + a `Deactivate` button (mono uppercase, dim → hover foe). Clicking Deactivate calls `setActiveCampaignId(null)` and navigates to `/`. The block is hidden when no campaign is active.
+- **`/campaigns` page rows** mirror Home's interaction: the active row carries an `ACTIVE` chip + `Deactivate` button (which stays on `/campaigns`); inactive rows get `Make active` (which navigates to that campaign).
+
+The active row also uses `border-accent` instead of `border-line` so it's visually distinguishable from inactive rows.
+
+### 6. DirectorCombat crashed with "Rendered more hooks than during the previous render"
+
+**Symptom.** Loading `/campaigns/$id/play` with an active encounter blew up with a Rules-of-Hooks violation. The first render exited via one of the guard returns (loading / not-signed-in / no-campaign-data); subsequent renders, where the guards no longer fired, reached a `useMemo` further down — making the hook count jump.
+
+**Fix** ([`f327af4`](../../..)). Moved `actedIds`' `useMemo` above the three guard-return branches in `DirectorCombat`. Hooks now all sit at the top of the component, returns happen unconditionally below them. The plain `const` derivations (`participants`, `heroes`, `liveFoes`, `defeatedCount`, `round`, etc.) stay inline below the guards — they're not hooks, so the rule doesn't apply to them.
+
+**Lesson.** When wiring a new component that combines TanStack-Query guard returns with derived `useMemo` state, lift every hook above every return. Cheap check: `grep -n` for hook calls and `return` statements; all hook line numbers should be lower than all return line numbers.
+
+### Side-fallout (no spec change required)
+
+- `TopBar.spec.tsx` had to widen its `@tanstack/react-router` mock to cover `useLocation` and `useNavigate` (AccountMenu now reaches into them transitively via `useActiveContext`), plus stub `useActiveContext` and `useMyCampaigns`. Test logic is unchanged.
+
+### Acceptance addendum
+
+In addition to the eight Pass-1 acceptance criteria above:
+
+9. From a fresh `localStorage`, the user can land on `/`, see their campaigns, pick one with **Make active**, and end up viewing that campaign — with the active state persisting across reloads and reachable from every page via the AccountMenu's ACTIVE CAMPAIGN block.
+10. The user can deactivate from either AccountMenu or `/campaigns`, and Home returns to its no-active-campaign landing.
+
+### Maintenance note
+
+Future post-shipping fixes to Pass 1 layer the same way: append a numbered entry to this PS section with a one-line symptom, a one-paragraph fix, and the relevant commit SHA. Once a follow-up entry has shipped *and* been verified in real use, leave it in place — the doc is the historical record, not a TODO list.
