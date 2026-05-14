@@ -51,6 +51,8 @@ export type {
   LoadEncounterTemplatePayload,
   LoadEncounterTemplateResolvedEntry,
 } from './load-encounter-template';
+export { MarkActionUsedPayloadSchema } from './mark-action-used';
+export type { MarkActionUsedPayload } from './mark-action-used';
 export { NotePayloadSchema } from './note';
 export type { NotePayload } from './note';
 export { PushItemPayloadSchema } from './push-item';
@@ -150,6 +152,7 @@ export const IntentTypes = {
   KickPlayer: 'KickPlayer',
   LeaveLobby: 'LeaveLobby',
   LoadEncounterTemplate: 'LoadEncounterTemplate',
+  MarkActionUsed: 'MarkActionUsed',
   Note: 'Note',
   PushItem: 'PushItem',
   RemoveApprovedCharacter: 'RemoveApprovedCharacter',
