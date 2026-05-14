@@ -50,7 +50,7 @@ export function CultureStep({ draft, onPatch }: { draft: Character; onPatch: (p:
   if (path === null) {
     return (
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-neutral-100">Choose how to build your culture</h2>
+        <h2 className="text-lg font-semibold text-text">Choose how to build your culture</h2>
         <PathCard
           title="Typical Ancestry Culture"
           description="Use a preset culture from any ancestry — covers cases like a Human raised by Elves."
@@ -73,7 +73,7 @@ export function CultureStep({ draft, onPatch }: { draft: Character; onPatch: (p:
   return (
     <div className="space-y-5">
       <button type="button" onClick={changePath}
-        className="text-sm text-neutral-400 hover:text-neutral-200 underline underline-offset-2">
+        className="text-sm text-text-dim hover:text-text underline underline-offset-2">
         ← Change path
       </button>
       {path === 'typical' && (
@@ -90,9 +90,9 @@ export function CultureStep({ draft, onPatch }: { draft: Character; onPatch: (p:
 function PathCard({ title, description, onClick }: { title: string; description: string; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick}
-      className="w-full text-left rounded-lg border border-neutral-700 bg-neutral-900 hover:border-neutral-500 px-4 py-3 space-y-1 transition-colors">
-      <div className="text-sm font-medium text-neutral-100">{title}</div>
-      <div className="text-xs text-neutral-400">{description}</div>
+      className="w-full text-left border border-line bg-ink-1 hover:border-accent px-4 py-3 space-y-1 transition-colors">
+      <div className="text-sm font-medium text-text">{title}</div>
+      <div className="text-xs text-text-dim">{description}</div>
     </button>
   );
 }
@@ -127,8 +127,8 @@ function TypicalPath({ culture, suggestedAncestryId, set }: {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-sm text-neutral-300 mb-2">Pick an ancestry's typical culture</h3>
-        <p className="text-xs text-neutral-500 mb-2">
+        <h3 className="text-sm text-text-dim mb-2">Pick an ancestry's typical culture</h3>
+        <p className="text-xs text-text-mute mb-2">
           Defaults to your hero's own ancestry, but pick any to cover cross-ancestry backgrounds.
         </p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -138,16 +138,16 @@ function TypicalPath({ culture, suggestedAncestryId, set }: {
             return (
               <button key={p.ancestryId} type="button" onClick={() => pick(p)}
                 className={
-                  'min-h-11 px-3 py-2 rounded-md border text-sm text-left transition-colors ' +
+                  'min-h-11 px-3 py-2 border text-sm text-left transition-colors ' +
                   (isSelected
-                    ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
+                    ? 'bg-accent text-ink-0 border-accent'
                     : isSuggested
-                      ? 'bg-neutral-900 text-neutral-200 border-emerald-700 hover:border-emerald-500'
-                      : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
+                      ? 'bg-ink-1 text-text-dim border-accent hover:border-accent-strong'
+                      : 'bg-ink-1 text-text-dim border-line hover:border-accent')
                 }>
                 <div className="font-medium">{ancestryLabel(p.ancestryId)}</div>
                 {isSuggested && (
-                  <div className="text-xs text-emerald-400 mt-0.5">Your ancestry</div>
+                  <div className="text-xs text-accent mt-0.5">Your ancestry</div>
                 )}
               </button>
             );
@@ -197,15 +197,15 @@ function ArchetypicalPath({ culture, set }: {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-sm text-neutral-300 mb-2">Choose a community</h3>
+        <h3 className="text-sm text-text-dim mb-2">Choose a community</h3>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {ARCHETYPICAL_CULTURES.map((c) => (
             <button key={c.id} type="button" onClick={() => pick(c)}
               className={
-                'min-h-11 px-3 py-2 rounded-md border text-sm text-left transition-colors ' +
+                'min-h-11 px-3 py-2 border text-sm text-left transition-colors ' +
                 (selected?.id === c.id
-                  ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                  : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
+                  ? 'bg-accent text-ink-0 border-accent'
+                  : 'bg-ink-1 text-text-dim border-line hover:border-accent')
               }>
               {c.name}
             </button>
@@ -272,16 +272,16 @@ function PresetSummary({
   rows: { label: string; value: string; description?: string }[];
 }) {
   return (
-    <div className="rounded-md border border-neutral-700 bg-neutral-800/50 px-4 py-3 space-y-3">
-      <p className="text-xs text-neutral-400 uppercase tracking-wide">Auto-filled from preset</p>
+    <div className="border border-line bg-ink-2 px-4 py-3 space-y-3">
+      <p className="text-xs text-text-dim uppercase tracking-wide">Auto-filled from preset</p>
       {rows.map(({ label, value, description }) => (
         <div key={label} className="space-y-1">
           <div className="flex gap-2 text-sm">
-            <span className="text-neutral-400 w-24 shrink-0">{label}</span>
-            <span className="text-neutral-100 capitalize">{value}</span>
+            <span className="text-text-dim w-24 shrink-0">{label}</span>
+            <span className="text-text capitalize">{value}</span>
           </div>
           {description && (
-            <p className="text-xs text-neutral-500 leading-relaxed pl-26 ml-24">{description}</p>
+            <p className="text-xs text-text-mute leading-relaxed pl-26 ml-24">{description}</p>
           )}
         </div>
       ))}
@@ -314,22 +314,22 @@ function Picker<T extends string>({ label, options, value, onChange, description
 }) {
   return (
     <div>
-      <h3 className="text-sm text-neutral-300 mb-1">{label}</h3>
+      <h3 className="text-sm text-text-dim mb-1">{label}</h3>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
           <button key={o} type="button" onClick={() => onChange(o)}
             className={
-              'min-h-11 px-3 py-2 rounded-md border text-sm capitalize ' +
+              'min-h-11 px-3 py-2 border text-sm capitalize ' +
               (value === o
-                ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
+                ? 'bg-accent text-ink-0 border-accent'
+                : 'bg-ink-1 text-text-dim border-line hover:border-accent')
             }>
             {o}
           </button>
         ))}
       </div>
       {descriptions && value && descriptions[value] && (
-        <p className="mt-2 text-xs text-neutral-500 leading-relaxed">
+        <p className="mt-2 text-xs text-text-mute leading-relaxed">
           {descriptions[value]}
         </p>
       )}

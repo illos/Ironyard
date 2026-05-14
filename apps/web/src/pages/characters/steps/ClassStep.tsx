@@ -44,19 +44,19 @@ function formatValue(n: number): string {
 function LockedCharacteristics({ lockedIds }: { lockedIds: string[] }) {
   return (
     <div>
-      <h3 className="text-sm text-neutral-300 mb-1">Locked characteristics</h3>
-      <p className="text-xs text-neutral-500 mb-2">
+      <h3 className="text-sm text-text-dim mb-1">Locked characteristics</h3>
+      <p className="text-xs text-text-mute mb-2">
         Set by your class — these cannot be reassigned.
       </p>
       <div className="flex flex-wrap gap-2">
         {lockedIds.map((id) => (
           <div
             key={id}
-            className="flex items-center gap-1 px-3 py-2 rounded-md border border-neutral-700 bg-neutral-800 text-neutral-400 text-sm select-none"
+            className="flex items-center gap-1 px-3 py-2 border border-line bg-ink-2 text-text-dim text-sm select-none"
           >
             <span>{CHAR_LABELS[id] ?? id}</span>
-            <span className="font-mono text-neutral-300">+2</span>
-            <span className="ml-1 text-xs text-neutral-600">(locked)</span>
+            <span className="font-mono text-text-dim">+2</span>
+            <span className="ml-1 text-xs text-text-mute">(locked)</span>
           </div>
         ))}
       </div>
@@ -82,8 +82,8 @@ function ArrayPicker({
 
   return (
     <div>
-      <h3 className="text-sm text-neutral-300 mb-1">Characteristic array</h3>
-      <p className="text-xs text-neutral-500 mb-2">
+      <h3 className="text-sm text-text-dim mb-1">Characteristic array</h3>
+      <p className="text-xs text-text-mute mb-2">
         Choose the distribution you want to assign to your free characteristics.
       </p>
       <div className="flex flex-wrap gap-2">
@@ -94,10 +94,10 @@ function ArrayPicker({
               key={arr.join(',')}
               type="button"
               onClick={() => onChange(arr)}
-              className={`min-h-11 px-3 py-2 rounded-md border text-sm font-mono ${
+              className={`min-h-11 px-3 py-2 border text-sm font-mono ${
                 isSelected
-                  ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                  : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'
+                  ? 'bg-accent text-ink-0 border-accent'
+                  : 'bg-ink-1 text-text-dim border-line hover:border-accent'
               }`}
             >
               [{arr.map(formatValue).join(', ')}]
@@ -122,10 +122,10 @@ function DraggableTile({ tileId, value }: { tileId: string; value: number }) {
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md border text-sm font-mono font-semibold cursor-grab active:cursor-grabbing select-none ${
+      className={`min-w-[44px] min-h-[44px] flex items-center justify-center border text-sm font-mono font-semibold cursor-grab active:cursor-grabbing select-none ${
         isDragging
-          ? 'opacity-40 border-neutral-600 bg-neutral-800 text-neutral-400'
-          : 'border-neutral-500 bg-neutral-800 text-neutral-100 hover:border-neutral-400'
+          ? 'opacity-40 border-line bg-ink-2 text-text-dim'
+          : 'border-line bg-ink-2 text-text hover:border-accent'
       }`}
     >
       {formatValue(value)}
@@ -151,15 +151,15 @@ function DroppableSlot({
 
   return (
     <div className="flex items-center gap-3">
-      <span className="w-24 text-sm text-neutral-300 shrink-0">{label}</span>
+      <span className="w-24 text-sm text-text-dim shrink-0">{label}</span>
       <div
         ref={setNodeRef}
-        className={`min-w-[60px] min-h-[44px] flex items-center justify-center rounded-md border text-sm font-mono font-semibold transition-colors ${
+        className={`min-w-[60px] min-h-[44px] flex items-center justify-center border text-sm font-mono font-semibold transition-colors ${
           filled
-            ? 'bg-neutral-700 border-neutral-500 text-neutral-100'
+            ? 'bg-ink-3 border-line text-text'
             : isOver
-              ? 'bg-neutral-800 border-neutral-400 text-neutral-400'
-              : 'bg-neutral-900 border-dashed border-neutral-600 text-neutral-600'
+              ? 'bg-ink-2 border-accent text-text-dim'
+              : 'bg-ink-1 border-dashed border-line text-text-mute'
         }`}
       >
         {filled && tileValue !== null ? (
@@ -172,7 +172,7 @@ function DroppableSlot({
         <button
           type="button"
           onClick={onClear}
-          className="text-xs text-neutral-500 hover:text-neutral-300"
+          className="text-xs text-text-mute hover:text-text-dim"
           aria-label={`Clear ${label} slot`}
         >
           ✕
@@ -214,8 +214,8 @@ function ArrayAssignment({
   if (chosenArray === null) {
     return (
       <div>
-        <h3 className="text-sm text-neutral-300 mb-1">Assign array values</h3>
-        <p className="text-xs text-neutral-500">Pick an array above to assign values.</p>
+        <h3 className="text-sm text-text-dim mb-1">Assign array values</h3>
+        <p className="text-xs text-text-mute">Pick an array above to assign values.</p>
       </div>
     );
   }
@@ -309,15 +309,15 @@ function ArrayAssignment({
 
   return (
     <div>
-      <h3 className="text-sm text-neutral-300 mb-1">Assign array values</h3>
-      <p className="text-xs text-neutral-500 mb-3">
+      <h3 className="text-sm text-text-dim mb-1">Assign array values</h3>
+      <p className="text-xs text-text-mute mb-3">
         Drag each value onto one of your free characteristics.
       </p>
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         {/* Tile tray — unplaced tiles */}
         <div className="flex gap-2 mb-4 min-h-[44px]">
           {unplacedTiles.length === 0 ? (
-            <p className="text-xs text-neutral-500 self-center">All values assigned.</p>
+            <p className="text-xs text-text-mute self-center">All values assigned.</p>
           ) : (
             unplacedTiles.map((i) => (
               <DraggableTile key={i} tileId={`tile-${i}`} value={arr[i] ?? 0} />
@@ -368,7 +368,7 @@ export function ClassStep({
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-sm text-neutral-300 mb-1">Class</h3>
+        <h3 className="text-sm text-text-dim mb-1">Class</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {classes.map((cl) => (
             <button
@@ -383,10 +383,10 @@ export function ClassStep({
                   levelChoices: {},
                 })
               }
-              className={`text-left rounded-md border px-4 py-3 min-h-11 ${
+              className={`text-left border px-4 py-3 min-h-11 ${
                 cl.id === draft.classId
-                  ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                  : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'
+                  ? 'bg-accent text-ink-0 border-accent'
+                  : 'bg-ink-1 text-text-dim border-line hover:border-accent'
               }`}
             >
               <div className="font-medium">{cl.name}</div>
@@ -445,17 +445,17 @@ function SubclassPicker({
   if (subs.length === 0) return null;
   return (
     <div>
-      <h3 className="text-sm text-neutral-300 mb-1">Subclass</h3>
+      <h3 className="text-sm text-text-dim mb-1">Subclass</h3>
       <div className="flex flex-wrap gap-2">
         {subs.map((s) => (
           <button
             key={s.id}
             type="button"
             onClick={() => onChange(s.id)}
-            className={`min-h-11 px-3 py-2 rounded-md border text-sm ${
+            className={`min-h-11 px-3 py-2 border text-sm ${
               value === s.id
-                ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'
+                ? 'bg-accent text-ink-0 border-accent'
+                : 'bg-ink-1 text-text-dim border-line hover:border-accent'
             }`}
           >
             {s.name}
@@ -517,8 +517,8 @@ function LevelPicks({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-sm text-neutral-300 mb-1">Level picks</h3>
-        <p className="text-xs text-neutral-500 mb-2">
+        <h3 className="text-sm text-text-dim mb-1">Level picks</h3>
+        <p className="text-xs text-text-mute mb-2">
           Pick one ability per slot. Slots are determined by your class's level table; the dropdown
           filters {klass.name} abilities by tier, cost, and subclass scope.
         </p>
@@ -536,10 +536,10 @@ function LevelPicks({
         const subSlots = slots.filter((s) => s.isSubclass);
 
         return (
-          <div key={lvl} className="rounded-md border border-neutral-800 bg-neutral-950 p-3">
-            <h4 className="text-sm font-medium text-neutral-200 mb-2">Level {lvl}</h4>
+          <div key={lvl} className="border border-line bg-ink-0 p-3">
+            <h4 className="text-sm font-medium text-text mb-2">Level {lvl}</h4>
             {featureNames.length > 0 && (
-              <p className="text-xs text-neutral-500 mb-2">
+              <p className="text-xs text-text-mute mb-2">
                 Features: {featureNames.join(' · ')}
               </p>
             )}
@@ -573,7 +573,7 @@ function LevelPicks({
                 />
               ))}
               {baseSlots.length === 0 && subSlots.length === 0 && (
-                <p className="text-xs text-neutral-500">No ability picks at this level.</p>
+                <p className="text-xs text-text-mute">No ability picks at this level.</p>
               )}
             </div>
           </div>
@@ -596,11 +596,11 @@ function AbilitySlotPicker({
 }) {
   return (
     <label className="flex flex-col gap-1 text-sm">
-      <span className="text-xs text-neutral-400">{label}</span>
+      <span className="text-xs text-text-dim">{label}</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="min-h-11 rounded-md bg-neutral-900 border border-neutral-800 px-2 py-1 text-sm text-neutral-100"
+        className="min-h-11 bg-ink-1 border border-line px-2 py-1 text-sm text-text focus:border-accent"
       >
         <option value="">— pick one —</option>
         {options.map((a) => (

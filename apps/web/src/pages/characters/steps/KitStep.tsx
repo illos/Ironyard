@@ -18,10 +18,10 @@ export function KitStep({
   if (compatible.length === 0) {
     return (
       <div className="space-y-2">
-        <p className="text-sm text-neutral-300">
+        <p className="text-sm text-text-dim">
           Kit picker comes in Epic 2 — once kit data ingestion lands.
         </p>
-        <p className="text-xs text-neutral-500">
+        <p className="text-xs text-text-mute">
           For now this step is informational. Your character will submit without a kit;
           kit-required classes will derive at no-kit defaults until Epic 2.
         </p>
@@ -29,7 +29,7 @@ export function KitStep({
           <button
             type="button"
             onClick={() => onPatch({ kitId: null })}
-            className="min-h-11 px-3 py-2 rounded-md bg-neutral-100 text-neutral-900 text-sm font-medium"
+            className="min-h-11 px-3 py-2 bg-accent text-ink-0 text-sm font-medium"
           >
             Clear current kit
           </button>
@@ -46,10 +46,10 @@ export function KitStep({
           type="button"
           onClick={() => onPatch({ kitId: k.id })}
           className={
-            'text-left rounded-md border px-4 py-3 min-h-11 ' +
+            'text-left border px-4 py-3 min-h-11 ' +
             (k.id === draft.kitId
-              ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-              : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
+              ? 'bg-accent text-ink-0 border-accent'
+              : 'bg-ink-1 text-text-dim border-line hover:border-accent')
           }
         >
           <div className="font-medium">{k.name}</div>

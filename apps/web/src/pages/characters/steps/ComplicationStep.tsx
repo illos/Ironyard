@@ -13,15 +13,15 @@ export function ComplicationStep({
   const complications = Array.from(staticData.complications.values());
   return (
     <div className="space-y-3">
-      <p className="text-sm text-neutral-400">Complications are optional. Skip if you don't want one.</p>
+      <p className="text-sm text-text-dim">Complications are optional. Skip if you don't want one.</p>
       <button
         type="button"
         onClick={() => onPatch({ complicationId: null })}
         className={
-          'block w-full text-left rounded-md border px-4 py-3 min-h-11 ' +
+          'block w-full text-left border px-4 py-3 min-h-11 ' +
           (draft.complicationId === null
-            ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-            : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
+            ? 'bg-accent text-ink-0 border-accent'
+            : 'bg-ink-1 text-text-dim border-line hover:border-accent')
         }
       >
         <span className="font-medium">No complication</span>
@@ -33,10 +33,10 @@ export function ComplicationStep({
             type="button"
             onClick={() => onPatch({ complicationId: c.id })}
             className={
-              'text-left rounded-md border px-4 py-3 min-h-11 ' +
+              'text-left border px-4 py-3 min-h-11 ' +
               (draft.complicationId === c.id
-                ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
+                ? 'bg-accent text-ink-0 border-accent'
+                : 'bg-ink-1 text-text-dim border-line hover:border-accent')
             }
           >
             <div className="font-medium">{c.name}</div>

@@ -34,7 +34,7 @@ export function CareerStep({
                   },
                 })
               }
-              className={`text-left rounded-md border px-4 py-3 min-h-11 ${isSelected ? 'bg-neutral-100 text-neutral-900 border-neutral-100' : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'}`}
+              className={`text-left border px-4 py-3 min-h-11 ${isSelected ? 'bg-accent text-ink-0 border-accent' : 'bg-ink-1 text-text-dim border-line hover:border-accent'}`}
             >
               <div className="font-medium">{c.name}</div>
               {c.description && <div className="text-xs opacity-80 mt-1">{c.description}</div>}
@@ -68,11 +68,11 @@ function CareerChoices({
   const incidents = career.incitingIncidents ?? [];
   if (incidents.length === 0) return null;
   return (
-    <div className="rounded-md border border-neutral-800 p-4 space-y-4">
+    <div className="border border-line p-4 space-y-4">
       {incidents.length > 0 && (
         <div>
-          <h3 className="text-sm text-neutral-300 mb-1">Inciting incident</h3>
-          <p className="text-xs text-neutral-500 mb-2">
+          <h3 className="text-sm text-text-dim mb-1">Inciting incident</h3>
+          <p className="text-xs text-text-mute mb-2">
             Pick the event that pushed your hero out into the world. Tap a title to expand its
             flavor text.
           </p>
@@ -84,17 +84,17 @@ function CareerChoices({
                   key={ii.id}
                   type="button"
                   onClick={() => onChange({ incitingIncidentId: ii.id })}
-                  className={`block w-full min-h-11 px-3 py-2 rounded-md border text-sm text-left transition-colors ${
+                  className={`block w-full min-h-11 px-3 py-2 border text-sm text-left transition-colors ${
                     selected
-                      ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                      : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'
+                      ? 'bg-accent text-ink-0 border-accent'
+                      : 'bg-ink-1 text-text-dim border-line hover:border-accent'
                   }`}
                 >
                   <div className="font-medium">{ii.title}</div>
                   {ii.description && (
                     <p
                       className={`mt-1 text-xs leading-relaxed ${
-                        selected ? 'text-neutral-700' : 'text-neutral-400'
+                        selected ? 'text-ink-0/80' : 'text-text-dim'
                       }`}
                     >
                       {ii.description}

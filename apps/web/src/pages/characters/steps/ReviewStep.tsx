@@ -40,10 +40,10 @@ export function ReviewStep({
   return (
     <div className="space-y-5">
       <RuntimeReadout character={draft} staticData={staticData} />
-      <div className="rounded-md border border-neutral-800 p-4">
+      <div className="border border-line p-4">
         {campaignId ? (
           <>
-            <p className="text-sm text-neutral-300 mb-3">
+            <p className="text-sm text-text-dim mb-3">
               {gate.ok
                 ? 'Ready to submit to the director for approval.'
                 : `Cannot submit yet: ${gate.blockingMessage}`}
@@ -52,23 +52,23 @@ export function ReviewStep({
               type="button"
               onClick={onSubmit}
               disabled={!gate.ok || status !== 'open'}
-              className="min-h-11 px-4 py-2 rounded-md bg-emerald-400 text-neutral-900 font-medium disabled:opacity-50"
+              className="min-h-11 px-4 py-2 bg-accent text-ink-0 font-medium disabled:opacity-50"
             >
               Submit to director
             </button>
             {status !== 'open' && (
-              <p className="text-xs text-neutral-500 mt-2">Waiting for campaign connection…</p>
+              <p className="text-xs text-text-mute mt-2">Waiting for campaign connection…</p>
             )}
           </>
         ) : (
           <>
-            <p className="text-sm text-neutral-300 mb-3">
+            <p className="text-sm text-text-dim mb-3">
               Standalone character — not yet attached to a campaign. You can attach later from the sheet.
             </p>
             <button
               type="button"
               onClick={onDone}
-              className="min-h-11 px-4 py-2 rounded-md bg-neutral-100 text-neutral-900 font-medium"
+              className="min-h-11 px-4 py-2 bg-accent text-ink-0 font-medium"
             >
               View character
             </button>

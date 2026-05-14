@@ -60,7 +60,7 @@ export function AncestryStep({
               onClick={() =>
                 onPatch({ ancestryId: a.id, ancestryChoices: EMPTY_ANCESTRY_CHOICES })
               }
-              className={`text-left rounded-md border px-4 py-3 min-h-11 ${isSelected ? 'bg-neutral-100 text-neutral-900 border-neutral-100' : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'}`}
+              className={`text-left border px-4 py-3 min-h-11 ${isSelected ? 'bg-accent text-ink-0 border-accent' : 'bg-ink-1 text-text-dim border-line hover:border-accent'}`}
             >
               <div className="font-medium">{a.name}</div>
               {a.description && <div className="text-xs opacity-80 mt-1">{a.description}</div>}
@@ -120,9 +120,9 @@ function DevilSubPicker({
   onPick: (id: string) => void;
 }) {
   return (
-    <div className="rounded-md border border-neutral-800 p-4 space-y-2">
+    <div className="border border-line p-4 space-y-2">
       <h3 className="font-medium">Silver Tongue</h3>
-      <p className="text-sm text-neutral-400">Choose one interpersonal skill.</p>
+      <p className="text-sm text-text-dim">Choose one interpersonal skill.</p>
       <div className="flex flex-wrap gap-2">
         {INTERPERSONAL_SKILLS.map((skill) => (
           <button
@@ -130,10 +130,10 @@ function DevilSubPicker({
             type="button"
             onClick={() => onPick(skill)}
             className={
-              'min-h-11 px-3 py-2 rounded-md border text-sm capitalize ' +
+              'min-h-11 px-3 py-2 border text-sm capitalize ' +
               (freeSkillId === skill
-                ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
+                ? 'bg-accent text-ink-0 border-accent'
+                : 'bg-ink-1 text-text-dim border-line hover:border-accent')
             }
           >
             {skill}
@@ -160,10 +160,10 @@ function DragonKnightSubPicker({
   onPickPrismatic: (type: string) => void;
 }) {
   return (
-    <div className="rounded-md border border-neutral-800 p-4 space-y-4">
+    <div className="border border-line p-4 space-y-4">
       <div className="space-y-2">
         <h3 className="font-medium">Wyrmplate</h3>
-        <p className="text-sm text-neutral-400">Choose your damage immunity type.</p>
+        <p className="text-sm text-text-dim">Choose your damage immunity type.</p>
         <div className="flex flex-wrap gap-2">
           {WYRMPLATE_TYPES.map((type) => (
             <button
@@ -171,10 +171,10 @@ function DragonKnightSubPicker({
               type="button"
               onClick={() => onPickWyrmplate(type)}
               className={
-                'min-h-11 px-3 py-2 rounded-md border text-sm capitalize ' +
+                'min-h-11 px-3 py-2 border text-sm capitalize ' +
                 (wyrmplateType === type
-                  ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                  : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
+                  ? 'bg-accent text-ink-0 border-accent'
+                  : 'bg-ink-1 text-text-dim border-line hover:border-accent')
               }
             >
               {type}
@@ -184,9 +184,9 @@ function DragonKnightSubPicker({
       </div>
 
       {hasPrismaticScales && (
-        <div className="space-y-2 border-t border-neutral-700 pt-4">
+        <div className="space-y-2 border-t border-line pt-4">
           <h3 className="font-medium">Prismatic Scales</h3>
-          <p className="text-sm text-neutral-400">
+          <p className="text-sm text-text-dim">
             Choose a second permanent damage immunity.
           </p>
           <div className="flex flex-wrap gap-2">
@@ -196,10 +196,10 @@ function DragonKnightSubPicker({
                 type="button"
                 onClick={() => onPickPrismatic(type)}
                 className={
-                  'min-h-11 px-3 py-2 rounded-md border text-sm capitalize ' +
+                  'min-h-11 px-3 py-2 border text-sm capitalize ' +
                   (prismaticScalesType === type
-                    ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                    : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
+                    ? 'bg-accent text-ink-0 border-accent'
+                    : 'bg-ink-1 text-text-dim border-line hover:border-accent')
                 }
               >
                 {type}
@@ -250,11 +250,11 @@ function RevenantSubPicker({
   };
 
   return (
-    <div className="rounded-md border border-neutral-800 p-4 space-y-4">
+    <div className="border border-line p-4 space-y-4">
       {/* Former Life ancestry picker */}
       <div className="space-y-2">
         <h3 className="font-medium">Former Life</h3>
-        <p className="text-sm text-neutral-400">
+        <p className="text-sm text-text-dim">
           Choose the ancestry you were before you died.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -265,7 +265,7 @@ function RevenantSubPicker({
                 key={a.id}
                 type="button"
                 onClick={() => handleFormerAncestryPick(a.id)}
-                className={`text-left rounded-md border px-4 py-3 min-h-11 ${isSelected ? 'bg-neutral-100 text-neutral-900 border-neutral-100' : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600'}`}
+                className={`text-left border px-4 py-3 min-h-11 ${isSelected ? 'bg-accent text-ink-0 border-accent' : 'bg-ink-1 text-text-dim border-line hover:border-accent'}`}
               >
                 <span className="font-medium">{a.name}</span>
                 {a.defaultSize !== '1M' && (
@@ -279,7 +279,7 @@ function RevenantSubPicker({
 
       {/* Previous Life trait pickers — one per slot purchased */}
       {previousLifeSlots.length > 0 && formerAncestry && (
-        <div className="space-y-4 border-t border-neutral-700 pt-4">
+        <div className="space-y-4 border-t border-line pt-4">
           <h3 className="font-medium">Previous Life Traits</h3>
           {previousLifeSlots.map((slotId, slotIdx) => {
             const cost = slotId.includes('1-point')
@@ -294,7 +294,7 @@ function RevenantSubPicker({
 
             return (
               <div key={`${slotId}-${slotIdx}`} className="space-y-2">
-                <p className="text-sm text-neutral-400">
+                <p className="text-sm text-text-dim">
                   Previous Life slot {slotIdx + 1}{' '}
                   {cost !== null ? `(${cost}-point trait from ${formerAncestry.name})` : ''}
                 </p>
@@ -305,10 +305,10 @@ function RevenantSubPicker({
                       type="button"
                       onClick={() => handlePreviousLifePick(slotIdx, t.id)}
                       className={
-                        'min-h-11 px-3 py-2 rounded-md border text-sm ' +
+                        'min-h-11 px-3 py-2 border text-sm ' +
                         (currentChoice === t.id
-                          ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                          : 'bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-600')
+                          ? 'bg-accent text-ink-0 border-accent'
+                          : 'bg-ink-1 text-text-dim border-line hover:border-accent')
                       }
                     >
                       {t.name}
@@ -323,7 +323,7 @@ function RevenantSubPicker({
 
       {/* Prompt when Previous Life slots exist but no former ancestry chosen yet */}
       {previousLifeSlots.length > 0 && !formerAncestry && (
-        <p className="text-sm text-neutral-500 border-t border-neutral-700 pt-4">
+        <p className="text-sm text-text-mute border-t border-line pt-4">
           Choose your former ancestry above to unlock Previous Life trait picks.
         </p>
       )}
@@ -365,13 +365,13 @@ function TraitsPicker({
 
   const counterClass =
     budget !== null && spent > budget
-      ? 'text-rose-400'
+      ? 'text-foe'
       : budget !== null && spent === budget
-        ? 'text-emerald-400'
-        : 'text-neutral-400';
+        ? 'text-accent'
+        : 'text-text-dim';
 
   return (
-    <div className="rounded-md border border-neutral-800 p-4 space-y-2">
+    <div className="border border-line p-4 space-y-2">
       <div className="flex items-center justify-between">
         <h3 className="font-medium">Purchasable traits</h3>
         {budget !== null && (
@@ -392,12 +392,12 @@ function TraitsPicker({
                 onClick={() => toggle(t.id)}
                 disabled={wouldExceed}
                 title={wouldExceed ? 'Not enough points remaining' : undefined}
-                className={`w-full text-left rounded-md border px-3 py-2 min-h-11 ${
+                className={`w-full text-left border px-3 py-2 min-h-11 ${
                   isSelected
-                    ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
+                    ? 'bg-accent text-ink-0 border-accent'
                     : wouldExceed
-                      ? 'bg-neutral-900 border-neutral-800 text-neutral-600 cursor-not-allowed'
-                      : 'bg-neutral-900 border-neutral-800 hover:border-neutral-600'
+                      ? 'bg-ink-1 border-line text-text-mute cursor-not-allowed'
+                      : 'bg-ink-1 border-line hover:border-accent'
                 }`}
               >
                 <span className="font-medium">{t.name}</span>

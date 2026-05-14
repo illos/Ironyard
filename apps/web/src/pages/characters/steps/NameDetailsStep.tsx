@@ -22,8 +22,8 @@ export function NameDetailsStep({
   return (
     <div className="space-y-6">
       {/* Build state */}
-      <div className="rounded-lg border border-neutral-800 p-5 space-y-4">
-        <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wider">Build</h3>
+      <div className="border border-line p-5 space-y-4">
+        <h3 className="text-sm font-medium text-text-dim uppercase tracking-wider">Build</h3>
 
         <Field label="Name" required>
           <input
@@ -31,7 +31,7 @@ export function NameDetailsStep({
             onChange={(e) => onNameChange(e.target.value)}
             required
             aria-required
-            className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
+            className="w-full bg-ink-1 border border-line px-3 py-2 min-h-11 focus:border-accent"
             placeholder="Your hero's name"
           />
         </Field>
@@ -47,7 +47,7 @@ export function NameDetailsStep({
             }
             required
             aria-required
-            className="w-24 rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
+            className="w-24 bg-ink-1 border border-line px-3 py-2 min-h-11 focus:border-accent"
           />
         </Field>
 
@@ -55,11 +55,11 @@ export function NameDetailsStep({
           <input
             value={campaignCode ?? ''}
             readOnly={!!campaignCode}
-            className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 uppercase tracking-widest min-h-11 disabled:opacity-60"
+            className="w-full bg-ink-1 border border-line px-3 py-2 uppercase tracking-widest min-h-11 disabled:opacity-60 focus:border-accent"
             placeholder="ABCDEF"
           />
           {campaignCode && (
-            <p className="text-xs text-neutral-500 mt-1">
+            <p className="text-xs text-text-mute mt-1">
               Pre-filled from the join link. Submit at the Review step to send to the director.
             </p>
           )}
@@ -67,8 +67,8 @@ export function NameDetailsStep({
       </div>
 
       {/* Hero details */}
-      <div className="rounded-lg border border-neutral-800 p-5 space-y-4">
-        <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wider">
+      <div className="border border-line p-5 space-y-4">
+        <h3 className="text-sm font-medium text-text-dim uppercase tracking-wider">
           Hero details
         </h3>
 
@@ -76,7 +76,7 @@ export function NameDetailsStep({
           <input
             value={details.pronouns}
             onChange={(e) => patchDetails({ pronouns: e.target.value })}
-            className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
+            className="w-full bg-ink-1 border border-line px-3 py-2 min-h-11 focus:border-accent"
             placeholder="e.g. they/them"
           />
         </Field>
@@ -85,7 +85,7 @@ export function NameDetailsStep({
           <input
             value={details.age}
             onChange={(e) => patchDetails({ age: e.target.value })}
-            className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
+            className="w-full bg-ink-1 border border-line px-3 py-2 min-h-11 focus:border-accent"
             placeholder="e.g. 34"
           />
         </Field>
@@ -94,7 +94,7 @@ export function NameDetailsStep({
           <input
             value={details.height}
             onChange={(e) => patchDetails({ height: e.target.value })}
-            className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
+            className="w-full bg-ink-1 border border-line px-3 py-2 min-h-11 focus:border-accent"
             placeholder="e.g. 5′10″"
           />
         </Field>
@@ -103,7 +103,7 @@ export function NameDetailsStep({
           <input
             value={details.build}
             onChange={(e) => patchDetails({ build: e.target.value })}
-            className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
+            className="w-full bg-ink-1 border border-line px-3 py-2 min-h-11 focus:border-accent"
             placeholder="e.g. stocky"
           />
         </Field>
@@ -112,7 +112,7 @@ export function NameDetailsStep({
           <input
             value={details.eyes}
             onChange={(e) => patchDetails({ eyes: e.target.value })}
-            className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
+            className="w-full bg-ink-1 border border-line px-3 py-2 min-h-11 focus:border-accent"
             placeholder="e.g. amber"
           />
         </Field>
@@ -121,7 +121,7 @@ export function NameDetailsStep({
           <input
             value={details.hair}
             onChange={(e) => patchDetails({ hair: e.target.value })}
-            className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
+            className="w-full bg-ink-1 border border-line px-3 py-2 min-h-11 focus:border-accent"
             placeholder="e.g. dark brown"
           />
         </Field>
@@ -130,7 +130,7 @@ export function NameDetailsStep({
           <input
             value={details.skinTone}
             onChange={(e) => patchDetails({ skinTone: e.target.value })}
-            className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
+            className="w-full bg-ink-1 border border-line px-3 py-2 min-h-11 focus:border-accent"
             placeholder="e.g. warm tan"
           />
         </Field>
@@ -139,7 +139,7 @@ export function NameDetailsStep({
           <input
             value={details.physicalFeatures}
             onChange={(e) => patchDetails({ physicalFeatures: e.target.value })}
-            className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 min-h-11"
+            className="w-full bg-ink-1 border border-line px-3 py-2 min-h-11 focus:border-accent"
             placeholder="e.g. pointed ears, calloused hands"
           />
         </Field>
@@ -149,7 +149,7 @@ export function NameDetailsStep({
             value={details.physicalFeaturesTexture}
             onChange={(e) => patchDetails({ physicalFeaturesTexture: e.target.value })}
             rows={4}
-            className="w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2"
+            className="w-full bg-ink-1 border border-line px-3 py-2 focus:border-accent"
             placeholder="Describe your hero's appearance in more detail…"
           />
         </Field>
@@ -169,9 +169,9 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="block text-sm text-neutral-300 mb-1">
+      <span className="block text-sm text-text-dim mb-1">
         {label}
-        {required && <span className="text-rose-400 ml-0.5">*</span>}
+        {required && <span className="text-foe ml-0.5">*</span>}
       </span>
       {children}
     </label>
