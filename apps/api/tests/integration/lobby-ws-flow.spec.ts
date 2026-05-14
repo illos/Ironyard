@@ -32,6 +32,7 @@ import type { Unstable_DevWorker } from 'wrangler';
 import {
   authedFetch,
   createCampaign,
+  createPendingCharacter,
   devLogin,
   joinCampaign,
   startWorker,
@@ -228,6 +229,41 @@ describe('StartEncounter / EndEncounter', () => {
     const { ws, nextMsg, close } = await connectLobby(campaign.id, cookie);
     try {
       await waitForMsg(nextMsg, (m) => m.kind === 'applied'); // JoinLobby
+
+      // StartEncounter now requires an active session (Task 12: no_active_session gate).
+      // Set up: create a character (auto-submitted as pending), approve it, start a session.
+      //
+      // The director is also the character owner here — that's valid for integration
+      // tests where we exercise the session+encounter flow, not the character flow.
+      const characterId = await createPendingCharacter(worker, cookie, campaign.inviteCode);
+
+      // Approve the character via WS so the stamper can validate it against D1.
+      dispatch(ws, 'ApproveCharacter', { characterId });
+      const approveApplied = await waitForMsg(
+        nextMsg,
+        (m) =>
+          (m.kind === 'applied' &&
+            (m.intent as { type?: string } | undefined)?.type === 'ApproveCharacter') ||
+          m.kind === 'rejected',
+      );
+      if (approveApplied.kind === 'rejected') {
+        throw new Error(`ApproveCharacter rejected: ${JSON.stringify(approveApplied.reason)}`);
+      }
+
+      // StartSession — a session must be active before StartEncounter is allowed.
+      const sessionId = `test-sess-${Date.now()}`;
+      dispatch(ws, 'StartSession', { sessionId, attendingCharacterIds: [characterId] });
+      const sessionApplied = await waitForMsg(
+        nextMsg,
+        (m) =>
+          (m.kind === 'applied' &&
+            (m.intent as { type?: string } | undefined)?.type === 'StartSession') ||
+          m.kind === 'rejected',
+      );
+      if (sessionApplied.kind === 'rejected') {
+        throw new Error(`StartSession rejected: ${JSON.stringify(sessionApplied.reason)}`);
+      }
+      expect((sessionApplied.intent as { type?: string }).type).toBe('StartSession');
 
       // Add a monster so the roster is non-empty (StartEncounter works on current roster).
       dispatch(ws, 'AddMonster', { monsterId: 'goblin-warrior-l1', quantity: 2 });

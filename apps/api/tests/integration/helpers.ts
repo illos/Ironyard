@@ -181,3 +181,88 @@ export async function joinCampaign(
   }
   return res.json() as Promise<Campaign>;
 }
+
+// ── Character helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Minimal "complete" character fixture that satisfies CompleteCharacterSchema.
+ * Used for auto-submit tests and session setup.
+ */
+function buildCompleteCharacterFixture() {
+  return {
+    level: 1,
+    xp: 0,
+    details: {},
+    ancestryId: 'human',
+    ancestryChoices: { traitIds: [] },
+    culture: {
+      customName: '',
+      environment: 'urban' as const,
+      organization: 'communal' as const,
+      upbringing: 'martial' as const,
+      environmentSkill: 'athletics',
+      organizationSkill: 'persuade',
+      upbringingSkill: 'endure',
+      language: 'Variac',
+    },
+    careerId: 'soldier',
+    careerChoices: {
+      skills: [],
+      languages: [],
+      incitingIncidentId: 'battle',
+      perkId: null,
+    },
+    classId: 'fury',
+    characteristicArray: [2, -1, -1],
+    characteristicSlots: { agility: 2, reason: -1, intuition: -1 },
+    subclassId: null,
+    levelChoices: {
+      '1': { abilityIds: [], subclassAbilityIds: [], perkId: null, skillId: null },
+    },
+    kitId: null,
+    complicationId: null,
+    campaignId: null,
+  };
+}
+
+/**
+ * Create a character with complete data attached to the given campaign by invite
+ * code. The attach route auto-submits when data is complete, leaving the
+ * character in `pending` status in `campaign_characters`. The caller is
+ * responsible for dispatching `ApproveCharacter` over WS if `approved` status
+ * is needed (e.g. before StartSession).
+ *
+ * Returns the new character's id.
+ */
+export async function createPendingCharacter(
+  worker: Unstable_DevWorker,
+  cookie: string,
+  campaignInviteCode: string,
+): Promise<string> {
+  // Create standalone character with complete data (no campaignCode yet).
+  const createRes = await authedFetch(worker, cookie, '/api/characters', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'TestHero', data: buildCompleteCharacterFixture() }),
+  });
+  if (!createRes.ok) {
+    throw new Error(`createPendingCharacter (create) failed: ${createRes.status} ${await createRes.text()}`);
+  }
+  const created = (await createRes.json()) as { id: string };
+
+  // Attach to the campaign — auto-submits the complete character to pending.
+  const attachRes = await authedFetch(worker, cookie, `/api/characters/${created.id}/attach`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ campaignCode: campaignInviteCode }),
+  });
+  if (!attachRes.ok) {
+    throw new Error(`createPendingCharacter (attach) failed: ${attachRes.status} ${await attachRes.text()}`);
+  }
+  const attached = (await attachRes.json()) as { autoSubmitted?: boolean };
+  if (!attached.autoSubmitted) {
+    throw new Error('createPendingCharacter: auto-submit did not happen — character data may be incomplete');
+  }
+
+  return created.id;
+}
