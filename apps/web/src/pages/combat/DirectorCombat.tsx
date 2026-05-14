@@ -38,7 +38,6 @@ import { DetailPane } from './detail';
 import { EncounterRail } from './EncounterRail';
 import { OpenActionsList } from './OpenActionsList';
 import { PartyRail } from './PartyRail';
-import { PlayerSheetPanel } from './PlayerSheetPanel';
 import { type Toast, ToastStack } from './ToastStack';
 
 const TOAST_DISMISS_MS = 6000;
@@ -593,11 +592,8 @@ export function DirectorCombat() {
         }
       />
 
-      {/* Below-fold panels: player sheet (for owning player) and open-actions
-          queue. These don't fit the rails/detail SplitPane but CombatRun
-          rendered them in-flow, so we keep them visible to preserve parity. */}
+      {/* Below-fold panel: open-actions queue. */}
       <div className="px-3.5 pb-3.5 space-y-3">
-        <PlayerSheetPanel campaignId={campaignId} />
         <section className="border border-line bg-ink-1 p-3.5">
           <OpenActionsList
             openActions={openActions}
