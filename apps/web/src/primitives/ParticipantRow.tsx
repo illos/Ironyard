@@ -40,7 +40,9 @@ export function ParticipantRow({
   onSelect,
 }: ParticipantRowProps) {
   const packClass = pack ? `pack-${pack}` : '';
-  const turnClass = isTurn ? 'border-pk shadow-[0_0_0_1px_var(--pk,var(--accent))]' : '';
+  // Active-turn row gets the pulsing accent ring (keyframes in styles.css).
+  // border-pk keeps a static edge so the row still reads at the pulse's nadir.
+  const turnClass = isTurn ? 'border-pk turn-pulse' : '';
   const activeClass = active && !isTurn ? 'border-pk' : '';
   const targetClass = isTarget && !isTurn ? 'shadow-[0_0_0_1px_var(--accent)]' : '';
   const actedClass = acted ? 'opacity-55' : '';

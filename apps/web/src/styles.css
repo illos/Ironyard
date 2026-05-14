@@ -8,3 +8,24 @@
   to { transform: translateY(0); opacity: 1; }
 }
 .toast-enter { animation: ironyard-toast-enter 180ms ease-out; }
+
+/* Pass 2a — active-turn ring pulse on participant rows.
+   Loop pulses the inset accent ring's spread + alpha so the row that owns
+   the current turn breathes against the static rail. --motion-pulse is the
+   token cadence (2.2s) defined in tokens.css. */
+@keyframes ironyard-turn-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px var(--pk, var(--accent)),
+      0 0 0 0 var(--pk-glow, var(--accent-glow));
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px var(--pk, var(--accent)),
+      0 0 0 6px var(--pk-glow, var(--accent-glow));
+  }
+}
+.turn-pulse { animation: ironyard-turn-pulse var(--motion-pulse) ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .turn-pulse { animation: none; }
+}
