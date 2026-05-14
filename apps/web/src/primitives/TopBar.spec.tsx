@@ -16,6 +16,19 @@ vi.mock('@tanstack/react-router', () => ({
       {children}
     </a>
   ),
+  useLocation: () => ({ pathname: '/' }),
+  useNavigate: () => () => {},
+}));
+
+vi.mock('../lib/active-context', () => ({
+  useActiveContext: () => ({
+    activeCampaignId: null,
+    setActiveCampaignId: () => {},
+  }),
+}));
+
+vi.mock('../api/queries', () => ({
+  useMyCampaigns: () => ({ data: undefined }),
 }));
 
 import { TopBar } from './TopBar';

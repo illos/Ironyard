@@ -1,5 +1,7 @@
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
+import { useMyCampaigns } from '../api/queries';
+import { useActiveContext } from '../lib/active-context';
 
 export interface AccountMenuProps {
   onSignOut?: () => void;
@@ -8,6 +10,10 @@ export interface AccountMenuProps {
 export function AccountMenu({ onSignOut }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { activeCampaignId, setActiveCampaignId } = useActiveContext();
+  const navigate = useNavigate();
+  const campaigns = useMyCampaigns();
+  const activeCampaignName = campaigns.data?.find((c) => c.id === activeCampaignId)?.name;
 
   useEffect(() => {
     if (!open) return;
@@ -29,6 +35,32 @@ export function AccountMenu({ onSignOut }: AccountMenuProps) {
       </button>
       {open && (
         <div className="absolute top-7 left-0 z-30 min-w-[160px] bg-ink-1 border border-line py-1">
+          {activeCampaignId && (
+            <>
+              <div className="px-3.5 py-2 flex flex-col gap-1">
+                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-text-mute">
+                  Active campaign
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="flex-1 text-xs text-text truncate">
+                    {activeCampaignName ?? '…'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      setActiveCampaignId(null);
+                      navigate({ to: '/' });
+                    }}
+                    className="text-[10px] font-mono uppercase tracking-[0.12em] text-text-dim hover:text-foe"
+                  >
+                    Deactivate
+                  </button>
+                </div>
+              </div>
+              <div className="h-px bg-line-soft my-1" />
+            </>
+          )}
           <Link
             to="/campaigns"
             onClick={() => setOpen(false)}
