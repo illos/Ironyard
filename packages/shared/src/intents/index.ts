@@ -110,6 +110,8 @@ export { UnequipItemPayloadSchema } from './unequip-item';
 export type { UnequipItemPayload } from './unequip-item';
 export { UndoPayloadSchema } from './undo';
 export type { UndoPayload } from './undo';
+export { UpdateSessionAttendancePayloadSchema } from './update-session-attendance';
+export type { UpdateSessionAttendancePayload } from './update-session-attendance';
 export { UseAbilityPayloadSchema } from './use-ability';
 export type { UseAbilityPayload } from './use-ability';
 export { UseConsumablePayloadSchema } from './use-consumable';
@@ -158,6 +160,7 @@ export const IntentTypes = {
   SwapKit: 'SwapKit',
   UnequipItem: 'UnequipItem',
   Undo: 'Undo',
+  UpdateSessionAttendance: 'UpdateSessionAttendance',
   UseAbility: 'UseAbility',
   UseConsumable: 'UseConsumable',
 } as const;

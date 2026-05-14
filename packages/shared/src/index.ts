@@ -79,6 +79,7 @@ export {
   SwapKitPayloadSchema,
   UndoPayloadSchema,
   UnequipItemPayloadSchema,
+  UpdateSessionAttendancePayloadSchema,
   UseAbilityPayloadSchema,
   UseConsumablePayloadSchema,
 } from './intents';
@@ -131,6 +132,7 @@ export type {
   SwapKitPayload,
   UndoPayload,
   UnequipItemPayload,
+  UpdateSessionAttendancePayload,
   UseAbilityPayload,
   UseConsumablePayload,
 } from './intents';

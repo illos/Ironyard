@@ -56,3 +56,28 @@ describe('EndSessionPayloadSchema', () => {
     expect(() => EndSessionPayloadSchema.parse({ unknown: 1 })).toThrow();
   });
 });
+
+import { UpdateSessionAttendancePayloadSchema } from '../../src/intents/update-session-attendance';
+
+describe('UpdateSessionAttendancePayloadSchema', () => {
+  it('parses add-only', () => {
+    const p = UpdateSessionAttendancePayloadSchema.parse({ add: ['c1'] });
+    expect(p.add).toEqual(['c1']);
+    expect(p.remove).toBeUndefined();
+  });
+
+  it('parses remove-only', () => {
+    const p = UpdateSessionAttendancePayloadSchema.parse({ remove: ['c2'] });
+    expect(p.remove).toEqual(['c2']);
+  });
+
+  it('parses mixed', () => {
+    const p = UpdateSessionAttendancePayloadSchema.parse({ add: ['c1'], remove: ['c2'] });
+    expect(p.add).toEqual(['c1']);
+    expect(p.remove).toEqual(['c2']);
+  });
+
+  it('rejects empty payload (must have at least one of add/remove)', () => {
+    expect(() => UpdateSessionAttendancePayloadSchema.parse({})).toThrow();
+  });
+});
