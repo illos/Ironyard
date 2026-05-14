@@ -25,6 +25,9 @@ apps/web/public/data/
 # local reference clones (e.g. SteelCompendium/data-md) — used during dev, never committed
 .reference/
 
+# superpowers brainstorm session artifacts (visual companion mockups, transient state)
+.superpowers/
+
 # env
 .env
 .env.local
