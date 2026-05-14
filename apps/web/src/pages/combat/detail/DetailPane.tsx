@@ -1,6 +1,7 @@
 import {
   type Ability,
   IntentTypes,
+  type MarkActionUsedPayload,
   type Monster,
   type Participant,
   type RemoveConditionPayload,
@@ -17,6 +18,7 @@ import { useState } from 'react';
 import { DetailHeader } from './DetailHeader';
 import { FullSheetTab } from './FullSheetTab';
 import { TargetBanner } from './TargetBanner';
+import { TurnFlowTab } from './TurnFlowTab';
 
 type Props = {
   focused: Participant | null;
@@ -49,6 +51,7 @@ type Props = {
   dispatchSetResource: (payload: SetResourcePayload) => void;
   dispatchSpendSurge: (payload: SpendSurgePayload) => void;
   dispatchSpendRecovery: (payload: SpendRecoveryPayload) => void;
+  dispatchMarkActionUsed: (payload: MarkActionUsedPayload) => void;
 };
 
 export type DetailPaneProps = Props;
@@ -71,6 +74,7 @@ export function DetailPane({
   dispatchSetResource,
   dispatchSpendSurge,
   dispatchSpendRecovery,
+  dispatchMarkActionUsed,
 }: Props) {
   if (viewerRole === 'player' && !selfParticipantId) {
     return (
@@ -109,6 +113,7 @@ export function DetailPane({
         selfParticipantId={selfParticipantId}
         viewerRole={viewerRole}
         canEdit={canEdit}
+        resolvedTarget={resolvedTarget}
         dispatchRoll={dispatchRoll}
         dispatchSetCondition={dispatchSetCondition}
         dispatchRemoveCondition={dispatchRemoveCondition}
@@ -118,6 +123,7 @@ export function DetailPane({
         dispatchSetResource={dispatchSetResource}
         dispatchSpendSurge={dispatchSpendSurge}
         dispatchSpendRecovery={dispatchSpendRecovery}
+        dispatchMarkActionUsed={dispatchMarkActionUsed}
       />
     </div>
   );
@@ -136,6 +142,7 @@ function DetailBody({
   targetParticipantId,
   viewerRole,
   canEdit,
+  resolvedTarget,
   dispatchRoll,
   dispatchSetCondition,
   dispatchRemoveCondition,
@@ -145,7 +152,8 @@ function DetailBody({
   dispatchSetResource,
   dispatchSpendSurge,
   dispatchSpendRecovery,
-}: Props & { focused: Participant; canEdit: boolean }) {
+  dispatchMarkActionUsed,
+}: Props & { focused: Participant; canEdit: boolean; resolvedTarget: Participant | null }) {
   const [tab, setTab] = useState<TabId>(viewerRole === 'player' ? 'turn-flow' : 'full-sheet');
 
   return (
@@ -178,9 +186,16 @@ function DetailBody({
         </div>
       </div>
       {tab === 'turn-flow' ? (
-        <div className="text-text-mute text-sm p-6 border border-dashed border-line-soft text-center">
-          Turn flow — coming next task.
-        </div>
+        <TurnFlowTab
+          focused={focused}
+          monsterByParticipantId={monsterByParticipantId}
+          onMarkUsed={dispatchMarkActionUsed}
+          onAbilityRoll={(ability, args, target) =>
+            dispatchRoll({ ability, attacker: focused, target, rolls: args.rolls, source: args.source })
+          }
+          target={resolvedTarget ?? focused}
+          canRoll={canEdit}
+        />
       ) : (
         <FullSheetTab
           focused={focused}

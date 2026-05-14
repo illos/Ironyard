@@ -8,6 +8,7 @@ import {
   type GainResourcePayload,
   type Intent,
   IntentTypes,
+  type MarkActionUsedPayload,
   type Monster,
   type Participant,
   type RemoveConditionPayload,
@@ -389,6 +390,10 @@ export function DirectorCombat() {
     setParticipantSnapshotBefore(participants);
     send(IntentTypes.SpendRecovery, payload);
   };
+  const dispatchMarkActionUsed = (payload: MarkActionUsedPayload) => {
+    setParticipantSnapshotBefore(participants);
+    send(IntentTypes.MarkActionUsed, payload);
+  };
   const dispatchGainMalice = (amount: number) => {
     setParticipantSnapshotBefore(participants);
     send(IntentTypes.GainMalice, { amount });
@@ -567,6 +572,7 @@ export function DirectorCombat() {
             dispatchSetResource={dispatchSetResource}
             dispatchSpendSurge={dispatchSpendSurge}
             dispatchSpendRecovery={dispatchSpendRecovery}
+            dispatchMarkActionUsed={dispatchMarkActionUsed}
           />
         }
       />
