@@ -2,18 +2,17 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useCreateCampaign, useJoinCampaign } from '../api/mutations';
 import { type CampaignSummary, useMe, useMyCampaigns } from '../api/queries';
+import { Button, Section } from '../primitives';
 
 export function CampaignsList() {
   const me = useMe();
   const campaigns = useMyCampaigns();
 
   if (me.isLoading || campaigns.isLoading) {
-    return <main className="mx-auto max-w-3xl p-6 text-neutral-400">Loading…</main>;
+    return <main className="mx-auto max-w-3xl p-6 text-text-dim">Loading…</main>;
   }
   if (!me.data) {
-    return (
-      <main className="mx-auto max-w-3xl p-6 text-neutral-400">Sign in to view campaigns.</main>
-    );
+    return <main className="mx-auto max-w-3xl p-6 text-text-dim">Sign in to view campaigns.</main>;
   }
 
   const owned = (campaigns.data ?? []).filter((c) => c.isOwner);
@@ -21,16 +20,16 @@ export function CampaignsList() {
 
   return (
     <main className="mx-auto max-w-3xl p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Campaigns</h1>
+      <h1 className="text-2xl font-semibold text-text">Campaigns</h1>
 
-      <CampaignSection title="My Campaigns" emptyMessage="You haven't created any campaigns yet.">
+      <CampaignSection heading="My Campaigns" emptyMessage="You haven't created any campaigns yet.">
         {owned.map((c) => (
           <CampaignRow key={c.id} c={c} />
         ))}
       </CampaignSection>
 
       <CampaignSection
-        title="Joined Campaigns"
+        heading="Joined Campaigns"
         emptyMessage="You haven't joined any campaigns yet."
       >
         {joined.map((c) => (
@@ -45,25 +44,24 @@ export function CampaignsList() {
 }
 
 function CampaignSection({
-  title,
+  heading,
   emptyMessage,
   children,
 }: {
-  title: string;
+  heading: string;
   emptyMessage: string;
   children: React.ReactNode;
 }) {
   const arr = Array.isArray(children) ? children : [children];
   const empty = arr.filter(Boolean).length === 0;
   return (
-    <section className="rounded-lg border border-neutral-800 p-5">
-      <h2 className="font-semibold">{title}</h2>
+    <Section heading={heading}>
       {empty ? (
-        <p className="mt-3 text-sm text-neutral-500">{emptyMessage}</p>
+        <p className="text-sm text-text-mute">{emptyMessage}</p>
       ) : (
-        <ul className="mt-3 space-y-2">{children}</ul>
+        <ul className="space-y-2">{children}</ul>
       )}
-    </section>
+    </Section>
   );
 }
 
@@ -73,16 +71,16 @@ function CampaignRow({ c }: { c: CampaignSummary }) {
       <Link
         to="/campaigns/$id"
         params={{ id: c.id }}
-        className="flex items-center gap-3 rounded-md bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 px-4 py-3 min-h-11"
+        className="flex items-center gap-3 bg-ink-2 hover:bg-ink-3 border border-line px-4 py-3 min-h-11 text-text"
       >
         <span className="flex-1">
           <span className="font-medium">{c.name}</span>
-          {c.isOwner && <span className="ml-2 text-xs text-amber-400">owner</span>}
+          {c.isOwner && <span className="ml-2 text-xs text-accent">owner</span>}
           {c.isDirector && !c.isOwner && (
-            <span className="ml-2 text-xs text-amber-400">director</span>
+            <span className="ml-2 text-xs text-accent">director</span>
           )}
         </span>
-        <span className="text-xs text-neutral-500 tracking-widest">{c.inviteCode}</span>
+        <span className="text-xs text-text-mute tracking-widest">{c.inviteCode}</span>
       </Link>
     </li>
   );
@@ -94,10 +92,9 @@ function NewCampaignForm() {
   const [name, setName] = useState('');
 
   return (
-    <section className="rounded-lg border border-neutral-800 p-5">
-      <h2 className="font-semibold">New Campaign</h2>
+    <Section heading="New Campaign">
       <form
-        className="mt-3 flex gap-2"
+        className="flex gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           if (!name.trim()) return;
@@ -116,20 +113,21 @@ function NewCampaignForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Saturday game"
-          className="flex-1 rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 outline-none focus:border-neutral-600"
+          className="flex-1 bg-ink-2 border border-line text-text px-3 py-2 outline-none focus:border-accent"
         />
-        <button
+        <Button
           type="submit"
+          variant="primary"
           disabled={createCampaign.isPending || !name.trim()}
-          className="min-h-11 rounded-md bg-neutral-100 text-neutral-900 px-4 py-2 font-medium disabled:opacity-60"
+          className="min-h-11 disabled:opacity-60"
         >
           Create
-        </button>
+        </Button>
       </form>
       {createCampaign.error && (
-        <p className="mt-2 text-sm text-rose-400">{(createCampaign.error as Error).message}</p>
+        <p className="mt-2 text-sm text-foe">{(createCampaign.error as Error).message}</p>
       )}
-    </section>
+    </Section>
   );
 }
 
@@ -139,10 +137,9 @@ function JoinCampaignForm() {
   const [code, setCode] = useState('');
 
   return (
-    <section className="rounded-lg border border-neutral-800 p-5">
-      <h2 className="font-semibold">Join with invite code</h2>
+    <Section heading="Join with invite code">
       <form
-        className="mt-3 flex gap-2"
+        className="flex gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           const v = code.trim().toUpperCase();
@@ -162,19 +159,20 @@ function JoinCampaignForm() {
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           placeholder="Invite code"
-          className="flex-1 rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 outline-none focus:border-neutral-600 uppercase tracking-widest"
+          className="flex-1 bg-ink-2 border border-line text-text px-3 py-2 outline-none focus:border-accent uppercase tracking-widest"
         />
-        <button
+        <Button
           type="submit"
+          variant="primary"
           disabled={joinCampaign.isPending || !code.trim()}
-          className="min-h-11 rounded-md bg-neutral-100 text-neutral-900 px-4 py-2 font-medium disabled:opacity-60"
+          className="min-h-11 disabled:opacity-60"
         >
           Join
-        </button>
+        </Button>
       </form>
       {joinCampaign.error && (
-        <p className="mt-2 text-sm text-rose-400">{(joinCampaign.error as Error).message}</p>
+        <p className="mt-2 text-sm text-foe">{(joinCampaign.error as Error).message}</p>
       )}
-    </section>
+    </Section>
   );
 }
