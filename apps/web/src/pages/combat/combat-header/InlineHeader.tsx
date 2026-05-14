@@ -22,6 +22,10 @@ export type InlineHeaderProps = {
   isAtTurnEnd: boolean;
   hasEncounter: boolean;
   isActingAsDirector: boolean;
+  /** Player-side affordances — true when the player's own PC has the active turn. */
+  isPlayerActiveTurn: boolean;
+  /** Display name of whoever currently has the active turn; null between turns. */
+  activeParticipantName: string | null;
   onStartRound: () => void;
   onEndTurn: () => void;
   onEndRound: () => void;
@@ -46,6 +50,8 @@ export function InlineHeader({
   isAtTurnEnd,
   hasEncounter,
   isActingAsDirector,
+  isPlayerActiveTurn,
+  activeParticipantName,
   onStartRound,
   onEndTurn,
   onEndRound,
@@ -125,6 +131,24 @@ export function InlineHeader({
         >
           End turn
         </Button>
+      )}
+      {!isActingAsDirector && hasEncounter && round !== null && !isAtTurnEnd && (
+        isPlayerActiveTurn ? (
+          <Button
+            type="button"
+            onClick={onEndTurn}
+            disabled={wsClosed}
+            variant="primary"
+            size="sm"
+            className="min-h-9"
+          >
+            End turn
+          </Button>
+        ) : (
+          <span className="font-mono uppercase tracking-[0.08em] text-[10px] text-text-mute">
+            {activeParticipantName ?? '—'}<span className="text-text-mute/70">'s turn</span>
+          </span>
+        )
       )}
       {isActingAsDirector && hasEncounter && round !== null && isAtTurnEnd && (
         <Button

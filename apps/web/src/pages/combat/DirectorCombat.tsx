@@ -434,6 +434,8 @@ export function DirectorCombat() {
           isAtTurnEnd={false}
           hasEncounter={false}
           isActingAsDirector={isActingAsDirector}
+          isPlayerActiveTurn={false}
+          activeParticipantName={null}
           onStartRound={handleStartRound}
           onEndTurn={handleEndTurn}
           onEndRound={handleEndRound}
@@ -479,6 +481,8 @@ export function DirectorCombat() {
           isAtTurnEnd={false}
           hasEncounter={true}
           isActingAsDirector={isActingAsDirector}
+          isPlayerActiveTurn={false}
+          activeParticipantName={null}
           onStartRound={handleStartRound}
           onEndTurn={handleEndTurn}
           onEndRound={handleEndRound}
@@ -532,6 +536,12 @@ export function DirectorCombat() {
         isAtTurnEnd={isAtTurnEnd}
         hasEncounter={true}
         isActingAsDirector={isActingAsDirector}
+        isPlayerActiveTurn={
+          !!selfParticipantId && activeEncounter?.activeParticipantId === selfParticipantId
+        }
+        activeParticipantName={
+          (participants.find((p) => p.id === activeEncounter?.activeParticipantId)?.name) ?? null
+        }
         onStartRound={handleStartRound}
         onEndTurn={handleEndTurn}
         onEndRound={handleEndRound}
