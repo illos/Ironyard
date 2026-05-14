@@ -24,27 +24,27 @@ export function PlayerSheetPanel({ campaignId }: { campaignId: string }) {
 
   if (!myParticipant) {
     return (
-      <aside className="rounded-md border border-neutral-800 p-4 text-sm text-neutral-400">
+      <aside className="border border-line p-4 text-sm text-text-dim">
         Your character isn't in this encounter yet.
       </aside>
     );
   }
 
   return (
-    <aside className="rounded-md border border-neutral-800 p-4 space-y-4">
+    <aside className="border border-line p-4 space-y-4">
       <header className="flex items-baseline justify-between">
         <div>
           <h2 className="text-lg font-semibold">{myParticipant.name}</h2>
-          <p className="text-xs text-neutral-500">Level {myParticipant.level}</p>
+          <p className="text-xs text-text-mute">Level {myParticipant.level}</p>
         </div>
         <div className="text-right text-sm">
           <div className="font-mono">
             {myParticipant.currentStamina} / {myParticipant.maxStamina} stamina
           </div>
-          <div className="font-mono text-neutral-400">
+          <div className="font-mono text-text-dim">
             {myParticipant.recoveries.current} / {myParticipant.recoveries.max} recoveries
           </div>
-          <div className="font-mono text-neutral-400">
+          <div className="font-mono text-text-dim">
             {myParticipant.victories ?? 0} victories
           </div>
         </div>
@@ -104,7 +104,7 @@ function ActiveAbilitiesStrip({ participant }: { participant: Participant }) {
         return (
           <span
             key={a.abilityId}
-            className="rounded-full border border-violet-700/60 bg-violet-900/30 px-2 py-0.5 text-xs text-violet-100"
+            className="rounded-full border border-accent bg-ink-2 px-2 py-0.5 text-xs text-text"
             title={`Active until ${a.expiresAt.kind === 'EoT' ? 'end of turn' : 'end of encounter'}`}
           >
             {name}
@@ -137,7 +137,7 @@ function ConditionsStrip({
   return (
     <div className="flex flex-wrap gap-1">
       {participant.conditions.length === 0 && (
-        <span className="text-xs text-neutral-500">No conditions.</span>
+        <span className="text-xs text-text-mute">No conditions.</span>
       )}
       {participant.conditions.map((c, i) => (
         <ConditionChip key={i} condition={c} onRemove={() => remove(c.type)} />
@@ -170,7 +170,7 @@ function ResourcePanel({
     );
   };
   return (
-    <div className="rounded-md border border-neutral-800 p-3 space-y-2">
+    <div className="border border-line p-3 space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium">{r.name}</span>
         <span className="font-mono text-sm">
@@ -182,14 +182,14 @@ function ResourcePanel({
         <button
           type="button"
           onClick={() => change(-1)}
-          className="flex-1 min-h-11 rounded-md bg-neutral-800 text-neutral-100 px-3 py-2"
+          className="flex-1 min-h-11 bg-ink-2 text-text px-3 py-2"
         >
           − 1
         </button>
         <button
           type="button"
           onClick={() => change(+1)}
-          className="flex-1 min-h-11 rounded-md bg-neutral-800 text-neutral-100 px-3 py-2"
+          className="flex-1 min-h-11 bg-ink-2 text-text px-3 py-2"
         >
           + 1
         </button>
@@ -223,7 +223,7 @@ function RecoveryButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className="w-full min-h-11 rounded-md bg-emerald-400 text-neutral-900 px-4 py-2 font-medium disabled:opacity-50"
+      className="w-full min-h-11 bg-accent text-ink-0 px-4 py-2 font-medium disabled:opacity-50"
     >
       Spend recovery (+{participant.recoveryValue})
     </button>
@@ -249,14 +249,14 @@ function Abilities({
 
   if (!participant.characterId) {
     return (
-      <div className="text-xs text-neutral-500">
+      <div className="text-xs text-text-mute">
         No character attached — ability list unavailable.
       </div>
     );
   }
 
   if (!ch.data || !staticData) {
-    return <div className="text-xs text-neutral-500">Loading abilities…</div>;
+    return <div className="text-xs text-text-mute">Loading abilities…</div>;
   }
 
   const bundle: StaticDataBundle = {
@@ -272,7 +272,7 @@ function Abilities({
 
   if (runtime.abilityIds.length === 0) {
     return (
-      <div className="text-xs text-neutral-500">
+      <div className="text-xs text-text-mute">
         No abilities recorded — complete level choices in the wizard.
       </div>
     );
@@ -292,10 +292,10 @@ function Abilities({
             return (
               <div
                 key={id}
-                className="rounded-md border border-amber-800/40 bg-amber-900/10 px-3 py-2 text-xs font-mono text-amber-200"
+                className="border border-line bg-ink-2 px-3 py-2 text-xs font-mono text-accent"
                 title="Ability data not found — likely a stale id from before Epic 2B"
               >
-                {id} <span className="text-amber-400">(missing)</span>
+                {id} <span className="text-accent">(missing)</span>
               </div>
             );
           }
@@ -323,7 +323,7 @@ function Abilities({
             return (
               <article
                 key={id}
-                className="rounded-lg border border-neutral-800 bg-neutral-900/60 p-3"
+                className="border border-line bg-ink-1 p-3"
               >
                 <header className="flex items-baseline justify-between gap-2">
                   <h4 className="font-medium text-sm">{ability.name}</h4>
@@ -332,13 +332,13 @@ function Abilities({
                       type="button"
                       onClick={activate}
                       disabled={isActive}
-                      className="min-h-9 rounded-md bg-violet-500 text-neutral-900 px-3 py-1 text-xs font-medium disabled:opacity-50"
+                      className="min-h-9 bg-accent text-ink-0 px-3 py-1 text-xs font-medium disabled:opacity-50"
                     >
                       {isActive ? 'Active' : 'Activate'}
                     </button>
                   )}
                 </header>
-                <p className="mt-1 text-xs text-neutral-400">{ability.raw}</p>
+                <p className="mt-1 text-xs text-text-dim">{ability.raw}</p>
               </article>
             );
           }
@@ -466,12 +466,12 @@ function KitDisplayAndSwap({
   const kitList = kits.data as unknown as Kit[];
 
   return (
-    <div className="flex items-center justify-between text-xs text-neutral-400">
+    <div className="flex items-center justify-between text-xs text-text-dim">
       <span>Kit: {currentKit?.name ?? '—'}</span>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="min-h-[44px] rounded border border-neutral-700 px-2 text-xs hover:bg-neutral-800"
+        className="min-h-[44px] border border-line px-2 text-xs hover:bg-ink-2"
       >
         Swap
       </button>
@@ -520,7 +520,7 @@ function HeroTokenPanel({
     );
   };
   return (
-    <div className="rounded-md border border-violet-800/40 bg-violet-950/20 p-3 space-y-2">
+    <div className="border border-line bg-ink-2 p-3 space-y-2">
       <div className="flex items-baseline justify-between">
         <span className="text-sm font-medium">Hero tokens</span>
         <span className="font-mono tabular-nums text-sm">{heroTokens}</span>
@@ -530,7 +530,7 @@ function HeroTokenPanel({
           type="button"
           disabled={heroTokens < 1}
           onClick={() => spend(1, 'surge_burst')}
-          className="flex-1 min-h-11 rounded-md bg-violet-500 text-neutral-900 text-sm font-medium disabled:opacity-40"
+          className="flex-1 min-h-11 bg-accent text-ink-0 text-sm font-medium disabled:opacity-40"
         >
           +2 Surges (1)
         </button>
@@ -538,7 +538,7 @@ function HeroTokenPanel({
           type="button"
           disabled={heroTokens < 2}
           onClick={() => spend(2, 'regain_stamina')}
-          className="flex-1 min-h-11 rounded-md bg-violet-500 text-neutral-900 text-sm font-medium disabled:opacity-40"
+          className="flex-1 min-h-11 bg-accent text-ink-0 text-sm font-medium disabled:opacity-40"
         >
           Regain Stamina (2)
         </button>

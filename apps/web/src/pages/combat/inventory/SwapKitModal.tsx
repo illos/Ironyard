@@ -26,15 +26,15 @@ export function SwapKitModal({ kits, currentKitId, onConfirm, onClose }: Props) 
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
     >
-      <div className="w-full max-w-md rounded-lg border border-neutral-700 bg-neutral-900 p-4">
+      <div className="w-full max-w-md border border-line bg-ink-1 p-4">
         <h2 className="mb-2 text-lg font-semibold">Swap kit</h2>
         <ul className="max-h-64 space-y-1 overflow-y-auto">
           {kits.map((k) => (
             <li key={k.id}>
               <button
                 type="button"
-                className={`w-full min-h-[44px] rounded px-2 text-left text-sm ${
-                  selected === k.id ? 'bg-emerald-900/40' : 'hover:bg-neutral-800'
+                className={`w-full min-h-[44px] px-2 text-left text-sm ${
+                  selected === k.id ? 'bg-accent text-ink-0' : 'hover:bg-ink-2'
                 }`}
                 onClick={() => setSelected(k.id)}
               >
@@ -47,7 +47,7 @@ export function SwapKitModal({ kits, currentKitId, onConfirm, onClose }: Props) 
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[44px] rounded border border-neutral-700 px-3 text-sm"
+            className="min-h-[44px] border border-line px-3 text-sm"
           >
             Cancel
           </button>
@@ -55,7 +55,7 @@ export function SwapKitModal({ kits, currentKitId, onConfirm, onClose }: Props) 
             type="button"
             disabled={!selected || selected === currentKitId}
             onClick={() => selected && onConfirm(selected)}
-            className="min-h-[44px] rounded bg-emerald-700 px-3 text-sm disabled:opacity-50"
+            className="min-h-[44px] bg-accent text-ink-0 px-3 text-sm disabled:opacity-50"
           >
             Confirm
           </button>

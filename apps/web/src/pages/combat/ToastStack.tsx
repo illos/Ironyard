@@ -30,16 +30,16 @@ export function ToastStack({ toasts, onUndo, onDismiss }: Props) {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="pointer-events-auto rounded-lg border border-neutral-800 border-l-2 border-l-rose-500 bg-neutral-900/95 backdrop-blur px-4 py-3 shadow-lg shadow-black/40 toast-enter"
+          className="pointer-events-auto border border-line border-l-2 border-l-foe bg-ink-1 backdrop-blur px-4 py-3 shadow-lg shadow-black/40 toast-enter"
         >
           <div className="flex items-start justify-between gap-3">
-            <p className="text-sm text-neutral-100 flex-1">{t.text}</p>
+            <p className="text-sm text-text flex-1">{t.text}</p>
             <div className="flex items-center gap-1.5 shrink-0">
               {t.undoTargetId && !t.undone && (
                 <button
                   type="button"
                   onClick={() => t.undoTargetId && onUndo(t.undoTargetId)}
-                  className="min-h-11 min-w-11 px-3 rounded-md bg-neutral-800 hover:bg-neutral-700 active:bg-neutral-600 text-sm font-semibold text-neutral-100 transition-colors"
+                  className="min-h-11 min-w-11 px-3 bg-ink-2 hover:bg-ink-3 active:bg-ink-3 text-sm font-semibold text-text transition-colors"
                 >
                   Undo
                 </button>
@@ -48,7 +48,7 @@ export function ToastStack({ toasts, onUndo, onDismiss }: Props) {
                 type="button"
                 onClick={() => onDismiss(t.id)}
                 aria-label="Dismiss"
-                className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-md text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800"
+                className="min-h-11 min-w-11 inline-flex items-center justify-center text-text-dim hover:text-text hover:bg-ink-2"
               >
                 <span aria-hidden="true">×</span>
               </button>

@@ -3,15 +3,15 @@ import type { ConditionInstance, ConditionType } from '@ironyard/shared';
 // Slice 11: muted-but-distinct backgrounds for the nine canon conditions.
 // Per docs/rules-canon.md §3.1; reserved-condition list is closed.
 const COLORS: Record<ConditionType, string> = {
-  Bleeding: 'bg-rose-900/40 text-rose-100 ring-rose-700/40',
-  Dazed: 'bg-indigo-900/40 text-indigo-100 ring-indigo-700/40',
-  Frightened: 'bg-violet-900/40 text-violet-100 ring-violet-700/40',
-  Grabbed: 'bg-amber-900/40 text-amber-100 ring-amber-700/40',
-  Prone: 'bg-stone-800 text-stone-100 ring-stone-600/40',
-  Restrained: 'bg-orange-900/40 text-orange-100 ring-orange-700/40',
-  Slowed: 'bg-sky-900/40 text-sky-100 ring-sky-700/40',
-  Taunted: 'bg-fuchsia-900/40 text-fuchsia-100 ring-fuchsia-700/40',
-  Weakened: 'bg-slate-800 text-slate-100 ring-slate-600/40',
+  Bleeding: 'bg-foe text-text ring-foe',
+  Dazed: 'bg-ink-2 text-text ring-line',
+  Frightened: 'bg-ink-2 text-text ring-line',
+  Grabbed: 'bg-ink-2 text-text ring-line',
+  Prone: 'bg-ink-2 text-text ring-line',
+  Restrained: 'bg-ink-2 text-text ring-line',
+  Slowed: 'bg-ink-2 text-text ring-line',
+  Taunted: 'bg-ink-2 text-text ring-line',
+  Weakened: 'bg-ink-2 text-text ring-line',
 };
 
 type Props = {

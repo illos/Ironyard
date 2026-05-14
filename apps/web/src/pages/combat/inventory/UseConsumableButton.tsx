@@ -29,7 +29,7 @@ export function UseConsumableButton({ participants, onUse }: Props) {
       <button
         type="button"
         onClick={() => setPicking(true)}
-        className="min-h-[44px] rounded border border-neutral-700 px-2 text-xs hover:bg-neutral-800"
+        className="min-h-[44px] border border-line px-2 text-xs hover:bg-ink-2"
       >
         Use
       </button>
@@ -38,14 +38,14 @@ export function UseConsumableButton({ participants, onUse }: Props) {
 
   return (
     <div className="space-y-1">
-      <div className="text-xs text-neutral-400">Target:</div>
+      <div className="text-xs text-text-dim">Target:</div>
       <button
         type="button"
         onClick={() => {
           onUse(undefined);
           setPicking(false);
         }}
-        className="block min-h-[44px] w-full rounded bg-neutral-800 px-2 text-xs hover:bg-neutral-700"
+        className="block min-h-[44px] w-full bg-ink-2 px-2 text-xs hover:bg-ink-3"
       >
         Self
       </button>
@@ -57,7 +57,7 @@ export function UseConsumableButton({ participants, onUse }: Props) {
             onUse(p.id);
             setPicking(false);
           }}
-          className="block min-h-[44px] w-full rounded bg-neutral-800 px-2 text-xs hover:bg-neutral-700"
+          className="block min-h-[44px] w-full bg-ink-2 px-2 text-xs hover:bg-ink-3"
         >
           {p.name}
         </button>
@@ -65,7 +65,7 @@ export function UseConsumableButton({ participants, onUse }: Props) {
       <button
         type="button"
         onClick={() => setPicking(false)}
-        className="min-h-[44px] text-xs text-neutral-500 hover:text-neutral-300"
+        className="min-h-[44px] text-xs text-text-mute hover:text-text-dim"
       >
         Cancel
       </button>

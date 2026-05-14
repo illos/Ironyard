@@ -57,16 +57,16 @@ export function PushItemModal({ characters, items, onConfirm, onClose }: Props) 
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
     >
-      <div className="w-full max-w-lg space-y-3 rounded-lg border border-neutral-700 bg-neutral-900 p-4">
+      <div className="w-full max-w-lg space-y-3 border border-line bg-ink-1 p-4">
         <h2 className="text-lg font-semibold">Push item to a player</h2>
 
         <div>
-          <label htmlFor="push-character" className="block text-xs text-neutral-400">
+          <label htmlFor="push-character" className="block text-xs text-text-dim">
             Target character
           </label>
           <select
             id="push-character"
-            className="mt-1 w-full rounded border border-neutral-700 bg-neutral-800 p-2 text-sm"
+            className="mt-1 w-full border border-line bg-ink-2 p-2 text-sm"
             value={characterId ?? ''}
             onChange={(e) => setCharacterId(e.target.value || null)}
           >
@@ -80,29 +80,29 @@ export function PushItemModal({ characters, items, onConfirm, onClose }: Props) 
         </div>
 
         <div>
-          <label htmlFor="push-search" className="block text-xs text-neutral-400">
+          <label htmlFor="push-search" className="block text-xs text-text-dim">
             Item search
           </label>
           <input
             id="push-search"
             type="text"
-            className="mt-1 w-full rounded border border-neutral-700 bg-neutral-800 p-2 text-sm"
+            className="mt-1 w-full border border-line bg-ink-2 p-2 text-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Type to filter…"
           />
-          <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto rounded border border-neutral-800 bg-neutral-950 p-1">
+          <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto border border-line bg-ink-0 p-1">
             {filtered.slice(0, 50).map((i) => (
               <li key={i.id}>
                 <button
                   type="button"
-                  className={`w-full min-h-[44px] rounded px-2 text-left text-sm ${
-                    itemId === i.id ? 'bg-emerald-900/40' : 'hover:bg-neutral-800'
+                  className={`w-full min-h-[44px] px-2 text-left text-sm ${
+                    itemId === i.id ? 'bg-accent text-ink-0' : 'hover:bg-ink-2'
                   }`}
                   onClick={() => setItemId(i.id)}
                 >
                   <span className="font-medium">{i.name}</span>
-                  <span className="ml-2 text-xs text-neutral-500">{i.category}</span>
+                  <span className="ml-2 text-xs text-text-mute">{i.category}</span>
                 </button>
               </li>
             ))}
@@ -110,7 +110,7 @@ export function PushItemModal({ characters, items, onConfirm, onClose }: Props) 
         </div>
 
         <div>
-          <label htmlFor="push-qty" className="block text-xs text-neutral-400">
+          <label htmlFor="push-qty" className="block text-xs text-text-dim">
             Quantity
           </label>
           <input
@@ -120,7 +120,7 @@ export function PushItemModal({ characters, items, onConfirm, onClose }: Props) 
             max={99}
             value={quantity}
             onChange={(e) => setQuantity(Math.max(1, Math.min(99, Number(e.target.value) || 1)))}
-            className="mt-1 w-24 rounded border border-neutral-700 bg-neutral-800 p-2 text-sm"
+            className="mt-1 w-24 border border-line bg-ink-2 p-2 text-sm"
           />
         </div>
 
@@ -128,7 +128,7 @@ export function PushItemModal({ characters, items, onConfirm, onClose }: Props) 
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[44px] rounded border border-neutral-700 px-3 text-sm"
+            className="min-h-[44px] border border-line px-3 text-sm"
           >
             Cancel
           </button>
@@ -136,7 +136,7 @@ export function PushItemModal({ characters, items, onConfirm, onClose }: Props) 
             type="button"
             disabled={!characterId || !itemId}
             onClick={() => characterId && itemId && onConfirm(characterId, itemId, quantity)}
-            className="min-h-[44px] rounded bg-emerald-700 px-3 text-sm disabled:opacity-50"
+            className="min-h-[44px] bg-accent text-ink-0 px-3 text-sm disabled:opacity-50"
           >
             Push item
           </button>

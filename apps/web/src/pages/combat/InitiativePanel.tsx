@@ -25,10 +25,10 @@ export function InitiativePanel({
   return (
     <div className="space-y-2">
       <header className="flex items-baseline justify-between px-1">
-        <h2 className="font-semibold text-sm uppercase tracking-wider text-neutral-400">
+        <h2 className="font-semibold text-sm uppercase tracking-wider text-text-dim">
           Initiative
         </h2>
-        <span className="text-xs text-neutral-500 font-mono tabular-nums">{ordered.length}</span>
+        <span className="text-xs text-text-mute font-mono tabular-nums">{ordered.length}</span>
       </header>
       <ul className="space-y-1.5">
         {ordered.map((p) => {
@@ -39,19 +39,19 @@ export function InitiativePanel({
               <button
                 type="button"
                 onClick={() => onFocus(p.id)}
-                className={`w-full min-h-14 flex items-center gap-3 rounded-md px-3 py-2 text-left transition-colors border-l-2 ${
+                className={`w-full min-h-14 flex items-center gap-3 px-3 py-2 text-left transition-colors border-l-2 ${
                   isActive
-                    ? 'bg-amber-950/40 border-amber-400 hover:bg-amber-950/60'
+                    ? 'bg-ink-2 border-accent hover:bg-ink-3'
                     : isFocused
-                      ? 'bg-neutral-800 border-neutral-600 hover:bg-neutral-800'
-                      : 'bg-neutral-900/60 border-transparent hover:bg-neutral-800/80 active:bg-neutral-800'
+                      ? 'bg-ink-2 border-line hover:bg-ink-2'
+                      : 'bg-ink-1 border-transparent hover:bg-ink-2 active:bg-ink-2'
                 }`}
               >
                 <span
                   className={`shrink-0 inline-flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold ${
                     p.kind === 'monster'
-                      ? 'bg-rose-900/40 text-rose-200'
-                      : 'bg-sky-900/40 text-sky-200'
+                      ? 'bg-foe text-text'
+                      : 'bg-accent text-ink-0'
                   }`}
                   aria-label={p.kind}
                 >
@@ -62,13 +62,13 @@ export function InitiativePanel({
                     <p className="truncate font-medium flex items-center gap-2">
                       {isActive && (
                         <span
-                          className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400"
+                          className="inline-block w-1.5 h-1.5 rounded-full bg-accent"
                           aria-label="active turn"
                         />
                       )}
                       {p.name}
                     </p>
-                    <p className="shrink-0 text-xs font-mono tabular-nums text-neutral-400">
+                    <p className="shrink-0 text-xs font-mono tabular-nums text-text-dim">
                       {p.currentStamina}/{p.maxStamina}
                     </p>
                   </div>
@@ -81,7 +81,7 @@ export function InitiativePanel({
           );
         })}
         {ordered.length === 0 && (
-          <li className="text-sm text-neutral-500 px-3 py-2">No participants yet.</li>
+          <li className="text-sm text-text-mute px-3 py-2">No participants yet.</li>
         )}
       </ul>
     </div>

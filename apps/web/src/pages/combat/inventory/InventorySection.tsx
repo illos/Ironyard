@@ -31,7 +31,7 @@ export function InventorySection({
   if (rows.length === 0) return null;
   return (
     <div className="space-y-1">
-      <h4 className="text-xs uppercase tracking-wide text-neutral-500">{title}</h4>
+      <h4 className="text-xs uppercase tracking-wide text-text-mute">{title}</h4>
       <ul className="space-y-1">
         {rows.map((r) => (
           <li key={r.entry.id}>

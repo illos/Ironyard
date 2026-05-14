@@ -63,7 +63,7 @@ export function InventoryPanel({
   const conflictingSlots = detectTrinketConflicts(character, items);
   return (
     <section className="space-y-3">
-      <h3 className="text-sm font-semibold text-neutral-300">Inventory</h3>
+      <h3 className="text-sm font-semibold text-text-dim">Inventory</h3>
       <InventorySection
         title="Artifacts"
         rows={artifacts}

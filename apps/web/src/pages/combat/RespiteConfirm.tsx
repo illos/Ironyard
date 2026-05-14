@@ -90,9 +90,9 @@ export function RespiteConfirm({ characters, items, onConfirm, onClose }: Props)
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
     >
-      <div className="w-full max-w-md space-y-3 rounded-lg border border-neutral-700 bg-neutral-900 p-4">
+      <div className="w-full max-w-md space-y-3 border border-line bg-ink-1 p-4">
         <h2 className="text-lg font-semibold">Respite</h2>
-        <p className="text-xs text-neutral-400">
+        <p className="text-xs text-text-dim">
           24h of rest. Heroes regain stamina + recoveries; Victories convert to XP; negative
           resources reset to 0.
         </p>
@@ -105,12 +105,12 @@ export function RespiteConfirm({ characters, items, onConfirm, onClose }: Props)
               const id = aug.id;
               return (
                 <div key={id} className="mb-2">
-                  <label htmlFor={`wyrmplate-${id}`} className="block text-xs text-neutral-400">
+                  <label htmlFor={`wyrmplate-${id}`} className="block text-xs text-text-dim">
                     {aug.name ?? id}
                   </label>
                   <select
                     id={`wyrmplate-${id}`}
-                    className="mt-1 w-full rounded border border-neutral-700 bg-neutral-800 p-2 text-sm"
+                    className="mt-1 w-full border border-line bg-ink-2 p-2 text-sm"
                     value={wyrmplateChoices[id] ?? 'fire'}
                     onChange={(e) =>
                       setWyrmplateChoices({ ...wyrmplateChoices, [id]: e.target.value })
@@ -129,7 +129,7 @@ export function RespiteConfirm({ characters, items, onConfirm, onClose }: Props)
         )}
 
         {safelyCarryRisks.length > 0 && (
-          <section className="rounded border border-amber-700 bg-amber-900/30 p-2 text-xs text-amber-300">
+          <section className="border border-accent bg-ink-2 p-2 text-xs text-accent">
             <strong>3-safely-carry warning.</strong>
             <ul className="mt-1 list-disc pl-4">
               {safelyCarryRisks.map((r) => (
@@ -146,14 +146,14 @@ export function RespiteConfirm({ characters, items, onConfirm, onClose }: Props)
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[44px] rounded border border-neutral-700 px-3 text-sm"
+            className="min-h-[44px] border border-line px-3 text-sm"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={() => onConfirm({ wyrmplateChoices })}
-            className="min-h-[44px] rounded bg-emerald-700 px-3 text-sm"
+            className="min-h-[44px] bg-accent text-ink-0 px-3 text-sm"
           >
             Confirm respite
           </button>

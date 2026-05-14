@@ -11,7 +11,7 @@ export function BodySlotConflictChip({ conflicting, slot }: Props) {
   if (!conflicting) return null;
   return (
     <span
-      className="ml-2 rounded bg-amber-900/40 px-1 text-xs text-amber-300"
+      className="ml-2 bg-ink-2 px-1 text-xs text-accent"
       title={`Two trinkets equipped to ${slot}; only one can apply.`}
     >
       Slot conflict: {slot}

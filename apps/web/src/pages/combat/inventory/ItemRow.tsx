@@ -31,7 +31,7 @@ export function ItemRow({
 }: Props) {
   if (!item) {
     return (
-      <div className="rounded border border-rose-800/40 bg-rose-950/30 px-2 py-1 text-sm text-rose-300">
+      <div className="border border-foe bg-ink-1 px-2 py-1 text-sm text-foe">
         Unknown item: {entry.itemId}
       </div>
     );
@@ -46,12 +46,12 @@ export function ItemRow({
   const isConflicting = isEquipped && !!trinketSlot && conflictingSlots.has(trinketSlot);
 
   return (
-    <div className="flex items-center justify-between rounded border border-neutral-800 bg-neutral-900 px-2 py-1 text-sm">
+    <div className="flex items-center justify-between border border-line bg-ink-1 px-2 py-1 text-sm">
       <div>
         <span className="font-medium">{item.name}</span>
-        {qtyLabel && <span className="text-neutral-400">{qtyLabel}</span>}
+        {qtyLabel && <span className="text-text-dim">{qtyLabel}</span>}
         {isEquipped && (
-          <span className="ml-2 rounded bg-emerald-900/40 px-1 text-xs text-emerald-300">
+          <span className="ml-2 bg-accent text-ink-0 px-1 text-xs">
             Equipped
           </span>
         )}
@@ -66,7 +66,7 @@ export function ItemRow({
         <button
           type="button"
           onClick={() => (isEquipped ? onUnequip(entry.id) : onEquip(entry.id))}
-          className="min-h-[44px] rounded border border-neutral-700 px-2 text-xs hover:bg-neutral-800"
+          className="min-h-[44px] border border-line px-2 text-xs hover:bg-ink-2"
         >
           {isEquipped ? 'Unequip' : 'Equip'}
         </button>
