@@ -25,7 +25,7 @@ import { pcFreeStrike } from '../../data/monsterAbilities';
 import { useLongPress } from '../../lib/longPress';
 import { AbilityCard } from './AbilityCard';
 import { ConditionChip } from './ConditionChip';
-import { HpBar } from './HpBar';
+import { HpBar } from '../../primitives/HpBar';
 
 const CONDITION_TYPES: ConditionType[] = [
   'Bleeding',

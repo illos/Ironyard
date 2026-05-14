@@ -1,5 +1,5 @@
 import type { Participant } from '@ironyard/shared';
-import { HpBar } from './HpBar';
+import { HpBar } from '../../primitives/HpBar';
 
 type Props = {
   participants: Participant[];

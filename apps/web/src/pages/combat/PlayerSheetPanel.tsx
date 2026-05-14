@@ -7,7 +7,7 @@ import { useItems, useKits, useWizardStaticData } from '../../api/static-data';
 import { isParticipantEntry, useSessionSocket } from '../../ws/useSessionSocket';
 import { AbilityCard } from './AbilityCard';
 import { ConditionChip } from './ConditionChip';
-import { HpBar } from './HpBar';
+import { HpBar } from '../../primitives/HpBar';
 import { InventoryPanel } from './inventory/InventoryPanel';
 import { OpenActionsList } from './OpenActionsList';
 import { SwapKitModal } from './inventory/SwapKitModal';
