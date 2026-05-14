@@ -13,6 +13,7 @@ import {
   type SpendSurgePayload,
   type SpendRecoveryPayload,
 } from '@ironyard/shared';
+import { useState } from 'react';
 import { DetailHeader } from './DetailHeader';
 import { FullSheetTab } from './FullSheetTab';
 import { TargetBanner } from './TargetBanner';
@@ -122,6 +123,8 @@ export function DetailPane({
   );
 }
 
+type TabId = 'turn-flow' | 'full-sheet';
+
 // Split into a separate component so per-focus state (target picker, popovers)
 // resets cleanly when the parent switches focus.
 function DetailBody({
@@ -131,6 +134,7 @@ function DetailBody({
   monsterByParticipantId,
   disabled,
   targetParticipantId,
+  viewerRole,
   canEdit,
   dispatchRoll,
   dispatchSetCondition,
@@ -142,6 +146,8 @@ function DetailBody({
   dispatchSpendSurge,
   dispatchSpendRecovery,
 }: Props & { focused: Participant; canEdit: boolean }) {
+  const [tab, setTab] = useState<TabId>(viewerRole === 'player' ? 'turn-flow' : 'full-sheet');
+
   return (
     <div className="space-y-5">
       <DetailHeader
@@ -153,20 +159,44 @@ function DetailBody({
         dispatchSetCondition={dispatchSetCondition}
         dispatchRemoveCondition={dispatchRemoveCondition}
       />
-      <FullSheetTab
-        focused={focused}
-        participants={participants}
-        monsterByParticipantId={monsterByParticipantId}
-        disabled={disabled}
-        canRoll={canEdit}
-        targetParticipantId={targetParticipantId}
-        dispatchRoll={dispatchRoll}
-        dispatchGainResource={dispatchGainResource}
-        dispatchSpendResource={dispatchSpendResource}
-        dispatchSetResource={dispatchSetResource}
-        dispatchSpendSurge={dispatchSpendSurge}
-        dispatchSpendRecovery={dispatchSpendRecovery}
-      />
+      <div className="flex justify-end mb-3">
+        <div className="inline-flex border border-line">
+          <button
+            type="button"
+            onClick={() => setTab('turn-flow')}
+            className={`px-3 py-1 text-xs uppercase tracking-wider ${tab === 'turn-flow' ? 'bg-accent text-ink-0' : 'bg-ink-2 text-text-dim'}`}
+          >
+            Turn flow
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('full-sheet')}
+            className={`px-3 py-1 text-xs uppercase tracking-wider ${tab === 'full-sheet' ? 'bg-accent text-ink-0' : 'bg-ink-2 text-text-dim'}`}
+          >
+            Full sheet
+          </button>
+        </div>
+      </div>
+      {tab === 'turn-flow' ? (
+        <div className="text-text-mute text-sm p-6 border border-dashed border-line-soft text-center">
+          Turn flow — coming next task.
+        </div>
+      ) : (
+        <FullSheetTab
+          focused={focused}
+          participants={participants}
+          monsterByParticipantId={monsterByParticipantId}
+          disabled={disabled}
+          canRoll={canEdit}
+          targetParticipantId={targetParticipantId}
+          dispatchRoll={dispatchRoll}
+          dispatchGainResource={dispatchGainResource}
+          dispatchSpendResource={dispatchSpendResource}
+          dispatchSetResource={dispatchSetResource}
+          dispatchSpendSurge={dispatchSpendSurge}
+          dispatchSpendRecovery={dispatchSpendRecovery}
+        />
+      )}
     </div>
   );
 }
