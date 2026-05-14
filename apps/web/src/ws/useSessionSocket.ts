@@ -4,6 +4,7 @@ import {
   type ApplyHealPayload,
   type ConditionInstance,
   type EndTurnPayload,
+  type GainHeroTokenPayload,
   type GainMalicePayload,
   type GainResourcePayload,
   type Intent,
@@ -21,12 +22,15 @@ import {
   type SetConditionPayload,
   type SetResourcePayload,
   type SetStaminaPayload,
+  type SpendHeroTokenPayload,
   type SpendMalicePayload,
   type SpendRecoveryPayload,
   type SpendResourcePayload,
   type SpendSurgePayload,
   type StartEncounterPayload,
+  type StartSessionPayload,
   type StartTurnPayload,
+  type UpdateSessionAttendancePayload,
   ulid,
 } from '@ironyard/shared';
 import { useQueryClient } from '@tanstack/react-query';
@@ -524,6 +528,11 @@ export function useSessionSocket(sessionId: string | undefined) {
   // and replaced wholesale on snapshot. `null` until the first signal arrives;
   // callers should fall back to the HTTP-fetched campaign metadata.
   const [activeDirectorId, setActiveDirectorId] = useState<string | null>(null);
+  // Session + hero-token mirror (Epic 2E). Populated from StartSession applied
+  // envelopes and snapshot state; reset on EndSession and campaign change.
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [attendingCharacterIds, setAttendingCharacterIds] = useState<string[]>([]);
+  const [heroTokens, setHeroTokens] = useState<number>(0);
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -536,6 +545,9 @@ export function useSessionSocket(sessionId: string | undefined) {
     setIntentLog([]);
     setLastSeq(0);
     setActiveDirectorId(null);
+    setCurrentSessionId(null);
+    setAttendingCharacterIds([]);
+    setHeroTokens(0);
 
     ws.onopen = () => {
       setStatus('open');
@@ -575,6 +587,42 @@ export function useSessionSocket(sessionId: string | undefined) {
         // the banner updates without a round-trip to the HTTP metadata endpoint.
         if (msg.intent.type === IntentTypes.JumpBehindScreen) {
           setActiveDirectorId(msg.intent.actor.userId);
+        }
+        // Session + hero-token intent mirrors (Epic 2E).
+        if (msg.intent.type === IntentTypes.StartSession) {
+          const payload = msg.intent.payload as StartSessionPayload;
+          // Client-suggested sessionId is on the payload (see Task 3 schema,
+          // used to keep optimistic mirror in sync without a snapshot round-trip).
+          // The CampaignView dispatch site (Task 15) generates it ahead of dispatch.
+          if (payload.sessionId) {
+            setCurrentSessionId(payload.sessionId);
+          }
+          setAttendingCharacterIds(payload.attendingCharacterIds);
+          const tokens = payload.heroTokens ?? payload.attendingCharacterIds.length;
+          setHeroTokens(tokens);
+        }
+        if (msg.intent.type === IntentTypes.EndSession) {
+          setCurrentSessionId(null);
+          setAttendingCharacterIds([]);
+          // heroTokens left as-is; the next StartSession overwrites
+        }
+        if (msg.intent.type === IntentTypes.UpdateSessionAttendance) {
+          const payload = msg.intent.payload as UpdateSessionAttendancePayload;
+          setAttendingCharacterIds((prev) => {
+            const removeSet = new Set(payload.remove ?? []);
+            const next = prev.filter((id) => !removeSet.has(id));
+            for (const id of payload.add ?? []) if (!next.includes(id)) next.push(id);
+            return next;
+          });
+        }
+        if (msg.intent.type === IntentTypes.GainHeroToken) {
+          const payload = msg.intent.payload as GainHeroTokenPayload;
+          setHeroTokens((prev) => prev + payload.amount);
+        }
+        if (msg.intent.type === IntentTypes.SpendHeroToken) {
+          const payload = msg.intent.payload as SpendHeroTokenPayload;
+          setHeroTokens((prev) => Math.max(0, prev - payload.amount));
+          // surge_burst / regain_stamina derived intents flow through their own reflect cases
         }
                 // Membership-changing intents (Submit/Approve/Deny/Remove) write to
         // the campaign_characters D1 table. Invalidate so the pending and
@@ -623,9 +671,24 @@ export function useSessionSocket(sessionId: string | undefined) {
         setActiveEncounter(snapshotToEncounter(msg.state));
         setLastSeq(msg.seq);
         // Pull activeDirectorId off the snapshot when present.
-        const s = msg.state as { activeDirectorId?: unknown } | undefined;
+        const s = msg.state as {
+          activeDirectorId?: unknown;
+          currentSessionId?: unknown;
+          attendingCharacterIds?: unknown;
+          heroTokens?: unknown;
+        } | undefined;
         if (s && typeof s.activeDirectorId === 'string') {
           setActiveDirectorId(s.activeDirectorId);
+        }
+        // Session + hero-token fields from snapshot (Epic 2E).
+        if (s) {
+          setCurrentSessionId(typeof s.currentSessionId === 'string' ? s.currentSessionId : null);
+          setAttendingCharacterIds(
+            Array.isArray(s.attendingCharacterIds)
+              ? (s.attendingCharacterIds as string[]).filter((id) => typeof id === 'string')
+              : [],
+          );
+          setHeroTokens(typeof s.heroTokens === 'number' ? s.heroTokens : 0);
         }
         // The intent log can't be perfectly reconstructed from a snapshot,
         // but we can mark everything past the snapshot seq as voided so the
@@ -647,5 +710,16 @@ export function useSessionSocket(sessionId: string | undefined) {
     return true;
   }, []);
 
-  return { members, status, activeEncounter, dispatch, intentLog, lastSeq, activeDirectorId };
+  return {
+    members,
+    status,
+    activeEncounter,
+    dispatch,
+    intentLog,
+    lastSeq,
+    activeDirectorId,
+    currentSessionId,
+    attendingCharacterIds,
+    heroTokens,
+  };
 }
