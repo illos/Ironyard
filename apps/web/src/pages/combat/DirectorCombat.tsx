@@ -463,8 +463,12 @@ export function DirectorCombat() {
   }
 
   // ── live encounter — SplitPane layout ─────────────────────────────────────
+  // Layout note: main is min-h-screen, NOT h-screen, so the below-fold
+  // PlayerSheetPanel + OpenActionsList can extend the page and scroll the
+  // window naturally. The SplitPane gets a min-h so the rails always have
+  // room even when the below-fold panels are tall.
   return (
-    <main className="h-screen flex flex-col">
+    <main className="min-h-screen flex flex-col">
       <InlineHeader
         campaignName={campaignName}
         sessionLabel={sessionLabel}
@@ -489,7 +493,7 @@ export function DirectorCombat() {
       <SplitPane
         ratio="1.18fr 1fr"
         gap={14}
-        className="flex-1 p-3.5"
+        className="min-h-[calc(100vh-3rem)] p-3.5"
         left={
           <>
             <PartyRail
