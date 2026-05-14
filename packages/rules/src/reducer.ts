@@ -20,6 +20,7 @@ import {
   applyKickPlayer,
   applyLeaveLobby,
   applyLoadEncounterTemplate,
+  applyMarkActionUsed,
   applyNote,
   applyPushItem,
   applyRaiseOpenAction,
@@ -116,6 +117,8 @@ export function applyIntent(
       return applyLeaveLobby(state, intent);
     case IntentTypes.LoadEncounterTemplate:
       return applyLoadEncounterTemplate(state, intent);
+    case IntentTypes.MarkActionUsed:
+      return applyMarkActionUsed(state, intent);
     case IntentTypes.Note:
       return applyNote(state, intent);
     case IntentTypes.PushItem:
