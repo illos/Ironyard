@@ -3,12 +3,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { type ApprovedCharacter, PushItemModal } from './PushItemModal';
 
-// Static-HTML test (same pattern as SwapKitModal.spec.tsx): the web vitest
-// setup has no jsdom + @testing-library/react, so we only cover the initial
-// render. Interaction-driven assertions (typing into the search field,
-// selecting a character + item, then confirming Push item becomes enabled)
-// are deferred to the future test-infra task.
-
 const characters: ApprovedCharacter[] = [
   { id: 'char-1', name: 'Aric' },
   { id: 'char-2', name: 'Borin' },

@@ -31,4 +31,34 @@ describe('ThemeProvider', () => {
     );
     expect(document.documentElement.getAttribute('data-pack')).toBe('fireball');
   });
+
+  it('updates data-theme when prop changes', () => {
+    const { rerender } = render(
+      <ThemeProvider theme="dark">
+        <div />
+      </ThemeProvider>,
+    );
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    rerender(
+      <ThemeProvider theme="light">
+        <div />
+      </ThemeProvider>,
+    );
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+  });
+
+  it('updates data-density when prop changes', () => {
+    const { rerender } = render(
+      <ThemeProvider density="default">
+        <div />
+      </ThemeProvider>,
+    );
+    expect(document.documentElement.getAttribute('data-density')).toBe('default');
+    rerender(
+      <ThemeProvider density="compact">
+        <div />
+      </ThemeProvider>,
+    );
+    expect(document.documentElement.getAttribute('data-density')).toBe('compact');
+  });
 });

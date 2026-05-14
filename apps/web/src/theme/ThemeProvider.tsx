@@ -18,6 +18,10 @@ export function ThemeProvider({
   density = 'default',
   children,
 }: ThemeProviderProps) {
+  // Attributes intentionally persist past unmount: there is only one
+  // ThemeProvider at the root, and clearing on unmount would cause a
+  // flash of unstyled content during HMR. The document is the source
+  // of truth for active theme/pack/density, not the React tree.
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute('data-theme', theme);

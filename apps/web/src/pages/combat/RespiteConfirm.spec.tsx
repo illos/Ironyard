@@ -3,12 +3,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { RespiteConfirm } from './RespiteConfirm';
 
-// Static-HTML test (same pattern as PushItemModal.spec / SwapKitModal.spec):
-// the web vitest setup has no jsdom + @testing-library/react, so we only
-// cover the initial render. Click-driven assertions (Wyrmplate dropdown
-// change → onConfirm fires with payload) are deferred to the test-infra
-// task.
-
 // Fixtures carry id + name at the top level — same shape the CampaignView
 // wrapper produces by spreading CharacterResponse.data and lifting
 // id + name out of the response wrapper. Character is the inner data blob

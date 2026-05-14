@@ -3,14 +3,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { InventoryPanel } from './InventoryPanel';
 
-// We render to a static HTML string via react-dom/server rather than mounting
-// into a real DOM. The web app's vitest setup has no jsdom + no
-// @testing-library/react installed — adding them just for these snapshot-style
-// assertions would be heavier than the test deserves at Slice-1 prototype
-// fidelity. Static markup is sufficient: the assertions below check
-// observable text and structural fragments that exist in the rendered output
-// of a pure render (no effects, no state).
-
 const character = {
   inventory: [
     { id: 'inv-1', itemId: 'lightning-treads', quantity: 1, equipped: true },
