@@ -316,6 +316,7 @@ export function DirectorCombat() {
       rolls: { d10: args.rolls },
       ladder,
       abilityKeywords: args.ability.keywords ?? [],
+      abilityType: args.ability.type,
     };
     const intent: Intent = buildIntent({
       campaignId,

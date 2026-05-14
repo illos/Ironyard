@@ -221,6 +221,24 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
       }
     : state.encounter.turnState;
 
+  // Phase 5 Pass 2a — auto-mark the Turn-flow slot used when rolling an
+  // action- or maneuver-type ability. Triggered / villain / free-triggered /
+  // trait abilities do NOT consume a turn-flow slot. abilityType is optional;
+  // legacy payloads without it skip the emission.
+  const turnFlowSlot: 'main' | 'maneuver' | null =
+    parsed.data.abilityType === 'action' ? 'main'
+    : parsed.data.abilityType === 'maneuver' ? 'maneuver'
+    : null;
+  if (turnFlowSlot) {
+    derived.push({
+      actor: intent.actor,
+      source: 'auto' as const,
+      type: IntentTypes.MarkActionUsed,
+      payload: { participantId: attackerId, slot: turnFlowSlot, used: true },
+      causedBy: intent.id,
+    });
+  }
+
   return {
     state: {
       ...state,

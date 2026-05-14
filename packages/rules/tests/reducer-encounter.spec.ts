@@ -395,3 +395,65 @@ describe('end-to-end: RollPower → derived ApplyDamage cascade', () => {
     expect(goblin?.currentStamina).toBe(8);
   });
 });
+
+describe('applyRollPower — derived MarkActionUsed (Pass 2a)', () => {
+  const ladder = {
+    t1: { damage: 2, damageType: 'fire' as const },
+    t2: { damage: 5, damageType: 'fire' as const },
+    t3: { damage: 9, damageType: 'fire' as const },
+  };
+
+  function rollPayload(overrides: Partial<{ abilityType: string }> = {}) {
+    return {
+      abilityId: 'test-ability',
+      attackerId: 'pc_alice',
+      targetIds: ['m_goblin'],
+      characteristic: 'might' as const,
+      edges: 0,
+      banes: 0,
+      rolls: { d10: [5, 5] as [number, number] },
+      ladder,
+      abilityKeywords: [],
+      ...overrides,
+    };
+  }
+
+  it("emits MarkActionUsed { slot: 'main' } for an action-type ability", () => {
+    const r = applyIntent(
+      withRosterAndEncounter(),
+      intent('RollPower', rollPayload({ abilityType: 'action' })),
+    );
+    expect(r.errors).toBeUndefined();
+    const derived = r.derived.find((d) => d.type === 'MarkActionUsed');
+    expect(derived).toBeDefined();
+    expect(derived?.payload).toMatchObject({
+      participantId: 'pc_alice',
+      slot: 'main',
+      used: true,
+    });
+  });
+
+  it("emits MarkActionUsed { slot: 'maneuver' } for a maneuver-type ability", () => {
+    const r = applyIntent(
+      withRosterAndEncounter(),
+      intent('RollPower', rollPayload({ abilityType: 'maneuver' })),
+    );
+    expect(r.errors).toBeUndefined();
+    const derived = r.derived.find((d) => d.type === 'MarkActionUsed');
+    expect(derived).toBeDefined();
+    expect(derived?.payload).toMatchObject({
+      participantId: 'pc_alice',
+      slot: 'maneuver',
+      used: true,
+    });
+  });
+
+  it('does NOT emit MarkActionUsed for triggered / free-triggered / villain / trait / absent', () => {
+    const skipTypes = ['triggered', 'free-triggered', 'villain', 'trait', undefined] as const;
+    for (const abilityType of skipTypes) {
+      const payload = abilityType === undefined ? rollPayload() : rollPayload({ abilityType });
+      const r = applyIntent(withRosterAndEncounter(), intent('RollPower', payload));
+      expect(r.derived.some((d) => d.type === 'MarkActionUsed')).toBe(false);
+    }
+  });
+});

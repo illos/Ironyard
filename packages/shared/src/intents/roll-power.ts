@@ -45,5 +45,11 @@ export const RollPowerPayloadSchema = z.object({
   // to the tier outcome. Default [] keeps older payloads parseable — those just
   // skip the kit-bonus fold.
   abilityKeywords: z.array(z.string()).default([]),
+  // Phase 5 Pass 2a — ability type lets the reducer auto-emit MarkActionUsed
+  // for the right Turn-flow slot. Optional for back-compat: legacy / test
+  // payloads without it simply skip the derived intent.
+  abilityType: z
+    .enum(['action', 'maneuver', 'triggered', 'free-triggered', 'villain', 'trait'])
+    .optional(),
 });
 export type RollPowerPayload = z.infer<typeof RollPowerPayloadSchema>;
