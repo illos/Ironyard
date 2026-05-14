@@ -25,6 +25,8 @@ export interface FullSheetTabProps {
   monsterByParticipantId: Map<string, Monster>;
   disabled: boolean;
   canRoll?: boolean;
+  /** Row-tap target from DirectorCombat (player view). Overrides the dropdown when set. */
+  targetParticipantId?: string | null;
   dispatchRoll: (args: {
     ability: Ability;
     attacker: Participant;
@@ -45,6 +47,7 @@ export function FullSheetTab({
   monsterByParticipantId,
   disabled,
   canRoll = true,
+  targetParticipantId = null,
   dispatchRoll,
   dispatchGainResource,
   dispatchSpendResource,
@@ -57,7 +60,10 @@ export function FullSheetTab({
     [participants, focused.id],
   );
   const [targetId, setTargetId] = useState<string | null>(candidates[0]?.id ?? null);
-  const target = candidates.find((p) => p.id === targetId) ?? null;
+  // Row-tap target (player view) takes precedence over the dropdown; when null,
+  // the dropdown's local targetId is used — keeping director behaviour intact.
+  const effectiveTargetId = targetParticipantId ?? targetId;
+  const target = candidates.find((p) => p.id === effectiveTargetId) ?? null;
 
   // Resilient fallback if the currently-picked target leaves the encounter
   // (or focus shifts and the candidate list changes). Runs after render so we

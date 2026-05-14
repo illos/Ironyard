@@ -25,6 +25,12 @@ type Props = {
   // convention). Used to pull the focused monster's full ability list.
   monsterByParticipantId: Map<string, Monster>;
   disabled: boolean;
+  /** Row-tap target id from DirectorCombat (player view). Forwarded to FullSheetTab. */
+  targetParticipantId?: string | null;
+  /** The viewer's own participant id (player view). Used by TargetBanner. */
+  selfParticipantId?: string | null;
+  /** 'director' | 'player'. Controls whether the TargetBanner is shown. */
+  viewerRole?: 'director' | 'player';
   // Dispatch helpers wired by the parent CombatRun.
   dispatchRoll: (args: {
     ability: Ability;
@@ -51,6 +57,9 @@ export function DetailPane({
   monsterLevelById,
   monsterByParticipantId,
   disabled,
+  targetParticipantId = null,
+  selfParticipantId = null,
+  viewerRole = 'director',
   dispatchRoll,
   dispatchSetCondition,
   dispatchRemoveCondition,
@@ -76,6 +85,9 @@ export function DetailPane({
       monsterLevelById={monsterLevelById}
       monsterByParticipantId={monsterByParticipantId}
       disabled={disabled}
+      targetParticipantId={targetParticipantId}
+      selfParticipantId={selfParticipantId}
+      viewerRole={viewerRole}
       dispatchRoll={dispatchRoll}
       dispatchSetCondition={dispatchSetCondition}
       dispatchRemoveCondition={dispatchRemoveCondition}
@@ -97,6 +109,7 @@ function DetailBody({
   monsterLevelById,
   monsterByParticipantId,
   disabled,
+  targetParticipantId,
   dispatchRoll,
   dispatchSetCondition,
   dispatchRemoveCondition,
@@ -121,6 +134,7 @@ function DetailBody({
         participants={participants}
         monsterByParticipantId={monsterByParticipantId}
         disabled={disabled}
+        targetParticipantId={targetParticipantId}
         dispatchRoll={dispatchRoll}
         dispatchGainResource={dispatchGainResource}
         dispatchSpendResource={dispatchSpendResource}
