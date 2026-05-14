@@ -118,7 +118,8 @@ describe('applyIntent — StartEncounter', () => {
     expect(r.state.encounter?.currentRound).toBe(1);
     expect(r.state.encounter?.turnOrder).toHaveLength(0);
     expect(r.state.encounter?.activeParticipantId).toBeNull();
-    expect(r.state.encounter?.malice).toEqual({ current: 0, lastMaliciousStrikeRound: null });
+    // Empty roster: avg=0, heroes=0, +1 round-1 tick → malice = 1 (canon § 5.5)
+    expect(r.state.encounter?.malice).toEqual({ current: 1, lastMaliciousStrikeRound: null });
   });
 
   it('engages empty roster (zero participants) without error', () => {

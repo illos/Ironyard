@@ -349,14 +349,14 @@ describe('applyIntent — EndEncounter', () => {
     expect(r.state.encounter).toBeNull();
 
     // Re-start a new encounter and confirm malice was wiped (StartEncounter inits
-    // to 0 on its own — this is a sanity check that EndEncounter doesn't leak
-    // prior state into a freshly-started encounter via the seq increment).
+    // from the canon formula: avg(0 PCs) + 0 heroes + 1 round = 1 — EndEncounter
+    // doesn't leak prior state into the freshly-started encounter).
     const r2 = applyIntent(
       { ...r.state, currentSessionId: 'sess-test' },
       intent('StartEncounter', {}),
     );
     expect(r2.state.encounter?.malice).toEqual({
-      current: 0,
+      current: 1, // empty roster: 0 + 0 + 1 (canon § 5.5)
       lastMaliciousStrikeRound: null,
     });
   });

@@ -6,6 +6,8 @@ import {
 } from '@ironyard/shared';
 import { participantFromMonster } from './add-monster';
 import { deriveCharacterRuntime } from '../derive-character-runtime';
+import { HEROIC_RESOURCES, resolveFloor } from '../heroic-resources';
+import { aliveHeroes, averageVictoriesAlive } from '../state-helpers';
 import type {
   CampaignState,
   EncounterPhase,
@@ -80,6 +82,20 @@ export function applyStartEncounter(
     const recoveriesUsed = stamped.character.recoveriesUsed;
     const recoveriesCurrent = Math.max(0, runtime.recoveriesMax - recoveriesUsed);
 
+    // Heroic resource preload (canon § 5.4): seed from character.victories.
+    // If the class has no known resource (name === 'unknown'), gracefully yield [].
+    const resourceName = runtime.heroicResource.name as keyof typeof HEROIC_RESOURCES;
+    const resourceConfig = HEROIC_RESOURCES[resourceName];
+    const heroicResources = resourceConfig
+      ? [
+          {
+            name: resourceConfig.name,
+            value: stamped.character.victories ?? 0,
+            floor: resolveFloor(resourceConfig.floor, runtime.characteristics),
+          },
+        ]
+      : [];
+
     return {
       id: `pc:${stamped.characterId}`,
       name: stamped.name,
@@ -99,7 +115,7 @@ export function applyStartEncounter(
         value: r.value,
       })),
       conditions: [],
-      heroicResources: [],
+      heroicResources,
       extras: [],
       surges: 0,
       recoveries: {
@@ -130,13 +146,20 @@ export function applyStartEncounter(
   const allParticipants: Participant[] = [...pcParticipants, ...monsterParticipants];
   const encounterId = parsed.data.encounterId ?? ulid();
 
+  // Initial Malice = floor(avgVictories) + aliveHeroes + 1 (canon § 5.5 round-1 tick).
+  // Use an interim state view so aliveHeroes/averageVictoriesAlive can inspect the
+  // freshly materialized participants without mutating the real state yet.
+  const interimState: CampaignState = { ...state, participants: allParticipants };
+  const initialMalice =
+    averageVictoriesAlive(interimState) + aliveHeroes(interimState).length + 1;
+
   const encounter: EncounterPhase = {
     id: encounterId,
     currentRound: 1,
     turnOrder: allParticipants.map((p) => p.id),
     activeParticipantId: null,
     turnState: {},
-    malice: { current: 0, lastMaliciousStrikeRound: null },
+    malice: { current: initialMalice, lastMaliciousStrikeRound: null },
   };
 
   return {

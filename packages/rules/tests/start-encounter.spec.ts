@@ -1,4 +1,4 @@
-import type { Participant } from '@ironyard/shared';
+import type { HeroClass, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
   type CampaignState,
@@ -8,7 +8,12 @@ import {
   emptyCampaignState,
   isParticipant,
 } from '../src/index';
-import { buildBundleWithFury, buildFuryL1Fixture } from './fixtures/character-runtime';
+import {
+  buildBundleWithFury,
+  buildEmptyBundle,
+  buildFuryL1Fixture,
+} from './fixtures/character-runtime';
+import type { StaticDataBundle } from '../src/static-data';
 
 const T = 1_700_000_000_000;
 const CAMPAIGN = 'sess_start_enc';
@@ -242,5 +247,238 @@ describe('applyStartEncounter — new atomic payload shape', () => {
     expect(result.errors).toEqual(
       expect.arrayContaining([expect.objectContaining({ code: 'no_active_session' })]),
     );
+  });
+});
+
+// ── Helpers for resource preload tests ───────────────────────────────────────
+
+function buildBundleWithClass(
+  classId: string,
+  heroicResource: string,
+  characteristicArrays: number[][],
+): StaticDataBundle {
+  const bundle = buildEmptyBundle();
+  bundle.classes.set(classId, {
+    id: classId,
+    name: classId,
+    description: '',
+    lockedCharacteristics: [],
+    characteristicArrays,
+    potencyCharacteristic: 'might',
+    heroicResource,
+    startingStamina: 20,
+    staminaPerLevel: 8,
+    recoveries: 8,
+    startingSkillsNote: '',
+    startingSkillCount: 0,
+    startingSkillGroups: [],
+    subclassLabel: 'Subclass',
+    subclasses: [{ id: 'sub', name: 'Sub', description: '', skillGrant: null }],
+    levels: Array.from({ length: 10 }, (_, i) => ({
+      level: i + 1,
+      featureNames: [],
+      abilitySlots: [],
+      grantsPerk: false,
+      grantsSkill: false,
+      grantsCharacteristicIncrease: false,
+    })),
+  } satisfies HeroClass);
+  return bundle;
+}
+
+function makePcStamped(
+  characterId: string,
+  overrides: { classId?: string; victories?: number; characteristicArray?: number[]; subclassId?: string } = {},
+) {
+  const character = buildFuryL1Fixture({
+    classId: overrides.classId ?? 'fury',
+    victories: overrides.victories ?? 0,
+    characteristicArray: overrides.characteristicArray,
+    subclassId: overrides.subclassId ?? 'berserker',
+  });
+  return { characterId, name: `Hero-${characterId}`, ownerId: `owner-${characterId}`, character };
+}
+
+// ── StartEncounter heroic resource preload ────────────────────────────────────
+
+describe('StartEncounter heroic resource preload', () => {
+  it('seeds each PC\'s heroic resource pool from character.victories', () => {
+    // Talent (clarity) with victories=4, Censor (wrath) with victories=2
+    const talentBundle = buildBundleWithClass('talent', 'clarity', [[2, 0, 2, 0, 0]]);
+    const censorBundle = buildBundleWithClass('censor', 'wrath', [[0, 1, -1, 1, 0]]);
+
+    // Two separate StartEncounters so we can inspect each PC independently
+    const talentStamped = {
+      ...buildFuryL1Fixture({ victories: 4 }),
+      classId: 'talent',
+      subclassId: 'sub',
+      // reason=2 (index 2 in characteristicArray)
+      characteristicArray: [2, 0, 2, 0, 0] as [number, number, number, number, number],
+    };
+    const talentResult = applyIntent(
+      baseState(),
+      makeIntent({
+        characterIds: ['t1'],
+        monsters: [],
+        stampedPcs: [{ characterId: 't1', name: 'Talent', ownerId: 'u-t', character: talentStamped }],
+        stampedMonsters: [],
+      }),
+      { staticData: talentBundle },
+    );
+    const talentPc = talentResult.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'pc',
+    );
+    expect(talentPc?.heroicResources[0]?.name).toBe('clarity');
+    expect(talentPc?.heroicResources[0]?.value).toBe(4);
+    // reason=2 → floor = -(1+2) = -3
+    expect(talentPc?.heroicResources[0]?.floor).toBe(-3);
+
+    const censorStamped = {
+      ...buildFuryL1Fixture({ victories: 2 }),
+      classId: 'censor',
+      subclassId: 'sub',
+      characteristicArray: [0, 1, -1, 1, 0] as [number, number, number, number, number],
+    };
+    const censorResult = applyIntent(
+      baseState(),
+      makeIntent({
+        characterIds: ['c1'],
+        monsters: [],
+        stampedPcs: [{ characterId: 'c1', name: 'Censor', ownerId: 'u-c', character: censorStamped }],
+        stampedMonsters: [],
+      }),
+      { staticData: censorBundle },
+    );
+    const censorPc = censorResult.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'pc',
+    );
+    expect(censorPc?.heroicResources[0]?.name).toBe('wrath');
+    expect(censorPc?.heroicResources[0]?.value).toBe(2);
+    expect(censorPc?.heroicResources[0]?.floor).toBe(0);
+  });
+
+  it('sets clarity.floor to -(1 + reason)', () => {
+    // Single Talent with reason=3
+    const bundle = buildBundleWithClass('talent', 'clarity', [[2, 0, 3, 0, 0]]);
+    const character = {
+      ...buildFuryL1Fixture({ victories: 0 }),
+      classId: 'talent',
+      subclassId: 'sub',
+      characteristicArray: [2, 0, 3, 0, 0] as [number, number, number, number, number],
+    };
+    const result = applyIntent(
+      baseState(),
+      makeIntent({
+        characterIds: ['t1'],
+        monsters: [],
+        stampedPcs: [{ characterId: 't1', name: 'Talent', ownerId: 'u1', character }],
+        stampedMonsters: [],
+      }),
+      { staticData: bundle },
+    );
+    const pc = result.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'pc',
+    );
+    expect(pc?.heroicResources[0]?.floor).toBe(-4); // -(1 + 3)
+  });
+
+  it('materializes participant.victories from character.victories', () => {
+    // Single PC with victories=7
+    const character = buildFuryL1Fixture({ victories: 7 });
+    const result = applyIntent(
+      baseState(),
+      makeIntent({
+        characterIds: ['c1'],
+        monsters: [],
+        stampedPcs: [{ characterId: 'c1', name: 'Hero', ownerId: 'u1', character }],
+        stampedMonsters: [],
+      }),
+      { staticData: buildBundleWithFury() },
+    );
+    const pc = result.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'pc',
+    );
+    expect(pc?.victories).toBe(7);
+  });
+
+  it('gracefully yields heroicResources=[] for a PC with unknown class (no resource config)', () => {
+    // Character with classId not present in staticData → runtime.heroicResource.name = 'unknown'
+    const character = buildFuryL1Fixture({ victories: 3, classId: 'unknown-class' } as Parameters<typeof buildFuryL1Fixture>[0]);
+    const result = applyIntent(
+      baseState(),
+      makeIntent({
+        characterIds: ['c1'],
+        monsters: [],
+        stampedPcs: [{ characterId: 'c1', name: 'Mystery', ownerId: 'u1', character }],
+        stampedMonsters: [],
+      }),
+      { staticData: buildEmptyBundle() },
+    );
+    const pc = result.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'pc',
+    );
+    expect(pc?.heroicResources).toEqual([]);
+  });
+});
+
+// ── StartEncounter Malice generation ─────────────────────────────────────────
+
+describe('StartEncounter Malice generation', () => {
+  it('5 PCs with 3 victories each → malice = 3 + 5 + 1 = 9 (canon § 5.5 worked example)', () => {
+    const ctx: ReducerContext = { staticData: buildBundleWithFury() };
+    const stampedPcs = Array.from({ length: 5 }, (_, i) => ({
+      characterId: `c${i + 1}`,
+      name: `Hero ${i + 1}`,
+      ownerId: `u${i + 1}`,
+      character: buildFuryL1Fixture({ victories: 3 }),
+    }));
+
+    const result = applyIntent(
+      baseState(),
+      makeIntent({
+        characterIds: stampedPcs.map((p) => p.characterId),
+        monsters: [],
+        stampedPcs,
+        stampedMonsters: [],
+      }),
+      ctx,
+    );
+
+    expect(result.errors).toBeUndefined();
+    expect(result.state.encounter?.malice.current).toBe(9);
+  });
+
+  it('empty PC roster → malice 0 + 0 + 1 = 1 (formula yields, no special case)', () => {
+    const monster = {
+      id: 'goblin',
+      name: 'Goblin',
+      level: 1,
+      roles: [],
+      ancestry: [],
+      ev: { ev: 2 },
+      stamina: { base: 15 },
+      speed: 5,
+      movement: [],
+      size: '1S',
+      stability: 0,
+      freeStrike: 2,
+      characteristics: { might: 0, agility: 1, reason: -1, intuition: 0, presence: -1 },
+      immunities: [],
+      weaknesses: [],
+      abilities: [],
+    };
+
+    const result = applyIntent(
+      baseState(),
+      makeIntent({
+        characterIds: [],
+        monsters: [{ monsterId: 'goblin', quantity: 1 }],
+        stampedPcs: [],
+        stampedMonsters: [{ monsterId: 'goblin', quantity: 1, monster }],
+      }),
+    );
+
+    expect(result.errors).toBeUndefined();
+    expect(result.state.encounter?.malice.current).toBe(1);
   });
 });
