@@ -32,6 +32,25 @@
   --accent:        oklch(0.82 0.16 230);
   --accent-strong: oklch(0.90 0.18 220);
   --accent-glow:   oklch(0.78 0.18 230 / 0.5);
+
+  /* Spacing (4px base — canonical steps from spec) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-3-5: 14px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Motion */
+  --motion-fast: 140ms ease;
+  --motion-progress: 360ms ease;
+  --motion-stamina: 480ms cubic-bezier(0.3, 0.7, 0.4, 1);
+  --motion-pulse: 2200ms;
+
+  /* Card shadow — flat by default; Pass 1 ships no elevation */
+  --shadow-card: none;
 }
 
 :root[data-theme="light"] {
@@ -78,6 +97,8 @@
  * Pass 1: the .pack-* classes are not yet applied; components fall back to
  * --accent. The classes exist so future work can light them up without
  * touching every component.
+ *
+ * The OKLCH triples below MUST be kept in sync with the :root[data-pack="..."] rules above.
  */
 .pack-lightning { --pk: oklch(0.82 0.16 230); --pk-strong: oklch(0.90 0.18 220); --pk-glow: oklch(0.78 0.18 230 / 0.5); }
 .pack-shadow    { --pk: oklch(0.62 0.20 305); --pk-strong: oklch(0.72 0.24 305); --pk-glow: oklch(0.55 0.22 305 / 0.5); }
@@ -118,6 +139,17 @@
   --radius-md: 0;
   --radius-lg: 0;
   --radius-xl: 0;
+
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-2-5: var(--space-2-5);
+  --spacing-3: var(--space-3);
+  --spacing-3-5: var(--space-3-5);
+  --spacing-4: var(--space-4);
+  --spacing-6: var(--space-6);
+  --spacing-8: var(--space-8);
+
+  --shadow-card: var(--shadow-card);
 }
 
 html, body {
