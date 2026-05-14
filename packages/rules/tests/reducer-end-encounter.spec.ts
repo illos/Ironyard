@@ -349,7 +349,10 @@ describe('applyIntent — EndEncounter', () => {
     // Re-start a new encounter and confirm malice was wiped (StartEncounter inits
     // to 0 on its own — this is a sanity check that EndEncounter doesn't leak
     // prior state into a freshly-started encounter via the seq increment).
-    const r2 = applyIntent(r.state, intent('StartEncounter', {}));
+    const r2 = applyIntent(
+      { ...r.state, currentSessionId: 'sess-test' },
+      intent('StartEncounter', {}),
+    );
     expect(r2.state.encounter?.malice).toEqual({
       current: 0,
       lastMaliciousStrikeRound: null,

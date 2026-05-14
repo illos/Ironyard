@@ -27,7 +27,7 @@ function makeIntent(payload: unknown): StampedIntent {
 }
 
 function baseState(overrides: Partial<CampaignState> = {}): CampaignState {
-  return { ...emptyCampaignState(CAMPAIGN, 'user-owner'), ...overrides };
+  return { ...emptyCampaignState(CAMPAIGN, 'user-owner'), currentSessionId: 'sess-test', ...overrides };
 }
 
 describe('applyStartEncounter — new atomic payload shape', () => {
@@ -231,5 +231,15 @@ describe('applyStartEncounter — new atomic payload shape', () => {
     expect(result.errors).toBeUndefined();
     expect(result.state.encounter).not.toBeNull();
     expect(result.state.participants).toHaveLength(0);
+  });
+
+  it('rejects with no_active_session when currentSessionId is null', () => {
+    const result = applyIntent(
+      baseState({ currentSessionId: null }),
+      makeIntent({ characterIds: [], monsters: [], stampedPcs: [], stampedMonsters: [] }),
+    );
+    expect(result.errors).toEqual(
+      expect.arrayContaining([expect.objectContaining({ code: 'no_active_session' })]),
+    );
   });
 });

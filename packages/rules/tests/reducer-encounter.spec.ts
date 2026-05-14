@@ -27,7 +27,7 @@ function intent(type: string, payload: unknown, overrides: Partial<Intent> = {})
 }
 
 function withEncounter(): CampaignState {
-  let s = emptyCampaignState(campaignId, 'user-owner');
+  let s = { ...emptyCampaignState(campaignId, 'user-owner'), currentSessionId: 'sess-test' };
   s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
@@ -105,7 +105,7 @@ function monster(over: Partial<Participant> = {}): Participant {
 
 describe('applyIntent — StartEncounter', () => {
   it('initialises encounter with a generated id and empty roster when no stampedPcs/stampedMonsters', () => {
-    const s = emptyCampaignState(campaignId, 'user-owner');
+    const s = { ...emptyCampaignState(campaignId, 'user-owner'), currentSessionId: 'sess-test' };
     const r = applyIntent(s, intent('StartEncounter', {}));
     expect(r.errors).toBeUndefined();
     expect(r.state.encounter).not.toBeNull();
@@ -118,7 +118,7 @@ describe('applyIntent — StartEncounter', () => {
 
   it('engages empty roster (zero participants) without error', () => {
     const r = applyIntent(
-      emptyCampaignState(campaignId, 'user-owner'),
+      { ...emptyCampaignState(campaignId, 'user-owner'), currentSessionId: 'sess-test' },
       intent('StartEncounter', {}),
     );
     expect(r.errors).toBeUndefined();
@@ -128,7 +128,7 @@ describe('applyIntent — StartEncounter', () => {
 
   it('rejects starting when an encounter is already active', () => {
     const s = applyIntent(
-      emptyCampaignState(campaignId, 'user-owner'),
+      { ...emptyCampaignState(campaignId, 'user-owner'), currentSessionId: 'sess-test' },
       intent('StartEncounter', {}),
     ).state;
     const r = applyIntent(s, intent('StartEncounter', {}));
@@ -140,7 +140,7 @@ describe('applyIntent — StartEncounter', () => {
     const ctx: ReducerContext = { staticData: buildBundleWithFury() };
     const character = buildFuryL1Fixture();
     const stampedPcs = [{ characterId: 'char-1', ownerId: 'user-player', name: 'Kaela', character }];
-    const s = emptyCampaignState(campaignId, 'user-owner');
+    const s = { ...emptyCampaignState(campaignId, 'user-owner'), currentSessionId: 'sess-test' };
     const r = applyIntent(s, intent('StartEncounter', { stampedPcs }), ctx);
     expect(r.errors).toBeUndefined();
     const pc = r.state.participants.find(

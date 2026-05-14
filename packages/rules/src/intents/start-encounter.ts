@@ -35,6 +35,17 @@ export function applyStartEncounter(
     };
   }
 
+  if (state.currentSessionId === null) {
+    return {
+      state,
+      derived: [],
+      log: [
+        { kind: 'error', text: 'start a session before running combat', intentId: intent.id },
+      ],
+      errors: [{ code: 'no_active_session', message: 'start a session before running combat' }],
+    };
+  }
+
   if (state.encounter !== null) {
     return {
       state,
