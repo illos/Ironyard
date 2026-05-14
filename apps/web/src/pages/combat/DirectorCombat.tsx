@@ -30,7 +30,7 @@ import { useCampaign, useMe, useMonsters } from '../../api/queries';
 import { describeIntent, findLatestUndoable } from '../../lib/intentDescribe';
 import { Button, Pill, SplitPane, Stat } from '../../primitives';
 import { isParticipantEntry, useSessionSocket } from '../../ws/useSessionSocket';
-import { DetailPane } from './DetailPane';
+import { DetailPane } from './detail';
 import { EncounterRail } from './EncounterRail';
 import { OpenActionsList } from './OpenActionsList';
 import { PartyRail } from './PartyRail';

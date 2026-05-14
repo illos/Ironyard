@@ -13,8 +13,8 @@ import {
   type SpendSurgePayload,
   type SpendRecoveryPayload,
 } from '@ironyard/shared';
-import { DetailHeader } from './detail/DetailHeader';
-import { FullSheetTab } from './detail/FullSheetTab';
+import { DetailHeader } from './DetailHeader';
+import { FullSheetTab } from './FullSheetTab';
 
 type Props = {
   focused: Participant | null;
