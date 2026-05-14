@@ -1,4 +1,4 @@
-import type { Intent, MaliceState, Member, Participant } from '@ironyard/shared';
+import type { Intent, MaliceState, Member, OpenAction, Participant } from '@ironyard/shared';
 import type { StaticDataBundle } from './static-data';
 
 // The lobby roster is a flat list of fully-materialized participants.
@@ -81,6 +81,11 @@ export type CampaignState = {
   encounter: EncounterPhase | null;
   // Party victories earned this session. Drained by Respite to per-character XP.
   partyVictories: number;
+  // Non-blocking lobby-visible claim queue. Entries auto-expire when expiresAtRound
+  // is reached or at EndEncounter unconditionally (canon §5.2). Claimable by the
+  // targeted participant's owner or active director. Raised and claimed by intents
+  // that know their own entry kind (2b.0.1+).
+  openActions: OpenAction[];
   // The active session ID. null when no session is running.
   currentSessionId: string | null;
   // Character IDs attending the current session.
@@ -115,6 +120,7 @@ export function emptyCampaignState(campaignId: string, ownerId: string): Campaig
     participants: [],
     encounter: null,
     partyVictories: 0,
+    openActions: [],
     currentSessionId: null,
     attendingCharacterIds: [],
     heroTokens: 0,

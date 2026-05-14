@@ -86,6 +86,10 @@ export class LobbyDO implements DurableObject {
       state.participants = state.participants.map((p) =>
         p.activeAbilities === undefined ? { ...p, activeAbilities: [] } : p,
       );
+      // Forward-compat: 2b.0 added openActions field. Old snapshots won't have it.
+      if (state.openActions === undefined) {
+        state.openActions = [];
+      }
       fromSeq = snapshot.seq;
       this.lastSnapshotSeq = snapshot.seq;
       this.lastSnapshotAt = snapshot.savedAt;
