@@ -8,6 +8,7 @@ import {
   StartTurnPayloadSchema,
 } from '@ironyard/shared';
 import { requireCanon } from '../require-canon';
+import { aliveHeroes } from '../state-helpers';
 import type {
   ActiveEncounter,
   CampaignState,
@@ -60,6 +61,12 @@ export function applyStartRound(state: CampaignState, intent: StampedIntent): In
   const round = (guard.encounter.currentRound ?? 0) + 1;
   const firstId = guard.encounter.turnOrder[0] ?? null;
 
+  // Canon § 5.5: at the start of each round (including round 1), the
+  // Director gains `aliveHeroes + roundNumber` malice. Round 1 is applied
+  // at StartEncounter time; rounds 2+ apply here.
+  const aliveCount = aliveHeroes(state).length;
+  const nextMalice = guard.encounter.malice.current + aliveCount + round;
+
   return {
     state: {
       ...state,
@@ -68,10 +75,20 @@ export function applyStartRound(state: CampaignState, intent: StampedIntent): In
         ...guard.encounter,
         currentRound: round,
         activeParticipantId: firstId,
+        malice: {
+          ...guard.encounter.malice,
+          current: nextMalice,
+        },
       },
     },
     derived: [],
-    log: [{ kind: 'info', text: `round ${round} starts`, intentId: intent.id }],
+    log: [
+      {
+        kind: 'info',
+        text: `round ${round} starts; +${aliveCount + round} malice`,
+        intentId: intent.id,
+      },
+    ],
   };
 }
 

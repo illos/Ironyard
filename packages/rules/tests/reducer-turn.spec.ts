@@ -6,6 +6,7 @@ import {
   applyIntent,
   emptyCampaignState,
 } from '../src/index';
+import { isParticipant } from '../src/types';
 
 const T = 1_700_000_000_000;
 const campaignId = 'sess_test';
@@ -206,6 +207,33 @@ describe('StartTurn / EndTurn', () => {
   });
 });
 
+describe('applyStartRound Malice tick', () => {
+  it('round 2 with 5 alive heroes → malice += 7', () => {
+    const s = readyState(['alice', 'bob', 'cleric', 'ranger', 'barbarian']);
+    s.encounter!.currentRound = 1;
+    s.encounter!.malice.current = 9; // from round-1 init
+    const result = applyIntent(s, intent('StartRound', {}));
+    // After StartRound: currentRound = 2; malice += aliveHeroes(5) + 2 = 7.
+    expect(result.errors).toBeUndefined();
+    expect(result.state.encounter!.currentRound).toBe(2);
+    expect(result.state.encounter!.malice.current).toBe(16);
+  });
+
+  it('hero death drops the alive count for subsequent ticks', () => {
+    const s = readyState(['alice', 'bob', 'cleric']);
+    s.encounter!.currentRound = 2;
+    s.encounter!.malice.current = 16;
+    // Kill one PC (currentStamina past -windedValue).
+    const dead = s.participants.find((p) => isParticipant(p) && p.kind === 'pc');
+    if (dead) (dead as Participant).currentStamina = -100;
+    const result = applyIntent(s, intent('StartRound', {}));
+    // currentRound becomes 3; aliveHeroes = 2 (one is dead); malice += 2 + 3 = 5.
+    expect(result.errors).toBeUndefined();
+    expect(result.state.encounter!.currentRound).toBe(3);
+    expect(result.state.encounter!.malice.current).toBe(21);
+  });
+});
+
 describe('applyEndRound + OpenAction expiry', () => {
   it('removes OAs whose expiresAtRound === currentRound', () => {
     let s = readyState();
@@ -214,13 +242,37 @@ describe('applyEndRound + OpenAction expiry', () => {
       ...s,
       encounter: { ...s.encounter!, currentRound: 3 },
       openActions: [
-        { id: 'oa-now', kind: '__sentinel_2b_0__', participantId: 'alice', raisedAtRound: 3, raisedByIntentId: 'x', expiresAtRound: 3, payload: {} },
-        { id: 'oa-later', kind: '__sentinel_2b_0__', participantId: 'alice', raisedAtRound: 3, raisedByIntentId: 'x', expiresAtRound: 5, payload: {} },
-        { id: 'oa-null', kind: '__sentinel_2b_0__', participantId: 'alice', raisedAtRound: 3, raisedByIntentId: 'x', expiresAtRound: null, payload: {} },
+        {
+          id: 'oa-now',
+          kind: '__sentinel_2b_0__',
+          participantId: 'alice',
+          raisedAtRound: 3,
+          raisedByIntentId: 'x',
+          expiresAtRound: 3,
+          payload: {},
+        },
+        {
+          id: 'oa-later',
+          kind: '__sentinel_2b_0__',
+          participantId: 'alice',
+          raisedAtRound: 3,
+          raisedByIntentId: 'x',
+          expiresAtRound: 5,
+          payload: {},
+        },
+        {
+          id: 'oa-null',
+          kind: '__sentinel_2b_0__',
+          participantId: 'alice',
+          raisedAtRound: 3,
+          raisedByIntentId: 'x',
+          expiresAtRound: null,
+          payload: {},
+        },
       ],
     };
     const result = applyIntent(s, intent('EndRound', {}));
-    const remainingIds = result.state.openActions.map(o => o.id);
+    const remainingIds = result.state.openActions.map((o) => o.id);
     expect(remainingIds).toEqual(['oa-later', 'oa-null']);
   });
 });
