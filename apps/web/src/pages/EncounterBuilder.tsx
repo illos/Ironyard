@@ -17,6 +17,7 @@ import {
   useMe,
   useMonsters,
 } from '../api/queries';
+import { Button, Chip, Modal, Section, Sigil } from '../primitives';
 import { useSessionSocket } from '../ws/useSessionSocket';
 
 type MonsterPick = { monsterId: string; quantity: number };
@@ -51,7 +52,7 @@ export function EncounterBuilder() {
   if (me.isLoading || session.isLoading) {
     return (
       <main className="mx-auto max-w-6xl p-6">
-        <p className="text-neutral-400">Loading…</p>
+        <p className="text-text-dim">Loading…</p>
       </main>
     );
   }
@@ -59,7 +60,7 @@ export function EncounterBuilder() {
   if (!me.data) {
     return (
       <main className="mx-auto max-w-6xl p-6">
-        <p className="text-neutral-400">
+        <p className="text-text-dim">
           Not signed in.{' '}
           <Link to="/" className="underline">
             Go home
@@ -73,10 +74,10 @@ export function EncounterBuilder() {
   if (session.error || !session.data) {
     return (
       <main className="mx-auto max-w-6xl p-6 space-y-2">
-        <p className="text-rose-400">
+        <p className="text-foe">
           {(session.error as Error)?.message ?? 'Campaign not found.'}
         </p>
-        <Link to="/" className="underline text-neutral-300">
+        <Link to="/" className="underline text-text-dim">
           Back home
         </Link>
       </main>
@@ -86,15 +87,18 @@ export function EncounterBuilder() {
   if (currentSessionId === null) {
     return (
       <main className="mx-auto max-w-3xl p-6">
-        <div className="rounded-md border border-amber-800/60 bg-amber-950/30 p-4 text-sm text-amber-200">
-          <p className="font-medium">No active session.</p>
-          <p className="mt-1">
+        <Section heading="No active session">
+          <p className="text-sm text-text">
             Start a session before building an encounter.{' '}
-            <Link to="/campaigns/$id" params={{ id: sessionId }} className="underline">
+            <Link
+              to="/campaigns/$id"
+              params={{ id: sessionId }}
+              className="underline text-accent"
+            >
               Go to campaign page →
             </Link>
           </p>
-        </div>
+        </Section>
       </main>
     );
   }
@@ -205,21 +209,24 @@ export function EncounterBuilder() {
     <main className="mx-auto max-w-6xl p-4 sm:p-6 space-y-5">
       <header className="flex items-baseline justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold">Build encounter</h1>
-          <p className="text-xs text-neutral-500 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-text">Build encounter</h1>
+          <p className="text-xs text-text-mute mt-1">
             {session.data.name}
             <span className="ml-2 align-middle">
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full ${
-                  status === 'open'
-                    ? 'bg-emerald-900/40 text-emerald-300'
-                    : status === 'connecting'
-                      ? 'bg-amber-900/40 text-amber-300'
-                      : 'bg-rose-900/40 text-rose-300'
-                }`}
+              <Chip
+                shape="pill"
+                size="xs"
+                selected={status === 'open'}
+                className={
+                  status === 'connecting'
+                    ? 'text-accent'
+                    : status === 'closed'
+                      ? 'text-foe'
+                      : ''
+                }
               >
                 {status}
-              </span>
+              </Chip>
             </span>
           </p>
         </div>
@@ -227,92 +234,121 @@ export function EncounterBuilder() {
           <Link
             to="/campaigns/$id"
             params={{ id: sessionId }}
-            className="text-sm text-neutral-400 hover:text-neutral-200"
+            className="text-sm text-text-dim hover:text-text"
           >
             ← Lobby
           </Link>
           {isDirector && selectedMonsters.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setSaveModalOpen(true)}
-              className="min-h-11 rounded-md border border-neutral-700 bg-neutral-900 text-sm px-3 py-2 hover:bg-neutral-800"
-            >
+            <Button type="button" onClick={() => setSaveModalOpen(true)} className="min-h-11">
               Save as template
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             type="button"
+            variant="primary"
             onClick={handleStartFight}
             disabled={totalParticipants === 0 || !wsOpen}
-            className="min-h-11 rounded-md bg-emerald-500 text-neutral-950 px-4 py-2 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            className="min-h-11 px-4"
           >
             Start the fight →
-          </button>
+          </Button>
         </div>
       </header>
 
-      {saveModalOpen && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-lg p-5 w-full max-w-sm space-y-4">
-            <h2 className="font-semibold">Save as encounter template</h2>
-            <p className="text-xs text-neutral-400">
-              Saves the {selectedMonsters.reduce((s, m) => s + m.quantity, 0)} monster(s) in the
-              draft.
-            </p>
-            <form onSubmit={handleSaveTemplate} className="space-y-3">
-              <label className="block text-sm text-neutral-300">
-                Template name
-                <input
-                  type="text"
-                  value={templateName}
-                  onChange={(e) => setTemplateName(e.target.value)}
-                  placeholder="Goblin patrol"
-                  className="mt-1 w-full min-h-11 rounded-md bg-neutral-800 border border-neutral-700 px-3 py-2 outline-none focus:border-neutral-500"
-                />
-              </label>
-              {createTemplate.error && (
-                <p className="text-sm text-rose-400">{(createTemplate.error as Error).message}</p>
-              )}
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  disabled={createTemplate.isPending || !templateName.trim()}
-                  className="flex-1 min-h-11 rounded-md bg-neutral-100 text-neutral-900 font-medium disabled:opacity-60"
-                >
-                  {createTemplate.isPending ? 'Saving…' : 'Save'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSaveModalOpen(false);
-                    setTemplateName('');
-                  }}
-                  className="min-h-11 px-4 rounded-md border border-neutral-700 text-neutral-300 hover:bg-neutral-800"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={saveModalOpen}
+        onClose={() => {
+          setSaveModalOpen(false);
+          setTemplateName('');
+        }}
+        title="Save as encounter template"
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setSaveModalOpen(false);
+                setTemplateName('');
+              }}
+              className="min-h-11 px-4"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form="save-template-form"
+              variant="primary"
+              disabled={createTemplate.isPending || !templateName.trim()}
+              className="min-h-11 px-4"
+            >
+              {createTemplate.isPending ? 'Saving…' : 'Save'}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-xs text-text-mute mb-3">
+          Saves the {selectedMonsters.reduce((s, m) => s + m.quantity, 0)} monster(s) in the
+          draft.
+        </p>
+        <form id="save-template-form" onSubmit={handleSaveTemplate} className="space-y-3">
+          <label className="block text-sm text-text-dim">
+            Template name
+            <input
+              type="text"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder="Goblin patrol"
+              className="mt-1 w-full min-h-11 bg-ink-2 border border-line px-3 py-2 outline-none focus:border-accent text-text"
+            />
+          </label>
+          {createTemplate.error && (
+            <p className="text-sm text-foe">{(createTemplate.error as Error).message}</p>
+          )}
+        </form>
+      </Modal>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <section className="lg:col-span-4 rounded-lg border border-neutral-800 bg-neutral-950 p-4">
-          <MonsterPicker onAdd={handleAddMonster} />
-        </section>
+        <div className="lg:col-span-4">
+          <Section
+            heading="Monsters"
+            right={
+              monsters.data ? (
+                <span>{monsters.data.count} total</span>
+              ) : null
+            }
+          >
+            <MonsterPicker onAdd={handleAddMonster} />
+          </Section>
+        </div>
 
-        <section className="lg:col-span-4 rounded-lg border border-neutral-800 bg-neutral-950 p-4">
-          <DraftPreview
-            selectedCharacters={approvedChars.filter((c) => selectedCharacterIds.has(c.id))}
-            selectedMonsters={selectedMonsters}
-            monsterById={monsterById}
-            onRemoveMonster={handleRemoveMonster}
-          />
-        </section>
+        <div className="lg:col-span-4">
+          <Section
+            heading="Encounter Draft"
+            right={
+              <span>
+                {selectedCharacterIds.size +
+                  selectedMonsters.reduce((s, m) => s + m.quantity, 0)}{' '}
+                participant
+                {selectedCharacterIds.size +
+                  selectedMonsters.reduce((s, m) => s + m.quantity, 0) !==
+                1
+                  ? 's'
+                  : ''}
+              </span>
+            }
+          >
+            <DraftPreview
+              selectedCharacters={approvedChars.filter((c) => selectedCharacterIds.has(c.id))}
+              selectedMonsters={selectedMonsters}
+              monsterById={monsterById}
+              onRemoveMonster={handleRemoveMonster}
+            />
+          </Section>
+        </div>
 
-        <section className="lg:col-span-4 space-y-4">
-          <div className="rounded-lg border border-neutral-800 bg-neutral-950 p-4">
+        <div className="lg:col-span-4 space-y-4">
+          <Section heading="Characters">
             <CharacterChecklist
               characters={approvedChars.filter((c) =>
                 attendingCharacterIds.includes(c.id),
@@ -321,9 +357,9 @@ export function EncounterBuilder() {
               selectedIds={selectedCharacterIds}
               onToggle={handleToggleCharacter}
             />
-          </div>
+          </Section>
           {isDirector && (
-            <div className="rounded-lg border border-neutral-800 bg-neutral-950 p-4">
+            <Section heading="Saved encounters">
               <TemplatePicker
                 templates={templates.data ?? []}
                 isLoading={templates.isLoading}
@@ -331,9 +367,9 @@ export function EncounterBuilder() {
                 onDelete={(tid) => deleteTemplate.mutate(tid)}
                 disabled={!wsOpen}
               />
-            </div>
+            </Section>
           )}
-        </section>
+        </div>
       </div>
     </main>
   );
@@ -352,10 +388,9 @@ function CharacterChecklist({
 }) {
   return (
     <div className="space-y-3">
-      <h2 className="font-semibold">Characters</h2>
-      {isLoading && <p className="text-sm text-neutral-400">Loading…</p>}
+      {isLoading && <p className="text-sm text-text-dim">Loading…</p>}
       {!isLoading && characters.length === 0 && (
-        <p className="text-sm text-neutral-500">No approved characters yet.</p>
+        <p className="text-sm text-text-mute">No approved characters yet.</p>
       )}
       <ul className="space-y-1">
         {characters.map((cr) => {
@@ -363,16 +398,19 @@ function CharacterChecklist({
           return (
             <li
               key={cr.id}
-              className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
+              className="flex items-center gap-3 bg-ink-2 px-3 py-2 border border-line-soft"
             >
               <input
                 type="checkbox"
                 id={`char-${cr.id}`}
                 checked={checked}
                 onChange={() => onToggle(cr.id)}
-                className="h-5 w-5 min-w-[20px] rounded accent-emerald-500"
+                className="h-5 w-5 min-w-[20px] accent-accent"
               />
-              <label htmlFor={`char-${cr.id}`} className="flex-1 text-sm cursor-pointer">
+              <label
+                htmlFor={`char-${cr.id}`}
+                className="flex-1 text-sm cursor-pointer text-text"
+              >
                 {cr.name}
               </label>
             </li>
@@ -398,17 +436,10 @@ function DraftPreview({
     selectedCharacters.length + selectedMonsters.reduce((s, m) => s + m.quantity, 0);
   return (
     <div className="space-y-3">
-      <header className="flex items-baseline justify-between">
-        <h2 className="font-semibold">Encounter Draft</h2>
-        <span className="text-xs text-neutral-500">
-          {total} participant{total !== 1 ? 's' : ''}
-        </span>
-      </header>
-
       {total === 0 && (
-        <div className="rounded-md border border-dashed border-neutral-800 px-4 py-6 text-center">
-          <p className="text-sm text-neutral-400">Empty draft.</p>
-          <p className="text-xs text-neutral-500 mt-1">
+        <div className="border border-dashed border-line px-4 py-6 text-center">
+          <p className="text-sm text-text-dim">Empty draft.</p>
+          <p className="text-xs text-text-mute mt-1">
             Check characters and add monsters to build the encounter.
           </p>
         </div>
@@ -416,16 +447,14 @@ function DraftPreview({
 
       {selectedCharacters.length > 0 && (
         <div className="space-y-1">
-          <p className="text-xs text-neutral-500 uppercase tracking-wide">PCs</p>
+          <p className="text-xs text-text-mute uppercase tracking-wide">PCs</p>
           {selectedCharacters.map((cr) => (
             <div
               key={cr.id}
-              className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
+              className="flex items-center gap-3 bg-ink-2 px-3 py-2 border border-line-soft"
             >
-              <span className="shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold bg-sky-900/40 text-sky-200">
-                PC
-              </span>
-              <span className="flex-1 text-sm truncate">{cr.name}</span>
+              <Sigil text={cr.name.slice(0, 2)} size={28} />
+              <span className="flex-1 text-sm truncate text-text">{cr.name}</span>
             </div>
           ))}
         </div>
@@ -433,27 +462,27 @@ function DraftPreview({
 
       {selectedMonsters.length > 0 && (
         <div className="space-y-1">
-          <p className="text-xs text-neutral-500 uppercase tracking-wide">Monsters</p>
+          <p className="text-xs text-text-mute uppercase tracking-wide">Monsters</p>
           {selectedMonsters.map((pick) => {
             const monster = monsterById.get(pick.monsterId);
             return (
               <div
                 key={pick.monsterId}
-                className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
+                className="flex items-center gap-3 bg-ink-2 px-3 py-2 border border-line-soft"
               >
-                <span className="shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold bg-rose-900/40 text-rose-200">
+                <span className="shrink-0 inline-flex h-7 w-7 items-center justify-center text-xs font-semibold bg-ink-3 border border-line text-foe">
                   M
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate">{monster?.name ?? pick.monsterId}</p>
-                  <p className="text-xs text-neutral-500 font-mono tabular-nums">
+                  <p className="text-sm truncate text-text">{monster?.name ?? pick.monsterId}</p>
+                  <p className="text-xs text-text-mute font-mono tabular-nums">
                     ×{pick.quantity}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => onRemoveMonster(pick.monsterId)}
-                  className="min-h-11 w-9 flex items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-800 hover:text-rose-400"
+                  className="min-h-11 w-9 flex items-center justify-center text-text-mute hover:bg-ink-3 hover:text-foe"
                   aria-label={`Remove ${monster?.name ?? pick.monsterId}`}
                 >
                   ×
@@ -482,10 +511,9 @@ function TemplatePicker({
 }) {
   return (
     <div className="space-y-3">
-      <h2 className="font-semibold">Saved encounters</h2>
-      {isLoading && <p className="text-sm text-neutral-400">Loading…</p>}
+      {isLoading && <p className="text-sm text-text-dim">Loading…</p>}
       {!isLoading && templates.length === 0 && (
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-text-mute">
           No saved templates. Build a monster roster and click "Save as template".
         </p>
       )}
@@ -493,26 +521,26 @@ function TemplatePicker({
         {templates.map((t) => (
           <li
             key={t.id}
-            className="flex items-center gap-2 rounded-md bg-neutral-900/60 px-3 py-2"
+            className="flex items-center gap-2 bg-ink-2 px-3 py-2 border border-line-soft"
           >
             <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-medium">{t.name}</p>
-              <p className="text-xs text-neutral-500">
+              <p className="truncate text-sm font-medium text-text">{t.name}</p>
+              <p className="text-xs text-text-mute">
                 {t.data.monsters.reduce((sum, m) => sum + m.quantity, 0)} monsters
               </p>
             </div>
-            <button
+            <Button
               type="button"
               onClick={() => onLoad(t)}
               disabled={disabled}
-              className="min-h-11 px-3 rounded-md bg-neutral-700 text-sm hover:bg-neutral-600 disabled:opacity-50"
+              className="min-h-11 px-3"
             >
               Load
-            </button>
+            </Button>
             <button
               type="button"
               onClick={() => onDelete(t.id)}
-              className="min-h-11 w-9 flex items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-800 hover:text-rose-400"
+              className="min-h-11 w-9 flex items-center justify-center text-text-mute hover:bg-ink-3 hover:text-foe"
               aria-label="Delete template"
             >
               ×
@@ -539,26 +567,20 @@ function MonsterPicker({ onAdd }: { onAdd: (m: Monster) => void }) {
 
   return (
     <div className="space-y-3">
-      <header className="flex items-baseline justify-between">
-        <h2 className="font-semibold">Monsters</h2>
-        {monsters.data && (
-          <span className="text-xs text-neutral-500">{monsters.data.count} total</span>
-        )}
-      </header>
       <input
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Filter by name"
-        className="w-full min-h-11 rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 outline-none focus:border-neutral-600"
+        className="w-full min-h-11 bg-ink-2 border border-line px-3 py-2 outline-none focus:border-accent text-text"
       />
-      {monsters.isLoading && <p className="text-neutral-400 text-sm">Loading monsters…</p>}
+      {monsters.isLoading && <p className="text-text-dim text-sm">Loading monsters…</p>}
       {monsters.error && (
-        <p className="text-rose-400 text-sm">{(monsters.error as Error).message}</p>
+        <p className="text-foe text-sm">{(monsters.error as Error).message}</p>
       )}
       {monsters.data && (
         <>
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-text-mute">
             Showing {filtered.length}
             {filtered.length !== monsters.data.count && ` of ${monsters.data.count}`}
           </p>
@@ -568,17 +590,17 @@ function MonsterPicker({ onAdd }: { onAdd: (m: Monster) => void }) {
                 <button
                   type="button"
                   onClick={() => onAdd(m)}
-                  className="w-full min-h-11 flex items-center justify-between gap-3 rounded-md bg-neutral-900/60 hover:bg-neutral-800 active:bg-neutral-700 px-3 py-2 text-left transition-colors"
+                  className="w-full min-h-11 flex items-center justify-between gap-3 bg-ink-2 hover:bg-ink-3 active:bg-ink-3 border border-line-soft hover:border-accent px-3 py-2 text-left transition-colors text-text"
                 >
                   <span className="truncate">{m.name}</span>
-                  <span className="shrink-0 rounded-full bg-neutral-800 px-2.5 py-0.5 text-xs font-mono tabular-nums">
+                  <Chip shape="pill" size="xs">
                     L{m.level}
-                  </span>
+                  </Chip>
                 </button>
               </li>
             ))}
             {filtered.length === 0 && (
-              <li className="text-sm text-neutral-500 px-1 py-2">No matches.</li>
+              <li className="text-sm text-text-mute px-1 py-2">No matches.</li>
             )}
           </ul>
         </>
