@@ -31,6 +31,7 @@ import {
   applySetInitiative,
   applySetResource,
   applySetStamina,
+  applySpendHeroToken,
   applySpendMalice,
   applySpendRecovery,
   applySpendResource,
@@ -135,6 +136,8 @@ export function applyIntent(
       return applySetResource(state, intent);
     case IntentTypes.SetStamina:
       return applySetStamina(state, intent);
+    case IntentTypes.SpendHeroToken:
+      return applySpendHeroToken(state, intent);
     case IntentTypes.SpendMalice:
       return applySpendMalice(state, intent);
     case IntentTypes.SpendRecovery:

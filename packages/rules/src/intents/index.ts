@@ -26,6 +26,7 @@ export { applyRollResistance } from './roll-resistance';
 export { applySetCondition } from './set-condition';
 export { applySetResource } from './set-resource';
 export { applySetStamina } from './set-stamina';
+export { applySpendHeroToken } from './spend-hero-token';
 export { applySpendMalice } from './spend-malice';
 export { applySpendRecovery } from './spend-recovery';
 export { applySpendResource } from './spend-resource';
