@@ -29,19 +29,24 @@ export function EncounterRail({
   return (
     <Section heading={heading} right={right}>
       <div className="flex flex-col gap-1">
-        {foes.map((f) => (
-          <ParticipantRow
-            key={f.id}
-            sigil={initials(f.name)}
-            name={f.name}
-            role={summarizeRole(f)}
-            staminaCurrent={f.currentStamina}
-            staminaMax={f.maxStamina}
-            active={selectedParticipantId === f.id}
-            isTurn={activeParticipantId === f.id}
-            onSelect={() => onSelect(f.id)}
-          />
-        ))}
+        {foes.map((f) => {
+          const isSelf = f.id === selfParticipantId;
+          const isGated = viewerRole === 'player' && !isSelf;
+          return (
+            <ParticipantRow
+              key={f.id}
+              sigil={initials(f.name)}
+              name={f.name}
+              role={isGated ? null : summarizeRole(f)}
+              staminaCurrent={f.currentStamina}
+              staminaMax={f.maxStamina}
+              active={selectedParticipantId === f.id}
+              isTurn={activeParticipantId === f.id}
+              isTarget={targetParticipantId === f.id}
+              onSelect={() => onSelect(f.id)}
+            />
+          );
+        })}
       </div>
     </Section>
   );

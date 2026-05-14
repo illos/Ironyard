@@ -29,20 +29,27 @@ export function PartyRail({
   return (
     <Section heading={heading}>
       <div className="flex flex-col gap-1">
-        {heroes.map((h) => (
-          <ParticipantRow
-            key={h.id}
-            sigil={initials(h.name)}
-            name={h.name}
-            role={summarizeRole(h)}
-            staminaCurrent={h.currentStamina}
-            staminaMax={h.maxStamina}
-            active={selectedParticipantId === h.id}
-            isTurn={activeParticipantId === h.id}
-            acted={actedIds.has(h.id)}
-            onSelect={() => onSelect(h.id)}
-          />
-        ))}
+        {heroes.map((h) => {
+          const isSelf = h.id === selfParticipantId;
+          const isGated = viewerRole === 'player' && !isSelf;
+          return (
+            <ParticipantRow
+              key={h.id}
+              sigil={initials(h.name)}
+              name={h.name}
+              role={isGated ? null : summarizeRole(h)}
+              resource={isGated ? null : undefined}
+              recoveries={isGated ? null : undefined}
+              staminaCurrent={h.currentStamina}
+              staminaMax={h.maxStamina}
+              active={selectedParticipantId === h.id}
+              isTurn={activeParticipantId === h.id}
+              acted={actedIds.has(h.id)}
+              isTarget={targetParticipantId === h.id}
+              onSelect={() => onSelect(h.id)}
+            />
+          );
+        })}
       </div>
     </Section>
   );
