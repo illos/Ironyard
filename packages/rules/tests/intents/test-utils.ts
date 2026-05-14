@@ -26,6 +26,12 @@ export function stamped(
 export function baseState(overrides: Partial<CampaignState> = {}): CampaignState {
   return {
     ...emptyCampaignState(CAMPAIGN_ID, OWNER_ID),
+    // Default to an active session so existing reducer tests don't fail the new
+    // no_active_session precondition on StartEncounter (Task 12). Tests that
+    // exercise the session-required gating pass `currentSessionId: null` explicitly.
+    currentSessionId: 'sess-test',
+    attendingCharacterIds: [],
+    heroTokens: 0,
     ...overrides,
   };
 }

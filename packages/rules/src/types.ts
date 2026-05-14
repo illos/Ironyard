@@ -81,6 +81,12 @@ export type CampaignState = {
   encounter: EncounterPhase | null;
   // Party victories earned this session. Drained by Respite to per-character XP.
   partyVictories: number;
+  // The active session ID. null when no session is running.
+  currentSessionId: string | null;
+  // Character IDs attending the current session.
+  attendingCharacterIds: string[];
+  // Hero tokens available this session.
+  heroTokens: number;
 };
 
 export type LogEntry = {
@@ -109,5 +115,8 @@ export function emptyCampaignState(campaignId: string, ownerId: string): Campaig
     participants: [],
     encounter: null,
     partyVictories: 0,
+    currentSessionId: null,
+    attendingCharacterIds: [],
+    heroTokens: 0,
   };
 }
