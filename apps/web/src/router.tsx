@@ -3,13 +3,13 @@ import { AppShell } from './primitives/AppShell';
 import { CampaignView } from './pages/CampaignView';
 import { CampaignsList } from './pages/CampaignsList';
 import { CharactersList } from './pages/CharactersList';
-import { CombatRun } from './pages/CombatRun';
 import { EncounterBuilder } from './pages/EncounterBuilder';
 import { Home } from './pages/Home';
 import { MonsterBrowser } from './pages/MonsterBrowser';
 import { MonsterDetail } from './pages/MonsterDetail';
 import { Sheet } from './pages/characters/Sheet';
 import { Wizard } from './pages/characters/Wizard';
+import { DirectorCombat } from './pages/combat/DirectorCombat';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -52,7 +52,7 @@ const encounterBuilderRoute = createRoute({
 const combatRunRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/campaigns/$id/play',
-  component: CombatRun,
+  component: DirectorCombat,
 });
 
 const foesRoute = createRoute({
