@@ -32,5 +32,7 @@ export { SkillChipGroup } from './SkillChipGroup';
 export type { SkillChipGroupProps, SkillItem } from './SkillChipGroup';
 export { ParticipantRow } from './ParticipantRow';
 export type { ParticipantRowProps } from './ParticipantRow';
+export { AccountMenu } from './AccountMenu';
+export type { AccountMenuProps } from './AccountMenu';
 export { ActiveCharacterChip } from './ActiveCharacterChip';
 export type { ActiveCharacterChipProps } from './ActiveCharacterChip';
