@@ -71,6 +71,14 @@ export function DetailPane({
   dispatchSpendSurge,
   dispatchSpendRecovery,
 }: Props) {
+  if (viewerRole === 'player' && !selfParticipantId) {
+    return (
+      <div className="border border-dashed border-line-soft p-6 text-center text-sm text-text-mute">
+        You're not in this encounter. The director can bring you in via Encounter Builder.
+      </div>
+    );
+  }
+
   if (!focused) {
     return (
       <div className="border border-dashed border-line-soft p-6 text-center text-sm text-text-mute">
