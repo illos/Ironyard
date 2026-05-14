@@ -229,6 +229,9 @@ export type { MaliceState } from './malice';
 export { OpenActionKindSchema, OpenActionSchema } from './open-action';
 export type { OpenAction, OpenActionKind } from './open-action';
 
+export { OPEN_ACTION_COPY } from './open-action-copy';
+export type { OpenActionCopy } from './open-action-copy';
+
 export { ParticipantSchema } from './participant';
 export type { Participant } from './participant';
 
