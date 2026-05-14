@@ -113,12 +113,13 @@ export function applyEndEncounter(state: CampaignState, intent: StampedIntent): 
       seq: state.seq + 1,
       participants: resetParticipants,
       encounter: null,
+      openActions: [],
     },
     derived: [],
     log: [
       {
         kind: 'info',
-        text: `encounter ${encounterId} ended; resources, surges, malice reset`,
+        text: `encounter ${encounterId} ended; resources, surges, openActions cleared`,
         intentId: intent.id,
       },
     ],

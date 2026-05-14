@@ -349,14 +349,15 @@ describe('applyIntent — EndEncounter', () => {
     expect(r.state.encounter).toBeNull();
 
     // Re-start a new encounter and confirm malice was wiped (StartEncounter inits
-    // from the canon formula: avg(0 PCs) + 0 heroes + 1 round = 1 — EndEncounter
-    // doesn't leak prior state into the freshly-started encounter).
+    // to 0 on its own — this is a sanity check that EndEncounter doesn't leak
+    // prior state into a freshly-started encounter via the seq increment).
     const r2 = applyIntent(
       { ...r.state, currentSessionId: 'sess-test' },
       intent('StartEncounter', {}),
     );
+    // Canon § 5.5: empty roster → malice = floor(avg) + aliveHeroes + 1 = 0+0+1 = 1.
     expect(r2.state.encounter?.malice).toEqual({
-      current: 1, // empty roster: 0 + 0 + 1 (canon § 5.5)
+      current: 1,
       lastMaliciousStrikeRound: null,
     });
   });
@@ -365,5 +366,122 @@ describe('applyIntent — EndEncounter', () => {
     const s = withEncounter();
     const r = endEncounter(s);
     expect(r.derived).toEqual([]);
+  });
+
+  describe('EndEncounter cleanup', () => {
+    it("zeros every PC's heroic resource value (positive)", () => {
+      const participants = [
+        pc({
+          id: 'pc_censor',
+          heroicResources: [{ name: 'wrath', value: 7, floor: 0 }],
+        }),
+        pc({
+          id: 'pc_mystic',
+          heroicResources: [{ name: 'piety', value: 3, floor: 0 }],
+        }),
+      ];
+      const s: CampaignState = {
+        ...emptyCampaignState(campaignId, 'user-owner'),
+        participants,
+        encounter: {
+          id: 'enc_test',
+          currentRound: 1,
+          turnOrder: participants.map((p) => p.id),
+          activeParticipantId: null,
+          turnState: {},
+          malice: { current: 0, lastMaliciousStrikeRound: null },
+        },
+      };
+
+      const r = endEncounter(s);
+      expect(r.errors).toBeUndefined();
+      const censor = r.state.participants.find((p): p is Participant => isParticipant(p) && p.id === 'pc_censor');
+      const mystic = r.state.participants.find((p): p is Participant => isParticipant(p) && p.id === 'pc_mystic');
+      expect(censor?.heroicResources[0]?.value).toBe(0);
+      expect(mystic?.heroicResources[0]?.value).toBe(0);
+    });
+
+    it('zeros negative clarity to 0 (canon § 5.3 lifecycle)', () => {
+      const participants = [
+        pc({
+          id: 'pc_talent',
+          heroicResources: [{ name: 'clarity', value: -3, floor: -3 }],
+        }),
+      ];
+      const s: CampaignState = {
+        ...emptyCampaignState(campaignId, 'user-owner'),
+        participants,
+        encounter: {
+          id: 'enc_test',
+          currentRound: 1,
+          turnOrder: participants.map((p) => p.id),
+          activeParticipantId: null,
+          turnState: {},
+          malice: { current: 0, lastMaliciousStrikeRound: null },
+        },
+      };
+
+      const r = endEncounter(s);
+      expect(r.errors).toBeUndefined();
+      const talent = r.state.participants.find((p): p is Participant => isParticipant(p) && p.id === 'pc_talent');
+      expect(talent?.heroicResources[0]?.value).toBe(0);
+      expect(talent?.heroicResources[0]?.floor).toBe(-3); // floor preserved
+    });
+
+    it('zeros surges to 0 (canon § 5.6)', () => {
+      const participants = [
+        pc({
+          id: 'pc_with_surges',
+          surges: 4,
+        }),
+      ];
+      const s: CampaignState = {
+        ...emptyCampaignState(campaignId, 'user-owner'),
+        participants,
+        encounter: {
+          id: 'enc_test',
+          currentRound: 1,
+          turnOrder: participants.map((p) => p.id),
+          activeParticipantId: null,
+          turnState: {},
+          malice: { current: 0, lastMaliciousStrikeRound: null },
+        },
+      };
+
+      const r = endEncounter(s);
+      expect(r.errors).toBeUndefined();
+      const p = r.state.participants.find((x): x is Participant => isParticipant(x) && x.id === 'pc_with_surges');
+      expect(p?.surges).toBe(0);
+    });
+
+    it('clears all open actions', () => {
+      const s: CampaignState = {
+        ...emptyCampaignState(campaignId, 'user-owner'),
+        participants: [],
+        openActions: [
+          {
+            id: 'oa_1',
+            kind: '__sentinel_2b_0__' as const,
+            participantId: 'pc_alice',
+            raisedAtRound: 1,
+            raisedByIntentId: 'i_raise_1',
+            expiresAtRound: 2,
+            payload: {},
+          },
+        ],
+        encounter: {
+          id: 'enc_test',
+          currentRound: 1,
+          turnOrder: [],
+          activeParticipantId: null,
+          turnState: {},
+          malice: { current: 0, lastMaliciousStrikeRound: null },
+        },
+      };
+
+      const r = endEncounter(s);
+      expect(r.errors).toBeUndefined();
+      expect(r.state.openActions).toEqual([]);
+    });
   });
 });
