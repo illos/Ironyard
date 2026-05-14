@@ -348,6 +348,7 @@ export function DirectorCombat() {
       ladder,
       abilityKeywords: args.ability.keywords ?? [],
       abilityType: args.ability.type,
+      abilityName: args.ability.name,
     };
     const intent: Intent = buildIntent({
       campaignId,

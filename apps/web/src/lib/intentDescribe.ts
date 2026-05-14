@@ -50,7 +50,8 @@ export function describeIntent(args: DescribeArgs): string {
         const p = parent.payload as RollPowerPayload;
         const attacker = nameOf(participantsBefore, p.attackerId);
         const tag = parent.source === 'manual' ? 'manual' : 'auto';
-        return `${attacker} → ${target} took ${amount} ${damageType} — ${p.abilityId} (${tag})`;
+        const abilityLabel = p.abilityName ?? p.abilityId;
+        return `${attacker} → ${target} took ${amount} ${damageType} — ${abilityLabel} (${tag})`;
       }
       return `${target} took ${amount} ${damageType}`;
     }
@@ -59,7 +60,8 @@ export function describeIntent(args: DescribeArgs): string {
       const attacker = nameOf(participantsBefore, p.attackerId);
       const targetNames = p.targetIds.map((id) => nameOf(participantsBefore, id)).join(', ');
       const tag = intent.source === 'manual' ? 'manual' : 'auto';
-      return `${attacker} rolls ${p.abilityId} vs ${targetNames} (${tag})`;
+      const abilityLabel = p.abilityName ?? p.abilityId;
+      return `${attacker} rolls ${abilityLabel} vs ${targetNames} (${tag})`;
     }
     case IntentTypes.StartRound: {
       void (intent.payload as StartRoundPayload);

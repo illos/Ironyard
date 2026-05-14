@@ -51,5 +51,8 @@ export const RollPowerPayloadSchema = z.object({
   abilityType: z
     .enum(['action', 'maneuver', 'triggered', 'free-triggered', 'villain', 'trait'])
     .optional(),
+  // Phase 5 Pass 2a — human-readable ability name for toast attribution.
+  // Optional for back-compat: legacy payloads fall back to abilityId.
+  abilityName: z.string().optional(),
 });
 export type RollPowerPayload = z.infer<typeof RollPowerPayloadSchema>;
