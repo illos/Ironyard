@@ -76,9 +76,7 @@ function CampaignRow({ c }: { c: CampaignSummary }) {
         <span className="flex-1">
           <span className="font-medium">{c.name}</span>
           {c.isOwner && <span className="ml-2 text-xs text-accent">owner</span>}
-          {c.isDirector && !c.isOwner && (
-            <span className="ml-2 text-xs text-accent">director</span>
-          )}
+          {c.isDirector && !c.isOwner && <span className="ml-2 text-xs text-accent">director</span>}
         </span>
         <span className="text-xs text-text-mute tracking-widest">{c.inviteCode}</span>
       </Link>
