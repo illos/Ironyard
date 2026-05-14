@@ -217,13 +217,12 @@ export function DirectorCombat() {
   }, []);
   const handleRowClick = viewerRole === 'director' ? handleFocus : handleTarget;
 
-  // Player view: DetailPane focus is always the player's own character,
-  // regardless of what they tap in the rails (those taps set targets, not focus).
-  useEffect(() => {
-    if (viewerRole === 'player' && selfParticipantId) {
-      setSelectedId(selfParticipantId);
-    }
-  }, [viewerRole, selfParticipantId]);
+  // Player view: DetailPane focus is render-derived from selfParticipantId so
+  // the lock can't leak into director state via a transient useEffect run
+  // during the useCampaign HTTP fetch (when viewerRole briefly reads 'player'
+  // before isActingAsDirector resolves). Director focus is the bare selectedId.
+  const effectiveSelectedId =
+    viewerRole === 'player' && selfParticipantId ? selfParticipantId : selectedId;
 
   // ── header guards ─────────────────────────────────────────────────────────
   if (me.isLoading || campaign.isLoading) {
@@ -281,7 +280,7 @@ export function DirectorCombat() {
   // is the canonical party victories. Summing would inflate by party size.
   const victories = heroes[0]?.victories ?? 0;
 
-  const focused = participants.find((p) => p.id === selectedId) ?? null;
+  const focused = participants.find((p) => p.id === effectiveSelectedId) ?? null;
   const isAtTurnEnd =
     !!activeEncounter &&
     activeEncounter.currentRound !== null &&
@@ -553,7 +552,7 @@ export function DirectorCombat() {
             <PartyRail
               heroes={heroes}
               activeParticipantId={activeEncounter.activeParticipantId}
-              selectedParticipantId={selectedId}
+              selectedParticipantId={effectiveSelectedId}
               onSelect={handleRowClick}
               actedIds={actedIds}
               viewerRole={viewerRole}
@@ -564,7 +563,7 @@ export function DirectorCombat() {
               foes={liveFoes}
               defeatedCount={defeatedCount}
               activeParticipantId={activeEncounter.activeParticipantId}
-              selectedParticipantId={selectedId}
+              selectedParticipantId={effectiveSelectedId}
               onSelect={handleRowClick}
               viewerRole={viewerRole}
               selfParticipantId={selfParticipantId}
