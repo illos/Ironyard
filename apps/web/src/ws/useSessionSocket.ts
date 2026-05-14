@@ -13,6 +13,7 @@ import {
   type MaliceState,
   type Member,
   type Monster,
+  type OpenAction,
   type Participant,
   type RemoveConditionPayload,
   type RemoveParticipantPayload,
@@ -534,6 +535,7 @@ export function useSessionSocket(sessionId: string | undefined) {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [attendingCharacterIds, setAttendingCharacterIds] = useState<string[]>([]);
   const [heroTokens, setHeroTokens] = useState<number>(0);
+  const [openActions, setOpenActions] = useState<OpenAction[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -549,6 +551,7 @@ export function useSessionSocket(sessionId: string | undefined) {
     setCurrentSessionId(null);
     setAttendingCharacterIds([]);
     setHeroTokens(0);
+    setOpenActions([]);
 
     ws.onopen = () => {
       setStatus('open');
@@ -616,6 +619,27 @@ export function useSessionSocket(sessionId: string | undefined) {
             return next;
           });
         }
+        // OpenAction mirror (Phase 2b.0).
+        // RaiseOpenAction is server-only so we never see its envelope on the
+        // dispatch path; it only arrives via snapshot or as a derived intent
+        // — both rare-but-supported. Snapshot replay overwrites everything.
+        if (msg.intent.type === IntentTypes.ClaimOpenAction) {
+          const payload = msg.intent.payload as { openActionId?: string };
+          if (payload.openActionId) {
+            setOpenActions((prev) => prev.filter((o) => o.id !== payload.openActionId));
+          }
+        }
+        if (msg.intent.type === IntentTypes.EndRound) {
+          const round = activeEncounter?.currentRound;
+          if (round !== null && round !== undefined) {
+            setOpenActions((prev) =>
+              prev.filter((o) => o.expiresAtRound === null || o.expiresAtRound !== round),
+            );
+          }
+        }
+        if (msg.intent.type === IntentTypes.EndEncounter) {
+          setOpenActions([]);
+        }
         if (msg.intent.type === IntentTypes.GainHeroToken) {
           const payload = msg.intent.payload as GainHeroTokenPayload;
           setHeroTokens((prev) => prev + payload.amount);
@@ -677,6 +701,7 @@ export function useSessionSocket(sessionId: string | undefined) {
           currentSessionId?: unknown;
           attendingCharacterIds?: unknown;
           heroTokens?: unknown;
+          openActions?: unknown;
         } | undefined;
         if (s && typeof s.activeDirectorId === 'string') {
           setActiveDirectorId(s.activeDirectorId);
@@ -690,6 +715,7 @@ export function useSessionSocket(sessionId: string | undefined) {
               : [],
           );
           setHeroTokens(typeof s.heroTokens === 'number' ? s.heroTokens : 0);
+          setOpenActions(Array.isArray(s.openActions) ? (s.openActions as OpenAction[]) : []);
         }
         // The intent log can't be perfectly reconstructed from a snapshot,
         // but we can mark everything past the snapshot seq as voided so the
@@ -722,5 +748,6 @@ export function useSessionSocket(sessionId: string | undefined) {
     currentSessionId,
     attendingCharacterIds,
     heroTokens,
+    openActions,
   };
 }

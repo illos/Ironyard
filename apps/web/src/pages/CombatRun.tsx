@@ -21,6 +21,7 @@ import {
   type StartRoundPayload,
   type TierOutcome,
   type UndoPayload,
+  ulid,
 } from '@ironyard/shared';
 import { Link, useParams } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -30,6 +31,7 @@ import { describeIntent, findLatestUndoable } from '../lib/intentDescribe';
 import { type MirrorIntent, isParticipantEntry, useSessionSocket } from '../ws/useSessionSocket';
 import { DetailPane } from './combat/DetailPane';
 import { InitiativePanel } from './combat/InitiativePanel';
+import { OpenActionsList } from './combat/OpenActionsList';
 import { PlayerSheetPanel } from './combat/PlayerSheetPanel';
 import { type Toast, ToastStack } from './combat/ToastStack';
 
@@ -41,7 +43,14 @@ export function CombatRun() {
   const me = useMe();
   const session = useCampaign(sessionId);
   const monsters = useMonsters();
-  const { status, activeEncounter, dispatch, intentLog } = useSessionSocket(sessionId);
+  const {
+    status,
+    activeEncounter,
+    dispatch,
+    intentLog,
+    activeDirectorId,
+    openActions,
+  } = useSessionSocket(sessionId);
 
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -450,6 +459,30 @@ export function CombatRun() {
             {/* PlayerSheetPanel: renders for the player who owns a PC participant;
                 returns null for directors and viewers without a materialized PC. */}
             <PlayerSheetPanel campaignId={sessionId} />
+            {/* OpenActionsList: lobby-visible queue of rule-driven prompts a
+                player or director may claim (Phase 2b.0). Visible in 2b.0 with
+                no consumers; 2b.0.1 wires the spatial-trigger + pray-to-the-gods
+                raisers. */}
+            <section className="rounded-lg border border-neutral-800 bg-neutral-950 p-4">
+              <OpenActionsList
+                openActions={openActions}
+                currentUserId={me.data?.user.id ?? ''}
+                activeDirectorId={activeDirectorId ?? session.data?.activeDirectorId ?? ''}
+                participantOwnerLookup={(pid) => {
+                  const p = activeEncounter?.participants.find(
+                    (entry) => isParticipantEntry(entry) && entry.id === pid,
+                  );
+                  return p && isParticipantEntry(p) ? p.ownerId : null;
+                }}
+                onClaim={(id) =>
+                  dispatch({
+                    id: ulid(),
+                    type: IntentTypes.ClaimOpenAction,
+                    payload: { openActionId: id },
+                  })
+                }
+              />
+            </section>
           </div>
         </div>
       )}
