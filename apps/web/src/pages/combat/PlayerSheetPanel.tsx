@@ -16,6 +16,7 @@ export function PlayerSheetPanel({ campaignId }: { campaignId: string }) {
   const sock = useSessionSocket(campaignId);
   if (!me.data || !sock.activeEncounter) return null;
   const userId = me.data.user.id;
+  const { currentSessionId, heroTokens } = sock;
   const myParticipant = sock.activeEncounter.participants.find(
     (p) => p.kind === 'pc' && p.ownerId === userId,
   ) as Participant | undefined;
@@ -49,6 +50,14 @@ export function PlayerSheetPanel({ campaignId }: { campaignId: string }) {
       <ActiveAbilitiesStrip participant={myParticipant} />
       <ResourcePanel participant={myParticipant} campaignId={campaignId} userId={userId} />
       <RecoveryButton participant={myParticipant} campaignId={campaignId} userId={userId} />
+      {currentSessionId !== null && myParticipant && (
+        <HeroTokenPanel
+          heroTokens={heroTokens}
+          participantId={myParticipant.id}
+          campaignId={campaignId}
+          userId={userId}
+        />
+      )}
       <Abilities participant={myParticipant} campaignId={campaignId} userId={userId} />
       <KitDisplayAndSwap participant={myParticipant} campaignId={campaignId} userId={userId} />
       <Inventory participant={myParticipant} campaignId={campaignId} userId={userId} />
@@ -456,6 +465,56 @@ function KitDisplayAndSwap({
           onClose={() => setOpen(false)}
         />
       )}
+    </div>
+  );
+}
+
+function HeroTokenPanel({
+  heroTokens,
+  participantId,
+  campaignId,
+  userId,
+}: {
+  heroTokens: number;
+  participantId: string;
+  campaignId: string;
+  userId: string;
+}) {
+  const sock = useSessionSocket(campaignId);
+  const spend = (amount: 1 | 2, reason: 'surge_burst' | 'regain_stamina') => {
+    sock.dispatch(
+      buildIntent({
+        campaignId,
+        type: IntentTypes.SpendHeroToken,
+        payload: { amount, reason, participantId },
+        actor: { userId, role: 'player' },
+      }),
+    );
+  };
+  return (
+    <div className="rounded-md border border-violet-800/40 bg-violet-950/20 p-3 space-y-2">
+      <div className="flex items-baseline justify-between">
+        <span className="text-sm font-medium">Hero tokens</span>
+        <span className="font-mono tabular-nums text-sm">{heroTokens}</span>
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          disabled={heroTokens < 1}
+          onClick={() => spend(1, 'surge_burst')}
+          className="flex-1 min-h-11 rounded-md bg-violet-500 text-neutral-900 text-sm font-medium disabled:opacity-40"
+        >
+          +2 Surges (1)
+        </button>
+        <button
+          type="button"
+          disabled={heroTokens < 2}
+          onClick={() => spend(2, 'regain_stamina')}
+          className="flex-1 min-h-11 rounded-md bg-violet-500 text-neutral-900 text-sm font-medium disabled:opacity-40"
+        >
+          Regain Stamina (2)
+        </button>
+      </div>
     </div>
   );
 }
