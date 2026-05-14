@@ -3,7 +3,9 @@ import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useCreateCharacter, useUpdateCharacter } from '../../api/mutations';
 import { useCharacter, useMe } from '../../api/queries';
-import { type WizardStaticData, useWizardStaticData } from '../../api/static-data';
+import { useWizardStaticData } from '../../api/static-data';
+import { Button, SplitPane } from '../../primitives';
+import { LivePreviewSheet } from './LivePreviewSheet';
 import { AncestryStep } from './steps/AncestryStep';
 import { CareerStep } from './steps/CareerStep';
 import { ClassStep } from './steps/ClassStep';
@@ -85,10 +87,10 @@ export function Wizard() {
   })();
 
   if (me.isLoading || (editingId !== null && loaded.isLoading) || !staticData) {
-    return <main className="mx-auto max-w-3xl p-6 text-neutral-400">Loading…</main>;
+    return <main className="mx-auto max-w-3xl p-6 text-text-dim">Loading…</main>;
   }
   if (!me.data) {
-    return <main className="mx-auto max-w-3xl p-6 text-neutral-400">Sign in to create a character.</main>;
+    return <main className="mx-auto max-w-3xl p-6 text-text-dim">Sign in to create a character.</main>;
   }
 
   const patch = (p: Partial<Character>) => setDraft((d) => ({ ...d, ...p }));
@@ -136,59 +138,73 @@ export function Wizard() {
   const next = async () => { if (hasNext) await goToStep(visibleSteps[stepIndex + 1]!); };
 
   return (
-    <main className="mx-auto max-w-3xl p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold">{editingId ? 'Edit character' : 'New character'}</h1>
+    <main className="mx-auto max-w-6xl p-6 flex flex-col gap-4">
+      <header className="flex items-baseline justify-between">
+        <h1 className="text-2xl font-semibold text-text">
+          {editingId ? 'Edit character' : 'New character'}
+        </h1>
+        <span className="font-mono text-[10px] tracking-[0.14em] text-text-mute uppercase">
+          Step {stepIndex + 1} / {visibleSteps.length}
+        </span>
       </header>
-      <StepStepper
-        steps={visibleSteps.map((id) => ({ id, label: STEP_LABELS[id] }))}
-        current={step}
-        onJump={(id) => { void goToStep(id as StepId); }}
+      <SplitPane
+        ratio="1.2fr 1fr"
+        left={
+          <div className="flex flex-col gap-4">
+            <StepStepper
+              steps={visibleSteps.map((id) => ({ id, label: STEP_LABELS[id] }))}
+              current={step}
+              onJump={(id) => { void goToStep(id as StepId); }}
+            />
+            <section className="border border-line bg-ink-1 p-5">
+              {step === 'name' && (
+                <NameDetailsStep
+                  draft={draft}
+                  name={name}
+                  campaignCode={search.code}
+                  onNameChange={setName}
+                  onPatch={patch}
+                />
+              )}
+              {step === 'ancestry' && (
+                <AncestryStep draft={draft} staticData={staticData} onPatch={patch} />
+              )}
+              {step === 'culture' && <CultureStep draft={draft} onPatch={patch} />}
+              {step === 'career' && (
+                <CareerStep draft={draft} staticData={staticData} onPatch={patch} />
+              )}
+              {step === 'class' && (
+                <ClassStep draft={draft} staticData={staticData} onPatch={patch} />
+              )}
+              {step === 'complication' && (
+                <ComplicationStep draft={draft} staticData={staticData} onPatch={patch} />
+              )}
+              {step === 'kit' && <KitStep draft={draft} staticData={staticData} onPatch={patch} />}
+              {step === 'review' && (
+                <ReviewStep
+                  draft={draft}
+                  staticData={staticData}
+                  characterId={characterId}
+                  onSubmitted={(id) => {
+                    void navigate({ to: '/characters/$id', params: { id } });
+                  }}
+                />
+              )}
+            </section>
+            <nav className="flex justify-between">
+              <Button onClick={prev} disabled={!hasPrev}>
+                ← Back
+              </Button>
+              {hasNext && (
+                <Button variant="primary" onClick={() => { void next(); }}>
+                  Save &amp; Continue →
+                </Button>
+              )}
+            </nav>
+          </div>
+        }
+        right={<LivePreviewSheet name={name} draft={draft} staticData={staticData} />}
       />
-      <section className="rounded-lg border border-neutral-800 p-5">
-        {step === 'name' && (
-          <NameDetailsStep
-            draft={draft}
-            name={name}
-            campaignCode={search.code}
-            onNameChange={setName}
-            onPatch={patch}
-          />
-        )}
-        {step === 'ancestry' && <AncestryStep draft={draft} staticData={staticData} onPatch={patch} />}
-        {step === 'culture' && <CultureStep draft={draft} onPatch={patch} />}
-        {step === 'career' && <CareerStep draft={draft} staticData={staticData} onPatch={patch} />}
-        {step === 'class' && <ClassStep draft={draft} staticData={staticData} onPatch={patch} />}
-        {step === 'complication' && <ComplicationStep draft={draft} staticData={staticData} onPatch={patch} />}
-        {step === 'kit' && <KitStep draft={draft} staticData={staticData} onPatch={patch} />}
-        {step === 'review' && (
-          <ReviewStep
-            draft={draft}
-            staticData={staticData}
-            characterId={characterId}
-            onSubmitted={(id) => { void navigate({ to: '/characters/$id', params: { id } }); }}
-          />
-        )}
-      </section>
-      <nav className="flex justify-between">
-        <button
-          type="button"
-          onClick={prev}
-          disabled={!hasPrev}
-          className="rounded-md bg-neutral-800 text-neutral-100 px-4 py-2 disabled:opacity-50"
-        >
-          ← Back
-        </button>
-        {hasNext && (
-          <button
-            type="button"
-            onClick={() => { void next(); }}
-            className="rounded-md bg-neutral-100 text-neutral-900 px-4 py-2 font-medium"
-          >
-            Save &amp; Continue →
-          </button>
-        )}
-      </nav>
     </main>
   );
 }

@@ -19,13 +19,16 @@ export function StepStepper({
               type="button"
               onClick={() => onJump(s.id)}
               className={
-                'min-h-11 px-3 py-2 rounded-md text-sm border ' +
+                'min-h-11 px-3 py-2 text-sm border transition-colors ' +
                 (isActive
-                  ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
-                  : 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-700')
+                  ? 'bg-ink-2 text-accent border-accent'
+                  : 'bg-ink-1 text-text-dim border-line hover:border-line-soft hover:text-text')
               }
             >
-              {i + 1}. {s.label}
+              <span className="font-mono text-[10px] tracking-[0.14em] text-text-mute mr-1.5">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              {s.label}
             </button>
           </li>
         );
