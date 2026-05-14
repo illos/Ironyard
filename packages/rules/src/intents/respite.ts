@@ -45,15 +45,20 @@ export function applyRespite(state: CampaignState, intent: StampedIntent): Inten
   //     floor reset — the per-encounter clarity floor is `-(1+Reason)`,
   //     so a hero who finished an encounter with negative clarity has
   //     it cleared on respite).
+  //   - increment victories by 1 if the PC is attending (canon § 8.1)
   // Monsters and any other roster entries are untouched.
+  const attending = new Set(state.attendingCharacterIds);
   const newParticipants = state.participants.map((entry) => {
     if (!isParticipant(entry) || entry.kind !== 'pc') return entry;
     const fixedResources = entry.heroicResources.map((r) => (r.value < 0 ? { ...r, value: 0 } : r));
+    const isAttending = entry.characterId !== null && attending.has(entry.characterId);
+    const victoriesNext = isAttending ? (entry.victories ?? 0) + 1 : (entry.victories ?? 0);
     return {
       ...entry,
       recoveries: { current: entry.recoveries.max, max: entry.recoveries.max },
       currentStamina: entry.maxStamina,
       heroicResources: fixedResources,
+      victories: victoriesNext,
     };
   });
 
@@ -91,7 +96,7 @@ export function applyRespite(state: CampaignState, intent: StampedIntent): Inten
     log: [
       {
         kind: 'info',
-        text: `Respite: refilled recoveries for ${heroCount} hero${heroCount !== 1 ? 'es' : ''}; ${xpAwarded} XP each.`,
+        text: `Respite: refilled recoveries for ${heroCount} hero${heroCount !== 1 ? 'es' : ''}; ${xpAwarded} XP each; +1 victory for each attending hero.`,
         intentId: intent.id,
       },
       ...warningLogs,

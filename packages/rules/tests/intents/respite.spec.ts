@@ -210,4 +210,23 @@ describe('applyRespite', () => {
     expect(result.state.partyVictories).toBe(0);
     expect(result.state.participants).toHaveLength(0);
   });
+
+  it("increments each attending PC's victories by 1", () => {
+    const state = baseState({
+      attendingCharacterIds: ['char-a', 'char-b'],
+      participants: [
+        makeHeroParticipant('pc:char-a', { characterId: 'char-a', victories: 2 }),
+        makeHeroParticipant('pc:char-b', { characterId: 'char-b', victories: 2 }),
+        makeHeroParticipant('pc:char-c', { characterId: 'char-c', victories: 2 }),
+      ],
+    });
+    const result = applyRespite(state, RESPITE_INTENT);
+    expect(result.errors).toBeUndefined();
+    const charA = result.state.participants.find((p) => isParticipant(p) && p.characterId === 'char-a');
+    const charB = result.state.participants.find((p) => isParticipant(p) && p.characterId === 'char-b');
+    const charC = result.state.participants.find((p) => isParticipant(p) && p.characterId === 'char-c');
+    expect(charA?.victories).toBe(3);
+    expect(charB?.victories).toBe(3);
+    expect(charC?.victories).toBe(2); // not attending
+  });
 });
