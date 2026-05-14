@@ -27,7 +27,10 @@ function intent(type: string, payload: unknown, overrides: Partial<Intent> = {})
 }
 
 function withEncounter(): CampaignState {
-  let s = { ...emptyCampaignState(campaignId, 'user-owner'), currentSessionId: 'sess-test' };
+  let s: CampaignState = {
+    ...emptyCampaignState(campaignId, 'user-owner'),
+    currentSessionId: 'sess-test',
+  };
   s = applyIntent(s, intent('StartEncounter', {})).state;
   return s;
 }
