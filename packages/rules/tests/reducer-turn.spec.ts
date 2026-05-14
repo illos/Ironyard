@@ -276,3 +276,83 @@ describe('applyEndRound + OpenAction expiry', () => {
     expect(remainingIds).toEqual(['oa-later', 'oa-null']);
   });
 });
+
+describe('applyStartTurn per-turn heroic resource gain', () => {
+  function pcWithResource(opts: {
+    id: string;
+    resourceName: 'wrath' | 'piety' | 'essence' | 'ferocity' | 'discipline' | 'insight' | 'focus' | 'clarity' | 'drama';
+    value: number;
+    floor?: number;
+  }): Participant {
+    return {
+      ...part(opts.id),
+      heroicResources: [{ name: opts.resourceName, value: opts.value, floor: opts.floor ?? 0 }],
+    };
+  }
+
+  function stateWith(pcs: Participant[]): CampaignState {
+    const s = emptyCampaignState(campaignId, 'user-owner');
+    return {
+      ...s,
+      participants: pcs,
+      encounter: {
+        id: 'enc_test',
+        currentRound: 1,
+        turnOrder: pcs.map((p) => p.id),
+        activeParticipantId: null,
+        turnState: {},
+        malice: { current: 0, lastMaliciousStrikeRound: null },
+      },
+    };
+  }
+
+  it('flat-class (Censor wrath) gains +2 on turn start with no rolls payload', () => {
+    const s = stateWith([pcWithResource({ id: 'censor', resourceName: 'wrath', value: 0 })]);
+    const r = applyIntent(s, intent('StartTurn', { participantId: 'censor' }));
+    expect(r.errors).toBeUndefined();
+    const pc = r.state.participants.find((p) => isParticipant(p) && p.id === 'censor');
+    expect(pc && isParticipant(pc) ? pc.heroicResources[0]?.value : null).toBe(2);
+  });
+
+  it('d3-class (Talent clarity) gains rolls.d3 on turn start', () => {
+    const s = stateWith([pcWithResource({ id: 'talent', resourceName: 'clarity', value: 0, floor: -4 })]);
+    const r = applyIntent(s, intent('StartTurn', { participantId: 'talent', rolls: { d3: 3 } }));
+    expect(r.errors).toBeUndefined();
+    const pc = r.state.participants.find((p) => isParticipant(p) && p.id === 'talent');
+    expect(pc && isParticipant(pc) ? pc.heroicResources[0]?.value : null).toBe(3);
+  });
+
+  it('flat-class with rolls.d3 set → rejected (wrong_payload_shape)', () => {
+    const s = stateWith([pcWithResource({ id: 'censor', resourceName: 'wrath', value: 0 })]);
+    const r = applyIntent(s, intent('StartTurn', { participantId: 'censor', rolls: { d3: 2 } }));
+    expect(r.errors?.[0]?.code).toBe('wrong_payload_shape');
+  });
+
+  it('d3-class with rolls.d3 missing → rejected (missing_dice)', () => {
+    const s = stateWith([pcWithResource({ id: 'talent', resourceName: 'clarity', value: 0, floor: -4 })]);
+    const r = applyIntent(s, intent('StartTurn', { participantId: 'talent' }));
+    expect(r.errors?.[0]?.code).toBe('missing_dice');
+  });
+
+  it('d3 out of range (4) → rejected at schema layer', () => {
+    const s = stateWith([pcWithResource({ id: 'talent', resourceName: 'clarity', value: 0, floor: -4 })]);
+    const r = applyIntent(s, intent('StartTurn', { participantId: 'talent', rolls: { d3: 4 } }));
+    expect(r.errors?.[0]?.code).toBe('invalid_payload');
+  });
+
+  it('gain is additive — does not zero existing value', () => {
+    const s = stateWith([pcWithResource({ id: 'censor', resourceName: 'wrath', value: 5 })]);
+    const r = applyIntent(s, intent('StartTurn', { participantId: 'censor' }));
+    expect(r.errors).toBeUndefined();
+    const pc = r.state.participants.find((p) => isParticipant(p) && p.id === 'censor');
+    expect(pc && isParticipant(pc) ? pc.heroicResources[0]?.value : null).toBe(7);
+  });
+
+  it('Talent with negative clarity still gains normally (no clamp on gain)', () => {
+    const s = stateWith([pcWithResource({ id: 'talent', resourceName: 'clarity', value: -2, floor: -4 })]);
+    const r = applyIntent(s, intent('StartTurn', { participantId: 'talent', rolls: { d3: 2 } }));
+    expect(r.errors).toBeUndefined();
+    const pc = r.state.participants.find((p) => isParticipant(p) && p.id === 'talent');
+    expect(pc && isParticipant(pc) ? pc.heroicResources[0]?.value : null).toBe(0);
+  });
+});

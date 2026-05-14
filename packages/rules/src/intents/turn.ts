@@ -7,6 +7,7 @@ import {
   StartRoundPayloadSchema,
   StartTurnPayloadSchema,
 } from '@ironyard/shared';
+import { HEROIC_RESOURCES } from '../heroic-resources';
 import { requireCanon } from '../require-canon';
 import { aliveHeroes } from '../state-helpers';
 import type {
@@ -172,6 +173,94 @@ export function applyStartTurn(state: CampaignState, intent: StampedIntent): Int
     };
   }
 
+  // Canon § 5.3 / § 5.4: at the start of each PC's turn, apply the
+  // class-specific universal heroic resource gain. Flat-gain classes (Censor,
+  // Elementalist, Null, Tactician) add a configured amount; d3-classes
+  // (Conduit, Fury, Shadow, Talent, Troubadour) consume a pre-rolled d3
+  // from the intent payload. Mismatched payload shapes are rejected.
+  const activePc = state.participants.find(
+    (p) => isParticipant(p) && p.kind === 'pc' && p.id === participantId,
+  );
+  let nextParticipants = state.participants;
+  if (activePc && isParticipant(activePc) && activePc.heroicResources.length > 0) {
+    const resource = activePc.heroicResources[0];
+    if (!resource) {
+      // Defensive: heroicResources had a length but the entry is undefined.
+      // Treat as "no resource pool" and skip the gain.
+    } else {
+      const config = HEROIC_RESOURCES[resource.name];
+      if (config) {
+        const gain = config.baseGain.onTurnStart;
+        const providedD3 = parsed.data.rolls?.d3;
+
+        if (gain.kind === 'flat') {
+          if (providedD3 !== undefined) {
+            return {
+              state,
+              derived: [],
+              log: [
+                {
+                  kind: 'error',
+                  text: `StartTurn rejected: ${resource.name} is flat-gain; rolls.d3 not allowed`,
+                  intentId: intent.id,
+                },
+              ],
+              errors: [
+                {
+                  code: 'wrong_payload_shape',
+                  message: `${resource.name} uses flat gain; do not provide rolls.d3`,
+                },
+              ],
+            };
+          }
+          const newValue = resource.value + gain.amount;
+          nextParticipants = state.participants.map((p) =>
+            isParticipant(p) && p.id === participantId
+              ? { ...p, heroicResources: [{ ...resource, value: newValue }] }
+              : p,
+          );
+        } else if (gain.kind === 'd3') {
+          if (providedD3 === undefined) {
+            return {
+              state,
+              derived: [],
+              log: [
+                {
+                  kind: 'error',
+                  text: `StartTurn rejected: ${resource.name} requires rolls.d3 (dispatcher pre-rolls)`,
+                  intentId: intent.id,
+                },
+              ],
+              errors: [
+                { code: 'missing_dice', message: `${resource.name} requires rolls.d3` },
+              ],
+            };
+          }
+          const newValue = resource.value + providedD3;
+          nextParticipants = state.participants.map((p) =>
+            isParticipant(p) && p.id === participantId
+              ? { ...p, heroicResources: [{ ...resource, value: newValue }] }
+              : p,
+          );
+        } else {
+          // 'd3-plus' is stubbed for 2b.0.1 (10th-level Psion 1d3+2).
+          return {
+            state,
+            derived: [],
+            log: [
+              {
+                kind: 'error',
+                text: `StartTurn rejected: ${gain.kind} gain not yet supported (2b.0.1)`,
+                intentId: intent.id,
+              },
+            ],
+            errors: [{ code: 'not_yet_supported', message: `gain ${gain.kind} not yet wired` }],
+          };
+        }
+      }
+    }
+  }
+
   // Slice 6: reset per-turn flags consulted by condition hooks. Dazed gating
   // uses `dazeActionUsedThisTurn`. Other flags (mainSpent etc.) join here in
   // slice 7.
@@ -184,6 +273,7 @@ export function applyStartTurn(state: CampaignState, intent: StampedIntent): Int
     state: {
       ...state,
       seq: state.seq + 1,
+      participants: nextParticipants,
       encounter: {
         ...guard.encounter,
         activeParticipantId: participantId,

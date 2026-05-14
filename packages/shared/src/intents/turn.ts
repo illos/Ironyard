@@ -8,6 +8,9 @@ export type EndRoundPayload = z.infer<typeof EndRoundPayloadSchema>;
 
 export const StartTurnPayloadSchema = z.object({
   participantId: z.string().min(1),
+  rolls: z.object({
+    d3: z.number().int().min(1).max(3),
+  }).optional(),
 });
 export type StartTurnPayload = z.infer<typeof StartTurnPayloadSchema>;
 
