@@ -25,7 +25,7 @@ import { pcFreeStrike } from '../../data/monsterAbilities';
 import { useLongPress } from '../../lib/longPress';
 import { AbilityCard } from './AbilityCard';
 import { ConditionChip } from './ConditionChip';
-import { HpBar } from '../../primitives/HpBar';
+import { Button, HpBar, Section } from '../../primitives';
 
 const CONDITION_TYPES: ConditionType[] = [
   'Bleeding',
@@ -84,7 +84,7 @@ export function DetailPane({
 }: Props) {
   if (!focused) {
     return (
-      <div className="rounded-lg border border-dashed border-neutral-800 p-6 text-center text-sm text-neutral-500">
+      <div className="border border-dashed border-line-soft p-6 text-center text-sm text-text-mute">
         Select a participant from initiative to see their detail.
       </div>
     );
@@ -208,36 +208,32 @@ function DetailBody({
             <span
               className={`inline-flex h-6 px-2 items-center justify-center rounded-full text-[10px] font-semibold uppercase tracking-wider ${
                 focused.kind === 'monster'
-                  ? 'bg-rose-900/40 text-rose-200'
-                  : 'bg-sky-900/40 text-sky-200'
+                  ? 'bg-foe text-ink-0'
+                  : 'bg-accent text-ink-0'
               }`}
             >
               {focused.kind}
             </span>
             {focused.kind === 'monster' && monsterLevelById.get(focused.id) !== undefined && (
-              <span className="text-xs text-neutral-500 font-mono tabular-nums">
+              <span className="text-xs text-text-mute font-mono tabular-nums">
                 L{monsterLevelById.get(focused.id)}
               </span>
             )}
           </div>
-          <h2 className="text-2xl font-semibold mt-1">{focused.name}</h2>
+          <h2 className="text-2xl font-semibold mt-1 text-text">{focused.name}</h2>
         </div>
       </header>
 
-      <section
-        className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4"
-        aria-label="stamina"
-      >
+      <Section heading="Stamina" aria-label="stamina">
         <div className="flex items-baseline justify-between mb-2">
-          <h3 className="text-sm uppercase tracking-wider text-neutral-400">Stamina</h3>
           <button
             type="button"
             onClick={() => setHpEditOpen(true)}
-            className="text-2xl font-mono tabular-nums font-semibold select-none cursor-pointer rounded px-2 -mx-2 hover:bg-neutral-800/50 active:bg-neutral-800"
+            className="text-2xl font-mono tabular-nums font-semibold select-none cursor-pointer px-2 -mx-2 hover:bg-ink-2 active:bg-ink-3 text-text"
             title="Click to edit"
           >
             {focused.currentStamina}
-            <span className="text-neutral-500 text-base"> / {focused.maxStamina}</span>
+            <span className="text-text-mute text-base"> / {focused.maxStamina}</span>
           </button>
         </div>
         <HpBar current={focused.currentStamina} max={focused.maxStamina} size="lg" />
@@ -251,7 +247,7 @@ function DetailBody({
             onClose={() => setHpEditOpen(false)}
           />
         )}
-      </section>
+      </Section>
 
       {focused.kind === 'pc' && (
         <ResourcesSection
@@ -265,21 +261,23 @@ function DetailBody({
         />
       )}
 
-      <section aria-label="conditions">
-        <div className="flex items-baseline justify-between">
-          <h3 className="text-sm uppercase tracking-wider text-neutral-400">Conditions</h3>
-          <button
+      <Section
+        heading="Conditions"
+        aria-label="conditions"
+        right={
+          <Button
             type="button"
+            size="sm"
             onClick={() => setConditionMenuOpen((v) => !v)}
             disabled={disabled}
-            className="min-h-11 px-3 rounded-md border border-neutral-800 bg-neutral-900 text-sm hover:bg-neutral-800 disabled:opacity-50"
           >
             + Add
-          </button>
-        </div>
-        <div className="mt-2 flex flex-wrap gap-2">
+          </Button>
+        }
+      >
+        <div className="flex flex-wrap gap-2">
           {focused.conditions.length === 0 && (
-            <span className="text-sm text-neutral-500">None.</span>
+            <span className="text-sm text-text-mute">None.</span>
           )}
           {focused.conditions.map((c: ConditionInstance, idx) => (
             <ConditionChip
@@ -290,9 +288,9 @@ function DetailBody({
           ))}
         </div>
         {conditionMenuOpen && (
-          <div className="mt-3 rounded-md border border-neutral-800 bg-neutral-950 p-3 grid grid-cols-3 sm:grid-cols-5 gap-2">
+          <div className="mt-3 border border-line bg-ink-0 p-3 grid grid-cols-3 sm:grid-cols-5 gap-2">
             {CONDITION_TYPES.map((cond) => (
-              <button
+              <Button
                 key={cond}
                 type="button"
                 onClick={() => {
@@ -304,40 +302,40 @@ function DetailBody({
                   });
                   setConditionMenuOpen(false);
                 }}
-                className="min-h-11 rounded-md bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-sm font-medium"
+                className="min-h-11 w-full justify-center"
               >
                 {cond}
-              </button>
+              </Button>
             ))}
           </div>
         )}
-      </section>
+      </Section>
 
-      <section aria-label="characteristics">
-        <h3 className="text-sm uppercase tracking-wider text-neutral-400 mb-2">Characteristics</h3>
+      <Section heading="Characteristics" aria-label="characteristics">
         <dl className="grid grid-cols-5 gap-1.5 text-center">
           {(Object.entries(focused.characteristics) as Array<[string, number]>).map(([k, v]) => (
             <div
               key={k}
-              className="rounded-md bg-neutral-900/60 border border-neutral-800 px-2 py-2"
+              className="bg-ink-1 border border-line px-2 py-2"
             >
-              <dt className="text-[10px] uppercase tracking-wider text-neutral-500">{k}</dt>
-              <dd className="font-mono tabular-nums text-lg">{v > 0 ? `+${v}` : v}</dd>
+              <dt className="text-[10px] uppercase tracking-wider text-text-mute">{k}</dt>
+              <dd className="font-mono tabular-nums text-lg text-text">{v > 0 ? `+${v}` : v}</dd>
             </div>
           ))}
         </dl>
-      </section>
+      </Section>
 
-      <section aria-label="abilities">
-        <div className="flex items-baseline justify-between gap-2 flex-wrap">
-          <h3 className="text-sm uppercase tracking-wider text-neutral-400">Abilities</h3>
-          {candidates.length > 0 && (
-            <label className="text-sm flex items-center gap-2 text-neutral-300">
-              <span className="text-xs text-neutral-500">Target</span>
+      <Section
+        heading="Abilities"
+        aria-label="abilities"
+        right={
+          candidates.length > 0 ? (
+            <label className="text-sm flex items-center gap-2 text-text-dim">
+              <span className="text-xs text-text-mute">Target</span>
               <select
                 value={targetId ?? ''}
                 onChange={(e) => setTargetId(e.target.value)}
-                className="min-h-11 rounded-md bg-neutral-900 border border-neutral-800 px-2 py-1 text-sm"
+                className="min-h-11 bg-ink-0 border border-line px-2 py-1 text-sm text-text"
               >
                 {candidates.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -346,17 +344,18 @@ function DetailBody({
                 ))}
               </select>
             </label>
-          )}
-        </div>
+          ) : undefined
+        }
+      >
         {showQuickPcCopy && (
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="text-xs text-text-mute">
             No class abilities ingested for this character — falling back to the generic free
             strike. Pick abilities in the wizard to populate the list.
           </p>
         )}
         <div className="mt-3 grid gap-3">
           {abilities.length === 0 && (
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-text-mute">
               No rollable abilities — this monster has only traits or no ability data loaded.
             </p>
           )}
@@ -370,11 +369,11 @@ function DetailBody({
           ))}
         </div>
         {candidates.length === 0 && (
-          <p className="mt-2 text-xs text-neutral-500">
+          <p className="mt-2 text-xs text-text-mute">
             No valid target — add another participant.
           </p>
         )}
-      </section>
+      </Section>
     </div>
   );
 }
@@ -405,9 +404,9 @@ function StaminaEdit({
   const canApply = !disabled && validMax && validCurrent;
 
   return (
-    <div className="mt-3 rounded-md border border-neutral-800 bg-neutral-950 p-3 text-sm">
+    <div className="mt-3 border border-line bg-ink-0 p-3 text-sm">
       <div className="flex gap-3 items-end flex-wrap">
-        <label className="flex flex-col text-xs text-neutral-400">
+        <label className="flex flex-col text-xs text-text-dim">
           Current
           <input
             type="number"
@@ -416,10 +415,10 @@ function StaminaEdit({
             max={effectiveMax}
             value={currentInput}
             onChange={(e) => setCurrentInput(e.target.value)}
-            className="mt-1 w-24 min-h-11 rounded-md bg-neutral-900 border border-neutral-800 px-2 py-1 text-base font-mono tabular-nums"
+            className="mt-1 w-24 min-h-11 bg-ink-1 border border-line px-2 py-1 text-base font-mono tabular-nums text-text"
           />
         </label>
-        <label className="flex flex-col text-xs text-neutral-400">
+        <label className="flex flex-col text-xs text-text-dim">
           Max
           <input
             type="number"
@@ -427,19 +426,16 @@ function StaminaEdit({
             min={1}
             value={maxInput}
             onChange={(e) => setMaxInput(e.target.value)}
-            className="mt-1 w-24 min-h-11 rounded-md bg-neutral-900 border border-neutral-800 px-2 py-1 text-base font-mono tabular-nums"
+            className="mt-1 w-24 min-h-11 bg-ink-1 border border-line px-2 py-1 text-base font-mono tabular-nums text-text"
           />
         </label>
         <div className="ml-auto flex gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="min-h-11 px-3 rounded-md bg-neutral-800 text-neutral-200"
-          >
+          <Button type="button" onClick={onClose} className="min-h-11">
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="primary"
             disabled={!canApply}
             onClick={() => {
               onApply({
@@ -449,16 +445,16 @@ function StaminaEdit({
               });
               onClose();
             }}
-            className="min-h-11 px-3 rounded-md bg-emerald-700 text-emerald-50 disabled:bg-neutral-800 disabled:text-neutral-500"
+            className="min-h-11"
           >
             Apply
-          </button>
+          </Button>
         </div>
       </div>
       {!validCurrent && (
-        <p className="mt-2 text-xs text-rose-400">Current must be between 0 and Max.</p>
+        <p className="mt-2 text-xs text-foe">Current must be between 0 and Max.</p>
       )}
-      {!validMax && <p className="mt-2 text-xs text-rose-400">Max must be at least 1.</p>}
+      {!validMax && <p className="mt-2 text-xs text-foe">Max must be at least 1.</p>}
     </div>
   );
 }
@@ -487,124 +483,125 @@ function ResourcesSection({
   const surgesAvailable = focused.surges > 0;
 
   return (
-    <section
-      className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4 space-y-3"
+    <Section
+      heading="Resources"
       aria-label="resources"
-    >
-      <div className="flex items-baseline justify-between">
-        <h3 className="text-sm uppercase tracking-wider text-neutral-400">Resources</h3>
-        <button
+      right={
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => setAddOpen((v) => !v)}
           disabled={disabled}
-          className="text-xs min-h-11 px-2 rounded-md text-neutral-300 hover:bg-neutral-800/80 disabled:text-neutral-600"
         >
           {addOpen ? 'Cancel' : 'Add…'}
-        </button>
-      </div>
+        </Button>
+      }
+    >
+      <div className="space-y-3">
+        {addOpen && (
+          <AddHeroicResource
+            focused={focused}
+            disabled={disabled}
+            onAdd={(payload) => {
+              dispatchSetResource(payload);
+              setAddOpen(false);
+            }}
+            onClose={() => setAddOpen(false)}
+          />
+        )}
 
-      {addOpen && (
-        <AddHeroicResource
-          focused={focused}
-          disabled={disabled}
-          onAdd={(payload) => {
-            dispatchSetResource(payload);
-            setAddOpen(false);
-          }}
-          onClose={() => setAddOpen(false)}
-        />
-      )}
-
-      {focused.heroicResources.map((r) => (
-        <ResourceRow
-          key={`heroic-${r.name}`}
-          label={capitalize(r.name)}
-          value={r.value}
-          max={r.max}
-          floor={r.floor}
-          disabled={disabled}
-          onGain={(amount) =>
-            dispatchGainResource({ participantId: focused.id, name: r.name, amount })
-          }
-          onSpend={(amount) =>
-            dispatchSpendResource({ participantId: focused.id, name: r.name, amount })
-          }
-        />
-      ))}
-
-      {focused.extras.map((r) => (
-        <ResourceRow
-          key={`extra-${r.name}`}
-          label={r.name}
-          value={r.value}
-          max={r.max}
-          floor={r.floor}
-          disabled={disabled}
-          onGain={(amount) =>
-            dispatchGainResource({
-              participantId: focused.id,
-              name: { extra: r.name },
-              amount,
-            })
-          }
-          onSpend={(amount) =>
-            dispatchSpendResource({
-              participantId: focused.id,
-              name: { extra: r.name },
-              amount,
-            })
-          }
-        />
-      ))}
-
-      <div className="grid grid-cols-2 gap-3 pt-1">
-        <div className="rounded-md border border-neutral-800 bg-neutral-950 p-2.5">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-xs uppercase tracking-wider text-neutral-500">Surges</span>
-            <span className="font-mono tabular-nums text-base">{focused.surges}</span>
-          </div>
-          <button
-            type="button"
-            disabled={disabled || !surgesAvailable}
-            onClick={() => dispatchSpendSurge({ participantId: focused.id, count: 1 })}
-            className="mt-1.5 w-full min-h-11 rounded-md text-sm bg-amber-900/40 text-amber-100 hover:bg-amber-900/60 disabled:bg-neutral-800 disabled:text-neutral-500"
-          >
-            Spend 1
-          </button>
-        </div>
-
-        <div className="rounded-md border border-neutral-800 bg-neutral-950 p-2.5">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-xs uppercase tracking-wider text-neutral-500">Recoveries</span>
-            <span className="font-mono tabular-nums text-base">
-              {focused.recoveries.current}
-              <span className="text-neutral-500 text-sm">/{focused.recoveries.max}</span>
-            </span>
-          </div>
-          <button
-            type="button"
-            disabled={disabled || !recoveriesAvailable}
-            onClick={() => dispatchSpendRecovery({ participantId: focused.id })}
-            className="mt-1.5 w-full min-h-11 rounded-md text-sm bg-emerald-900/40 text-emerald-100 hover:bg-emerald-900/60 disabled:bg-neutral-800 disabled:text-neutral-500"
-            title={
-              recoveriesAvailable
-                ? `Heal up to ${focused.recoveryValue} HP`
-                : focused.recoveries.current === 0
-                  ? 'No recoveries left'
-                  : 'Already at full HP'
+        {focused.heroicResources.map((r) => (
+          <ResourceRow
+            key={`heroic-${r.name}`}
+            label={capitalize(r.name)}
+            value={r.value}
+            max={r.max}
+            floor={r.floor}
+            disabled={disabled}
+            onGain={(amount) =>
+              dispatchGainResource({ participantId: focused.id, name: r.name, amount })
             }
-          >
-            Spend (heal {focused.recoveryValue})
-          </button>
-        </div>
-      </div>
+            onSpend={(amount) =>
+              dispatchSpendResource({ participantId: focused.id, name: r.name, amount })
+            }
+          />
+        ))}
 
-      {!hasResources && !addOpen && (
-        <p className="text-xs text-neutral-500">
-          No heroic resource set. Tap Add… to attach one (Focus, Wrath, Clarity, etc.).
-        </p>
-      )}
-    </section>
+        {focused.extras.map((r) => (
+          <ResourceRow
+            key={`extra-${r.name}`}
+            label={r.name}
+            value={r.value}
+            max={r.max}
+            floor={r.floor}
+            disabled={disabled}
+            onGain={(amount) =>
+              dispatchGainResource({
+                participantId: focused.id,
+                name: { extra: r.name },
+                amount,
+              })
+            }
+            onSpend={(amount) =>
+              dispatchSpendResource({
+                participantId: focused.id,
+                name: { extra: r.name },
+                amount,
+              })
+            }
+          />
+        ))}
+
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          <div className="border border-line bg-ink-0 p-2.5">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-xs uppercase tracking-wider text-text-mute">Surges</span>
+              <span className="font-mono tabular-nums text-base text-text">{focused.surges}</span>
+            </div>
+            <Button
+              type="button"
+              disabled={disabled || !surgesAvailable}
+              onClick={() => dispatchSpendSurge({ participantId: focused.id, count: 1 })}
+              className="mt-1.5 w-full min-h-11 justify-center"
+            >
+              Spend 1
+            </Button>
+          </div>
+
+          <div className="border border-line bg-ink-0 p-2.5">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-xs uppercase tracking-wider text-text-mute">Recoveries</span>
+              <span className="font-mono tabular-nums text-base text-text">
+                {focused.recoveries.current}
+                <span className="text-text-mute text-sm">/{focused.recoveries.max}</span>
+              </span>
+            </div>
+            <Button
+              type="button"
+              disabled={disabled || !recoveriesAvailable}
+              onClick={() => dispatchSpendRecovery({ participantId: focused.id })}
+              className="mt-1.5 w-full min-h-11 justify-center"
+              title={
+                recoveriesAvailable
+                  ? `Heal up to ${focused.recoveryValue} HP`
+                  : focused.recoveries.current === 0
+                    ? 'No recoveries left'
+                    : 'Already at full HP'
+              }
+            >
+              Spend (heal {focused.recoveryValue})
+            </Button>
+          </div>
+        </div>
+
+        {!hasResources && !addOpen && (
+          <p className="text-xs text-text-mute">
+            No heroic resource set. Tap Add… to attach one (Focus, Wrath, Clarity, etc.).
+          </p>
+        )}
+      </div>
+    </Section>
   );
 }
 
@@ -628,33 +625,33 @@ function ResourceRow({
   const canSpend = !disabled && value > floor;
   const canGain = !disabled && (max === undefined || value < max);
   return (
-    <div className="flex items-center gap-2 rounded-md bg-neutral-950 border border-neutral-800 px-3 py-2">
+    <div className="flex items-center gap-2 bg-ink-0 border border-line px-3 py-2">
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium truncate">{label}</div>
-        <div className="text-xs text-neutral-500 font-mono tabular-nums">
+        <div className="text-sm font-medium truncate text-text">{label}</div>
+        <div className="text-xs text-text-mute font-mono tabular-nums">
           {value}
-          {max !== undefined && <span className="text-neutral-600">/{max}</span>}
-          {floor < 0 && <span className="ml-2 text-amber-500/80">floor {floor}</span>}
+          {max !== undefined && <span className="text-text-mute">/{max}</span>}
+          {floor < 0 && <span className="ml-2 text-accent">floor {floor}</span>}
         </div>
       </div>
-      <button
+      <Button
         type="button"
         disabled={!canSpend}
         onClick={() => onSpend(1)}
-        className="min-h-11 w-11 rounded-md bg-neutral-800 text-base text-neutral-200 hover:bg-neutral-700 disabled:text-neutral-600 disabled:bg-neutral-900"
+        className="min-h-11 w-11 justify-center text-base"
         aria-label={`Spend 1 ${label}`}
       >
         −
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         disabled={!canGain}
         onClick={() => onGain(1)}
-        className="min-h-11 w-11 rounded-md bg-neutral-800 text-base text-neutral-200 hover:bg-neutral-700 disabled:text-neutral-600 disabled:bg-neutral-900"
+        className="min-h-11 w-11 justify-center text-base"
         aria-label={`Gain 1 ${label}`}
       >
         +
-      </button>
+      </Button>
     </div>
   );
 }
@@ -676,9 +673,9 @@ function AddHeroicResource({
 
   if (choices.length === 0) {
     return (
-      <div className="rounded-md border border-neutral-800 bg-neutral-950 p-3 text-xs text-neutral-400">
+      <div className="border border-line bg-ink-0 p-3 text-xs text-text-dim">
         All 9 heroic resources already attached.{' '}
-        <button type="button" onClick={onClose} className="underline">
+        <button type="button" onClick={onClose} className="underline text-accent">
           Close
         </button>
       </div>
@@ -686,13 +683,13 @@ function AddHeroicResource({
   }
 
   return (
-    <div className="rounded-md border border-neutral-800 bg-neutral-950 p-3 space-y-2">
-      <label className="flex flex-col text-xs text-neutral-400">
+    <div className="border border-line bg-ink-0 p-3 space-y-2">
+      <label className="flex flex-col text-xs text-text-dim">
         Resource
         <select
           value={name}
           onChange={(e) => setName(e.target.value as HeroicResourceName)}
-          className="mt-1 min-h-11 rounded-md bg-neutral-900 border border-neutral-800 px-2 py-1 text-sm"
+          className="mt-1 min-h-11 bg-ink-1 border border-line px-2 py-1 text-sm text-text"
         >
           {choices.map((n) => (
             <option key={n} value={n}>
@@ -702,15 +699,12 @@ function AddHeroicResource({
         </select>
       </label>
       <div className="flex gap-2 justify-end">
-        <button
-          type="button"
-          onClick={onClose}
-          className="min-h-11 px-3 rounded-md bg-neutral-800 text-neutral-200 text-sm"
-        >
+        <Button type="button" onClick={onClose} className="min-h-11">
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="primary"
           disabled={disabled || !name}
           onClick={() => {
             if (!name) return;
@@ -727,10 +721,10 @@ function AddHeroicResource({
                 : { floor: 0 },
             });
           }}
-          className="min-h-11 px-3 rounded-md bg-sky-700 text-sky-50 disabled:bg-neutral-800 disabled:text-neutral-500 text-sm"
+          className="min-h-11"
         >
           Add
-        </button>
+        </Button>
       </div>
     </div>
   );
