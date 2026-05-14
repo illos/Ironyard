@@ -11,6 +11,8 @@ type Props = {
   ability: Ability;
   // Disable if no target picked / WS closed / no active turn etc.
   disabled: boolean;
+  /** When true, hides Auto-roll and Manual buttons entirely (read-only view for non-owners). */
+  readOnly?: boolean;
   onRoll: (ability: Ability, args: RollArgs) => void;
 };
 
@@ -24,7 +26,7 @@ const TYPE_CHIP_STYLE: Record<Ability['type'], string> = {
   trait: 'bg-ink-2 text-text-dim',
 };
 
-export function AbilityCard({ ability, disabled, onRoll }: Props) {
+export function AbilityCard({ ability, disabled, readOnly = false, onRoll }: Props) {
   const [manualOpen, setManualOpen] = useState(false);
 
   // Defensive guard: only abilities with a powerRoll are rollable. The
@@ -95,53 +97,58 @@ export function AbilityCard({ ability, disabled, onRoll }: Props) {
           <span className="text-text-mute uppercase tracking-wider">Effect</span> {ability.effect}
         </p>
       )}
-      <div className="mt-4 flex items-stretch gap-2">
-        <button
-          type="button"
-          onClick={handleAuto}
-          disabled={disabled}
-          className="flex-1 min-h-14 bg-accent text-ink-0 px-4 font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent-strong active:bg-accent-strong transition-colors"
-        >
-          Auto-roll
-        </button>
-        <button
-          type="button"
-          onClick={() => setManualOpen((v) => !v)}
-          disabled={disabled}
-          className="min-h-14 min-w-14 px-4 border border-line bg-ink-0 text-text-dim font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-ink-2 active:bg-ink-3 transition-colors"
-        >
-          Manual…
-        </button>
-      </div>
-      {manualOpen && (
-        <div className="mt-3 border border-line bg-ink-0 p-3 space-y-2">
-          <p className="text-xs text-text-mute">
-            Pick a tier and dispatch a manual roll. Source flagged so the log shows the override.
-          </p>
-          <div className="grid grid-cols-3 gap-2">
+      {!readOnly && (
+        <>
+          <div className="mt-4 flex items-stretch gap-2">
             <button
               type="button"
-              onClick={() => handleManual(1)}
-              className="min-h-11 bg-ink-1 border border-line text-sm font-mono font-medium hover:bg-ink-2"
+              onClick={handleAuto}
+              disabled={disabled}
+              className="flex-1 min-h-14 bg-accent text-ink-0 px-4 font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent-strong active:bg-accent-strong transition-colors"
             >
-              Tier 1
+              Auto-roll
             </button>
             <button
               type="button"
-              onClick={() => handleManual(2)}
-              className="min-h-11 bg-ink-1 border border-line text-sm font-mono font-medium hover:bg-ink-2"
+              onClick={() => setManualOpen((v) => !v)}
+              disabled={disabled}
+              className="min-h-14 min-w-14 px-4 border border-line bg-ink-0 text-text-dim font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-ink-2 active:bg-ink-3 transition-colors"
             >
-              Tier 2
-            </button>
-            <button
-              type="button"
-              onClick={() => handleManual(3)}
-              className="min-h-11 bg-ink-1 border border-line text-sm font-mono font-medium hover:bg-ink-2"
-            >
-              Tier 3
+              Manual…
             </button>
           </div>
-        </div>
+          {manualOpen && (
+            <div className="mt-3 border border-line bg-ink-0 p-3 space-y-2">
+              <p className="text-xs text-text-mute">
+                Pick a tier and dispatch a manual roll. Source flagged so the log shows the
+                override.
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleManual(1)}
+                  className="min-h-11 bg-ink-1 border border-line text-sm font-mono font-medium hover:bg-ink-2"
+                >
+                  Tier 1
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleManual(2)}
+                  className="min-h-11 bg-ink-1 border border-line text-sm font-mono font-medium hover:bg-ink-2"
+                >
+                  Tier 2
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleManual(3)}
+                  className="min-h-11 bg-ink-1 border border-line text-sm font-mono font-medium hover:bg-ink-2"
+                >
+                  Tier 3
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </article>
   );

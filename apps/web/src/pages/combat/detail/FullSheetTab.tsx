@@ -192,6 +192,7 @@ export function FullSheetTab({
               key={ab.name}
               ability={ab}
               disabled={!canRoll || disabled || candidates.length === 0 || !target}
+              readOnly={!canRoll}
               onRoll={(ability, args) => onRoll(ability, args)}
             />
           ))}

@@ -90,6 +90,9 @@ export function DetailPane({
   const resolvedTarget =
     targetParticipantId ? (participants.find((p) => p.id === targetParticipantId) ?? null) : null;
 
+  // Directors can edit any participant; players can only edit their own character.
+  const canEdit = viewerRole === 'director' || (focused !== null && focused.id === selfParticipantId);
+
   return (
     <div className="space-y-0">
       {viewerRole === 'player' && (
@@ -104,6 +107,7 @@ export function DetailPane({
         targetParticipantId={targetParticipantId}
         selfParticipantId={selfParticipantId}
         viewerRole={viewerRole}
+        canEdit={canEdit}
         dispatchRoll={dispatchRoll}
         dispatchSetCondition={dispatchSetCondition}
         dispatchRemoveCondition={dispatchRemoveCondition}
@@ -127,6 +131,7 @@ function DetailBody({
   monsterByParticipantId,
   disabled,
   targetParticipantId,
+  canEdit,
   dispatchRoll,
   dispatchSetCondition,
   dispatchRemoveCondition,
@@ -136,12 +141,14 @@ function DetailBody({
   dispatchSetResource,
   dispatchSpendSurge,
   dispatchSpendRecovery,
-}: Props & { focused: Participant }) {
+}: Props & { focused: Participant; canEdit: boolean }) {
   return (
     <div className="space-y-5">
       <DetailHeader
         focused={focused}
         monsterLevel={monsterLevelById.get(focused.id) ?? null}
+        canEditStamina={canEdit}
+        canEditConditions={canEdit}
         dispatchSetStamina={dispatchSetStamina}
         dispatchSetCondition={dispatchSetCondition}
         dispatchRemoveCondition={dispatchRemoveCondition}
@@ -151,6 +158,7 @@ function DetailBody({
         participants={participants}
         monsterByParticipantId={monsterByParticipantId}
         disabled={disabled}
+        canRoll={canEdit}
         targetParticipantId={targetParticipantId}
         dispatchRoll={dispatchRoll}
         dispatchGainResource={dispatchGainResource}

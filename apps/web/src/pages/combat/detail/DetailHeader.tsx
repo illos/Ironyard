@@ -83,6 +83,7 @@ export function DetailHeader({
           participantId={focused.id}
           conditions={focused.conditions}
           disabled={!canEditConditions}
+          canRemoveConditions={canEditConditions}
           dispatchSetCondition={dispatchSetCondition}
           dispatchRemoveCondition={dispatchRemoveCondition}
         />

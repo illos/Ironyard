@@ -17,9 +17,11 @@ const COLORS: Record<ConditionType, string> = {
 type Props = {
   condition: ConditionInstance;
   onRemove: () => void;
+  /** When false the × remove button is hidden; the chip itself still renders. Defaults true. */
+  removable?: boolean;
 };
 
-export function ConditionChip({ condition, onRemove }: Props) {
+export function ConditionChip({ condition, onRemove, removable = true }: Props) {
   const durationLabel =
     condition.duration.kind === 'EoT'
       ? 'EoT'
@@ -37,17 +39,19 @@ export function ConditionChip({ condition, onRemove }: Props) {
     >
       <span>{condition.type}</span>
       <span className="text-xs opacity-70 font-mono tabular-nums">{durationLabel}</span>
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onRemove();
-        }}
-        aria-label={`Remove ${condition.type}`}
-        className="ml-1 -mr-1 inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-black/30 active:bg-black/40 transition-colors"
-      >
-        <span aria-hidden="true">×</span>
-      </button>
+      {removable && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+          aria-label={`Remove ${condition.type}`}
+          className="ml-1 -mr-1 inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-black/30 active:bg-black/40 transition-colors"
+        >
+          <span aria-hidden="true">×</span>
+        </button>
+      )}
     </span>
   );
 }

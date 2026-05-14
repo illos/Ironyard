@@ -24,6 +24,8 @@ export interface ConditionPickerPopoverProps {
   participantId: string;
   conditions: ConditionInstance[];
   disabled: boolean;
+  /** When false the × remove button is hidden on each condition chip. Defaults true. */
+  canRemoveConditions?: boolean;
   dispatchSetCondition: (payload: SetConditionPayload) => void;
   dispatchRemoveCondition: (payload: RemoveConditionPayload) => void;
 }
@@ -32,6 +34,7 @@ export function ConditionPickerPopover({
   participantId,
   conditions,
   disabled,
+  canRemoveConditions = true,
   dispatchSetCondition,
   dispatchRemoveCondition,
 }: ConditionPickerPopoverProps) {
@@ -57,6 +60,7 @@ export function ConditionPickerPopover({
           <ConditionChip
             key={`${c.type}-${c.source.id}-${idx}`}
             condition={c}
+            removable={canRemoveConditions}
             onRemove={() =>
               dispatchRemoveCondition({ targetId: participantId, condition: c.type })
             }
