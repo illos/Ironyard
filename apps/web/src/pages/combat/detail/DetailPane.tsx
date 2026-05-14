@@ -15,6 +15,7 @@ import {
 } from '@ironyard/shared';
 import { DetailHeader } from './DetailHeader';
 import { FullSheetTab } from './FullSheetTab';
+import { TargetBanner } from './TargetBanner';
 
 type Props = {
   focused: Participant | null;
@@ -78,26 +79,34 @@ export function DetailPane({
     );
   }
 
+  const resolvedTarget =
+    targetParticipantId ? (participants.find((p) => p.id === targetParticipantId) ?? null) : null;
+
   return (
-    <DetailBody
-      focused={focused}
-      participants={participants}
-      monsterLevelById={monsterLevelById}
-      monsterByParticipantId={monsterByParticipantId}
-      disabled={disabled}
-      targetParticipantId={targetParticipantId}
-      selfParticipantId={selfParticipantId}
-      viewerRole={viewerRole}
-      dispatchRoll={dispatchRoll}
-      dispatchSetCondition={dispatchSetCondition}
-      dispatchRemoveCondition={dispatchRemoveCondition}
-      dispatchSetStamina={dispatchSetStamina}
-      dispatchGainResource={dispatchGainResource}
-      dispatchSpendResource={dispatchSpendResource}
-      dispatchSetResource={dispatchSetResource}
-      dispatchSpendSurge={dispatchSpendSurge}
-      dispatchSpendRecovery={dispatchSpendRecovery}
-    />
+    <div className="space-y-0">
+      {viewerRole === 'player' && (
+        <TargetBanner target={resolvedTarget} selfParticipantId={selfParticipantId} />
+      )}
+      <DetailBody
+        focused={focused}
+        participants={participants}
+        monsterLevelById={monsterLevelById}
+        monsterByParticipantId={monsterByParticipantId}
+        disabled={disabled}
+        targetParticipantId={targetParticipantId}
+        selfParticipantId={selfParticipantId}
+        viewerRole={viewerRole}
+        dispatchRoll={dispatchRoll}
+        dispatchSetCondition={dispatchSetCondition}
+        dispatchRemoveCondition={dispatchRemoveCondition}
+        dispatchSetStamina={dispatchSetStamina}
+        dispatchGainResource={dispatchGainResource}
+        dispatchSpendResource={dispatchSpendResource}
+        dispatchSetResource={dispatchSetResource}
+        dispatchSpendSurge={dispatchSpendSurge}
+        dispatchSpendRecovery={dispatchSpendRecovery}
+      />
+    </div>
   );
 }
 
