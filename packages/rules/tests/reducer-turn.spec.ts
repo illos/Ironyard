@@ -205,3 +205,22 @@ describe('StartTurn / EndTurn', () => {
     }
   });
 });
+
+describe('applyEndRound + OpenAction expiry', () => {
+  it('removes OAs whose expiresAtRound === currentRound', () => {
+    let s = readyState();
+    s = applyIntent(s, intent('SetInitiative', { order: ['alice', 'bob', 'cleric'] })).state;
+    s = {
+      ...s,
+      encounter: { ...s.encounter!, currentRound: 3 },
+      openActions: [
+        { id: 'oa-now', kind: '__sentinel_2b_0__', participantId: 'alice', raisedAtRound: 3, raisedByIntentId: 'x', expiresAtRound: 3, payload: {} },
+        { id: 'oa-later', kind: '__sentinel_2b_0__', participantId: 'alice', raisedAtRound: 3, raisedByIntentId: 'x', expiresAtRound: 5, payload: {} },
+        { id: 'oa-null', kind: '__sentinel_2b_0__', participantId: 'alice', raisedAtRound: 3, raisedByIntentId: 'x', expiresAtRound: null, payload: {} },
+      ],
+    };
+    const result = applyIntent(s, intent('EndRound', {}));
+    const remainingIds = result.state.openActions.map(o => o.id);
+    expect(remainingIds).toEqual(['oa-later', 'oa-null']);
+  });
+});

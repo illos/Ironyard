@@ -98,10 +98,16 @@ export function applyEndRound(state: CampaignState, intent: StampedIntent): Inte
     };
   }
 
+  const currentRound = guard.encounter.currentRound;
+  const nextOpenActions = state.openActions.filter(
+    (o) => o.expiresAtRound === null || o.expiresAtRound !== currentRound,
+  );
+
   return {
     state: {
       ...state,
       seq: state.seq + 1,
+      openActions: nextOpenActions,
       encounter: {
         ...guard.encounter,
         activeParticipantId: null,
