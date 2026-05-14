@@ -40,9 +40,29 @@ export const campaigns = sqliteTable('campaigns', {
     .references(() => users.id),
   inviteCode: text('invite_code').notNull().unique(),
   campaignSettings: text('campaign_settings'), // opaque, nullable, deferred-content
+  currentSessionId: text('current_session_id'), // FK to sessions(id), nullable
   createdAt: integer('created_at').notNull(),
   updatedAt: integer('updated_at').notNull(),
 });
+
+export const sessions = sqliteTable(
+  'sessions',
+  {
+    id: text('id').primaryKey(),
+    campaignId: text('campaign_id')
+      .notNull()
+      .references(() => campaigns.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    startedAt: integer('started_at').notNull(),
+    endedAt: integer('ended_at'),
+    attendingCharacterIds: text('attending_character_ids').notNull(), // JSON-encoded string[]
+    heroTokensStart: integer('hero_tokens_start').notNull(),
+    heroTokensEnd: integer('hero_tokens_end'),
+  },
+  (table) => ({
+    campaignIdx: index('idx_sessions_campaign').on(table.campaignId, table.startedAt),
+  }),
+);
 
 export const campaignMemberships = sqliteTable(
   'campaign_memberships',
