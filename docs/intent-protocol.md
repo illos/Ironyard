@@ -101,6 +101,17 @@ These intents flow through the intent log for attribution but mutate D1 directly
 - `RemoveApprovedCharacter { characterId }` — active-director gated; DO deletes the row; also removes the participant from the lobby roster if present
 - `KickPlayer { userId }` — active-director gated; rejected if `userId === state.ownerId`; DO deletes the target's `campaign_memberships` row and all their `campaign_characters` rows, then emits derived `RemoveParticipant` intents for any of their characters in the lobby roster
 
+### Open Actions
+
+A non-blocking, lobby-visible queue of rule-driven options a human may claim (Phase 2b.0). The list is visible to every connected user; the Claim button is enabled only for the eligible actor — the targeted participant's owner OR the active director. Unclaimed entries auto-expire when `expiresAtRound` is reached (or at `EndEncounter` unconditionally). Built in 2b.0 with no consumers; first consumers (spatial triggers, Conduit pray-to-the-gods) land in 2b.0.1.
+
+- `RaiseOpenAction { kind, participantId, expiresAtRound?, payload }` — **server-only**. The DO emits this as a derived intent from event-source intents (a damage application, a roll, a forced movement) when a class-specific or spatial condition might allow a player to claim a heroic-resource gain or other rule effect. Reducer appends an `OpenAction` to `state.openActions` with a fresh `oa_<ulid>` id and stamps `raisedByIntentId = intent.id`.
+- `ClaimOpenAction { openActionId, choice? }` — player owner of the targeted participant OR active director. Reducer removes the OA and emits any kind-specific derived intents the consumer registers (registry empty in 2b.0; consumers in 2b.0.1).
+
+There is no `DismissOpenAction`. Unclaimed entries auto-expire at `EndRound` (`expiresAtRound === currentRound`) or unconditionally at `EndEncounter`.
+
+Visibility: the OA list is part of `CampaignState`, broadcast to every connected client. The eligible-actor check (`owner || active director`) is enforced server-side in the reducer and mirrored in the UI as a per-row Claim-button enablement.
+
 ### Meta
 
 - `Undo { intentId }` — the DO replays the inverse of `intentId` and marks it voided
@@ -163,7 +174,7 @@ A third intent category, sitting between state-mutating intents (which change `C
 
 ## Server-only intents
 
-`SERVER_ONLY_INTENTS` in the DO: `{ JoinLobby, LeaveLobby, ApplyDamage }`. These are emitted by the DO itself (on connect/disconnect events or as derived intents) and are **rejected if dispatched by a client** — the DO drops them at the envelope boundary before permission or reducer checks.
+`SERVER_ONLY_INTENTS` in the DO: `{ JoinLobby, LeaveLobby, ApplyDamage, RaiseOpenAction }`. These are emitted by the DO itself (on connect/disconnect events or as derived intents) and are **rejected if dispatched by a client** — the DO drops them at the envelope boundary before permission or reducer checks.
 
 The admin-style intents (`SubmitCharacter`, `Approve/DenyCharacter`, `RemoveApprovedCharacter`, `KickPlayer`, `RemoveParticipant`, `ClearLobby`, `JumpBehindScreen`) are **not** server-only. Clients dispatch them; authority is validated inside the reducer (and via DO stamping for `JumpBehindScreen`).
 
