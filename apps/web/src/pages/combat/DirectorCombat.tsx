@@ -177,8 +177,6 @@ export function DirectorCombat() {
     return map;
   }, [monsterByParticipantId]);
 
-  const handleSelect = useCallback((id: string) => setSelectedId(id), []);
-
   // Anyone whose turnOrder position is BEFORE the active participant has acted
   // this round. Falls back to "nobody has acted" when there's no active
   // participant (between rounds, or before round 1 starts).
@@ -208,9 +206,22 @@ export function DirectorCombat() {
     );
   }, [activeEncounter, me.data?.user.id]);
   const [targetParticipantId, setTargetParticipantId] = useState<string | null>(null);
-  // setTargetParticipantId is wired in Task 23; referenced here to satisfy
-  // the linter. The state IS consumed via the prop passed to the rails.
-  void setTargetParticipantId;
+
+  // Role-driven row click: directors focus the DetailPane; players set a target.
+  // Tap-toggles: tapping the already-targeted row clears the target.
+  const handleFocus = useCallback((id: string) => setSelectedId(id), []);
+  const handleTarget = useCallback((id: string) => {
+    setTargetParticipantId((prev) => (prev === id ? null : id));
+  }, []);
+  const handleRowClick = viewerRole === 'director' ? handleFocus : handleTarget;
+
+  // Player view: DetailPane focus is always the player's own character,
+  // regardless of what they tap in the rails (those taps set targets, not focus).
+  useEffect(() => {
+    if (viewerRole === 'player' && selfParticipantId) {
+      setSelectedId(selfParticipantId);
+    }
+  }, [viewerRole, selfParticipantId]);
 
   // ── header guards ─────────────────────────────────────────────────────────
   if (me.isLoading || campaign.isLoading) {
@@ -519,7 +530,7 @@ export function DirectorCombat() {
               heroes={heroes}
               activeParticipantId={activeEncounter.activeParticipantId}
               selectedParticipantId={selectedId}
-              onSelect={handleSelect}
+              onSelect={handleRowClick}
               actedIds={actedIds}
               viewerRole={viewerRole}
               selfParticipantId={selfParticipantId}
@@ -530,7 +541,7 @@ export function DirectorCombat() {
               defeatedCount={defeatedCount}
               activeParticipantId={activeEncounter.activeParticipantId}
               selectedParticipantId={selectedId}
-              onSelect={handleSelect}
+              onSelect={handleRowClick}
               viewerRole={viewerRole}
               selfParticipantId={selfParticipantId}
               targetParticipantId={targetParticipantId}
