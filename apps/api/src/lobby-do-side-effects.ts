@@ -486,6 +486,7 @@ async function sideEffectEndEncounter(
 
       data.currentStamina = participant.currentStamina;
       data.recoveriesUsed = participant.recoveries.max - participant.recoveries.current;
+      data.victories = participant.victories;
 
       await conn
         .update(characters)
