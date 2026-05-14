@@ -369,4 +369,73 @@ Pass 2a is done when:
 
 ## PS — post-shipping fixes
 
-After Pass 2a lands and gets eye-tested, follow-up fixes append as numbered entries here (same pattern as Pass 1's PS section): symptom + one-paragraph fix + commit SHA.
+After the 40-task plan landed and the dev server came up, eye-testing surfaced gaps that weren't visible at design time. Each is a small change layered on top of the Pass-2a plan. Capturing them here so the spec stays a complete record of what shipped.
+
+### 1. Pre-Pass-2a encounters crashed TurnFlowTab on `usage.main`
+
+**Symptom.** Loading `/campaigns/$id/play` on an encounter that was started before Task 1 added the `turnActionUsage` field threw `TypeError: Cannot read properties of undefined (reading 'main')` from `TurnFlowTab.tsx:67`. The WS mirror builds participant snapshots without running them through `ParticipantSchema.parse`, so the new field's `.default()` never fired and the field was genuinely undefined on the mirror-side participant.
+
+**Fix** ([`907ddc5`](../../..)). `TurnFlowTab` derives `usage` with a fallback: `focused.turnActionUsage ?? { main: false, maneuver: false, move: false }`. The same defensive default later got applied in the WS mirror's `MarkActionUsed` handler (PS #4 below).
+
+### 2. Spend/Gain/SetStamina/Malice toasts leaked user-ids instead of names
+
+**Symptom.** The toast stack rendered `"01KRH2K8N2AV1EN2ZK13N9DQFB dispatched SpendRecovery"` — `intentDescribe.ts`'s default branch was `${intent.actor.userId} dispatched ${intent.type}`, and many intents (SpendRecovery, SpendResource, GainResource, SpendSurge, SetStamina, ApplyHeal, GainMalice, SpendMalice) didn't have explicit cases.
+
+**Fix** ([`78cf8ab`](../../..)). Added per-intent describe cases that resolve `participantId` → participant name via `nameOf()`, with friendly verb framing (`"Mira spent a recovery"`, `"Director gained 2 Malice"`). The default branch dropped the userId entirely and now reads `"Dispatched <Type>"`.
+
+### 3. RollPower toasts rendered synthetic `abilityId` instead of ability name
+
+**Symptom.** `"Sir John rolls pc:01KRH2KRB7YZT4B3BWZQHDPK2M:mind-game-5-focus vs Ajax the Invincible (auto)"` — `RollPowerPayloadSchema` carries `abilityId` (constructed as `${attackerIdBase}:${slug}`) but not the human-readable name; the toast had nothing better to render.
+
+**Fix** ([`974183a`](../../..)). Bumped the schema with an optional `abilityName` field (same back-compat pattern as Task 5's `abilityType`), DirectorCombat's `dispatchRoll` now passes `args.ability.name`, and `intentDescribe` prefers `abilityName` over `abilityId` for both `RollPower` and parented `ApplyDamage` toasts. Toast now reads `"Sir John rolls Mind Game vs Ajax the Invincible (auto)"`.
+
+### 4. Victories +/- didn't live-update; display summed across heroes; styled as a plain Stat
+
+**Symptom.** Three issues bundled: (a) Director clicks +/- on Victories, the readout didn't change until a snapshot envelope arrived later (the WS mirror's `reflect()` had no case for `AdjustVictories` or `MarkActionUsed`); (b) the display was `heroes.reduce((sum, p) => sum + (p.victories ?? 0), 0)`, so a party-wide +1 looked like +3 for a 3-PC party; (c) `VictoriesPill` rendered as a plain `<Stat>`, asymmetric with `MalicePill`'s pill+dot styling.
+
+**Fix** ([`5005fd0`](../../..)). (a) Added `AdjustVictories` and `MarkActionUsed` cases to `reflect()` so optimistic updates land on the screen immediately. (b) Changed the display derivation to `heroes[0]?.victories ?? 0` — per canon § 8.1 victories bump in lockstep across the party so any one hero's value is canonical. (c) New `--victory: oklch(0.82 0.17 85)` gold token; VictoriesPill now uses the same `<Pill dotClassName="bg-victory">` shape as MalicePill with editable-gated +/- buttons.
+
+### 5. Active-turn ring was static; no motion signal for whose turn it is
+
+**Symptom.** Pass 1 left motion deferred, and the Pass-2a-plan's TurnFlowSection / ParticipantRow shipped with a static `border-pk` ring on the active row. At the table that's easy to miss while watching the dice.
+
+**Fix** ([`843b743`](../../..)). New `@keyframes ironyard-turn-pulse` in `styles.css` breathes a 0→6px outer accent glow on the existing pk-inset ring over `--motion-pulse` (2.2s) ease-in-out. `ParticipantRow.turnClass` now applies `.turn-pulse` instead of a static shadow utility. `prefers-reduced-motion` disables the loop.
+
+### 6. Director auto-locked to their own PC after the active-director signal resolved
+
+**Symptom.** When the director owned a PC in the encounter, the right pane defaulted to that PC and tapping a monster row sometimes didn't switch focus. Caused by the lock-to-self `useEffect` firing transiently during the `useCampaign` HTTP fetch — `isActingAsDirector` reads `false` until the cache resolves, `viewerRole` is briefly `'player'`, the effect sets `selectedId` to `selfParticipantId`, then `viewerRole` flips to `'director'` but the effect's dep change doesn't undo the lock.
+
+**Fix** ([`4afbe1c`](../../..)). Replaced the `useEffect` with a pure render-time derivation: `effectiveSelectedId = viewerRole === 'player' && selfParticipantId ? selfParticipantId : selectedId`. Player view is locked render-side (can't leak into `setState`); director view reads bare `selectedId` and stays fully responsive to taps. Rails' `selectedParticipantId` + DetailPane's `focused` lookup both consume `effectiveSelectedId`.
+
+### 7. Combat tracker needed full viewport — global TopBar took chrome height the page wanted
+
+**Symptom.** `/campaigns/$id/play` rendered the global TopBar above the page-owned InlineHeader (two stacked headers) and the SplitPane used `min-h-[calc(100vh-3rem)]`, leaving the panes as a single scrollable block that competed with the below-fold `<OpenActionsList>` for viewport height. The user wanted exactly two pinned-height columns under InlineHeader.
+
+**Fix** ([`38af810`](../../..)). Three changes bundled:
+- AppShell gained `FULL_VIEWPORT_PATTERNS` (regex list) and hides the global TopBar when `location.pathname` matches `/campaigns/$id/play`.
+- DirectorCombat's live-encounter `<main>` switched from `min-h-screen` to `h-screen flex flex-col`; SplitPane uses `flex-1 min-h-0 p-3.5`; each pane scrolls independently inside its column.
+- `OpenActionsList` moved from the killed below-fold into the **top of the right pane**, gated on `openActions.length > 0` so an empty queue collapses entirely and the DetailPane gets the full column height.
+
+### 8. No Skip-turn affordance; no End-turn signal when all 3 slots are done
+
+**Symptom.** Players who skipped Main / Maneuver / Move individually ended up staring at three "done" rows with no next-step indicator. There was no way to fast-forward (skip the whole turn) for a player who'd already moved their figure on the table and just wanted to pass.
+
+**Fix** ([`2fd3a7d`](../../..)). TurnFlowTab gained two new affordances, both gated on `isActiveTurn`:
+- **Skip turn** — trailing mono-uppercase ghost button at the top, visible while any slot is pending. Marks every remaining slot used and immediately dispatches `EndTurn` in one click.
+- **End-turn CTA** — when all three slots are `used` (rolled / skipped individually / Skip-turn'd), an accent-bordered "Turn complete" callout appears at the bottom with a filled End-turn button.
+
+Plumbed via two new optional `DetailPaneProps`: `isActiveTurn` (true when `activeEncounter.activeParticipantId === focused.id`) and `onEndTurn` (wired to DirectorCombat's existing `handleEndTurn` dispatcher). Works for any focused active-turn participant — director driving a monster's turn gets the same affordance.
+
+### 9. Player had no persistent End-turn affordance + no whose-turn signal in the chrome
+
+**Symptom.** Players could only end their turn from the TurnFlowTab end-of-turn callout (PS #8), which requires every slot to be marked done first. No way to end a turn early without firing the Skip-turn flow. And on someone else's turn, the player had no at-a-glance signal of who was up — they had to scan the rails.
+
+**Fix** ([`700157c`](../../..)). InlineHeader's trailing slot (where the director's End-turn button lives) now renders for non-director viewers too:
+- **Their turn** → primary **End turn** button (same dispatch path as director's).
+- **Anyone else's turn** → mono-uppercase **`KORVA's turn`** readout.
+
+Two new `InlineHeaderProps`: `isPlayerActiveTurn` + `activeParticipantName`, threaded from DirectorCombat (and null-defaulted on the empty / pre-round header instances).
+
+### Maintenance note
+
+Future post-shipping fixes to Pass 2a layer the same way: append a numbered entry to this PS section with a one-line symptom, a one-paragraph fix, and the relevant commit SHA. Once a follow-up entry has shipped *and* been verified in real use, leave it in place — the doc is the historical record, not a TODO list.
