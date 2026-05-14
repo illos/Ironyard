@@ -125,6 +125,10 @@ Carry-overs deferred (each tracked in canon § 10.16 or a separate Q-entry):
 
 Unplanned cleanup epic born out of Epic 1 / 2C playtesting. Killed the two-step `BringCharacterIntoEncounter` + `PcPlaceholder` model in favor of an atomic `StartEncounter` that takes `characterIds[] + monsters[]`, with the DO stamping both PC blobs (from D1) and monster stat blocks (from static data) before the reducer materializes participants in one pass. Lobby roster is replaced wholesale at each encounter start. Added `CharacterSchema.currentStamina` + `recoveriesUsed` runtime fields; `EndEncounter` writes them back to D1, `Respite` resets them. `EncounterBuilder` is now a local-draft UI (checklist + monster picker) with no per-step lobby intents. Concludes Phase 2 feature work.
 
+**Sub-epic 2E — Sessions layer (MVP)** ([spec](superpowers/specs/2026-05-13-phase-2-epic-2e-sessions-design.md), [plan](superpowers/plans/2026-05-13-phase-2-epic-2e-sessions.md)) — **shipping**
+
+Introduces a play-session boundary as a thin scaffold: new `sessions` D1 table, `currentSessionId` pointer on Campaign, five new intents (`StartSession` / `EndSession` / `UpdateSessionAttendance` / `GainHeroToken` / `SpendHeroToken`). Hero tokens initialize from session attendance per canon (party size at session start); two cheap spend paths land in this epic (+2 surges, regain stamina). Retroactive variants (reroll, succeed-on-fail-save) defer to a follow-up epic. `StartEncounter` now requires an active session. Forward-compatible with Phase 3 character sharing.
+
 ## Phase 3 — Collaborative campaign capabilities
 
 **Goal:** "The campaign feels like a place, and people can share characters and entities with each other."

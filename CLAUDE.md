@@ -12,7 +12,7 @@ This file is the brief for any Claude Code agent working in this repo. Read it b
 | **Active Director** | The single member currently behind the screen — the one whose intents are accepted as director-driven. At most one per campaign. Defaults to the owner. Any director-permitted member can press "Jump behind the screen" to become active; the previous active director steps out but keeps their permission. Mutated by the `JumpBehindScreen` intent. |
 | **Lobby** | The runtime environment for a campaign — the Durable Object (`LobbyDO`) holding live state, WebSocket connections, the active participant roster, and the current encounter phase. Not a D1 table; "joining the lobby" is connecting a WebSocket to the campaign's DO. One DO per campaign. |
 | **Encounter Template** | A named, reusable monster lineup saved by the director (e.g. "Goblin Patrol — 6 minions + 1 sniper"). Stored in D1 per campaign. Additive when loaded into the lobby. |
-| **Session** | **Reserved.** Not used in v1. Kept open for a future intra-campaign concept (e.g. "Session 12: Bandit Camp"). Do not use this word to describe the campaign-level container or the live lobby. |
+| **Session** | A real-world play meeting bounded by `StartSession` / `EndSession` intents. Heroes start each session with hero tokens equal to attending PC count (canon: party size). Sessions group encounters chronologically within a campaign. Stored in `sessions` D1 table; current session id lives on `campaigns.current_session_id` and mirrors to `CampaignState.currentSessionId`. |
 
 ## What this project is
 

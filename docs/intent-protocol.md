@@ -81,6 +81,16 @@ Why the dice live in the payload: the reducer is pure (see below), so randomness
 - `LoadEncounterTemplate { templateId }` — active-director gated; DO resolves the template row from D1 and stamps `{ templateId, monsters: [...] }` onto the payload; the reducer fans into one derived `AddMonster` per entry
 - `JumpBehindScreen` — director-permitted gated; DO stamps `{ permitted: boolean }` from `campaign_memberships.is_director`; reducer accepts if `permitted === true` OR `actor.userId === state.ownerId`; sets `state.activeDirectorId = actor.userId`
 
+### Sessions
+
+- `StartSession { sessionId?, name?, attendingCharacterIds, heroTokens? }` — director-only. Opens a play session, declares attending characters, initializes the hero token pool. Rejects if a session is already active. DO stamper validates attendingCharacterIds against the campaign's approved roster and assigns a default `Session N` name. Client SHOULD provide `sessionId` (a `sess_<ulid>` string) so the optimistic mirror picks it up without a snapshot round-trip; the reducer falls back to ulid() generation if absent.
+- `EndSession {}` — director-only. Closes the active session. Side-effect snapshots `hero_tokens_end` to D1 for history.
+- `UpdateSessionAttendance { add?, remove? }` — director-only. Adjusts attendance mid-session for late arrivals / departures. Does not auto-grant or revoke hero tokens (canon: tokens are 'at session start').
+- `GainHeroToken { amount }` — director-only mid-session bonus award.
+- `SpendHeroToken { amount, reason, participantId }` — player or director. Reason is `surge_burst` (amount 1 → derived GainResource surges +2), `regain_stamina` (amount 2 → derived ApplyHeal of recoveryValue), or `narrative` (amount ≥ 1, no derived intent).
+
+**Precondition added to combat intents:** `StartEncounter` rejects with `no_active_session` if `state.currentSessionId === null`. Other encounter-scoped intents (turn, roll, damage, condition, resource) still work within an active encounter regardless of session state — sessions are an outer boundary, not a per-intent check.
+
 ### Campaign-character lifecycle (side-effect intents)
 
 These intents flow through the intent log for attribution but mutate D1 directly — the reducer validates authority and returns unchanged `CampaignState`. They are **not undoable** today (the Undo flow has no hook to reverse D1 row writes). See "Side-effect intent pattern" below.
@@ -123,10 +133,11 @@ Examples:
 
 | Intent | What the DO stamps |
 |---|---|
-| `LoadEncounterTemplate` | Reads `encounter_templates` row from D1; stamps `{ monsters: [...] }` |
-| `JumpBehindScreen` | Reads `campaign_memberships.is_director` for the actor; stamps `{ permitted: boolean }` |
 | `AddMonster` | Resolves monster data from `monsters.json`; stamps the full monster payload |
+| `JumpBehindScreen` | Reads `campaign_memberships.is_director` for the actor; stamps `{ permitted: boolean }` |
+| `LoadEncounterTemplate` | Reads `encounter_templates` row from D1; stamps `{ monsters: [...] }` |
 | `StartEncounter` | Reads each `characters` row in `characterIds[]` from D1 (→ `stampedPcs[]`); resolves each entry in `monsters[]` from `monsters.json` (→ `stampedMonsters[]`) |
+| `StartSession` | Reads `campaign_characters` for the approved roster (validates `attendingCharacterIds`); reads `sessions` count for default `Session N` name |
 | `SwapKit` | Reads `characters.owner_id` from D1; stamps `ownerId` |
 
 The pattern generalises: whenever the reducer needs external data to make a decision, the DO attaches it to the payload at the boundary. The intent then contains its full context and can be replayed faithfully from the log.
