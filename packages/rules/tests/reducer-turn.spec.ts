@@ -357,3 +357,90 @@ describe('applyStartTurn per-turn heroic resource gain', () => {
     expect(pc && isParticipant(pc) ? pc.heroicResources[0]?.value : null).toBe(0);
   });
 });
+
+describe('applyStartTurn — turnActionUsage', () => {
+  function stateWithPc(overrides: Partial<Participant> = {}): CampaignState {
+    const pc: Participant = { ...part('pc-1'), ...overrides };
+    const s = emptyCampaignState(campaignId, 'user-owner');
+    return {
+      ...s,
+      participants: [pc],
+      encounter: {
+        id: 'enc-1',
+        currentRound: 1,
+        turnOrder: ['pc-1'],
+        activeParticipantId: null,
+        turnState: {},
+        malice: { current: 0, lastMaliciousStrikeRound: null },
+      },
+    };
+  }
+
+  it("resets the turn-holder's turnActionUsage to all-false", () => {
+    const s = stateWithPc({ turnActionUsage: { main: true, maneuver: true, move: true } });
+    const r = applyIntent(s, intent('StartTurn', { participantId: 'pc-1' }));
+    expect(r.errors).toBeUndefined();
+    const p = r.state.participants.find((x) => isParticipant(x) && x.id === 'pc-1');
+    expect(p && isParticipant(p) ? p.turnActionUsage : null).toEqual({
+      main: false,
+      maneuver: false,
+      move: false,
+    });
+  });
+
+  it('does not touch other participants turnActionUsage', () => {
+    const pc1: Participant = { ...part('pc-1'), turnActionUsage: { main: true, maneuver: true, move: true } };
+    const pc2: Participant = { ...part('pc-2'), turnActionUsage: { main: true, maneuver: false, move: true } };
+    const s: CampaignState = {
+      ...emptyCampaignState(campaignId, 'user-owner'),
+      participants: [pc1, pc2],
+      encounter: {
+        id: 'enc-1',
+        currentRound: 1,
+        turnOrder: ['pc-1', 'pc-2'],
+        activeParticipantId: null,
+        turnState: {},
+        malice: { current: 0, lastMaliciousStrikeRound: null },
+      },
+    };
+    const r = applyIntent(s, intent('StartTurn', { participantId: 'pc-1' }));
+    expect(r.errors).toBeUndefined();
+    const p2 = r.state.participants.find((x) => isParticipant(x) && x.id === 'pc-2');
+    expect(p2 && isParticipant(p2) ? p2.turnActionUsage : null).toEqual({
+      main: true,
+      maneuver: false,
+      move: true,
+    });
+  });
+
+  it('reset composes with heroic resource gain (flat class)', () => {
+    const pc: Participant = {
+      ...part('censor'),
+      heroicResources: [{ name: 'wrath', value: 3, floor: 0 }],
+      turnActionUsage: { main: true, maneuver: true, move: false },
+    };
+    const s: CampaignState = {
+      ...emptyCampaignState(campaignId, 'user-owner'),
+      participants: [pc],
+      encounter: {
+        id: 'enc-1',
+        currentRound: 1,
+        turnOrder: ['censor'],
+        activeParticipantId: null,
+        turnState: {},
+        malice: { current: 0, lastMaliciousStrikeRound: null },
+      },
+    };
+    const r = applyIntent(s, intent('StartTurn', { participantId: 'censor' }));
+    expect(r.errors).toBeUndefined();
+    const p = r.state.participants.find((x) => isParticipant(x) && x.id === 'censor');
+    // Resource gain applied
+    expect(p && isParticipant(p) ? p.heroicResources[0]?.value : null).toBe(5);
+    // And turnActionUsage reset
+    expect(p && isParticipant(p) ? p.turnActionUsage : null).toEqual({
+      main: false,
+      maneuver: false,
+      move: false,
+    });
+  });
+});

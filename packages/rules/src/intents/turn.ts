@@ -261,6 +261,15 @@ export function applyStartTurn(state: CampaignState, intent: StampedIntent): Int
     }
   }
 
+  // Phase 5 Pass 2a: clear the turn-flow action slots for the new turn-holder.
+  // Unconditional — runs after any heroic-resource gain so it composes with
+  // the heroicResources-only map above.
+  nextParticipants = nextParticipants.map((p) =>
+    isParticipant(p) && p.id === participantId
+      ? { ...p, turnActionUsage: { main: false, maneuver: false, move: false } }
+      : p,
+  );
+
   // Slice 6: reset per-turn flags consulted by condition hooks. Dazed gating
   // uses `dazeActionUsedThisTurn`. Other flags (mainSpent etc.) join here in
   // slice 7.
