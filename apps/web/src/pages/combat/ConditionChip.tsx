@@ -1,5 +1,4 @@
 import type { ConditionInstance, ConditionType } from '@ironyard/shared';
-import { useLongPress } from '../../lib/longPress';
 
 // Slice 11: muted-but-distinct backgrounds for the nine canon conditions.
 // Per docs/rules-canon.md §3.1; reserved-condition list is closed.
@@ -21,7 +20,6 @@ type Props = {
 };
 
 export function ConditionChip({ condition, onRemove }: Props) {
-  const longPress = useLongPress(onRemove, 500);
   const durationLabel =
     condition.duration.kind === 'EoT'
       ? 'EoT'
@@ -35,9 +33,7 @@ export function ConditionChip({ condition, onRemove }: Props) {
 
   return (
     <span
-      {...longPress}
-      title="Long-press (or right-click) to remove"
-      className={`inline-flex items-center gap-2 min-h-11 px-3 py-1 rounded-full text-sm font-medium ring-1 ring-inset select-none cursor-pointer ${COLORS[condition.type]}`}
+      className={`inline-flex items-center gap-2 min-h-11 px-3 py-1 rounded-full text-sm font-medium ring-1 ring-inset select-none ${COLORS[condition.type]}`}
     >
       <span>{condition.type}</span>
       <span className="text-xs opacity-70 font-mono tabular-nums">{durationLabel}</span>

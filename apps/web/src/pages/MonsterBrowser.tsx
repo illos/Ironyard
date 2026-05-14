@@ -82,23 +82,26 @@ export function MonsterBrowser() {
 
           <ul className="space-y-1">
             {filtered.map((m) => (
-              <li
-                key={m.id}
-                className="flex items-center justify-between gap-3 rounded-md bg-neutral-900/60 px-3 py-3"
-              >
-                <span className="truncate">{m.name}</span>
-                <span className="shrink-0 rounded-full bg-neutral-800 px-2.5 py-0.5 text-xs font-mono tabular-nums">
-                  L{m.level}
-                </span>
+              <li key={m.id}>
+                <Link
+                  to="/foes/$id"
+                  params={{ id: m.id }}
+                  className="flex items-center justify-between gap-3 rounded-md bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 px-3 py-3 min-h-11"
+                >
+                  <span className="truncate flex-1">
+                    <span className="font-medium">{m.name}</span>
+                    {m.roles.length > 0 && (
+                      <span className="ml-2 text-xs text-neutral-400">{m.roles.join(' · ')}</span>
+                    )}
+                  </span>
+                  <span className="shrink-0 rounded-full bg-neutral-800 px-2.5 py-0.5 text-xs font-mono tabular-nums">
+                    L{m.level}
+                  </span>
+                </Link>
               </li>
             ))}
             {filtered.length === 0 && <li className="text-sm text-neutral-500">No matches.</li>}
           </ul>
-
-          <p className="text-xs text-neutral-600">
-            Phase 1 slice 9 — id, name, and level only. Stamina, immunities, abilities, and the rest
-            land when the ingest extends.
-          </p>
         </>
       )}
     </main>

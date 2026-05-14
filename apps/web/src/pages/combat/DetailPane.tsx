@@ -188,7 +188,9 @@ function DetailBody({
   const showQuickPcCopy =
     focused.kind === 'pc' && (abilities.length === 0 || abilities[0]?.id === 'pc-free-strike');
 
-  const hpLongPress = useLongPress(() => setHpEditOpen(true), 500);
+  // Phase 5 mobile-UI pass will add a long-press affordance; for now plain
+  // click opens the editor.
+  void useLongPress;
 
   const onRoll = (
     ability: Ability,
@@ -228,14 +230,15 @@ function DetailBody({
       >
         <div className="flex items-baseline justify-between mb-2">
           <h3 className="text-sm uppercase tracking-wider text-neutral-400">Stamina</h3>
-          <div
-            {...hpLongPress}
+          <button
+            type="button"
+            onClick={() => setHpEditOpen(true)}
             className="text-2xl font-mono tabular-nums font-semibold select-none cursor-pointer rounded px-2 -mx-2 hover:bg-neutral-800/50 active:bg-neutral-800"
-            title="Long-press (or right-click) to edit"
+            title="Click to edit"
           >
             {focused.currentStamina}
             <span className="text-neutral-500 text-base"> / {focused.maxStamina}</span>
-          </div>
+          </button>
         </div>
         <HpBar current={focused.currentStamina} max={focused.maxStamina} size="lg" />
         {hpEditOpen && (

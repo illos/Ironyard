@@ -7,6 +7,7 @@ import { CombatRun } from './pages/CombatRun';
 import { EncounterBuilder } from './pages/EncounterBuilder';
 import { Home } from './pages/Home';
 import { MonsterBrowser } from './pages/MonsterBrowser';
+import { MonsterDetail } from './pages/MonsterDetail';
 import { Sheet } from './pages/characters/Sheet';
 import { Wizard } from './pages/characters/Wizard';
 
@@ -64,6 +65,12 @@ const foesRoute = createRoute({
   component: MonsterBrowser,
 });
 
+const foeDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/foes/$id',
+  component: MonsterDetail,
+});
+
 const wizardNewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/characters/new',
@@ -93,6 +100,7 @@ const routeTree = rootRoute.addChildren([
   combatRunRoute,
   charactersListRoute,
   foesRoute,
+  foeDetailRoute,
   wizardNewRoute,
   wizardEditRoute,
   sheetRoute,
