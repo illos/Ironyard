@@ -1,6 +1,7 @@
 import { IntentTypes } from '@ironyard/shared';
 import {
   applyAddMonster,
+  applyAdjustVictories,
   applyApplyDamage,
   applyApplyHeal,
   applyApproveCharacter,
@@ -79,6 +80,8 @@ export function applyIntent(
   switch (intent.type) {
     case IntentTypes.AddMonster:
       return applyAddMonster(state, intent);
+    case IntentTypes.AdjustVictories:
+      return applyAdjustVictories(state, intent);
     case IntentTypes.ApproveCharacter:
       return applyApproveCharacter(state, intent);
     case IntentTypes.ClaimOpenAction:

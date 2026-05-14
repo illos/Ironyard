@@ -1,4 +1,5 @@
 export { applyAddMonster, participantFromMonster } from './add-monster';
+export { applyAdjustVictories } from './adjust-victories';
 export { applyApplyDamage } from './apply-damage';
 export { applyApplyHeal } from './apply-heal';
 export { applyApproveCharacter } from './approve-character';

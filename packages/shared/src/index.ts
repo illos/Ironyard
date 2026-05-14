@@ -35,6 +35,7 @@ export type { CreateCampaignRequest, JoinCampaignRequest } from './campaign';
 
 export {
   AddMonsterPayloadSchema,
+  AdjustVictoriesPayloadSchema,
   ApproveCharacterPayloadSchema,
   ApplyDamagePayloadSchema,
   ApplyHealPayloadSchema,
@@ -90,6 +91,7 @@ export {
 } from './intents';
 export type {
   AddMonsterPayload,
+  AdjustVictoriesPayload,
   ApproveCharacterPayload,
   ApplyDamagePayload,
   ApplyHealPayload,

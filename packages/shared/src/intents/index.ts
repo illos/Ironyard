@@ -3,6 +3,8 @@
 
 export { AddMonsterPayloadSchema } from './add-monster';
 export type { AddMonsterPayload } from './add-monster';
+export { AdjustVictoriesPayloadSchema } from './adjust-victories';
+export type { AdjustVictoriesPayload } from './adjust-victories';
 export { ApproveCharacterPayloadSchema } from './approve-character';
 export type { ApproveCharacterPayload } from './approve-character';
 export { ApplyDamagePayloadSchema } from './apply-damage';
@@ -133,6 +135,7 @@ export type { UseConsumablePayload } from './use-consumable';
 
 export const IntentTypes = {
   AddMonster: 'AddMonster',
+  AdjustVictories: 'AdjustVictories',
   ApplyDamage: 'ApplyDamage',
   ApplyHeal: 'ApplyHeal',
   ApproveCharacter: 'ApproveCharacter',
