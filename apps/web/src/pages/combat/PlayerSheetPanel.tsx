@@ -9,6 +9,7 @@ import { AbilityCard } from './AbilityCard';
 import { ConditionChip } from './ConditionChip';
 import { HpBar } from './HpBar';
 import { InventoryPanel } from './inventory/InventoryPanel';
+import { OpenActionsList } from './OpenActionsList';
 import { SwapKitModal } from './inventory/SwapKitModal';
 
 export function PlayerSheetPanel({ campaignId }: { campaignId: string }) {
@@ -43,6 +44,9 @@ export function PlayerSheetPanel({ campaignId }: { campaignId: string }) {
           <div className="font-mono text-neutral-400">
             {myParticipant.recoveries.current} / {myParticipant.recoveries.max} recoveries
           </div>
+          <div className="font-mono text-neutral-400">
+            {myParticipant.victories ?? 0} victories
+          </div>
         </div>
       </header>
       <HpBar current={myParticipant.currentStamina} max={myParticipant.maxStamina} />
@@ -61,6 +65,30 @@ export function PlayerSheetPanel({ campaignId }: { campaignId: string }) {
       <Abilities participant={myParticipant} campaignId={campaignId} userId={userId} />
       <KitDisplayAndSwap participant={myParticipant} campaignId={campaignId} userId={userId} />
       <Inventory participant={myParticipant} campaignId={campaignId} userId={userId} />
+      {/* OpenActionsList: lobby-visible queue (Phase 2b.0). Player sees the
+          same list as the director; the Claim button is only enabled when the
+          OA targets this player's participant. */}
+      <OpenActionsList
+        openActions={sock.openActions}
+        currentUserId={userId}
+        activeDirectorId={sock.activeDirectorId ?? ''}
+        participantOwnerLookup={(pid) => {
+          const p = sock.activeEncounter?.participants.find(
+            (entry) => isParticipantEntry(entry) && entry.id === pid,
+          );
+          return p && isParticipantEntry(p) ? p.ownerId : null;
+        }}
+        onClaim={(id) =>
+          sock.dispatch(
+            buildIntent({
+              campaignId,
+              type: IntentTypes.ClaimOpenAction,
+              payload: { openActionId: id },
+              actor: { userId, role: 'player' },
+            }),
+          )
+        }
+      />
     </aside>
   );
 }
