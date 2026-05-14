@@ -15,6 +15,9 @@ export interface ParticipantRowProps {
   active?: boolean;           // selected for detail pane
   isTurn?: boolean;           // currently the acting participant
   acted?: boolean;            // turn already used this round
+  /** Lower-priority ring shown when this participant is the current attack target.
+   *  Suppressed when isTurn is true (turn ring takes precedence). Default false. */
+  isTarget?: boolean;
   /** Per-character pack scope. Pass 1: pass undefined and the global accent applies. */
   pack?: Pack;
   onSelect?: () => void;
@@ -32,18 +35,20 @@ export function ParticipantRow({
   active = false,
   isTurn = false,
   acted = false,
+  isTarget = false,
   pack,
   onSelect,
 }: ParticipantRowProps) {
   const packClass = pack ? `pack-${pack}` : '';
   const turnClass = isTurn ? 'border-pk shadow-[0_0_0_1px_var(--pk,var(--accent))]' : '';
   const activeClass = active && !isTurn ? 'border-pk' : '';
+  const targetClass = isTarget && !isTurn ? 'shadow-[0_0_0_1px_var(--accent)]' : '';
   const actedClass = acted ? 'opacity-55' : '';
   return (
     <button
       type="button"
       onClick={onSelect}
-      className={`relative grid grid-cols-[32px_1fr_auto_auto_auto_110px] items-center gap-3 px-3 py-2 bg-ink-2 border border-line text-left transition-colors hover:border-pk hover:bg-ink-3 ${packClass} ${turnClass} ${activeClass} ${actedClass}`}
+      className={`relative grid grid-cols-[32px_1fr_auto_auto_auto_110px] items-center gap-3 px-3 py-2 bg-ink-2 border border-line text-left transition-colors hover:border-pk hover:bg-ink-3 ${packClass} ${turnClass} ${activeClass} ${targetClass} ${actedClass}`}
     >
       <Sigil text={sigil} />
       <span className="flex flex-col min-w-0 gap-0.5">
