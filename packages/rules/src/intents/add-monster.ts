@@ -28,6 +28,7 @@ export function participantFromMonster(
     // Slice 6 / Epic 2C § 10.8: monsters don't carry kit weapon bonuses.
     weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
     activeAbilities: [],
+    victories: 0,
   };
 }
 

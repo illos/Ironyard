@@ -109,6 +109,7 @@ export function applyStartEncounter(
       recoveryValue: runtime.recoveryValue,
       weaponDamageBonus: runtime.weaponDamageBonus,
       activeAbilities: [],
+      victories: stamped.character.victories ?? 0,
     };
   });
 

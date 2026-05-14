@@ -92,6 +92,7 @@ function makeParticipant(
     characterId: null,
     weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
     activeAbilities: [],
+    victories: 0,
     ...overrides,
   };
 }

@@ -322,6 +322,7 @@ describe('stampKickPlayer', () => {
             ranged: [0, 0, 0] as [number, number, number],
           },
           activeAbilities: [],
+          victories: 0,
         },
         {
           id: 'monster-xyz',
@@ -346,6 +347,7 @@ describe('stampKickPlayer', () => {
             ranged: [0, 0, 0] as [number, number, number],
           },
           activeAbilities: [],
+          victories: 0,
         },
       ],
     });

@@ -73,5 +73,8 @@ export const ParticipantSchema = z.object({
   // Polder Shadowmeld) toggle on as tagged active abilities. The engine tracks
   // expiry; the table adjudicates effect.
   activeAbilities: z.array(ActiveAbilityInstanceSchema).default([]),
+  // Per-character Victories (canon § 8.1) materialized onto the participant at
+  // StartEncounter for cheap reducer access. Sourced from `character.victories`.
+  victories: z.number().int().min(0).default(0),
 });
 export type Participant = z.infer<typeof ParticipantSchema>;

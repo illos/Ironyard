@@ -23,6 +23,7 @@ function makeTarget(over: Partial<Participant> = {}): Participant {
     characterId: null,
     weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
     activeAbilities: [],
+    victories: 0,
     ...over,
   };
 }

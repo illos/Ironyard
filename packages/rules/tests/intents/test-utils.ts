@@ -57,6 +57,7 @@ export function makeHeroParticipant(id: string, overrides: Partial<Participant> 
     characterId: null,
     weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
     activeAbilities: [],
+    victories: 0,
     ...overrides,
   };
 }
@@ -85,6 +86,7 @@ export function makeMonsterParticipant(
     characterId: null,
     weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
     activeAbilities: [],
+    victories: 0,
     ...overrides,
   };
 }
