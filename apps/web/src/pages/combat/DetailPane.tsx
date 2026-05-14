@@ -1,8 +1,6 @@
 import { type StaticDataBundle, deriveCharacterRuntime } from '@ironyard/rules';
 import {
   type Ability,
-  type ConditionInstance,
-  type ConditionType,
   type GainResourcePayload,
   HEROIC_RESOURCE_NAMES,
   type HeroicResourceName,
@@ -24,20 +22,8 @@ import { useWizardStaticData } from '../../api/static-data';
 import { pcFreeStrike } from '../../data/monsterAbilities';
 import { useLongPress } from '../../lib/longPress';
 import { AbilityCard } from './AbilityCard';
-import { ConditionChip } from './ConditionChip';
 import { Button, HpBar, Section } from '../../primitives';
-
-const CONDITION_TYPES: ConditionType[] = [
-  'Bleeding',
-  'Dazed',
-  'Frightened',
-  'Grabbed',
-  'Prone',
-  'Restrained',
-  'Slowed',
-  'Taunted',
-  'Weakened',
-];
+import { ConditionPickerPopover } from './detail/ConditionPickerPopover';
 
 type Props = {
   focused: Participant | null;
@@ -135,7 +121,6 @@ function DetailBody({
   const [targetId, setTargetId] = useState<string | null>(candidates[0]?.id ?? null);
   const target = candidates.find((p) => p.id === targetId) ?? null;
   const [hpEditOpen, setHpEditOpen] = useState(false);
-  const [conditionMenuOpen, setConditionMenuOpen] = useState(false);
 
   // Resilient fallback if the currently-picked target leaves the encounter
   // (or focus shifts and the candidate list changes). Runs after render so we
@@ -261,54 +246,14 @@ function DetailBody({
         />
       )}
 
-      <Section
-        heading="Conditions"
-        aria-label="conditions"
-        right={
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setConditionMenuOpen((v) => !v)}
-            disabled={disabled}
-          >
-            + Add
-          </Button>
-        }
-      >
-        <div className="flex flex-wrap gap-2">
-          {focused.conditions.length === 0 && (
-            <span className="text-sm text-text-mute">None.</span>
-          )}
-          {focused.conditions.map((c: ConditionInstance, idx) => (
-            <ConditionChip
-              key={`${c.type}-${c.source.id}-${idx}`}
-              condition={c}
-              onRemove={() => dispatchRemoveCondition({ targetId: focused.id, condition: c.type })}
-            />
-          ))}
-        </div>
-        {conditionMenuOpen && (
-          <div className="mt-3 border border-line bg-ink-0 p-3 grid grid-cols-3 sm:grid-cols-5 gap-2">
-            {CONDITION_TYPES.map((cond) => (
-              <Button
-                key={cond}
-                type="button"
-                onClick={() => {
-                  dispatchSetCondition({
-                    targetId: focused.id,
-                    condition: cond,
-                    source: { kind: 'effect', id: 'manual-override' },
-                    duration: { kind: 'EoT' },
-                  });
-                  setConditionMenuOpen(false);
-                }}
-                className="min-h-11 w-full justify-center"
-              >
-                {cond}
-              </Button>
-            ))}
-          </div>
-        )}
+      <Section heading="Conditions" aria-label="conditions">
+        <ConditionPickerPopover
+          participantId={focused.id}
+          conditions={focused.conditions}
+          disabled={disabled}
+          dispatchSetCondition={dispatchSetCondition}
+          dispatchRemoveCondition={dispatchRemoveCondition}
+        />
       </Section>
 
       <Section heading="Characteristics" aria-label="characteristics">
