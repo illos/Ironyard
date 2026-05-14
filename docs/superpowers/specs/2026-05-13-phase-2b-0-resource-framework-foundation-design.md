@@ -38,7 +38,7 @@ Wire the universal § 5 mechanics (Director's Malice generation at encounter and
 ```
 StartEncounter
    ├─ For each PC participant:
-   │   heroicResources = [{ name: <config.name>, current: character.victories }]
+   │   heroicResources = [{ name: <config.name>, value: character.victories, floor }]
    ├─ malice.current = floor(averageVictoriesAlive(state))
    └─ Round 1 tick (inlined): malice.current += aliveHeroes + 1
 
@@ -256,7 +256,7 @@ Seven slices. Slice 1 (Open Actions framework) is independent and can run in par
 - `aliveHeroes(state): Participant[]` — filters `participants` to `kind === 'pc' && currentStamina > -windedValue(p)`. Permissive in 2b.0; 2b.5 replaces.
 - `averageVictoriesAlive(state): number` — `floor(sum(aliveHeroes.victories) / aliveHeroes.length)`, returns 0 if no PCs.
 
-**StartEncounter reducer.** Extend the PC materialization pass so each PC's `heroicResources` is seeded with a single entry: `{ name: config.name, current: character.victories }`. After materialization, set `encounter.malice.current = floor(averageVictoriesAlive(state))` and inline the round-1 tick: `+= aliveHeroes(state).length + 1`.
+**StartEncounter reducer.** Extend the PC materialization pass so each PC's `heroicResources` is seeded with a single entry: `{ name: config.name, value: character.victories, floor: resolveFloor(config.floor, characteristics) }`. `resolveFloor` returns `0` for non-Clarity, and `-(1 + reason)` for Clarity (per `HeroicResourceInstanceSchema`'s existing comment in `packages/shared/src/resource.ts:21–24`). After materialization, set `encounter.malice.current = floor(averageVictoriesAlive(state))` and inline the round-1 tick: `+= aliveHeroes(state).length + 1`.
 
 **StartRound reducer (round N > 1).** Add `encounter.malice.current += aliveHeroes(state).length + currentRound`.
 
@@ -275,8 +275,8 @@ Seven slices. Slice 1 (Open Actions framework) is independent and can run in par
 **StartTurn reducer.** If the active participant is a PC:
 - Look up `HEROIC_RESOURCES[config.name]` via `getResourceConfigForParticipant`.
 - Branch on `config.baseGain.onTurnStart`:
-  - `{ kind: 'flat', amount }` → reject if `rolls?.d3` is set; otherwise `participant.heroicResources[0].current += amount`.
-  - `{ kind: 'd3' }` → reject if `rolls?.d3` is unset; otherwise `+= rolls.d3`.
+  - `{ kind: 'flat', amount }` → reject if `rolls?.d3` is set; otherwise `participant.heroicResources[0].value += amount`.
+  - `{ kind: 'd3' }` → reject if `rolls?.d3` is unset; otherwise `participant.heroicResources[0].value += rolls.d3`.
   - `{ kind: 'd3-plus' }` → reject in 2b.0 (`reason: 'not_yet_supported'`) — 10th-level Psion path is stubbed for 2b.0.1.
 
 **Tests.**
@@ -284,21 +284,21 @@ Seven slices. Slice 1 (Open Actions framework) is independent and can run in par
 - Flat-class with `rolls.d3` set → rejected.
 - d3-class with `rolls.d3` absent → rejected.
 - d3 value out of range (0, 4) → schema rejection.
-- Gain is additive — applies even when `current` is already non-zero.
-- Talent's negative clarity is tolerated — gain applies normally even if `current < 0` (the floor formula doesn't clamp).
+- Gain is additive — applies even when `value` is already non-zero.
+- Talent's negative clarity is tolerated — gain applies normally even if `value < 0` (no clamping on gain; the existing floor logic clamps only on spend).
 
 **Done when.** Each class's per-turn gain fires correctly via `StartTurn`; payload validation is strict.
 
 ### Slice 6 — End-of-encounter cleanup *(small)*
 
 **EndEncounter reducer.** For each PC participant:
-- `heroicResources[*].current = 0` (positive and negative both reset).
+- `heroicResources[*].value = 0` (positive and negative both reset).
 - `surges = 0`.
 
 Existing partial Clarity wiring at `turn.ts:272` (end-of-turn negative-clarity damage dispatch) is untouched. That's a per-turn mechanic and belongs to 2b.0.1's Talent slice; it doesn't conflict with the encounter-end zeroing.
 
 **Tests.**
-- After `EndEncounter`, every PC has `heroicResources[*].current === 0` for any pool that existed.
+- After `EndEncounter`, every PC has `heroicResources[*].value === 0` for any pool that existed.
 - A Talent with `clarity = -3` at encounter end → 0 after.
 - Surges zero on every PC.
 
