@@ -1,5 +1,6 @@
 import type { Participant } from '@ironyard/shared';
 import { ParticipantRow, Section } from '../../primitives';
+import { initials, summarizeRole } from './rails/rail-utils';
 
 export interface PartyRailProps {
   heroes: Participant[];
@@ -40,22 +41,3 @@ export function PartyRail({
   );
 }
 
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .map((w) => w[0] ?? '')
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-}
-
-function summarizeRole(p: Participant): string {
-  // ParticipantSchema (packages/shared/src/participant.ts) exposes only `level`
-  // and `kind` for class-shaped metadata — there is no `className` or `ancestry`
-  // on the in-encounter participant snapshot today. Render what we have:
-  //   L{level} · HERO
-  // When character-class metadata is materialized onto the participant in a
-  // later phase, extend this to include it.
-  const parts: string[] = [`L${p.level}`, 'HERO'];
-  return parts.join(' · ');
-}

@@ -1,5 +1,6 @@
 import type { Participant } from '@ironyard/shared';
 import { ParticipantRow, Section } from '../../primitives';
+import { initials, summarizeRole } from './rails/rail-utils';
 
 export interface EncounterRailProps {
   foes: Participant[];
@@ -39,20 +40,3 @@ export function EncounterRail({
   );
 }
 
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .map((w) => w[0] ?? '')
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-}
-
-function summarizeRole(p: Participant): string {
-  // Same gap as PartyRail — ParticipantSchema (packages/shared/src/participant.ts)
-  // exposes only `level` and `kind` for role-shaped metadata. There is no
-  // monster role / ev / size materialized onto the in-encounter snapshot today.
-  // Render what we have: L{level} · FOE. When monster metadata is materialized
-  // onto the participant in a later phase, extend this.
-  return p.level ? `L${p.level} · FOE` : 'FOE';
-}
