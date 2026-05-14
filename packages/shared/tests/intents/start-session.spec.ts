@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { StartSessionPayloadSchema } from '../../src/intents/start-session';
+import { EndSessionPayloadSchema } from '../../src/intents/end-session';
 
 describe('StartSessionPayloadSchema', () => {
   it('parses a minimal valid payload', () => {
@@ -42,5 +43,16 @@ describe('StartSessionPayloadSchema', () => {
         heroTokens: -1,
       }),
     ).toThrow();
+  });
+});
+
+describe('EndSessionPayloadSchema', () => {
+  it('parses an empty payload', () => {
+    const parsed = EndSessionPayloadSchema.parse({});
+    expect(parsed).toEqual({});
+  });
+
+  it('rejects extra fields', () => {
+    expect(() => EndSessionPayloadSchema.parse({ unknown: 1 })).toThrow();
   });
 });

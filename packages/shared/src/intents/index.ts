@@ -15,6 +15,8 @@ export { DenyCharacterPayloadSchema } from './deny-character';
 export type { DenyCharacterPayload } from './deny-character';
 export { EndEncounterPayloadSchema } from './end-encounter';
 export type { EndEncounterPayload } from './end-encounter';
+export { EndSessionPayloadSchema } from './end-session';
+export type { EndSessionPayload } from './end-session';
 export { EquipItemPayloadSchema } from './equip-item';
 export type { EquipItemPayload } from './equip-item';
 export { GainMalicePayloadSchema } from './gain-malice';
@@ -121,6 +123,7 @@ export const IntentTypes = {
   ClearLobby: 'ClearLobby',
   DenyCharacter: 'DenyCharacter',
   EndEncounter: 'EndEncounter',
+  EndSession: 'EndSession',
   EndRound: 'EndRound',
   EndTurn: 'EndTurn',
   EquipItem: 'EquipItem',
