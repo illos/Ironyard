@@ -575,6 +575,7 @@ export function DirectorCombat() {
             monsterLevelById={monsterLevelById}
             monsterByParticipantId={monsterByParticipantId}
             disabled={disabled}
+            campaignId={campaignId}
             targetParticipantId={targetParticipantId}
             selfParticipantId={selfParticipantId}
             viewerRole={viewerRole}

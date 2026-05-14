@@ -29,6 +29,8 @@ type Props = {
   // convention). Used to pull the focused monster's full ability list.
   monsterByParticipantId: Map<string, Monster>;
   disabled: boolean;
+  /** Campaign id — forwarded to FullSheetTab for PC-only sub-panels. */
+  campaignId: string;
   /** Row-tap target id from DirectorCombat (player view). Forwarded to FullSheetTab. */
   targetParticipantId?: string | null;
   /** The viewer's own participant id (player view). Used by TargetBanner. */
@@ -62,6 +64,7 @@ export function DetailPane({
   monsterLevelById,
   monsterByParticipantId,
   disabled,
+  campaignId,
   targetParticipantId = null,
   selfParticipantId = null,
   viewerRole = 'director',
@@ -109,6 +112,7 @@ export function DetailPane({
         monsterLevelById={monsterLevelById}
         monsterByParticipantId={monsterByParticipantId}
         disabled={disabled}
+        campaignId={campaignId}
         targetParticipantId={targetParticipantId}
         selfParticipantId={selfParticipantId}
         viewerRole={viewerRole}
@@ -139,6 +143,7 @@ function DetailBody({
   monsterLevelById,
   monsterByParticipantId,
   disabled,
+  campaignId,
   targetParticipantId,
   viewerRole,
   canEdit,
@@ -203,6 +208,7 @@ function DetailBody({
           monsterByParticipantId={monsterByParticipantId}
           disabled={disabled}
           canRoll={canEdit}
+          campaignId={campaignId}
           targetParticipantId={targetParticipantId}
           dispatchRoll={dispatchRoll}
           dispatchGainResource={dispatchGainResource}

@@ -4,6 +4,9 @@ import {
   type GainResourcePayload,
   HEROIC_RESOURCE_NAMES,
   type HeroicResourceName,
+  IntentTypes,
+  type Item,
+  type Kit,
   type Monster,
   type Participant,
   type SetResourcePayload,
@@ -12,12 +15,16 @@ import {
   type SpendSurgePayload,
 } from '@ironyard/shared';
 import { useEffect, useMemo, useState } from 'react';
-import { useCharacter } from '../../../api/queries';
-import { useWizardStaticData } from '../../../api/static-data';
+import { buildIntent } from '../../../api/dispatch';
+import { useCharacter, useMe } from '../../../api/queries';
+import { useItems, useKits, useWizardStaticData } from '../../../api/static-data';
 import { pcFreeStrike } from '../../../data/monsterAbilities';
 import { useLongPress } from '../../../lib/longPress';
 import { Button, Section } from '../../../primitives';
 import { AbilityCard } from '../AbilityCard';
+import { isParticipantEntry, useSessionSocket } from '../../../ws/useSessionSocket';
+import { InventoryPanel } from '../inventory/InventoryPanel';
+import { SwapKitModal } from '../inventory/SwapKitModal';
 
 export interface FullSheetTabProps {
   focused: Participant;
@@ -25,6 +32,8 @@ export interface FullSheetTabProps {
   monsterByParticipantId: Map<string, Monster>;
   disabled: boolean;
   canRoll?: boolean;
+  /** Campaign id — forwarded to PC-only sub-panels (inventory, kit, hero tokens). */
+  campaignId: string;
   /** Row-tap target from DirectorCombat (player view). Overrides the dropdown when set. */
   targetParticipantId?: string | null;
   dispatchRoll: (args: {
@@ -47,6 +56,7 @@ export function FullSheetTab({
   monsterByParticipantId,
   disabled,
   canRoll = true,
+  campaignId,
   targetParticipantId = null,
   dispatchRoll,
   dispatchGainResource,
@@ -203,6 +213,26 @@ export function FullSheetTab({
           </p>
         )}
       </Section>
+
+      {focused.kind === 'pc' && focused.characterId !== null && (
+        <>
+          <HeroTokensSection
+            focused={focused}
+            campaignId={campaignId}
+            disabled={disabled}
+          />
+          <KitSection
+            focused={focused}
+            campaignId={campaignId}
+            disabled={disabled}
+          />
+          <InventorySection
+            focused={focused}
+            participants={participants}
+            campaignId={campaignId}
+          />
+        </>
+      )}
     </>
   );
 }
@@ -480,4 +510,195 @@ function AddHeroicResource({
 
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// ── PC-only panels ────────────────────────────────────────────────────────────
+// These components mirror the sub-components in the former PlayerSheetPanel.
+// They are gated on focused.kind === 'pc' && focused.characterId !== null in
+// the parent, so they can safely assume both conditions.
+
+function HeroTokensSection({
+  focused,
+  campaignId,
+  disabled,
+}: {
+  focused: Participant;
+  campaignId: string;
+  disabled: boolean;
+}) {
+  const me = useMe();
+  const sock = useSessionSocket(campaignId);
+  const { currentSessionId, heroTokens } = sock;
+
+  if (!currentSessionId || !me.data) return null;
+
+  const userId = me.data.user.id;
+  const spend = (amount: 1 | 2, reason: 'surge_burst' | 'regain_stamina') => {
+    sock.dispatch(
+      buildIntent({
+        campaignId,
+        type: IntentTypes.SpendHeroToken,
+        payload: { amount, reason, participantId: focused.id },
+        actor: { userId, role: 'player' },
+      }),
+    );
+  };
+
+  return (
+    <Section heading="Hero tokens" aria-label="hero-tokens">
+      <div className="flex items-baseline justify-between mb-2">
+        <span className="text-sm text-text-dim">Available</span>
+        <span className="font-mono tabular-nums text-base text-text">{heroTokens}</span>
+      </div>
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          disabled={disabled || heroTokens < 1}
+          onClick={() => spend(1, 'surge_burst')}
+          className="flex-1 min-h-11 justify-center"
+        >
+          +2 Surges (1 token)
+        </Button>
+        <Button
+          type="button"
+          disabled={disabled || heroTokens < 2}
+          onClick={() => spend(2, 'regain_stamina')}
+          className="flex-1 min-h-11 justify-center"
+        >
+          Regain Stamina (2 tokens)
+        </Button>
+      </div>
+    </Section>
+  );
+}
+
+function KitSection({
+  focused,
+  campaignId,
+  disabled,
+}: {
+  focused: Participant;
+  campaignId: string;
+  disabled: boolean;
+}) {
+  const me = useMe();
+  const ch = useCharacter(focused.characterId ?? undefined);
+  const kits = useKits();
+  const sock = useSessionSocket(campaignId);
+  const [open, setOpen] = useState(false);
+
+  if (!me.data || !ch.data || !kits.data) return null;
+
+  const userId = me.data.user.id;
+  const character = ch.data.data;
+  const characterId = ch.data.id;
+  const currentKitId = character.kitId ?? null;
+  const currentKit = kits.data.find((k) => k.id === currentKitId);
+  const actor = { userId, role: 'player' as const };
+  // Cast: useKits()'s value type carries Zod input-side optionality on defaulted fields.
+  const kitList = kits.data as unknown as Kit[];
+
+  return (
+    <Section heading="Kit" aria-label="kit">
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-text-dim">{currentKit?.name ?? '—'}</span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={disabled}
+          onClick={() => setOpen(true)}
+          className="min-h-[44px]"
+        >
+          Swap
+        </Button>
+      </div>
+      {open && (
+        <SwapKitModal
+          kits={kitList}
+          currentKitId={currentKitId}
+          onConfirm={(newKitId) => {
+            sock.dispatch(
+              buildIntent({
+                campaignId,
+                type: IntentTypes.SwapKit,
+                payload: { characterId, newKitId, ownerId: userId },
+                actor,
+              }),
+            );
+            setOpen(false);
+          }}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </Section>
+  );
+}
+
+function InventorySection({
+  focused,
+  participants,
+  campaignId,
+}: {
+  focused: Participant;
+  participants: Participant[];
+  campaignId: string;
+}) {
+  const me = useMe();
+  const ch = useCharacter(focused.characterId ?? undefined);
+  const items = useItems();
+  const sock = useSessionSocket(campaignId);
+
+  if (!me.data || !ch.data || !items.data) return null;
+
+  const userId = me.data.user.id;
+  const characterId = focused.characterId!;
+  const actor = { userId, role: 'player' as const };
+  // Cast: useItems()'s value type carries Zod input-side optionality on defaulted fields.
+  const itemList = items.data as unknown as Item[];
+
+  // Other participants for the UseConsumable target picker. Filter self out.
+  const otherParticipants: Participant[] = participants.filter(
+    (p): p is Participant => isParticipantEntry(p) && p.id !== focused.id,
+  );
+
+  return (
+    <Section heading="Inventory" aria-label="inventory">
+      <InventoryPanel
+        character={ch.data.data}
+        items={itemList}
+        participants={otherParticipants}
+        onEquip={(inventoryEntryId) =>
+          sock.dispatch(
+            buildIntent({
+              campaignId,
+              type: IntentTypes.EquipItem,
+              payload: { characterId, inventoryEntryId },
+              actor,
+            }),
+          )
+        }
+        onUnequip={(inventoryEntryId) =>
+          sock.dispatch(
+            buildIntent({
+              campaignId,
+              type: IntentTypes.UnequipItem,
+              payload: { characterId, inventoryEntryId },
+              actor,
+            }),
+          )
+        }
+        onUse={(inventoryEntryId, targetParticipantId) =>
+          sock.dispatch(
+            buildIntent({
+              campaignId,
+              type: IntentTypes.UseConsumable,
+              payload: { characterId, inventoryEntryId, targetParticipantId },
+              actor,
+            }),
+          )
+        }
+      />
+    </Section>
+  );
 }
