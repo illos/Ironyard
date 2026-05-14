@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
-import { Button, Pill, Stat } from '../../../primitives';
+import { Button, Stat } from '../../../primitives';
+import { MalicePill } from './MalicePill';
 
 // ──────────────────────────────────────────────────────────────────────────
 // InlineHeader — Mode-B style breadcrumb + Round/Victories/Malice +
@@ -68,29 +69,7 @@ export function InlineHeader({
       <Stat label="Round" value={round ?? '—'} />
       <Stat label="Victories" value={victories} />
       {malice !== null && (
-        <Pill dotClassName="bg-foe">
-          <button
-            type="button"
-            onClick={onMaliceSpend}
-            disabled={wsClosed}
-            className="px-1.5 text-foe hover:text-text disabled:opacity-40"
-            aria-label="Spend 1 Malice"
-          >
-            −
-          </button>
-          <span className="font-mono uppercase tracking-[0.08em] text-text-mute">
-            Malice <b className="text-text font-sans">{malice}</b>
-          </span>
-          <button
-            type="button"
-            onClick={onMaliceGain}
-            disabled={wsClosed}
-            className="px-1.5 text-foe hover:text-text disabled:opacity-40"
-            aria-label="Gain 1 Malice"
-          >
-            +
-          </button>
-        </Pill>
+        <MalicePill malice={malice} onGain={onMaliceGain} onSpend={onMaliceSpend} disabled={wsClosed} />
       )}
       <Button
         type="button"
