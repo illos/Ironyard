@@ -76,5 +76,17 @@ export const ParticipantSchema = z.object({
   // Per-character Victories (canon § 8.1) materialized onto the participant at
   // StartEncounter for cheap reducer access. Sourced from `character.victories`.
   victories: z.number().int().min(0).default(0),
+  // Phase 5 Pass 2a — per-turn action-usage state for the Turn-flow UI.
+  // Reset to all-false by applyStartTurn when this participant becomes the
+  // turn-holder. RollPower auto-emits a derived MarkActionUsed based on
+  // ability.type (action → main, maneuver → maneuver); Move has no engine
+  // intent so it's set by the "Done moving" button only.
+  turnActionUsage: z
+    .object({
+      main: z.boolean(),
+      maneuver: z.boolean(),
+      move: z.boolean(),
+    })
+    .default({ main: false, maneuver: false, move: false }),
 });
 export type Participant = z.infer<typeof ParticipantSchema>;
