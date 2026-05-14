@@ -1,5 +1,5 @@
 import { Outlet, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
-import { AppShell } from './primitives/AppShell';
+import { CampaignNew } from './pages/CampaignNew';
 import { CampaignView } from './pages/CampaignView';
 import { CampaignsList } from './pages/CampaignsList';
 import { CharactersList } from './pages/CharactersList';
@@ -10,6 +10,7 @@ import { MonsterDetail } from './pages/MonsterDetail';
 import { Sheet } from './pages/characters/Sheet';
 import { Wizard } from './pages/characters/Wizard';
 import { DirectorCombat } from './pages/combat/DirectorCombat';
+import { AppShell } from './primitives/AppShell';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -29,6 +30,12 @@ const campaignsListRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/campaigns',
   component: CampaignsList,
+});
+
+const campaignsNewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/campaigns/new',
+  component: CampaignNew,
 });
 
 const campaignRoute = createRoute({
@@ -91,6 +98,7 @@ const sheetRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   indexRoute,
   campaignsListRoute,
+  campaignsNewRoute,
   campaignRoute,
   encounterBuilderRoute,
   combatRunRoute,
