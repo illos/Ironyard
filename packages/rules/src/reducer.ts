@@ -35,6 +35,7 @@ import {
   applySpendSurge,
   applyStartEncounter,
   applyStartRound,
+  applyStartSession,
   applyStartTurn,
   applySubmitCharacter,
   applySwapKit,
@@ -139,6 +140,8 @@ export function applyIntent(
       return applyStartEncounter(state, intent, ctx);
     case IntentTypes.StartRound:
       return applyStartRound(state, intent);
+    case IntentTypes.StartSession:
+      return applyStartSession(state, intent);
     case IntentTypes.StartTurn:
       return applyStartTurn(state, intent);
     case IntentTypes.SubmitCharacter:
