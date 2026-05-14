@@ -33,6 +33,7 @@ import {
   usePendingCharactersFull,
 } from '../api/queries';
 import { useItems } from '../api/static-data';
+import { Button, Section } from '../primitives';
 import { useSessionSocket } from '../ws/useSessionSocket';
 import { RespiteConfirm } from './combat/RespiteConfirm';
 import { PushItemModal } from './director/PushItemModal';
@@ -58,7 +59,7 @@ export function CampaignView() {
   if (me.isLoading || campaign.isLoading) {
     return (
       <main className="mx-auto max-w-2xl p-6">
-        <p className="text-neutral-400">Loading…</p>
+        <p className="text-text-dim">Loading…</p>
       </main>
     );
   }
@@ -66,7 +67,7 @@ export function CampaignView() {
   if (!me.data) {
     return (
       <main className="mx-auto max-w-2xl p-6">
-        <p className="text-neutral-400">
+        <p className="text-text-dim">
           Not signed in.{' '}
           <Link to="/" className="underline">
             Go home
@@ -80,10 +81,10 @@ export function CampaignView() {
   if (campaign.error || !campaign.data) {
     return (
       <main className="mx-auto max-w-2xl p-6 space-y-2">
-        <p className="text-rose-400">
+        <p className="text-foe">
           {(campaign.error as Error)?.message ?? 'Campaign not found.'}
         </p>
-        <Link to="/" className="underline text-neutral-300">
+        <Link to="/" className="underline text-text-dim">
           Back home
         </Link>
       </main>
@@ -100,10 +101,10 @@ export function CampaignView() {
     <main className="mx-auto max-w-2xl p-6 space-y-6">
       <header className="flex items-baseline justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">{campaign.data.name}</h1>
-          <p className="text-xs text-neutral-500 mt-1">
+          <h1 className="text-2xl font-semibold text-text">{campaign.data.name}</h1>
+          <p className="text-xs text-text-mute mt-1">
             Invite code:{' '}
-            <span className="text-neutral-200 tracking-widest font-mono">
+            <span className="text-text-dim tracking-widest font-mono">
               {campaign.data.inviteCode}
             </span>
             {' · '}
@@ -115,7 +116,7 @@ export function CampaignView() {
             <Link
               to="/campaigns/$id/play"
               params={{ id }}
-              className="text-sm text-emerald-300 hover:text-emerald-200 underline"
+              className="text-sm text-accent hover:text-accent underline"
             >
               Continue in play screen →
             </Link>
@@ -123,15 +124,15 @@ export function CampaignView() {
           <Link
             to="/campaigns/$id/build"
             params={{ id }}
-            className="text-sm text-neutral-300 hover:text-neutral-100 underline"
+            className="text-sm text-text-dim hover:text-text underline"
           >
             Build encounter
           </Link>
-          <Link to="/" className="text-sm text-neutral-400 hover:text-neutral-200">
+          <Link to="/" className="text-sm text-text-dim hover:text-text">
             Leave
           </Link>
           {campaign.data.isOwner && (
-            <button
+            <Button
               type="button"
               onClick={() => {
                 if (
@@ -146,10 +147,11 @@ export function CampaignView() {
                 });
               }}
               disabled={deleteCampaign.isPending}
-              className="min-h-11 px-3 rounded-md border border-rose-700 text-rose-300 text-xs hover:bg-rose-900/30 disabled:opacity-50"
+              size="sm"
+              className="min-h-11 text-foe border-foe hover:bg-ink-3 disabled:opacity-50"
             >
               {deleteCampaign.isPending ? 'Deleting…' : 'Delete campaign'}
-            </button>
+            </Button>
           )}
         </div>
       </header>
@@ -170,14 +172,14 @@ export function CampaignView() {
       {/* Connected members */}
       <section>
         <div className="flex items-center gap-2">
-          <h2 className="font-semibold">Connected ({members.length})</h2>
+          <h2 className="font-semibold text-text">Connected ({members.length})</h2>
           <span
-            className={`text-xs px-2 py-0.5 rounded-full ${
+            className={`text-xs px-2 py-0.5 ${
               status === 'open'
-                ? 'bg-emerald-900/40 text-emerald-300'
+                ? 'bg-ink-2 text-accent border border-accent'
                 : status === 'connecting'
-                  ? 'bg-amber-900/40 text-amber-300'
-                  : 'bg-rose-900/40 text-rose-300'
+                  ? 'bg-ink-2 text-accent border border-line'
+                  : 'bg-ink-2 text-foe border border-foe'
             }`}
           >
             {status}
@@ -186,21 +188,21 @@ export function CampaignView() {
 
         <ul className="mt-3 space-y-1">
           {members.length === 0 && (
-            <li className="text-sm text-neutral-500">Waiting for the socket…</li>
+            <li className="text-sm text-text-mute">Waiting for the socket…</li>
           )}
           {members.map((m) => (
             <li
               key={m.userId}
-              className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
+              className="flex items-center gap-3 bg-ink-1 px-3 py-2"
             >
-              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-neutral-800 font-semibold">
+              <span className="inline-flex items-center justify-center w-8 h-8 bg-ink-2 font-semibold text-text">
                 {m.displayName[0]?.toUpperCase() ?? '?'}
               </span>
-              <span>
+              <span className="text-text">
                 {m.displayName}
-                {m.userId === meId && <span className="text-neutral-500 text-xs"> (you)</span>}
+                {m.userId === meId && <span className="text-text-mute text-xs"> (you)</span>}
                 {m.userId === campaign.data.activeDirectorId && (
-                  <span className="ml-2 text-xs text-amber-400">director</span>
+                  <span className="ml-2 text-xs text-accent">director</span>
                 )}
               </span>
             </li>
@@ -213,7 +215,7 @@ export function CampaignView() {
         <Link
           to="/characters/new"
           search={{ code: campaign.data.inviteCode }}
-          className="inline-flex items-center min-h-11 px-4 py-2 rounded-md bg-neutral-100 text-neutral-900 font-medium hover:bg-neutral-200"
+          className="inline-flex items-center min-h-11 px-4 py-2 bg-accent text-ink-0 font-medium hover:bg-accent-strong"
         >
           Build a character for this campaign
         </Link>
@@ -325,13 +327,14 @@ function RespiteTrigger({
 
   return (
     <>
-      <button
+      <Button
         type="button"
+        variant="primary"
         onClick={() => setOpen(true)}
-        className="min-h-11 px-4 py-2 rounded-md bg-neutral-100 text-neutral-900 font-medium hover:bg-neutral-200"
+        className="min-h-11 px-4 py-2"
       >
         Respite (refill recoveries, restore stamina, convert victories → XP)
-      </button>
+      </Button>
       {open && (
         <RespiteConfirm
           characters={characters}
@@ -364,19 +367,20 @@ function SavedTemplatesPanel({ campaignId }: { campaignId: string }) {
   const items = templates.data ?? [];
 
   return (
-    <section className="rounded-lg border border-neutral-800 p-4 space-y-3">
-      <header className="flex items-baseline justify-between">
-        <h2 className="font-semibold text-sm">Saved encounter templates</h2>
+    <Section
+      heading="Saved encounter templates"
+      right={
         <Link
           to="/campaigns/$id/build"
           params={{ id: campaignId }}
-          className="text-xs text-neutral-400 hover:text-neutral-200 underline"
+          className="text-xs text-text-dim hover:text-text underline"
         >
           Builder →
         </Link>
-      </header>
+      }
+    >
       {items.length === 0 ? (
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-text-mute">
           No templates yet. Compose a monster lineup in the encounter builder, then save it as a
           template to load it again in any future session.
         </p>
@@ -387,32 +391,33 @@ function SavedTemplatesPanel({ campaignId }: { campaignId: string }) {
             return (
               <li
                 key={t.id}
-                className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
+                className="flex items-center gap-3 bg-ink-2 px-3 py-2"
               >
                 <span className="flex-1">
-                  <span className="font-medium">{t.name}</span>
-                  <span className="ml-2 text-xs text-neutral-500">
+                  <span className="font-medium text-text">{t.name}</span>
+                  <span className="ml-2 text-xs text-text-mute">
                     {total} monster{total === 1 ? '' : 's'} · {t.data.monsters.length} entr
                     {t.data.monsters.length === 1 ? 'y' : 'ies'}
                   </span>
                 </span>
-                <button
+                <Button
                   type="button"
+                  size="sm"
                   onClick={() => {
                     if (!confirm(`Delete template "${t.name}"?`)) return;
                     deleteTpl.mutate(t.id);
                   }}
                   disabled={deleteTpl.isPending}
-                  className="min-h-11 px-3 rounded-md border border-rose-800 text-rose-300 text-xs hover:bg-rose-900/40 disabled:opacity-50"
+                  className="min-h-11 text-foe border-foe hover:bg-ink-3 disabled:opacity-50"
                 >
                   Delete
-                </button>
+                </Button>
               </li>
             );
           })}
         </ul>
       )}
-    </section>
+    </Section>
   );
 }
 
@@ -466,22 +471,24 @@ function ActiveDirectorBanner({
   };
 
   return (
-    <div className="flex items-center justify-between rounded-md bg-amber-950/30 border border-amber-900/40 px-3 py-2 text-sm">
-      <span className="text-amber-200">
+    <div className="flex items-center justify-between bg-ink-1 border border-line px-3 py-2 text-sm">
+      <span className="text-accent">
         {iAmDirector ? 'You are directing' : `Directing: ${directorName}`}
       </span>
       {canJump && (
-        <button
+        <Button
           type="button"
+          variant="primary"
+          size="sm"
           // onClick alone was unreliable on touch (only firing after a long
           // press) — adding onPointerUp gives a first-tap fallback. firingRef
           // prevents the duplicate when both fire on the same tap.
           onClick={handleJump}
           onPointerUp={handleJump}
-          className="min-h-11 px-3 rounded-md bg-amber-700 text-neutral-950 font-medium hover:bg-amber-600 active:bg-amber-500 text-xs touch-manipulation select-none cursor-pointer"
+          className="min-h-11 touch-manipulation select-none cursor-pointer"
         >
           Jump behind the screen
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -534,62 +541,63 @@ function SubmitCharacterPanel({
   };
 
   return (
-    <section className="rounded-lg border border-neutral-800 p-4 space-y-3">
-      <h2 className="font-semibold text-sm">Submit a character</h2>
+    <Section heading="Submit a character">
+      <div className="space-y-3">
+        {myChars.isLoading && <p className="text-xs text-text-mute">Loading…</p>}
 
-      {myChars.isLoading && <p className="text-xs text-neutral-500">Loading…</p>}
+        {myChars.data && myChars.data.length === 0 && !showCreate && (
+          <p className="text-xs text-text-mute">
+            You have no characters.{' '}
+            <button
+              type="button"
+              onClick={() => setShowCreate(true)}
+              className="underline text-text-dim"
+            >
+              Create one
+            </button>
+            .
+          </p>
+        )}
 
-      {myChars.data && myChars.data.length === 0 && !showCreate && (
-        <p className="text-xs text-neutral-500">
-          You have no characters.{' '}
+        {myChars.data && myChars.data.length > 0 && (
+          <ul className="space-y-1">
+            {myChars.data.map((ch) => (
+              <CharacterRow key={ch.id} character={ch} onSubmit={handleSubmit} disabled={!wsOpen} />
+            ))}
+          </ul>
+        )}
+
+        {myChars.data && myChars.data.length > 0 && (
           <button
             type="button"
-            onClick={() => setShowCreate(true)}
-            className="underline text-neutral-300"
+            onClick={() => setShowCreate((v) => !v)}
+            className="text-xs text-text-dim underline"
           >
-            Create one
+            {showCreate ? 'Cancel' : 'Create another character'}
           </button>
-          .
-        </p>
-      )}
+        )}
 
-      {myChars.data && myChars.data.length > 0 && (
-        <ul className="space-y-1">
-          {myChars.data.map((ch) => (
-            <CharacterRow key={ch.id} character={ch} onSubmit={handleSubmit} disabled={!wsOpen} />
-          ))}
-        </ul>
-      )}
-
-      {myChars.data && myChars.data.length > 0 && (
-        <button
-          type="button"
-          onClick={() => setShowCreate((v) => !v)}
-          className="text-xs text-neutral-400 underline"
-        >
-          {showCreate ? 'Cancel' : 'Create another character'}
-        </button>
-      )}
-
-      {showCreate && (
-        <form onSubmit={handleCreate} className="flex gap-2">
-          <input
-            type="text"
-            value={newCharName}
-            onChange={(e) => setNewCharName(e.target.value)}
-            placeholder="Character name"
-            className="flex-1 min-h-11 rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 text-sm outline-none focus:border-neutral-600"
-          />
-          <button
-            type="submit"
-            disabled={createChar.isPending || !newCharName.trim()}
-            className="min-h-11 px-3 rounded-md bg-neutral-100 text-neutral-900 text-sm font-medium disabled:opacity-60"
-          >
-            {createChar.isPending ? '…' : 'Create'}
-          </button>
-        </form>
-      )}
-    </section>
+        {showCreate && (
+          <form onSubmit={handleCreate} className="flex gap-2">
+            <input
+              type="text"
+              value={newCharName}
+              onChange={(e) => setNewCharName(e.target.value)}
+              placeholder="Character name"
+              className="flex-1 min-h-11 bg-ink-2 border border-line text-text px-3 py-2 text-sm outline-none focus:border-accent"
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={createChar.isPending || !newCharName.trim()}
+              className="min-h-11 disabled:opacity-60"
+            >
+              {createChar.isPending ? '…' : 'Create'}
+            </Button>
+          </form>
+        )}
+      </div>
+    </Section>
   );
 }
 
@@ -603,16 +611,16 @@ function CharacterRow({
   disabled: boolean;
 }) {
   return (
-    <li className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2">
-      <span className="flex-1 text-sm">{character.name}</span>
-      <button
+    <li className="flex items-center gap-3 bg-ink-2 px-3 py-2">
+      <span className="flex-1 text-sm text-text">{character.name}</span>
+      <Button
         type="button"
         onClick={() => onSubmit(character.id)}
         disabled={disabled}
-        className="min-h-11 px-3 rounded-md border border-neutral-700 text-sm hover:bg-neutral-800 disabled:opacity-50"
+        className="min-h-11 disabled:opacity-50"
       >
         Submit
-      </button>
+      </Button>
     </li>
   );
 }
@@ -648,18 +656,14 @@ function PendingCharactersPanel({
   if (pending.isLoading) return null;
   if (!pending.data || pending.data.length === 0) {
     return (
-      <section className="rounded-lg border border-neutral-800 p-4">
-        <h2 className="font-semibold text-sm">Pending characters</h2>
-        <p className="text-xs text-neutral-500 mt-2">No pending submissions.</p>
-      </section>
+      <Section heading="Pending characters">
+        <p className="text-xs text-text-mute">No pending submissions.</p>
+      </Section>
     );
   }
 
   return (
-    <section className="rounded-lg border border-amber-900/40 bg-amber-950/20 p-4 space-y-3">
-      <h2 className="font-semibold text-sm text-amber-200">
-        Pending characters ({pending.data.length})
-      </h2>
+    <Section heading={`Pending characters (${pending.data.length})`}>
       <ul className="space-y-1">
         {pending.data.map((cr) => (
           <PendingCharacterRow
@@ -672,7 +676,7 @@ function PendingCharactersPanel({
           />
         ))}
       </ul>
-    </section>
+    </Section>
   );
 }
 
@@ -690,24 +694,25 @@ function PendingCharacterRow({
   disabled: boolean;
 }) {
   return (
-    <li className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2">
-      <span className="flex-1 text-sm text-neutral-300">{name}</span>
-      <button
+    <li className="flex items-center gap-3 bg-ink-2 px-3 py-2">
+      <span className="flex-1 text-sm text-text-dim">{name}</span>
+      <Button
         type="button"
+        variant="primary"
         onClick={() => onApprove(id)}
         disabled={disabled}
-        className="min-h-11 px-3 rounded-md bg-emerald-700 text-sm font-medium hover:bg-emerald-600 disabled:opacity-50"
+        className="min-h-11 disabled:opacity-50"
       >
         Approve
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         onClick={() => onDeny(id)}
         disabled={disabled}
-        className="min-h-11 px-3 rounded-md border border-rose-800 text-rose-300 text-sm hover:bg-rose-900/40 disabled:opacity-50"
+        className="min-h-11 text-foe border-foe hover:bg-ink-3 disabled:opacity-50"
       >
         Deny
-      </button>
+      </Button>
     </li>
   );
 }
@@ -763,53 +768,57 @@ function ApprovedRosterPanel({
   }));
 
   return (
-    <section className="rounded-lg border border-neutral-800 p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-sm">
-          Approved roster ({displayed.length}
-          {currentSessionId !== null && allApproved.length !== displayed.length
-            ? ` / ${allApproved.length} total`
-            : ''}
-          )
-        </h2>
-        {isDirector && (
-          <button
+    <Section
+      heading={`Approved roster (${displayed.length}${
+        currentSessionId !== null && allApproved.length !== displayed.length
+          ? ` / ${allApproved.length} total`
+          : ''
+      })`}
+      right={
+        isDirector ? (
+          <Button
             type="button"
+            size="sm"
             onClick={() => setPushItemOpen(true)}
             disabled={!wsOpen || !items.data || allApproved.length === 0}
-            className="min-h-11 px-3 rounded-md border border-neutral-700 text-xs hover:bg-neutral-800 disabled:opacity-50"
+            className="min-h-11 disabled:opacity-50"
           >
             Push item to player
-          </button>
+          </Button>
+        ) : undefined
+      }
+    >
+      <div className="space-y-3">
+        {displayed.length === 0 && (
+          <p className="text-xs text-text-mute">
+            {currentSessionId !== null
+              ? 'No attending characters.'
+              : 'No approved characters yet.'}
+          </p>
+        )}
+        {displayed.length > 0 && (
+          <ul className="space-y-1">
+            {displayed.map((cr) => (
+              <li
+                key={cr.id}
+                className="flex items-center gap-3 bg-ink-2 px-3 py-2"
+              >
+                <span className="flex-1 text-sm text-text-dim">{cr.name}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {pushItemOpen && (
+          <PushItemModal
+            characters={charactersForModal}
+            items={(items.data ?? []) as unknown as Item[]}
+            onConfirm={handlePushItem}
+            onClose={() => setPushItemOpen(false)}
+          />
         )}
       </div>
-      {displayed.length === 0 && (
-        <p className="text-xs text-neutral-500">
-          {currentSessionId !== null ? 'No attending characters.' : 'No approved characters yet.'}
-        </p>
-      )}
-      {displayed.length > 0 && (
-        <ul className="space-y-1">
-          {displayed.map((cr) => (
-            <li
-              key={cr.id}
-              className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
-            >
-              <span className="flex-1 text-sm text-neutral-300">{cr.name}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {pushItemOpen && (
-        <PushItemModal
-          characters={charactersForModal}
-          items={(items.data ?? []) as unknown as Item[]}
-          onConfirm={handlePushItem}
-          onClose={() => setPushItemOpen(false)}
-        />
-      )}
-    </section>
+    </Section>
   );
 }
 
@@ -851,46 +860,47 @@ function OwnerAdminPanel({
   if (members.isLoading) return null;
 
   return (
-    <section className="rounded-lg border border-neutral-800 p-4 space-y-3">
-      <h2 className="font-semibold text-sm">Campaign members (owner admin)</h2>
+    <Section heading="Campaign members (owner admin)">
       <ul className="space-y-1">
         {(members.data ?? []).map((m: CampaignMember) => {
           const isMe = m.userId === meId;
           return (
             <li
               key={m.userId}
-              className="flex items-center gap-3 rounded-md bg-neutral-900/60 px-3 py-2"
+              className="flex items-center gap-3 bg-ink-2 px-3 py-2"
             >
-              <span className="flex-1 text-sm">
+              <span className="flex-1 text-sm text-text">
                 {m.displayName}
-                {isMe && <span className="text-neutral-500 text-xs"> (you)</span>}
-                {m.isDirector && <span className="ml-2 text-xs text-amber-400">director</span>}
+                {isMe && <span className="text-text-mute text-xs"> (you)</span>}
+                {m.isDirector && <span className="ml-2 text-xs text-accent">director</span>}
               </span>
               {!isMe && (
                 <>
-                  <button
+                  <Button
                     type="button"
+                    size="sm"
                     onClick={() => handleToggleDirector(m.userId, m.isDirector)}
                     disabled={grant.isPending || revoke.isPending}
-                    className="min-h-11 px-3 rounded-md border border-neutral-700 text-neutral-200 text-xs hover:bg-neutral-800 disabled:opacity-50"
+                    className="min-h-11 disabled:opacity-50"
                   >
                     {m.isDirector ? 'Revoke director' : 'Make director'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    size="sm"
                     onClick={() => handleKick(m.userId)}
                     disabled={!wsOpen}
-                    className="min-h-11 px-3 rounded-md border border-rose-800 text-rose-300 text-xs hover:bg-rose-900/40 disabled:opacity-50"
+                    className="min-h-11 text-foe border-foe hover:bg-ink-3 disabled:opacity-50"
                   >
                     Kick
-                  </button>
+                  </Button>
                 </>
               )}
             </li>
           );
         })}
       </ul>
-    </section>
+    </Section>
   );
 }
 
@@ -964,29 +974,28 @@ function StartSessionPanel({
   };
 
   return (
-    <section className="rounded-lg border border-neutral-800 p-5 space-y-4">
-      <h2 className="font-semibold">Start a new session</h2>
+    <Section heading="Start a new session">
       <form onSubmit={submit} className="space-y-4">
-        <label className="block text-sm">
+        <label className="block text-sm text-text">
           Session name (optional)
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Bandit Camp"
-            className="mt-1 w-full rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2"
+            className="mt-1 w-full bg-ink-2 border border-line text-text px-3 py-2 outline-none focus:border-accent"
           />
         </label>
         <div>
-          <h3 className="text-sm text-neutral-300 mb-2">Who&apos;s playing tonight?</h3>
+          <h3 className="text-sm text-text-dim mb-2">Who&apos;s playing tonight?</h3>
           {approvedCharacters.length === 0 ? (
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-text-mute">
               No approved characters yet — approve at least one to start a session.
             </p>
           ) : (
             <ul className="space-y-1">
               {approvedCharacters.map((c) => (
                 <li key={c.id}>
-                  <label className="flex items-center gap-3 min-h-11">
+                  <label className="flex items-center gap-3 min-h-11 text-text">
                     <input
                       type="checkbox"
                       checked={selected.has(c.id)}
@@ -1000,7 +1009,7 @@ function StartSessionPanel({
                     />
                     <span className="flex-1">
                       <span className="font-medium">{c.name}</span>
-                      <span className="ml-2 text-xs text-neutral-500">L{c.data.level}</span>
+                      <span className="ml-2 text-xs text-text-mute">L{c.data.level}</span>
                     </span>
                   </label>
                 </li>
@@ -1008,20 +1017,20 @@ function StartSessionPanel({
             </ul>
           )}
         </div>
-        <label className="block text-sm">
+        <label className="block text-sm text-text">
           Hero tokens at start
           <input
             type="number"
             min={0}
             value={tokens}
             onChange={(e) => setTokens(Math.max(0, parseInt(e.target.value || '0', 10)))}
-            className="mt-1 w-24 rounded-md bg-neutral-900 border border-neutral-800 px-3 py-2 font-mono"
+            className="mt-1 w-24 bg-ink-2 border border-line text-text px-3 py-2 font-mono"
           />
-          <span className="ml-2 text-xs text-neutral-500">default: # attending</span>
+          <span className="ml-2 text-xs text-text-mute">default: # attending</span>
         </label>
         {(serverRejection || error) && (
           <div className="space-y-2" role="alert">
-            <p className="text-sm text-rose-400">
+            <p className="text-sm text-foe">
               {serverRejection ? `Server rejected: ${serverRejection}` : error}
             </p>
             {/* Recovery path: when the server reports a stuck-active session
@@ -1029,8 +1038,9 @@ function StartSessionPanel({
                 ActiveSessionBadge "End session" button isn't visible), give
                 the director a direct EndSession dispatch right here. */}
             {serverRejection === 'end the active session first' && (
-              <button
+              <Button
                 type="button"
+                size="sm"
                 onClick={() => {
                   dispatch(
                     buildIntent({
@@ -1042,22 +1052,23 @@ function StartSessionPanel({
                   );
                 }}
                 disabled={!wsOpen}
-                className="min-h-11 px-3 rounded-md border border-rose-700 text-rose-300 text-xs hover:bg-rose-900/30 disabled:opacity-50"
+                className="min-h-11 text-foe border-foe hover:bg-ink-3 disabled:opacity-50"
               >
                 End the active session
-              </button>
+              </Button>
             )}
           </div>
         )}
-        <button
+        <Button
           type="submit"
+          variant="primary"
           disabled={selected.size === 0 || !wsOpen}
-          className="min-h-11 rounded-md bg-neutral-100 text-neutral-900 px-4 py-2 font-medium disabled:opacity-60"
+          className="min-h-11 disabled:opacity-60"
         >
           {wsOpen ? 'Start session' : 'Connecting…'}
-        </button>
+        </Button>
       </form>
-    </section>
+    </Section>
   );
 }
 
@@ -1114,24 +1125,21 @@ function ActiveSessionBadge({
   void sessionId; // preserved for future log linking
 
   return (
-    <section className="rounded-lg border border-emerald-800 bg-emerald-950/30 p-4 space-y-3">
-      <header className="flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-wider text-emerald-300">Session active</p>
-          <p className="text-sm text-neutral-200 mt-1">
-            {attendingCharacterIds.length} attending · {heroTokens} hero tokens
-          </p>
-        </div>
+    <Section
+      heading="Session active"
+      right={
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
+            size="sm"
             onClick={() => setEditing((v) => !v)}
-            className="min-h-11 px-3 rounded-md border border-neutral-700 text-sm hover:bg-neutral-900"
+            className="min-h-11"
           >
             {editing ? 'Cancel' : 'Edit attendance'}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            size="sm"
             onClick={() => {
               if (window.confirm('End this session?')) {
                 dispatch(
@@ -1144,71 +1152,80 @@ function ActiveSessionBadge({
                 );
               }
             }}
-            className="min-h-11 px-3 rounded-md border border-rose-700 text-rose-300 text-sm hover:bg-rose-900/30"
+            className="min-h-11 text-foe border-foe hover:bg-ink-3"
           >
             End session
-          </button>
+          </Button>
         </div>
-      </header>
+      }
+    >
+      <div className="space-y-3">
+        <p className="text-sm text-text-dim">
+          {attendingCharacterIds.length} attending · {heroTokens} hero tokens
+        </p>
 
-      {editing && (
-        <div className="space-y-3 border-t border-neutral-800 pt-3">
-          <ul className="space-y-1">
-            {approvedCharacters.map((c) => (
-              <li key={c.id}>
-                <label className="flex items-center gap-3 min-h-11">
-                  <input
-                    type="checkbox"
-                    checked={draft.has(c.id)}
-                    onChange={(e) => {
-                      const next = new Set(draft);
-                      if (e.target.checked) next.add(c.id);
-                      else next.delete(c.id);
-                      setDraft(next);
-                    }}
-                    className="h-5 w-5"
-                  />
-                  <span className="flex-1 text-sm">{c.name}</span>
-                </label>
-              </li>
-            ))}
-          </ul>
-          <button
+        {editing && (
+          <div className="space-y-3 border-t border-line-soft pt-3">
+            <ul className="space-y-1">
+              {approvedCharacters.map((c) => (
+                <li key={c.id}>
+                  <label className="flex items-center gap-3 min-h-11 text-text">
+                    <input
+                      type="checkbox"
+                      checked={draft.has(c.id)}
+                      onChange={(e) => {
+                        const next = new Set(draft);
+                        if (e.target.checked) next.add(c.id);
+                        else next.delete(c.id);
+                        setDraft(next);
+                      }}
+                      className="h-5 w-5"
+                    />
+                    <span className="flex-1 text-sm">{c.name}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={commitAttendance}
+              className="min-h-11"
+            >
+              Save attendance
+            </Button>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 border-t border-line-soft pt-3">
+          <span className="text-xs text-text-dim">Award tokens:</span>
+          <input
+            type="number"
+            min={1}
+            value={bonus}
+            onChange={(e) => setBonus(Math.max(1, parseInt(e.target.value || '1', 10)))}
+            className="w-16 bg-ink-2 border border-line text-text px-2 py-1 text-sm font-mono"
+          />
+          <Button
             type="button"
-            onClick={commitAttendance}
-            className="min-h-11 px-3 rounded-md bg-neutral-100 text-neutral-900 text-sm font-medium"
+            variant="primary"
+            size="sm"
+            onClick={() =>
+              dispatch(
+                buildIntent({
+                  campaignId,
+                  type: IntentTypes.GainHeroToken,
+                  payload: { amount: bonus },
+                  actor,
+                }),
+              )
+            }
+            className="min-h-9"
           >
-            Save attendance
-          </button>
+            + Grant
+          </Button>
         </div>
-      )}
-
-      <div className="flex items-center gap-2 border-t border-neutral-800 pt-3">
-        <span className="text-xs text-neutral-400">Award tokens:</span>
-        <input
-          type="number"
-          min={1}
-          value={bonus}
-          onChange={(e) => setBonus(Math.max(1, parseInt(e.target.value || '1', 10)))}
-          className="w-16 rounded-md bg-neutral-900 border border-neutral-800 px-2 py-1 text-sm font-mono"
-        />
-        <button
-          type="button"
-          onClick={() =>
-            dispatch(
-              buildIntent({
-                campaignId,
-                type: IntentTypes.GainHeroToken,
-                payload: { amount: bonus },
-                actor,
-              }),
-            )
-          }
-          className="min-h-9 px-3 rounded-md bg-violet-500 text-neutral-900 text-xs font-medium"
-        >
-          + Grant
-        </button>
       </div>
-    </section>
+    </Section>
   );
 }
