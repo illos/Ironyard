@@ -46,6 +46,7 @@ function pc(over: Partial<Participant> = {}): Participant {
     weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
     activeAbilities: [],
     victories: 0,
+    turnActionUsage: { main: false, maneuver: false, move: false },
     ...over,
   };
 }
@@ -72,6 +73,7 @@ function monster(over: Partial<Participant> = {}): Participant {
     weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
     activeAbilities: [],
     victories: 0,
+    turnActionUsage: { main: false, maneuver: false, move: false },
     ...over,
   };
 }

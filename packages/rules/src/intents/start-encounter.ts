@@ -126,6 +126,7 @@ export function applyStartEncounter(
       weaponDamageBonus: runtime.weaponDamageBonus,
       activeAbilities: [],
       victories: stamped.character.victories ?? 0,
+      turnActionUsage: { main: false, maneuver: false, move: false },
     };
   });
 
