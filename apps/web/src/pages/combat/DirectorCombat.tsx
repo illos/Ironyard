@@ -107,6 +107,7 @@ export function DirectorCombat() {
         participantsBefore: participantSnapshotBefore,
         parent,
       });
+      if (!text) continue; // suppress derived MarkActionUsed (and any future empty-string cases)
       const isDerived = !!entry.causedBy;
       const undoTarget = isDerived ? entry.causedBy : entry.id;
       const undoSafe =

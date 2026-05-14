@@ -1,7 +1,9 @@
 import {
+  type AdjustVictoriesPayload,
   type ApplyDamagePayload,
   type EndTurnPayload,
   IntentTypes,
+  type MarkActionUsedPayload,
   type Participant,
   type RemoveConditionPayload,
   type RollPowerPayload,
@@ -79,6 +81,26 @@ export function describeIntent(args: DescribeArgs): string {
       return 'Encounter started';
     case IntentTypes.Undo:
       return 'Undone';
+    case IntentTypes.MarkActionUsed: {
+      const payload = intent.payload as MarkActionUsedPayload;
+      const p = participantsBefore.find((x) => x.id === payload.participantId);
+      const name = p?.name ?? 'Someone';
+      if (payload.slot === 'move') return `${name} finished moving`;
+      // Explicit Skip dispatch (no parent causedBy, and used: true).
+      if (!intent.causedBy && payload.used) {
+        return `${name} skipped their ${payload.slot}`;
+      }
+      // Auto-emitted from RollPower (causedBy is set) — suppress so the parent
+      // RollPower toast isn't double-described.
+      return '';
+    }
+    case IntentTypes.AdjustVictories: {
+      const payload = intent.payload as AdjustVictoriesPayload;
+      const verb = payload.delta >= 0 ? 'awards' : 'deducts';
+      const count = Math.abs(payload.delta);
+      const word = count === 1 ? 'victory' : 'victories';
+      return `Director ${verb} ${count} ${word}`;
+    }
     default:
       return `${intent.actor.userId} dispatched ${intent.type}`;
   }
