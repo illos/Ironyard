@@ -445,6 +445,27 @@ Plus regression tests in `RoleReadout.spec.tsx` (asserts `roleReadoutFor({ role:
 
 **Lesson.** Same as Pass 2a PS #1: when adding optional `nullable().default(...)` fields to `ParticipantSchema`, the WS-mirror path bypasses Zod parsing. Every consumer of a new field must defend against runtime `undefined` regardless of the TypeScript contract. The WS mirror itself should ideally re-parse through the schema, but that's a broader refactor — for now, consumer-side `??` / `==` is the pragmatic guard.
 
+### 2. Stamina bars rendered with no fill — Tailwind v4 JIT can't see template-interpolated class names
+
+**Symptom.** At the table the new inline-variant stamina bars rendered as bordered outlines with the `current/max` numeric centered inside, but no colored fill — neither the `--hp-*-dim` background nor the `--hp-*` fill rectangle showed any color. The bars looked like empty boxes with text.
+
+**Root cause.** `HpBar.tsx`'s inline variant used template-literal class names: `` `… bg-hp-${zone}-dim` `` and `` `… bg-hp-${zone}` ``. Tailwind v4's JIT scanner only generates CSS for class strings it can see as static literals in source. Template interpolation silently fails — the six classes (`bg-hp-good`, `bg-hp-warn`, `bg-hp-bad`, `bg-hp-good-dim`, `bg-hp-warn-dim`, `bg-hp-bad-dim`) never made it into the generated CSS bundle. Test assertions on `container.innerHTML` matching `/hp-good/` still passed because the class names *were* in the HTML — they just had no corresponding CSS rules.
+
+**Fix** ([`995272d`](../../..)). Static lookup maps for the inline variant:
+
+```ts
+const INLINE_FILL: Record<'good' | 'warn' | 'bad', string> = {
+  good: 'bg-hp-good', warn: 'bg-hp-warn', bad: 'bg-hp-bad',
+};
+const INLINE_BG: Record<'good' | 'warn' | 'bad', string> = {
+  good: 'bg-hp-good-dim', warn: 'bg-hp-warn-dim', bad: 'bg-hp-bad-dim',
+};
+```
+
+JSX consumes `${INLINE_FILL[zone]}` / `${INLINE_BG[zone]}` instead of template-interpolated names. Comment added above the maps documenting the Tailwind v4 pitfall so future passes don't reintroduce it. The legacy non-inline path's `` `bg-hp-${zone}` `` is left as-is — it sits inside a literal-string ternary structure that the scanner already picks up via the existing branches.
+
+**Lesson.** Tailwind v4 JIT requires literal class strings. Any time a class name is composed from a variable, hoist the variants into a static `Record<KeyEnum, 'class-name'>` map so the scanner sees every literal. Template interpolation will compile and pass tests but silently produce empty CSS.
+
 ### Maintenance note
 
 Future post-shipping fixes to Pass 2b2a layer the same way: append a numbered entry to this PS section with a one-line symptom, a one-paragraph fix, and the relevant commit SHA. Once a follow-up entry has shipped *and* been verified in real use, leave it in place — the doc is the historical record, not a TODO list.
