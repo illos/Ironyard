@@ -31,11 +31,13 @@ import { buildIntent } from '../../api/dispatch';
 import { useCampaign, useMe, useMonsters } from '../../api/queries';
 import { useIsActingAsDirector } from '../../lib/active-director';
 import { describeIntent, findLatestUndoable } from '../../lib/intentDescribe';
+import { HEROIC_RESOURCES } from '@ironyard/rules';
 import { Button, SplitPane } from '../../primitives';
 import { InlineHeader } from './combat-header/InlineHeader';
 import { isParticipantEntry, useSessionSocket } from '../../ws/useSessionSocket';
 import { DetailPane } from './detail';
 import { EncounterRail } from './EncounterRail';
+import { RollInitiativeOverlay } from './initiative';
 import { OpenActionsList } from './OpenActionsList';
 import { PartyRail } from './PartyRail';
 import { type Toast, ToastStack } from './ToastStack';
@@ -218,6 +220,13 @@ export function DirectorCombat() {
   // before isActingAsDirector resolves). Director focus is the bare selectedId.
   const effectiveSelectedId =
     viewerRole === 'player' && selfParticipantId ? selfParticipantId : selectedId;
+
+  // Phase 5 Pass 2b1 — zipper-initiative picking-phase state.
+  // Must live ABOVE guard-returns (Rules of Hooks).
+  const firstSide = activeEncounter?.firstSide ?? null;
+  const currentPickingSide = activeEncounter?.currentPickingSide ?? null;
+  const actedThisRound = activeEncounter?.actedThisRound ?? [];
+  const viewerId = me.data?.user.id ?? null;
 
   // ── header guards ─────────────────────────────────────────────────────────
   if (me.isLoading || campaign.isLoading) {
@@ -412,6 +421,33 @@ export function DirectorCombat() {
     send(IntentTypes.EndEncounter, { encounterId: activeEncounter.encounterId });
   };
 
+  // Phase 5 Pass 2b1 — zipper-initiative dispatchers.
+  const handlePickNextActor = useCallback(
+    (participantId: string) => {
+      const participant = activeEncounter?.participants.find(
+        (p): p is Participant => 'id' in p && p.id === participantId,
+      );
+      if (!participant) return;
+      const resource = participant.heroicResources[0];
+      const config = resource ? HEROIC_RESOURCES[resource.name] : undefined;
+      const needsD3 = config?.baseGain.onTurnStart.kind === 'd3';
+      const payload = needsD3
+        ? { participantId, rolls: { d3: 1 + Math.floor(Math.random() * 3) } }
+        : { participantId };
+      send(IntentTypes.PickNextActor, payload);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [activeEncounter],
+  );
+
+  const handleRollInitiative = useCallback(
+    (payload: { winner: 'heroes' | 'foes'; surprised: string[]; rolledD10?: number }) => {
+      send(IntentTypes.RollInitiative, payload);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
   // ── empty / pre-round states (no SplitPane yet) ───────────────────────────
   if (!activeEncounter) {
     return (
@@ -537,6 +573,9 @@ export function DirectorCombat() {
         activeParticipantName={
           (participants.find((p) => p.id === activeEncounter?.activeParticipantId)?.name) ?? null
         }
+        pickingSide={
+          currentPickingSide && !activeEncounter?.activeParticipantId ? currentPickingSide : null
+        }
         onStartRound={handleStartRound}
         onEndTurn={handleEndTurn}
         onEndRound={handleEndRound}
@@ -553,7 +592,7 @@ export function DirectorCombat() {
         gap={14}
         className="flex-1 min-h-0 p-3.5"
         left={
-          <>
+          <div className="relative flex flex-col gap-1">
             <PartyRail
               heroes={heroes}
               activeParticipantId={activeEncounter.activeParticipantId}
@@ -563,6 +602,11 @@ export function DirectorCombat() {
               viewerRole={viewerRole}
               selfParticipantId={selfParticipantId}
               targetParticipantId={targetParticipantId}
+              currentPickingSide={currentPickingSide}
+              actedThisRound={actedThisRound}
+              viewerId={viewerId}
+              isActingAsDirector={isActingAsDirector}
+              onPick={handlePickNextActor}
             />
             <EncounterRail
               foes={liveFoes}
@@ -573,8 +617,20 @@ export function DirectorCombat() {
               viewerRole={viewerRole}
               selfParticipantId={selfParticipantId}
               targetParticipantId={targetParticipantId}
+              currentPickingSide={currentPickingSide}
+              actedThisRound={actedThisRound}
+              viewerId={viewerId}
+              isActingAsDirector={isActingAsDirector}
+              onPick={handlePickNextActor}
             />
-          </>
+            {activeEncounter && firstSide === null && (
+              <RollInitiativeOverlay
+                participants={participants}
+                isActingAsDirector={isActingAsDirector}
+                onRoll={handleRollInitiative}
+              />
+            )}
+          </div>
         }
         right={
           <>
