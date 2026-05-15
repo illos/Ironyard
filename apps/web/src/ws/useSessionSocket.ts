@@ -13,13 +13,16 @@ import {
   type LoadEncounterTemplatePayload,
   type MaliceState,
   type MarkActionUsedPayload,
+  type MarkSurprisedPayload,
   type Member,
   type Monster,
   type OpenAction,
   type Participant,
+  type PickNextActorPayload,
   type RemoveConditionPayload,
   type RemoveParticipantPayload,
   type ResourceRef,
+  type RollInitiativePayload,
   type RollPowerPayload,
   ServerMsgSchema,
   type SetConditionPayload,
@@ -86,11 +89,12 @@ export function isParticipantEntry(e: RosterEntry): e is Participant {
 export type ActiveEncounter = {
   encounterId: string;
   participants: RosterEntry[];
-  // Slice 11 mirror additions — surface the live turn state for the play screen.
   currentRound: number | null;
-  turnOrder: string[];
+  turnOrder: string[];                                  // deprecated; removed in Task 12
   activeParticipantId: string | null;
-  // Slice 7 mirror addition — Director's Malice (canon §5.5).
+  firstSide: 'heroes' | 'foes' | null;
+  currentPickingSide: 'heroes' | 'foes' | null;
+  actedThisRound: string[];
   malice: MaliceState;
 };
 
@@ -130,6 +134,9 @@ function reflect(
       currentRound: null,
       turnOrder: [],
       activeParticipantId: null,
+      firstSide: null,
+      currentPickingSide: null,
+      actedThisRound: [],
       malice: { current: 0, lastMaliciousStrikeRound: null },
     };
   }
@@ -185,14 +192,22 @@ function reflect(
     return {
       ...prev,
       currentRound: next,
-      activeParticipantId: prev.turnOrder[0] ?? null,
+      currentPickingSide: prev.firstSide,
+      actedThisRound: [],
+      activeParticipantId: null,
     };
   }
 
   if (type === IntentTypes.EndRound) {
+    const wasRoundOne = prev.currentRound === 1;
     return {
       ...prev,
       activeParticipantId: null,
+      participants: wasRoundOne
+        ? prev.participants.map((p) =>
+            isParticipantEntry(p) && p.surprised ? { ...p, surprised: false } : p,
+          )
+        : prev.participants,
     };
   }
 
@@ -202,12 +217,58 @@ function reflect(
   }
 
   if (type === IntentTypes.EndTurn) {
-    // EndTurn payload is empty per the schema; advance to next in turnOrder.
     void (payload as EndTurnPayload);
-    const idx =
-      prev.activeParticipantId === null ? -1 : prev.turnOrder.indexOf(prev.activeParticipantId);
-    const nextId = idx >= 0 && idx + 1 < prev.turnOrder.length ? prev.turnOrder[idx + 1] : null;
-    return { ...prev, activeParticipantId: nextId ?? null };
+    // Pure derivation matches the engine — see `nextPickingSide` in state-helpers.ts.
+    const acted = new Set(prev.actedThisRound);
+    let unactedHeroes = 0;
+    let unactedFoes = 0;
+    for (const p of prev.participants) {
+      if (!isParticipantEntry(p) || acted.has(p.id)) continue;
+      if (p.kind === 'pc') unactedHeroes++;
+      else unactedFoes++;
+    }
+    let next: 'heroes' | 'foes' | null;
+    if (unactedHeroes === 0 && unactedFoes === 0) next = null;
+    else if (unactedHeroes === 0) next = 'foes';
+    else if (unactedFoes === 0) next = 'heroes';
+    else next = prev.currentPickingSide === 'heroes' ? 'foes' : 'heroes';
+    return {
+      ...prev,
+      activeParticipantId: null,
+      currentPickingSide: next,
+    };
+  }
+
+  if (type === IntentTypes.RollInitiative) {
+    const { winner, surprised } = payload as RollInitiativePayload;
+    return {
+      ...prev,
+      firstSide: winner,
+      currentPickingSide: winner,
+      actedThisRound: [],
+      participants: prev.participants.map((p) =>
+        isParticipantEntry(p) && surprised.includes(p.id) ? { ...p, surprised: true } : p,
+      ),
+    };
+  }
+
+  if (type === IntentTypes.PickNextActor) {
+    const { participantId } = payload as PickNextActorPayload;
+    return {
+      ...prev,
+      actedThisRound: [...prev.actedThisRound, participantId],
+      activeParticipantId: participantId,
+    };
+  }
+
+  if (type === IntentTypes.MarkSurprised) {
+    const { participantId, surprised } = payload as MarkSurprisedPayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) =>
+        isParticipantEntry(p) && p.id === participantId ? { ...p, surprised } : p,
+      ),
+    };
   }
 
   if (type === IntentTypes.ApplyDamage) {
@@ -530,6 +591,9 @@ function snapshotToEncounter(state: unknown): ActiveEncounter | null {
     currentRound?: number | null;
     turnOrder?: string[];
     activeParticipantId?: string | null;
+    firstSide?: 'heroes' | 'foes' | null;
+    currentPickingSide?: 'heroes' | 'foes' | null;
+    actedThisRound?: string[];
     malice?: MaliceState;
   };
 
@@ -543,6 +607,9 @@ function snapshotToEncounter(state: unknown): ActiveEncounter | null {
     currentRound: enc.currentRound ?? null,
     turnOrder: enc.turnOrder ?? [],
     activeParticipantId: enc.activeParticipantId ?? null,
+    firstSide: enc.firstSide ?? null,
+    currentPickingSide: enc.currentPickingSide ?? null,
+    actedThisRound: enc.actedThisRound ?? [],
     malice: enc.malice ?? { current: 0, lastMaliciousStrikeRound: null },
   };
 }
