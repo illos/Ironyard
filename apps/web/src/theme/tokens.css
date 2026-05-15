@@ -52,6 +52,30 @@
 
   /* Card shadow — flat by default; Pass 1 ships no elevation */
   --shadow-card: none;
+
+  /* Pass 2b2a — monster rank palette (categorical) */
+  --rank-min: oklch(0.74 0.004 80);            /* neutral gray */
+  --rank-hor: oklch(0.72 0.10 150);            /* green */
+  --rank-pla: oklch(0.74 0.10 200);            /* teal */
+  --rank-eli: oklch(0.78 0.12 280);            /* violet */
+  --rank-led: oklch(0.78 0.14 60);             /* amber */
+  --rank-sol: oklch(0.66 0.22 25);             /* foe-red */
+
+  /* Pass 2b2a — per-condition palette (nine distinct hues) */
+  --cond-bleed:  oklch(0.66 0.22 25);          /* red       — DoT */
+  --cond-daze:   oklch(0.74 0.14 290);         /* violet    — mental */
+  --cond-fright: oklch(0.74 0.14 330);         /* magenta   — fear */
+  --cond-grab:   oklch(0.78 0.14 60);          /* amber     — physical hold */
+  --cond-prone:  oklch(0.74 0.10 90);          /* olive     — physical */
+  --cond-restr:  oklch(0.70 0.14 40);          /* orange    — physical hold */
+  --cond-slow:   oklch(0.78 0.14 130);         /* yellow-green — mobility */
+  --cond-taunt:  oklch(0.78 0.14 250);         /* blue      — mental */
+  --cond-weak:   oklch(0.72 0.06 240);         /* gray-blue — debuff */
+
+  /* Pass 2b2a — desaturated HP zone pairs for the inline-variant stamina bar */
+  --hp-good-dim: oklch(0.50 0.12 150);
+  --hp-warn-dim: oklch(0.55 0.14 60);
+  --hp-bad-dim:  oklch(0.42 0.18 25);
 }
 
 :root[data-theme="light"] {
@@ -127,12 +151,32 @@
   --color-hp-good: var(--hp-good);
   --color-hp-warn: var(--hp-warn);
   --color-hp-bad: var(--hp-bad);
+  --color-hp-good-dim: var(--hp-good-dim);
+  --color-hp-warn-dim: var(--hp-warn-dim);
+  --color-hp-bad-dim: var(--hp-bad-dim);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
   --color-accent-glow: var(--accent-glow);
   --color-pk: var(--pk, var(--accent));
   --color-pk-strong: var(--pk-strong, var(--accent-strong));
   --color-pk-glow: var(--pk-glow, var(--accent-glow));
+
+  --color-rank-min: var(--rank-min);
+  --color-rank-hor: var(--rank-hor);
+  --color-rank-pla: var(--rank-pla);
+  --color-rank-eli: var(--rank-eli);
+  --color-rank-led: var(--rank-led);
+  --color-rank-sol: var(--rank-sol);
+
+  --color-cond-bleed:  var(--cond-bleed);
+  --color-cond-daze:   var(--cond-daze);
+  --color-cond-fright: var(--cond-fright);
+  --color-cond-grab:   var(--cond-grab);
+  --color-cond-prone:  var(--cond-prone);
+  --color-cond-restr:  var(--cond-restr);
+  --color-cond-slow:   var(--cond-slow);
+  --color-cond-taunt:  var(--cond-taunt);
+  --color-cond-weak:   var(--cond-weak);
 
   --font-sans: "Geist", system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
