@@ -4,6 +4,7 @@ import { CharacteristicsSchema } from './characteristic';
 import { ConditionInstanceSchema } from './condition';
 import { TypedResistanceSchema } from './damage';
 import { ExtraResourceInstanceSchema, HeroicResourceInstanceSchema } from './resource';
+import { ParticipantStateOverrideSchema } from './stamina-override';
 
 // Quick stat block. Phase 1 ships PCs as form-built blocks; later phases swap
 // PCs in by character id from the D1 `characters` table, but the in-encounter
@@ -26,10 +27,11 @@ export const ParticipantSchema = z.object({
   // PC and monster shapes share one source of truth. Defaults to 1 so existing
   // payloads that omit the field still parse — slice-5 fixtures don't change.
   level: z.number().int().min(0).max(20).default(1),
-  // currentStamina ≥ 0 in slice 3 but heroes can go negative when dying per
-  // canon §2.8. The healing intent reads `currentStamina` straight; we don't
-  // tighten or loosen the constraint here in slice 7.
-  currentStamina: z.number().int().min(0),
+  // Pass 3 Slice 1 — bound relaxed from .min(0). Heroes go negative when
+  // dying per canon §2.8 (currentStamina ≤ 0 → dying; ≤ -windedValue → dead).
+  // applyDamageStep clamps the lower bound at -maxStamina-1 (sentinel) when
+  // explicit death-state transitions resolve.
+  currentStamina: z.number().int(),
   maxStamina: z.number().int().min(1),
   characteristics: CharacteristicsSchema,
   immunities: z.array(TypedResistanceSchema).default([]),
@@ -107,5 +109,22 @@ export const ParticipantSchema = z.object({
   // Phase 5 Pass 2b2a — PC class display name stamped at StartEncounter from
   // the character blob. Null on monster participants and pre-2b2a snapshots.
   className: z.string().nullable().default(null),
+  // Pass 3 Slice 1 — canon §2.7-2.9 state machine.
+  // Derived from currentStamina + staminaOverride via recomputeStaminaState.
+  // The reducer recomputes after every stamina-mutating intent and emits
+  // StaminaTransitioned when the value changes. Default 'healthy' keeps
+  // pre-slice-1 snapshots parseable; loaders re-run derivation.
+  staminaState: z
+    .enum(['healthy', 'winded', 'dying', 'dead', 'unconscious', 'inert', 'rubble', 'doomed'])
+    .default('healthy'),
+  // Per-trait override of canonical state transitions. See stamina-override.ts.
+  staminaOverride: ParticipantStateOverrideSchema.nullable().default(null),
+  // Reified from 2b.0's permissive flag. True unless explicitly ablated (e.g.
+  // force-move-to-extreme, vaporizing-damage). Slice 1 ships the field; the
+  // ablation events themselves arrive in later slices.
+  bodyIntact: z.boolean().default(true),
+  // Canon §4.10 — round-tick reset by applyEndRound. Gates triggered-action
+  // availability.
+  triggeredActionUsedThisRound: z.boolean().default(false),
 });
 export type Participant = z.infer<typeof ParticipantSchema>;
