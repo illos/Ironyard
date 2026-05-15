@@ -1,4 +1,4 @@
-import type { StaminaTransitionedPayload } from '@ironyard/shared';
+import type { Actor, StaminaTransitionedPayload } from '@ironyard/shared';
 import type { CampaignState, DerivedIntent } from '../types';
 import { isParticipant } from '../types';
 import { resolveParticipantClass } from './helpers';
@@ -12,12 +12,43 @@ import { resolveParticipantClass } from './helpers';
 // Task 16 wires the call site into stamina.ts; for now this module just
 // exposes `evaluateStaminaTransitionTriggers` as a pure subscriber.
 //
+// Purity contract: this module is pure. Any random draws (e.g. Fury Ferocity
+// 1d3) MUST be pre-rolled at the impure call site (Task 16's stamina.ts) and
+// passed via `ctx.rolls`. The reducer header (reducer.ts:80) forbids
+// Math.random inside packages/rules/src/.
+//
 // See `docs/superpowers/specs/2026-05-15-pass-3-slice-2a-…-design.md`
 // § class-δ trigger dispatch.
+
+export type StaminaTransitionTriggerContext = {
+  actor: Actor;
+  rolls: {
+    // Pre-rolled 1..3, required if a Fury winded/dying entry fires; consumers
+    // (Task 16) generate this at the impure call site.
+    ferocityD3?: number;
+  };
+};
+
 type StaminaTransitionTrigger = {
   match: (event: StaminaTransitionedPayload, state: CampaignState) => boolean;
-  fire: (event: StaminaTransitionedPayload, state: CampaignState) => DerivedIntent[];
+  fire: (
+    event: StaminaTransitionedPayload,
+    state: CampaignState,
+    ctx: StaminaTransitionTriggerContext,
+  ) => DerivedIntent[];
 };
+
+function requireFerocityD3(ctx: StaminaTransitionTriggerContext): number {
+  if (ctx.rolls.ferocityD3 === undefined) {
+    // Contract violation: a Fury entry matched but the caller did not supply
+    // a pre-rolled ferocity value. Throw to surface the bug at the call site
+    // rather than silently producing NaN downstream.
+    throw new Error(
+      'evaluateStaminaTransitionTriggers: Fury Ferocity entry fired but ctx.rolls.ferocityD3 was not supplied',
+    );
+  }
+  return ctx.rolls.ferocityD3;
+}
 
 const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
   {
@@ -30,15 +61,19 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
       if (p.perEncounterFlags.perEncounter.firstTimeWindedTriggered) return false;
       return true;
     },
-    fire: (event) => [
+    fire: (event, _state, ctx) => [
       {
-        actor: { userId: 'server', role: 'director' },
+        actor: ctx.actor,
         source: 'server',
         type: 'GainResource',
-        payload: { participantId: event.participantId, name: 'ferocity', amount: rollFerocityD3() },
+        payload: {
+          participantId: event.participantId,
+          name: 'ferocity',
+          amount: requireFerocityD3(ctx),
+        },
       },
       {
-        actor: { userId: 'server', role: 'director' },
+        actor: ctx.actor,
         source: 'server',
         type: 'SetParticipantPerEncounterLatch',
         payload: {
@@ -59,15 +94,19 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
       if (p.perEncounterFlags.perEncounter.firstTimeDyingTriggered) return false;
       return true;
     },
-    fire: (event) => [
+    fire: (event, _state, ctx) => [
       {
-        actor: { userId: 'server', role: 'director' },
+        actor: ctx.actor,
         source: 'server',
         type: 'GainResource',
-        payload: { participantId: event.participantId, name: 'ferocity', amount: rollFerocityD3() },
+        payload: {
+          participantId: event.participantId,
+          name: 'ferocity',
+          amount: requireFerocityD3(ctx),
+        },
       },
       {
-        actor: { userId: 'server', role: 'director' },
+        actor: ctx.actor,
         source: 'server',
         type: 'SetParticipantPerEncounterLatch',
         payload: {
@@ -97,7 +136,7 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
             !p.perEncounterFlags.perEncounter.troubadourAnyHeroWindedTriggered,
         );
     },
-    fire: (_event, state) => {
+    fire: (_event, state, ctx) => {
       const derived: DerivedIntent[] = [];
       for (const trou of state.participants.filter(isParticipant)) {
         if (trou.kind !== 'pc') continue;
@@ -105,13 +144,13 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
         if (trou.perEncounterFlags.perEncounter.troubadourAnyHeroWindedTriggered) continue;
         derived.push(
           {
-            actor: { userId: 'server', role: 'director' },
+            actor: ctx.actor,
             source: 'server',
             type: 'GainResource',
             payload: { participantId: trou.id, name: 'drama', amount: 2 },
           },
           {
-            actor: { userId: 'server', role: 'director' },
+            actor: ctx.actor,
             source: 'server',
             type: 'SetParticipantPerEncounterLatch',
             payload: {
@@ -137,13 +176,13 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
         .filter(isParticipant)
         .some((p) => p.kind === 'pc' && resolveParticipantClass(state, p) === 'troubadour');
     },
-    fire: (_event, state) => {
+    fire: (_event, state, ctx) => {
       const derived: DerivedIntent[] = [];
       for (const trou of state.participants.filter(isParticipant)) {
         if (trou.kind !== 'pc') continue;
         if (resolveParticipantClass(state, trou) !== 'troubadour') continue;
         derived.push({
-          actor: { userId: 'server', role: 'director' },
+          actor: ctx.actor,
           source: 'server',
           type: 'GainResource',
           payload: { participantId: trou.id, name: 'drama', amount: 10 },
@@ -161,9 +200,9 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
       if (!p || p.kind !== 'pc') return false;
       return resolveParticipantClass(state, p) === 'troubadour';
     },
-    fire: (event) => [
+    fire: (event, _state, ctx) => [
       {
-        actor: { userId: 'server', role: 'director' },
+        actor: ctx.actor,
         source: 'server',
         type: 'SetParticipantPosthumousDramaEligible',
         payload: { participantId: event.participantId, value: true },
@@ -175,15 +214,9 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
 export function evaluateStaminaTransitionTriggers(
   event: StaminaTransitionedPayload,
   state: CampaignState,
+  ctx: StaminaTransitionTriggerContext,
 ): DerivedIntent[] {
   return STAMINA_TRANSITION_TRIGGERS.flatMap((t) =>
-    t.match(event, state) ? t.fire(event, state) : [],
+    t.match(event, state) ? t.fire(event, state, ctx) : [],
   );
-}
-
-// Server-side 1d3 roll for Fury Ferocity gains. Phase 4 swap to authoritative
-// server-side rolls; today the engine generates the value here so the WS-mirror
-// reflection sees the same number that landed in state.
-function rollFerocityD3(): number {
-  return Math.floor(Math.random() * 3) + 1;
 }
