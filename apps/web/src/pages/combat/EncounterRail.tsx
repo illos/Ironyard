@@ -1,5 +1,6 @@
 import type { Participant } from '@ironyard/shared';
 import { ParticipantRow, Section } from '../../primitives';
+import { ConditionGlyphs } from './ConditionGlyph';
 import { initials, roleReadoutFor } from './rails/rail-utils';
 import { RoleReadout } from './rails/RoleReadout';
 import { derivePickAffordance } from './initiative';
@@ -62,6 +63,7 @@ export function EncounterRail({
               sigil={initials(f.name)}
               name={f.name}
               role={isGated ? null : <RoleReadout data={roleReadoutFor(f)} />}
+              conditions={<ConditionGlyphs conditions={f.conditions} />}
               staminaCurrent={f.currentStamina}
               staminaMax={f.maxStamina}
               active={selectedParticipantId === f.id}

@@ -1,5 +1,6 @@
 import type { Participant } from '@ironyard/shared';
 import { ParticipantRow, Section } from '../../primitives';
+import { ConditionGlyphs } from './ConditionGlyph';
 import { initials, roleReadoutFor } from './rails/rail-utils';
 import { RoleReadout } from './rails/RoleReadout';
 import { HeroResourceCell } from './rails/HeroResourceCell';
@@ -64,6 +65,7 @@ export function PartyRail({
               sigil={initials(h.name)}
               name={h.name}
               role={isGated ? null : <RoleReadout data={roleReadoutFor(h)} />}
+              conditions={<ConditionGlyphs conditions={h.conditions} />}
               resource={<HeroResourceCell participant={h} />}
               recoveries={<HeroRecoveriesCell participant={h} />}
               staminaCurrent={h.currentStamina}
