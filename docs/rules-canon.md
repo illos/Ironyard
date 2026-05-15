@@ -271,6 +271,8 @@ Combat.md:643: "Some effects can also reduce your Stamina maximum, limiting the 
 
 Combat.md:649–653.
 
+> **Engine:** state machine implemented in `packages/rules/src/stamina.ts` and orchestrated through `packages/rules/src/damage.ts` (Pass 3 Slice 1, 2026-05-15). See [slice 1 spec](superpowers/specs/2026-05-15-pass-3-slice-1-damage-state-machine-design.md).
+
 - `windedValue = floor(staminaMax / 2)`.
 - The character is **winded** while `currentStamina ≤ windedValue` and `currentStamina > 0` (heroes), or `currentStamina ≤ windedValue` and `currentStamina > 0` for any creature. (Dying is a separate state for stamina ≤ 0; see § 2.8.)
 - Winded itself has **no inherent effect**. It's a flag that other abilities key on ("when winded, …").
@@ -280,6 +282,8 @@ Combat.md:649–653.
 ### 2.8 Dying and death
 
 Combat.md:655–667.
+
+> **Engine:** state machine implemented in `packages/rules/src/stamina.ts` and orchestrated through `packages/rules/src/damage.ts` (Pass 3 Slice 1, 2026-05-15). See [slice 1 spec](superpowers/specs/2026-05-15-pass-3-slice-1-damage-state-machine-design.md).
 
 **For heroes:**
 
@@ -299,6 +303,8 @@ Combat.md:655–667.
 ### 2.9 Knock-out / unconscious
 
 Combat.md:669–679.
+
+> **Engine:** state machine implemented in `packages/rules/src/stamina.ts` and orchestrated through `packages/rules/src/damage.ts` (Pass 3 Slice 1, 2026-05-15). See [slice 1 spec](superpowers/specs/2026-05-15-pass-3-slice-1-damage-state-machine-design.md).
 
 - When damage would kill a creature, the attacker can **choose** to knock them unconscious instead.
 - Unconscious creature:
@@ -679,6 +685,8 @@ The conditions in § 3 that touch the action-economy gate, and where:
 | **Surprised** | No triggered actions or free triggered actions until end of round 1. (§ 4.1.) |
 
 ### 4.10 Engine turn state machine
+
+> **Engine:** critical-hit extra-main-action rule implemented in `packages/rules/src/intents/roll-power.ts` + `grant-extra-main-action.ts` (Pass 3 Slice 1).
 
 For each creature's turn the reducer maintains:
 

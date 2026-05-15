@@ -306,7 +306,7 @@ Bleeding does, however, contain a strong hint about its own intended behavior: C
 
 ---
 
-## Q10. Cross-side ordering of simultaneous triggered actions 🟡
+## Q10. Cross-side ordering of simultaneous triggered actions ✅
 
 **Cited from:** `rules-canon.md` § 4.3, § 4.10.
 
@@ -326,15 +326,13 @@ The rulebook describes intra-side ordering for both sides, but the cross-side or
 - **Option D: Strict round-robin by initiative position, ignoring sides.** Both queues are interleaved by some objective ordering.
 - **Option E: Director decides cross-side order at the table.** Defer to the Director as the rules judge.
 
-**Status: 🟡 open.** No call made yet.
+**Call: Option E.** Director picks order via `ResolveTriggerOrder` intent + `CrossSideTriggerModal` UI. Pass 3 Slice 1, 2026-05-15. Default order on mount: foes first, heroes second (table-flow bias). See [slice 1 spec](superpowers/specs/2026-05-15-pass-3-slice-1-damage-state-machine-design.md).
 
-**Engine implication (until resolved).** The reducer surfaces the trigger-resolution moment as a `ResolveTriggerOrder` intent. By default, the engine presents both queues to the Director and lets the Director sequence them — Option E as a safe fallback. The engine *also* records the trigger's "side of origin" so we have the data needed to implement Option C if that's the call. Switching to Option A or B is a one-line change.
+**Reasoning.** The rulebook is silent on cross-side ordering; deferring to the Director as the arbiter is the safest fallback. The engine surfaces both queues to the Director for explicit sequencing via the `CrossSideTriggerModal` UI, allowing for tactically interesting Director choices while keeping the rulebook-unambiguous cases (intra-side ordering per the text) automatically handled.
 
-**Why this isn't urgent.** This case is genuinely rare at the table — most encounters won't have simultaneous PC + Director triggered actions firing on the same trigger. The engine's "ask the Director" fallback is non-broken for v1; we can resolve formally when an instance comes up at the table.
+**Engine implication.** § 4.10: the reducer surfaces trigger-resolution as a `ResolveTriggerOrder` intent when both sides have triggered actions on the same trigger. The Director's UI choice (modal with reorderable queues) sets the sequence. The engine records the trigger's "side of origin" in the pending set; the default mount order (foes first, heroes second) applies only if the Director doesn't manually reorder.
 
-**To resolve:** print-rulebook check (does an erratum or a later printing clarify?), or by table convention if we'd rather lock a rule than wait.
-
-Searched PDFs 2026-05-12, no additional rule text found — Heroes Book p.267 (extract line 19815) reproduces the SteelCompendium markdown verbatim. The PDF likewise stops at "any heroes ... decide among themselves ... Then the Director decides the same for creatures they control" and is silent on cross-side ordering.
+**To revisit if:** play reveals the Director-choice model is too noisy or the table prefers a deterministic rule (Option A or B) over case-by-case decision.
 
 ---
 
@@ -487,7 +485,7 @@ This **reverses the earlier provisional Call A** (EoT default). The intuition th
 
 ---
 
-## Q16. Revenant Tough But Withered — out-of-scope mechanics 🟡
+## Q16. Revenant Tough But Withered — inert state, fire-while-inert death, 12h Stamina recovery ✅
 
 **Cited from:** `rules-canon.md` § 10.1.
 
@@ -500,19 +498,11 @@ This **reverses the earlier provisional Call A** (EoT default). The intuition th
 
 **Source.** `.reference/data-md/Rules/Ancestries/Revenant.md` Signature Trait block (printed Heroes Book confirmed by user 2026-05-12).
 
-**Engine implication today.** None of these are auto-applied. The engine's damage pipeline currently stops at "Slice 3 subset" (weakness → immunity → stamina; see `packages/rules/src/damage.ts:3-5`). Winded / dying / dead transitions are deferred to a later slice — and Revenant's *inert* state is a per-ancestry override that has to layer on top of whatever dying transition the engine ends up modeling. Until that lands, a Revenant at negative-winded must be narrated manually.
+**Call.** Inert is implemented as a `ParticipantStateOverride` (`kind: 'inert', source: 'revenant'`) that intercepts the `→ dying` transition. Fire damage while inert triggers instant death per canon. The 12h Stamina recovery is data on the override (`regainHours: 12, regainAmount: 'recoveryValue'`) cleared via the director's `ClearParticipantOverride` intent when the table agrees in-fiction time has passed. Pass 3 Slice 1, 2026-05-15.
 
-**Why this isn't a § 10 (CharacterAttachment) concern.** § 10 models stat/effect folding into derived runtime (`maxStamina`, `immunities`, etc.). The Revenant mechanics above are *behavioral changes* to game-mechanic state transitions, not runtime stat mods. Trying to encode "replaces dying with inert" as an `AttachmentEffect` variant would require modeling state machines in attachments, which would be the wrong abstraction.
+**Engine implication.** § 2.7–2.9: Revenant ancestry ID gates the inert state machine override in the damage pipeline. When a Revenant PC's stamina reaches `-winded`, the dying-state emission is intercepted and replaced with inert state instead. Fire damage checks the override's fire-while-inert flag and applies instant death if active. The override's duration data (`regainHours`, `regainAmount`) is tracked alongside the Participant and cleared by the director via `ClearParticipantOverride` as narrative time passes.
 
-**Right homes (when those engine sections exist):**
-- Inert / fire-death / 12-h recovery → `rules-canon.md § 2.7-2.9` (winded / dying transitions) once those sections land in the damage engine. Revenant's ancestry id will gate per-character override behavior.
-- Suffocation / no eat-drink → out of scope for the engine; narrative only.
-
-**Status.** 🟡 open. No action required for Epic 2B close; revisit when § 2.7+ (winded/dying transitions) lands.
-
-**To revisit if:** the damage engine grows past its Slice 3 subset to handle winded/dying transitions, OR a Revenant character actually hits negative-winded in a real session and the table needs engine support.
-
-Searched PDFs 2026-05-12, no additional rule text found — Heroes Book Revenant Signature Trait (extract lines 4061–4072) reproduces the same mechanics already cited in this entry (inert state replaces dying, fire-while-inert insta-death, 12-h Stamina recovery, no suffocation / no eat-drink). The question is an engine-gap question (no current `winded/dying` pipeline to host these mechanics), not a source-text ambiguity, so the PDFs don't resolve it.
+**To revisit if:** a table plays a Revenant and the inert-state UX needs refinement (e.g. showing the 12h timer or recovery-value estimate on the sheet).
 
 ---
 
@@ -582,6 +572,28 @@ Searched PDFs 2026-05-12, no additional rule text found — Heroes Book ancestry
 **To revisit if:** a table actually plays a Conduit/Censor/Talent/etc. character and notices the missing stat bonuses, OR a future epic specifically targets class-feature completeness.
 
 Searched PDFs 2026-05-12, no additional rule text found — Heroes Book Conduit Prayers (extract lines 7866–7886) and Censor Domain Features (extract lines 6486–6495) confirm the mechanics already enumerated. The question is an engine-gap question (schema slot + parser path + override-map shape all missing), not a source-text ambiguity, so the PDFs don't resolve it.
+
+---
+
+## Q-doomed. Hakaan Doomsight (rubble + doomed) and Title *Doomed* mechanics ✅
+
+**Question.** Hakaan's signature trait *Doomsight* enables two kinds of doomed states (rubble on KO, and player-activated doomed), and the *Doomed* title permits a third variant. How are these implemented as state machines?
+
+**Source.** Printed Heroes Book: Hakaan ancestry signature trait *Doomsight* (enables `BecomeDoomed` intent and sets `rubble` override on unconsciousness at negative-stamina threshold); *Doomed* title (offers doomed opt-in at stamina ≤ 0 while conscious).
+
+**Call.** Three damage-state overrides implemented in Pass 3 Slice 1:
+
+- **Hakaan rubble** — `ParticipantStateOverride { kind: 'rubble', source: 'hakaan-doomsight' }`. Intercepts `→ dead` for Hakaan PCs with the Doomsight purchased trait. Stamina state holds at `'rubble'`; 12h recovery via director's `ClearParticipantOverride`.
+- **Hakaan doomed** — `ParticipantStateOverride { kind: 'doomed', source: 'hakaan-doomsight', canRegainStamina: true, autoTier3OnPowerRolls: true, staminaDeathThreshold: 'none', dieAtEncounterEnd: true }`. Set via the player-pressed `BecomeDoomed` intent (button on the player sheet) any time during an encounter. Doesn't die from stamina; dies at encounter end.
+- **Title Doomed** — `ParticipantStateOverride { kind: 'doomed', source: 'title-doomed', canRegainStamina: false, autoTier3OnPowerRolls: true, staminaDeathThreshold: 'staminaMax', dieAtEncounterEnd: true }`. Offered as `title-doomed-opt-in` Open Action when a PC with the Title equipped reaches `currentStamina ≤ 0` while conscious. Different from Hakaan: can't regain Stamina, dies at -staminaMax.
+
+Plus **Curse of Punishment** complication as a fourth concrete plug via `kind: 'extra-dying-trigger'` — recoveries-exhausted forces dying regardless of stamina; clears automatically when recoveries refill via Respite.
+
+See [slice 1 spec](superpowers/specs/2026-05-15-pass-3-slice-1-damage-state-machine-design.md). Power-roll umbrella clarification (ability roll vs test) verified with user against the printed Heroes Book.
+
+**Engine implication.** § 2.7–2.9: the damage pipeline checks for active `ParticipantStateOverride` instances on each participant and gates state transitions accordingly. Hakaan rubble intercepts the `-winded → dead` transition and holds stamina state at `'rubble'` until cleared. Both doomed variants prevent stamina-driven death (the first with recovery allowed, the second without); both trigger a forced `→ dying` transition at encounter end via the `EndEncounter` reducer. The `BecomeDoomed` intent is player-dispatchable and stores the override on the participant; `ClearParticipantOverride` is director-only. `title-doomed-opt-in` opens as an Open Action and dispatches `BecomeDoomed` if the player accepts.
+
+**To revisit if:** a table plays Hakaan / Title doomed and the UX needs refinement (e.g. clearer rubble vs doomed state indicators, better "died at encounter end" messaging).
 
 ---
 
