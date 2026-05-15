@@ -22,6 +22,7 @@ import { pcFreeStrike } from '../../../data/monsterAbilities';
 import { useLongPress } from '../../../lib/longPress';
 import { Button, Section } from '../../../primitives';
 import { AbilityCard } from '../AbilityCard';
+import { MonsterStatBlock } from './MonsterStatBlock';
 import { isParticipantEntry, useSessionSocket } from '../../../ws/useSessionSocket';
 import { InventoryPanel } from '../inventory/InventoryPanel';
 import { SwapKitModal } from '../inventory/SwapKitModal';
@@ -163,6 +164,8 @@ export function FullSheetTab({
           ))}
         </dl>
       </Section>
+
+      {focused.kind === 'monster' && <MonsterStatBlock participant={focused} />}
 
       <Section
         heading="Abilities"
