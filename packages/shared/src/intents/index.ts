@@ -112,14 +112,12 @@ export type { StartSessionPayload } from './start-session';
 export {
   EndRoundPayloadSchema,
   EndTurnPayloadSchema,
-  SetInitiativePayloadSchema,
   StartRoundPayloadSchema,
   StartTurnPayloadSchema,
 } from './turn';
 export type {
   EndRoundPayload,
   EndTurnPayload,
-  SetInitiativePayload,
   StartRoundPayload,
   StartTurnPayload,
 } from './turn';
@@ -174,7 +172,6 @@ export const IntentTypes = {
   RollPower: 'RollPower',
   RollResistance: 'RollResistance',
   SetCondition: 'SetCondition',
-  SetInitiative: 'SetInitiative',
   SetResource: 'SetResource',
   SetStamina: 'SetStamina',
   SpendHeroToken: 'SpendHeroToken',

@@ -90,7 +90,6 @@ export type ActiveEncounter = {
   encounterId: string;
   participants: RosterEntry[];
   currentRound: number | null;
-  turnOrder: string[];                                  // deprecated; removed in Task 12
   activeParticipantId: string | null;
   firstSide: 'heroes' | 'foes' | null;
   currentPickingSide: 'heroes' | 'foes' | null;
@@ -132,7 +131,6 @@ function reflect(
       encounterId: encounterId ?? '',
       participants: [],
       currentRound: null,
-      turnOrder: [],
       activeParticipantId: null,
       firstSide: null,
       currentPickingSide: null,
@@ -183,7 +181,6 @@ function reflect(
       participants: prev.participants.filter(
         (p) => !isParticipantEntry(p) || p.id !== participantId,
       ),
-      turnOrder: prev.turnOrder.filter((id) => id !== participantId),
     };
   }
 
@@ -589,7 +586,6 @@ function snapshotToEncounter(state: unknown): ActiveEncounter | null {
     id?: string;
     participants?: RosterEntry[];
     currentRound?: number | null;
-    turnOrder?: string[];
     activeParticipantId?: string | null;
     firstSide?: 'heroes' | 'foes' | null;
     currentPickingSide?: 'heroes' | 'foes' | null;
@@ -605,7 +601,6 @@ function snapshotToEncounter(state: unknown): ActiveEncounter | null {
     encounterId: enc.id,
     participants,
     currentRound: enc.currentRound ?? null,
-    turnOrder: enc.turnOrder ?? [],
     activeParticipantId: enc.activeParticipantId ?? null,
     firstSide: enc.firstSide ?? null,
     currentPickingSide: enc.currentPickingSide ?? null,

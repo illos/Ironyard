@@ -61,13 +61,7 @@ export function applyRemoveParticipant(state: CampaignState, intent: StampedInte
   const newParticipants = state.participants.filter(
     (p) => !isParticipant(p) || p.id !== participantId,
   );
-  const newEncounter =
-    state.encounter === null
-      ? null
-      : {
-          ...state.encounter,
-          turnOrder: state.encounter.turnOrder.filter((id) => id !== participantId),
-        };
+  const newEncounter = state.encounter === null ? null : { ...state.encounter };
 
   return {
     state: {

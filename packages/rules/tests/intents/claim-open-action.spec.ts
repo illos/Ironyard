@@ -13,7 +13,7 @@ function stateWithOA(opts: { participantId: string; ownerId: string }) {
   const s = baseState({
     currentSessionId: 'sess-1',
     participants: [pc, pcOther],
-    encounter: makeRunningEncounterPhase('enc-1', { turnOrder: [opts.participantId, 'pc-other'] }),
+    encounter: makeRunningEncounterPhase('enc-1'),
   });
   s.openActions = [
     {

@@ -15,7 +15,7 @@ function baseStateWithEncounter() {
   return baseState({
     currentSessionId: 'sess-1',
     participants: [hero],
-    encounter: makeRunningEncounterPhase('enc-1', { turnOrder: [PC_ID] }),
+    encounter: makeRunningEncounterPhase('enc-1'),
   });
 }
 

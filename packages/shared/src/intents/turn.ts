@@ -26,7 +26,3 @@ export const EndTurnPayloadSchema = z
   .strict();
 export type EndTurnPayload = z.infer<typeof EndTurnPayloadSchema>;
 
-export const SetInitiativePayloadSchema = z.object({
-  order: z.array(z.string().min(1)),
-});
-export type SetInitiativePayload = z.infer<typeof SetInitiativePayloadSchema>;

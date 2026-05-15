@@ -37,7 +37,6 @@ describe('active-ability expiry', () => {
     const state = baseState({
       participants: [alice, bob],
       encounter: makeRunningEncounterPhase(ENC, {
-        turnOrder: [alice.id, bob.id],
         activeParticipantId: alice.id,
       }),
     });
@@ -75,7 +74,6 @@ describe('active-ability expiry', () => {
     const state = baseState({
       participants: [alice],
       encounter: makeRunningEncounterPhase(ENC, {
-        turnOrder: [alice.id],
         activeParticipantId: alice.id,
       }),
     });
@@ -115,7 +113,7 @@ describe('active-ability expiry', () => {
 
     const state = baseState({
       participants: [alice],
-      encounter: makeRunningEncounterPhase(ENC, { turnOrder: [alice.id] }),
+      encounter: makeRunningEncounterPhase(ENC),
     });
 
     const result = applyIntent(

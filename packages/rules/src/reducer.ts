@@ -35,7 +35,6 @@ import {
   applyRollPower,
   applyRollResistance,
   applySetCondition,
-  applySetInitiative,
   applySetResource,
   applySetStamina,
   applySpendHeroToken,
@@ -151,8 +150,6 @@ export function applyIntent(
       return applyRollResistance(state, intent);
     case IntentTypes.SetCondition:
       return applySetCondition(state, intent);
-    case IntentTypes.SetInitiative:
-      return applySetInitiative(state, intent);
     case IntentTypes.SetResource:
       return applySetResource(state, intent);
     case IntentTypes.SetStamina:

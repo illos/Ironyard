@@ -45,7 +45,7 @@ function readyState(round: number | null = 1): CampaignState {
     encounter: {
       id: 'e1', currentRound: round,
       firstSide: null, currentPickingSide: null, actedThisRound: [],
-      turnOrder: [], activeParticipantId: null,
+      activeParticipantId: null,
       turnState: {}, malice: { current: 0, lastMaliciousStrikeRound: null },
     },
   };

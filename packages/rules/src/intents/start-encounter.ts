@@ -158,7 +158,6 @@ export function applyStartEncounter(
   const encounter: EncounterPhase = {
     id: encounterId,
     currentRound: 1,
-    turnOrder: allParticipants.map((p) => p.id),
     activeParticipantId: null,
     turnState: {},
     malice: { current: initialMalice, lastMaliciousStrikeRound: null },

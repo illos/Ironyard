@@ -92,7 +92,6 @@ function ready(extra?: Partial<Participant>): CampaignState {
     encounter: {
       id: 'enc_test',
       currentRound: 1,
-      turnOrder: participants.map((p) => p.id),
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -463,7 +462,6 @@ describe('applyIntent — EndTurn Talent Clarity EoT damage hook', () => {
       encounter: {
         id: 'enc_test',
         currentRound: 1,
-        turnOrder: participants.map((p) => p.id),
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -472,7 +470,6 @@ describe('applyIntent — EndTurn Talent Clarity EoT damage hook', () => {
         actedThisRound: [],
       },
     };
-    s = applyIntent(s, intent('SetInitiative', { order: ['pc_talent', 'm_goblin'] })).state;
     s = applyIntent(s, intent('StartRound', {})).state;
     // StartRound no longer pre-activates; directly set activeParticipantId to
     // simulate a mid-turn state (avoids the d3-roll requirement in StartTurn).

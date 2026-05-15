@@ -44,9 +44,7 @@ export type EncounterPhase = {
   id: string;
   // Slice 4: turn state. `currentRound` is null between rounds; `activeParticipantId`
   // is null when no one's turn is currently running (between turns or rounds).
-  // `turnOrder` is the explicit initiative list; SetInitiative replaces it.
   currentRound: number | null;
-  turnOrder: string[];
   activeParticipantId: string | null;
   // Slice 6: per-actor turn-state flags. `StartTurn` resets the entry for the
   // starting participant; `EndTurn` clears it. Empty by default.

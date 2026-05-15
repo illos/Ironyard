@@ -179,21 +179,16 @@ export function DirectorCombat() {
     return map;
   }, [monsterByParticipantId]);
 
-  // Anyone whose turnOrder position is BEFORE the active participant has acted
-  // this round. Falls back to "nobody has acted" when there's no active
-  // participant (between rounds, or before round 1 starts).
+  // actedThisRound is the zipper-initiative canonical set of participants who
+  // have already taken their turn this round. The active participant is not yet
+  // in that set (PickNextActor adds them at pick time; they're removed by
+  // EndTurn). Falls back to empty set when no encounter is active.
   //
   // Must live ABOVE the guard-return block below — Rules of Hooks: every render
   // path must call the same hooks in the same order.
   const actedIds = useMemo(() => {
-    const ids = new Set<string>();
-    if (!activeEncounter) return ids;
-    const { turnOrder, activeParticipantId } = activeEncounter;
-    if (!activeParticipantId) return ids;
-    const idx = turnOrder.indexOf(activeParticipantId);
-    if (idx <= 0) return ids;
-    for (let i = 0; i < idx; i++) ids.add(turnOrder[i]!);
-    return ids;
+    if (!activeEncounter) return new Set<string>();
+    return new Set<string>(activeEncounter.actedThisRound);
   }, [activeEncounter]);
 
   // Phase 5 Pass 2a — role-asymmetric rendering.

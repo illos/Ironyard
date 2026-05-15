@@ -49,7 +49,7 @@ function readyState(parts: Participant[], picking: 'heroes' | 'foes' = 'heroes')
     encounter: {
       id: 'e1', currentRound: 1,
       firstSide: picking, currentPickingSide: picking, actedThisRound: [],
-      turnOrder: [], activeParticipantId: null,
+      activeParticipantId: null,
       turnState: {}, malice: { current: 0, lastMaliciousStrikeRound: null },
     },
   };

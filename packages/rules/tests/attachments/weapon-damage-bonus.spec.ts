@@ -118,7 +118,6 @@ function makeReadyState(participants: Participant[]): CampaignState {
     encounter: {
       id: 'enc-1',
       currentRound: 1,
-      turnOrder: participants.map((p) => p.id),
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },

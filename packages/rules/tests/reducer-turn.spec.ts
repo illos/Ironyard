@@ -63,7 +63,6 @@ function readyState(participantIds: string[] = ['alice', 'bob', 'cleric']): Camp
     encounter: {
       id: 'enc_test',
       currentRound: 1,
-      turnOrder: participants.map((p) => p.id),
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -74,51 +73,9 @@ function readyState(participantIds: string[] = ['alice', 'bob', 'cleric']): Camp
   };
 }
 
-describe('SetInitiative', () => {
-  it('replaces turnOrder with the provided list', () => {
-    const r = applyIntent(
-      readyState(),
-      intent('SetInitiative', { order: ['cleric', 'alice', 'bob'] }),
-    );
-    expect(r.errors).toBeUndefined();
-    expect(r.state.encounter?.turnOrder).toEqual(['cleric', 'alice', 'bob']);
-  });
-
-  it('rejects when the order set differs from the participant set', () => {
-    const r = applyIntent(readyState(), intent('SetInitiative', { order: ['alice', 'bob'] }));
-    expect(r.errors?.[0]?.code).toBe('invalid_order');
-  });
-
-  it('rejects unknown ids', () => {
-    const r = applyIntent(
-      readyState(),
-      intent('SetInitiative', { order: ['alice', 'bob', 'ghost'] }),
-    );
-    expect(r.errors?.[0]?.code).toBe('invalid_order');
-  });
-
-  it('rejects duplicates even if all ids are valid', () => {
-    const r = applyIntent(
-      readyState(['alice', 'bob']),
-      intent('SetInitiative', { order: ['alice', 'alice'] }),
-    );
-    expect(r.errors?.[0]?.code).toBe('invalid_order');
-  });
-
-  it('rejects with no active encounter', () => {
-    const r = applyIntent(
-      emptyCampaignState(campaignId, 'user-owner'),
-      intent('SetInitiative', { order: ['alice'] }),
-    );
-    expect(r.errors?.[0]?.code).toBe('no_active_encounter');
-  });
-});
-
 describe('StartRound / EndRound', () => {
   function withOrder(): CampaignState {
-    let s = readyState();
-    s = applyIntent(s, intent('SetInitiative', { order: ['alice', 'bob', 'cleric'] })).state;
-    return s;
+    return readyState();
   }
 
   it('StartRound increments currentRound and sets currentPickingSide to firstSide', () => {
@@ -141,7 +98,7 @@ describe('StartRound / EndRound', () => {
     expect(r.state.encounter?.activeParticipantId).toBeNull();
   });
 
-  it('StartRound with empty turnOrder leaves activeParticipantId null', () => {
+  it('StartRound with no participants leaves activeParticipantId null', () => {
     const s = applyIntent(readyState([]), intent('StartRound', {}));
     expect(s.state.encounter?.currentRound).toBe(2); // 1 from StartEncounter + 1 from StartRound
     expect(s.state.encounter?.activeParticipantId).toBeNull();
@@ -164,7 +121,6 @@ describe('StartRound / EndRound', () => {
 describe('StartTurn / EndTurn', () => {
   function inRoundOne(): CampaignState {
     let s = readyState();
-    s = applyIntent(s, intent('SetInitiative', { order: ['alice', 'bob', 'cleric'] })).state;
     s = applyIntent(s, intent('StartRound', {})).state;
     return s;
   }
@@ -271,7 +227,6 @@ describe('applyStartRound Malice tick', () => {
 describe('applyEndRound + OpenAction expiry', () => {
   it('removes OAs whose expiresAtRound === currentRound', () => {
     let s = readyState();
-    s = applyIntent(s, intent('SetInitiative', { order: ['alice', 'bob', 'cleric'] })).state;
     s = {
       ...s,
       encounter: { ...s.encounter!, currentRound: 3 },
@@ -332,7 +287,6 @@ describe('applyStartTurn per-turn heroic resource gain', () => {
       encounter: {
         id: 'enc_test',
         currentRound: 1,
-        turnOrder: pcs.map((p) => p.id),
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -509,7 +463,6 @@ describe('applyStartTurn — turnActionUsage', () => {
       encounter: {
         id: 'enc-1',
         currentRound: 1,
-        turnOrder: ['pc-1'],
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -541,7 +494,6 @@ describe('applyStartTurn — turnActionUsage', () => {
       encounter: {
         id: 'enc-1',
         currentRound: 1,
-        turnOrder: ['pc-1', 'pc-2'],
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -572,7 +524,6 @@ describe('applyStartTurn — turnActionUsage', () => {
       encounter: {
         id: 'enc-1',
         currentRound: 1,
-        turnOrder: ['censor'],
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },

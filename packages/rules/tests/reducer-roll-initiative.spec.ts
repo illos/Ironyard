@@ -49,7 +49,7 @@ function readyState(parts: Participant[]): CampaignState {
     encounter: {
       id: 'e1', currentRound: 1,
       firstSide: null, currentPickingSide: null, actedThisRound: [],
-      turnOrder: [], activeParticipantId: null,
+      activeParticipantId: null,
       turnState: {}, malice: { current: 0, lastMaliciousStrikeRound: null },
     },
   };

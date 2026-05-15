@@ -213,7 +213,6 @@ describe('applyStartEncounter — new atomic payload shape', () => {
       encounter: {
         id: 'enc-1',
         currentRound: 1,
-        turnOrder: [],
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },

@@ -92,7 +92,6 @@ function ready(): CampaignState {
     encounter: {
       id: 'enc_test',
       currentRound: 1,
-      turnOrder: participants.map((p) => p.id),
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -429,7 +428,6 @@ describe('applyIntent — RemoveCondition', () => {
       encounter: {
         id: 'enc-test',
         currentRound: 1,
-        turnOrder: s.participants.map((p) => p.id),
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },

@@ -142,7 +142,6 @@ describe('full encounter resource generation cycle (canon § 5 integration)', ()
       encounter: {
         id: 'enc_int',
         currentRound: 1, // round-1 already ticked at StartEncounter time
-        turnOrder: pcs.map((p) => p.id),
         activeParticipantId: null,
         turnState: {},
         malice: { current: 9, lastMaliciousStrikeRound: null }, // canon worked example post-round-1

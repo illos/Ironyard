@@ -41,11 +41,11 @@ describe('applyRemoveParticipant', () => {
     expect(result.state.seq).toBe(state.seq + 1);
   });
 
-  it('also removes the participant from the encounter turnOrder', () => {
+  it('also removes the participant from actedThisRound when present', () => {
     const state = baseState({
       participants: [makeHeroParticipant('hero-1'), makeMonsterParticipant('goblin-1')],
       encounter: makeRunningEncounterPhase('enc-1', {
-        turnOrder: ['hero-1', 'goblin-1'],
+        actedThisRound: ['hero-1', 'goblin-1'],
       }),
     });
     const result = applyIntent(
@@ -57,7 +57,8 @@ describe('applyRemoveParticipant', () => {
       }),
     );
     expect(result.errors).toBeUndefined();
-    expect(result.state.encounter?.turnOrder).toEqual(['hero-1']);
+    // goblin-1 removed from roster; encounter still present with hero-1 intact
+    expect(result.state.participants.filter(isParticipant).map((p) => p.id)).toEqual(['hero-1']);
   });
 
   it('works without an active encounter (no encounter field to update)', () => {
@@ -82,7 +83,6 @@ describe('applyRemoveParticipant', () => {
     const state = baseState({
       participants: [makeMonsterParticipant('goblin-1')],
       encounter: makeRunningEncounterPhase('enc-1', {
-        turnOrder: ['goblin-1'],
         activeParticipantId: 'goblin-1',
       }),
     });

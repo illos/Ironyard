@@ -14,7 +14,7 @@ describe('applyMarkActionUsed', () => {
     const hero = makeHeroParticipant('pc-1', { ownerId: 'u-mira', name: 'Mira' });
     const state = baseState({
       participants: [hero],
-      encounter: makeRunningEncounterPhase('enc-1', { turnOrder: ['pc-1'] }),
+      encounter: makeRunningEncounterPhase('enc-1'),
       activeDirectorId: ownerActor.userId,
     });
     const result = applyIntent(
@@ -38,7 +38,7 @@ describe('applyMarkActionUsed', () => {
     });
     const state = baseState({
       participants: [hero],
-      encounter: makeRunningEncounterPhase('enc-1', { turnOrder: ['pc-2'] }),
+      encounter: makeRunningEncounterPhase('enc-1'),
       activeDirectorId: ownerActor.userId,
     });
     const result = applyIntent(
@@ -58,7 +58,7 @@ describe('applyMarkActionUsed', () => {
     const hero = makeHeroParticipant('pc-3', { ownerId: 'u-mira', name: 'Mira' });
     const state = baseState({
       participants: [hero],
-      encounter: makeRunningEncounterPhase('enc-1', { turnOrder: ['pc-3'] }),
+      encounter: makeRunningEncounterPhase('enc-1'),
       activeDirectorId: ownerActor.userId, // owner-1 is director, not 'u-intruder'
     });
     const result = applyIntent(

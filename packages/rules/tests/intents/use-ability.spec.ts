@@ -16,7 +16,7 @@ describe('applyUseAbility', () => {
     const hero = makeHeroParticipant('pc:alice');
     const state = baseState({
       participants: [hero],
-      encounter: makeRunningEncounterPhase(ENCOUNTER_ID, { turnOrder: [hero.id] }),
+      encounter: makeRunningEncounterPhase(ENCOUNTER_ID),
     });
 
     const result = applyIntent(
@@ -57,7 +57,7 @@ describe('applyUseAbility', () => {
     });
     const state = baseState({
       participants: [hero],
-      encounter: makeRunningEncounterPhase(ENCOUNTER_ID, { turnOrder: [hero.id] }),
+      encounter: makeRunningEncounterPhase(ENCOUNTER_ID),
     });
 
     const result = applyIntent(
@@ -105,7 +105,7 @@ describe('applyUseAbility', () => {
   it('rejects when the participant is not in the roster', () => {
     const state = baseState({
       participants: [],
-      encounter: makeRunningEncounterPhase(ENCOUNTER_ID, { turnOrder: [] }),
+      encounter: makeRunningEncounterPhase(ENCOUNTER_ID),
     });
 
     const result = applyIntent(
@@ -127,7 +127,7 @@ describe('applyUseAbility', () => {
 
   it('rejects an invalid payload', () => {
     const state = baseState({
-      encounter: makeRunningEncounterPhase(ENCOUNTER_ID, { turnOrder: [] }),
+      encounter: makeRunningEncounterPhase(ENCOUNTER_ID),
     });
 
     const result = applyIntent(

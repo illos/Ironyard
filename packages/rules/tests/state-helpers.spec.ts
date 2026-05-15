@@ -176,9 +176,6 @@ function stateWithZ(
     encounter: {
       id: 'e1',
       currentRound: 1,
-      // turnOrder is the legacy flat-order field; zipper-initiative replaces
-      // it in Task 12. Keep it empty here so the fixture satisfies EncounterPhase.
-      turnOrder: [],
       firstSide: 'heroes' as const,
       currentPickingSide: current,
       actedThisRound: acted,

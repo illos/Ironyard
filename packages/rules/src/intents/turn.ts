@@ -3,7 +3,6 @@ import {
   EndTurnPayloadSchema,
   IntentTypes,
   type Participant,
-  SetInitiativePayloadSchema,
   StartRoundPayloadSchema,
   StartTurnPayloadSchema,
 } from '@ironyard/shared';
@@ -452,78 +451,5 @@ export function applyEndTurn(state: CampaignState, intent: StampedIntent): Inten
     },
     derived,
     log,
-  };
-}
-
-export function applySetInitiative(state: CampaignState, intent: StampedIntent): IntentResult {
-  const parsed = SetInitiativePayloadSchema.safeParse(intent.payload);
-  if (!parsed.success) {
-    return {
-      state,
-      derived: [],
-      log: [
-        {
-          kind: 'error',
-          text: `SetInitiative rejected: ${parsed.error.message}`,
-          intentId: intent.id,
-        },
-      ],
-      errors: [{ code: 'invalid_payload', message: parsed.error.message }],
-    };
-  }
-  const guard = requireEncounter(state, intent, 'SetInitiative');
-  if (!guard.ok) return guard.result;
-
-  const { order } = parsed.data;
-  const participantIds = new Set(state.participants.filter(isParticipant).map((p) => p.id));
-  const proposedIds = new Set(order);
-
-  if (order.length !== participantIds.size || proposedIds.size !== order.length) {
-    return {
-      state,
-      derived: [],
-      log: [
-        {
-          kind: 'error',
-          text: 'SetInitiative: order must list each participant exactly once',
-          intentId: intent.id,
-        },
-      ],
-      errors: [
-        {
-          code: 'invalid_order',
-          message: 'order must contain each participant id exactly once',
-        },
-      ],
-    };
-  }
-  for (const id of order) {
-    if (!participantIds.has(id)) {
-      return {
-        state,
-        derived: [],
-        log: [
-          {
-            kind: 'error',
-            text: `SetInitiative: ${id} is not a participant`,
-            intentId: intent.id,
-          },
-        ],
-        errors: [{ code: 'invalid_order', message: `unknown participant id ${id}` }],
-      };
-    }
-  }
-
-  return {
-    state: {
-      ...state,
-      seq: state.seq + 1,
-      encounter: {
-        ...guard.encounter,
-        turnOrder: [...order],
-      },
-    },
-    derived: [],
-    log: [{ kind: 'info', text: `initiative set: ${order.join(' → ')}`, intentId: intent.id }],
   };
 }

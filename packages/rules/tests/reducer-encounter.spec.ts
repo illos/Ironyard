@@ -47,7 +47,6 @@ function withRosterAndEncounter(): CampaignState {
     encounter: {
       id: 'enc_test',
       currentRound: 1,
-      turnOrder: participants.map((p) => p.id),
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -123,7 +122,6 @@ describe('applyIntent — StartEncounter', () => {
     expect(r.state.encounter).not.toBeNull();
     expect(r.state.encounter?.id).toMatch(/.{20,}/); // ULID
     expect(r.state.encounter?.currentRound).toBe(1);
-    expect(r.state.encounter?.turnOrder).toHaveLength(0);
     expect(r.state.encounter?.activeParticipantId).toBeNull();
     // Empty roster: avg=0, heroes=0, +1 round-1 tick → malice = 1 (canon § 5.5)
     expect(r.state.encounter?.malice).toEqual({ current: 1, lastMaliciousStrikeRound: null });
@@ -135,7 +133,7 @@ describe('applyIntent — StartEncounter', () => {
       intent('StartEncounter', {}),
     );
     expect(r.errors).toBeUndefined();
-    expect(r.state.encounter?.turnOrder).toHaveLength(0);
+    expect(r.state.encounter).not.toBeNull();
     expect(r.state.participants).toHaveLength(0);
   });
 
@@ -149,7 +147,7 @@ describe('applyIntent — StartEncounter', () => {
     expect(r.state.encounter?.id).toBe(s.encounter?.id); // unchanged
   });
 
-  it('StartEncounter with stampedPcs materializes PC and adds to turnOrder', () => {
+  it('StartEncounter with stampedPcs materializes the PC into the roster', () => {
     const ctx: ReducerContext = { staticData: buildBundleWithFury() };
     const character = buildFuryL1Fixture();
     const stampedPcs = [{ characterId: 'char-1', ownerId: 'user-player', name: 'Kaela', character }];
@@ -160,7 +158,7 @@ describe('applyIntent — StartEncounter', () => {
       (p): p is Participant => isParticipant(p) && p.kind === 'pc',
     );
     expect(pc).toBeDefined();
-    expect(r.state.encounter?.turnOrder).toContain(`pc:char-1`);
+    expect(pc?.id).toBe('pc:char-1');
   });
 });
 
@@ -274,7 +272,6 @@ describe('applyIntent — RollPower', () => {
       encounter: {
         id: 'enc_multi',
         currentRound: 1,
-        turnOrder: participants.map((p) => p.id),
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -310,7 +307,6 @@ describe('applyIntent — ApplyDamage', () => {
       encounter: {
         id: 'enc_goblin',
         currentRound: 1,
-        turnOrder: participants.map((p) => p.id),
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -361,7 +357,6 @@ describe('end-to-end: RollPower → derived ApplyDamage cascade', () => {
       encounter: {
         id: 'enc_cascade',
         currentRound: 1,
-        turnOrder: participants.map((p) => p.id),
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },

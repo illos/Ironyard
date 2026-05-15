@@ -96,7 +96,6 @@ function withEncounter(): CampaignState {
     encounter: {
       id: 'enc_test',
       currentRound: 1,
-      turnOrder: [],
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -160,7 +159,6 @@ describe('applyIntent — EndEncounter', () => {
       encounter: {
         id: 'enc_test',
         currentRound: 1,
-        turnOrder: participants.map((p) => p.id),
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -200,7 +198,6 @@ describe('applyIntent — EndEncounter', () => {
       encounter: {
         id: 'enc_test',
         currentRound: 1,
-        turnOrder: participants.map((p) => p.id),
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -242,7 +239,6 @@ describe('applyIntent — EndEncounter', () => {
       encounter: {
         id: 'enc_test',
         currentRound: 1,
-        turnOrder: participants.map((p) => p.id),
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -265,7 +261,6 @@ describe('applyIntent — EndEncounter', () => {
       encounter: {
         id: 'enc_test',
         currentRound: 1,
-        turnOrder: participants.map((p) => p.id),
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -292,7 +287,6 @@ describe('applyIntent — EndEncounter', () => {
       encounter: {
         id: 'enc_test',
         currentRound: 1,
-        turnOrder: participants.map((p) => p.id),
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -341,7 +335,6 @@ describe('applyIntent — EndEncounter', () => {
       encounter: {
         id: 'enc_test',
         currentRound: 1,
-        turnOrder: participants.map((p) => p.id),
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -411,8 +404,7 @@ describe('applyIntent — EndEncounter', () => {
         encounter: {
           id: 'enc_test',
           currentRound: 1,
-          turnOrder: participants.map((p) => p.id),
-          activeParticipantId: null,
+            activeParticipantId: null,
           turnState: {},
           malice: { current: 0, lastMaliciousStrikeRound: null },
           firstSide: null,
@@ -442,8 +434,7 @@ describe('applyIntent — EndEncounter', () => {
         encounter: {
           id: 'enc_test',
           currentRound: 1,
-          turnOrder: participants.map((p) => p.id),
-          activeParticipantId: null,
+            activeParticipantId: null,
           turnState: {},
           malice: { current: 0, lastMaliciousStrikeRound: null },
           firstSide: null,
@@ -472,8 +463,7 @@ describe('applyIntent — EndEncounter', () => {
         encounter: {
           id: 'enc_test',
           currentRound: 1,
-          turnOrder: participants.map((p) => p.id),
-          activeParticipantId: null,
+            activeParticipantId: null,
           turnState: {},
           malice: { current: 0, lastMaliciousStrikeRound: null },
           firstSide: null,
@@ -506,8 +496,7 @@ describe('applyIntent — EndEncounter', () => {
         encounter: {
           id: 'enc_test',
           currentRound: 1,
-          turnOrder: [],
-          activeParticipantId: null,
+              activeParticipantId: null,
           turnState: {},
           malice: { current: 0, lastMaliciousStrikeRound: null },
           firstSide: null,

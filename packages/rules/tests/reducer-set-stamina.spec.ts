@@ -67,7 +67,6 @@ function ready(over?: Partial<Participant>): CampaignState {
     encounter: {
       id: 'enc-test',
       currentRound: 1,
-      turnOrder: [participant.id],
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -97,7 +96,6 @@ describe('applyIntent — SetStamina', () => {
       encounter: {
         id: 'enc-test',
         currentRound: 1,
-        turnOrder: [],
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },

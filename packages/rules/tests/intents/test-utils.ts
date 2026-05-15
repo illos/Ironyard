@@ -124,7 +124,6 @@ export function makeRunningEncounterPhase(
   return {
     id,
     currentRound: 1,
-    turnOrder: [],
     activeParticipantId: null,
     turnState: {},
     malice: { current: 0, lastMaliciousStrikeRound: null },

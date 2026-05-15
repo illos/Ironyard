@@ -45,7 +45,6 @@ export { applySwapKit } from './swap-kit';
 export {
   applyEndRound,
   applyEndTurn,
-  applySetInitiative,
   applyStartRound,
   applyStartTurn,
 } from './turn';

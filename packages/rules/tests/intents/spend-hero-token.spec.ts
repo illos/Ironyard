@@ -18,7 +18,7 @@ function statefulBase(heroTokens = 2) {
     heroTokens,
     attendingCharacterIds: [PC_ID],
     participants: [hero],
-    encounter: makeRunningEncounterPhase('enc-1', { turnOrder: [PC_ID] }),
+    encounter: makeRunningEncounterPhase('enc-1'),
   });
 }
 

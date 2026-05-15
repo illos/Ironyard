@@ -97,7 +97,6 @@ function readyState(parts: Participant[] = [pc(), monster()]): CampaignState {
     encounter: {
       id: 'enc-test',
       currentRound: 1,
-      turnOrder: parts.map((p) => p.id),
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
@@ -108,11 +107,11 @@ function readyState(parts: Participant[] = [pc(), monster()]): CampaignState {
   };
 }
 
-// Helper — start a round with the given initiative order, then start the
-// attacker's turn so the daze-state tracker is initialised.
-function inRoundWithActor(parts: Participant[], order: string[], actorId: string): CampaignState {
+// Helper — start a round, then start the attacker's turn so the daze-state
+// tracker is initialised. `order` parameter is unused (zipper initiative
+// replaced the flat order array); kept in the signature for call-site clarity.
+function inRoundWithActor(parts: Participant[], _order: string[], actorId: string): CampaignState {
   let s = readyState(parts);
-  s = applyIntent(s, intent('SetInitiative', { order })).state;
   s = applyIntent(s, intent('StartRound', {})).state;
   s = applyIntent(s, intent('StartTurn', { participantId: actorId })).state;
   return s;
