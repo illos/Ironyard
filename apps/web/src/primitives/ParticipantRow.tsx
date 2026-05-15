@@ -82,10 +82,20 @@ export function ParticipantRow({
     : onSelect;
 
   return (
-    <button
-      type="button"
+    // Div + role="button" instead of <button> so the row can contain nested
+    // interactive elements (pick-affordance Button, reticle target button)
+    // without violating HTML's no-button-in-button rule.
+    <div
+      role="button"
+      tabIndex={0}
       onClick={handleClick}
-      className={`relative grid grid-cols-[32px_1fr_auto_auto_auto_110px_28px] items-center gap-3 px-3 py-2 bg-ink-2 border border-line text-left transition-colors hover:border-pk hover:bg-ink-3 ${packClass} ${turnClass} ${activeClass} ${selfPickClass} ${actedClass} ${foeTapClass}`}
+      onKeyDown={(e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && handleClick) {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+      className={`relative grid grid-cols-[32px_1fr_auto_auto_auto_110px_28px] items-center gap-3 px-3 py-2 bg-ink-2 border border-line text-left transition-colors hover:border-pk hover:bg-ink-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${packClass} ${turnClass} ${activeClass} ${selfPickClass} ${actedClass} ${foeTapClass}`}
     >
       <Sigil text={sigil} />
       <span className="flex flex-col min-w-0 gap-0.5">
@@ -189,6 +199,6 @@ export function ParticipantRow({
           </button>
         </span>
       )}
-    </button>
+    </div>
   );
 }
