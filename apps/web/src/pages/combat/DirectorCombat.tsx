@@ -452,32 +452,31 @@ export function DirectorCombat() {
     send(IntentTypes.EndEncounter, { encounterId: activeEncounter.encounterId });
   };
 
-  // Phase 5 Pass 2b1 — zipper-initiative dispatchers.
-  const handlePickNextActor = useCallback(
-    (participantId: string) => {
-      const participant = activeEncounter?.participants.find(
-        (p): p is Participant => 'id' in p && p.id === participantId,
-      );
-      if (!participant) return;
-      const resource = participant.heroicResources[0];
-      const config = resource ? HEROIC_RESOURCES[resource.name] : undefined;
-      const needsD3 = config?.baseGain.onTurnStart.kind === 'd3';
-      const payload = needsD3
-        ? { participantId, rolls: { d3: 1 + Math.floor(Math.random() * 3) } }
-        : { participantId };
-      send(IntentTypes.PickNextActor, payload);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeEncounter],
-  );
+  // Phase 5 Pass 2b1 — zipper-initiative dispatchers. Plain functions (not
+  // useCallback) so they live below the guard returns without violating the
+  // Rules of Hooks. They're called once per user interaction; referential
+  // stability isn't needed by any downstream useEffect.
+  const handlePickNextActor = (participantId: string) => {
+    const participant = activeEncounter?.participants.find(
+      (p): p is Participant => 'id' in p && p.id === participantId,
+    );
+    if (!participant) return;
+    const resource = participant.heroicResources[0];
+    const config = resource ? HEROIC_RESOURCES[resource.name] : undefined;
+    const needsD3 = config?.baseGain.onTurnStart.kind === 'd3';
+    const payload = needsD3
+      ? { participantId, rolls: { d3: 1 + Math.floor(Math.random() * 3) } }
+      : { participantId };
+    send(IntentTypes.PickNextActor, payload);
+  };
 
-  const handleRollInitiative = useCallback(
-    (payload: { winner: 'heroes' | 'foes'; surprised: string[]; rolledD10?: number }) => {
-      send(IntentTypes.RollInitiative, payload);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
+  const handleRollInitiative = (payload: {
+    winner: 'heroes' | 'foes';
+    surprised: string[];
+    rolledD10?: number;
+  }) => {
+    send(IntentTypes.RollInitiative, payload);
+  };
 
   // ── empty / pre-round states (no SplitPane yet) ───────────────────────────
   if (!activeEncounter) {
