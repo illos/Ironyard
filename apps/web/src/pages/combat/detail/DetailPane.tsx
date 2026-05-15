@@ -217,6 +217,7 @@ function DetailBody({
           canRoll={canEdit}
           isActiveTurn={isActiveTurn ?? false}
           onEndTurn={onEndTurn ?? (() => {})}
+          targetMissing={resolvedTarget === null}
         />
       ) : (
         <FullSheetTab

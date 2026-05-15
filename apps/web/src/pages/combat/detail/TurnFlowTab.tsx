@@ -26,6 +26,9 @@ export interface TurnFlowTabProps {
   /** Fired by the End-turn CTA when all three slots are complete (or by the
    *  Skip-turn header button after it marks slots done). */
   onEndTurn: () => void;
+  /** Pass-2b2a — true when no reticle target is set. Action-type cards show
+   *  the "Set a target" strip and have Roll disabled when this is true. */
+  targetMissing?: boolean;
 }
 
 export function TurnFlowTab({
@@ -37,6 +40,7 @@ export function TurnFlowTab({
   canRoll,
   isActiveTurn,
   onEndTurn,
+  targetMissing = false,
 }: TurnFlowTabProps) {
   // Mirror the abilities derivation from FullSheetTab so both tabs see the
   // same list without requiring a FullSheetTab re-render.
@@ -143,6 +147,7 @@ export function TurnFlowTab({
             key={a.name}
             ability={a}
             disabled={rollDisabled}
+            targetMissing={targetMissing}
             onRoll={(ab, args) => handleRoll(ab, args)}
           />
         ))}

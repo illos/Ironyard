@@ -207,6 +207,7 @@ export function FullSheetTab({
               ability={ab}
               disabled={!canRoll || disabled || candidates.length === 0 || !target}
               readOnly={!canRoll}
+              targetMissing={ab.type === 'action' && !target && candidates.length > 0}
               onRoll={(ability, args) => onRoll(ability, args)}
             />
           ))}
