@@ -95,7 +95,7 @@ export function ParticipantRow({
           handleClick();
         }
       }}
-      className={`relative grid grid-cols-[32px_1fr_auto_auto_auto_110px_28px] items-center gap-3 px-3 py-2 bg-ink-2 border border-line text-left transition-colors hover:border-pk hover:bg-ink-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${packClass} ${turnClass} ${activeClass} ${selfPickClass} ${actedClass} ${foeTapClass}`}
+      className={`relative grid grid-cols-[32px_1fr_auto_auto_auto_140px_28px] items-center gap-3 px-3 py-2 bg-ink-2 border border-line text-left transition-colors hover:border-pk hover:bg-ink-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${packClass} ${turnClass} ${activeClass} ${selfPickClass} ${actedClass} ${foeTapClass}`}
     >
       <Sigil text={sigil} />
       <span className="flex flex-col min-w-0 gap-0.5">
@@ -109,12 +109,8 @@ export function ParticipantRow({
       <span className="flex gap-0.5">{conditions}</span>
       <span className="flex flex-col items-end gap-0.5">{resource}</span>
       <span className="flex flex-col items-end gap-0.5 tabular text-sm">{recoveries}</span>
-      <span className="flex flex-col items-end gap-1 w-[110px]">
-        <span className="text-base font-semibold tabular">
-          {staminaCurrent}
-          <span className="text-text-mute font-normal text-[11px]">/{staminaMax}</span>
-        </span>
-        <HpBar current={staminaCurrent} max={staminaMax} compact />
+      <span className="block w-[140px]">
+        <HpBar current={staminaCurrent} max={staminaMax} variant="inline" />
       </span>
 
       {/* Reticle target button — always present; pulses red + shows index when targeted */}
