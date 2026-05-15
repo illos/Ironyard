@@ -57,26 +57,38 @@ function GlyphSvg({ type }: { type: ConditionType }) {
         </svg>
       );
     case 'Frightened':
-      // Jagged spike — startled flash, fear bolt.
+      // Exclamation mark — bold vertical bar over a separated dot.
       return (
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
           <path
-            d="M9.5 1.5 L 5 8 L 8 8 L 6 14.5 L 11 7 L 8.5 7 Z"
+            d="M 6.75 2 L 9.25 2 L 8.85 9.5 L 7.15 9.5 Z"
             fill="currentColor"
-            opacity="0.9"
           />
+          <circle cx="8" cy="12.5" r="1.4" fill="currentColor" />
         </svg>
       );
     case 'Grabbed':
-      // Two opposing brackets — clamp / grip.
+      // Stylized closed fist — palm rectangle with knuckle bumps on the top
+      // edge and a small thumb hump on the side. Reads as "gripped/held".
       return (
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
+          {/* Four knuckle bumps along the top */}
           <path
-            d="M4 3 L 4 13 M 4 3 L 6.5 3 M 4 13 L 6.5 13 M 12 3 L 12 13 M 12 3 L 9.5 3 M 12 13 L 9.5 13"
-            fill="none"
-            stroke={stroke}
-            strokeWidth={sw + 0.25}
-            strokeLinecap="round"
+            d="M 3 7
+               Q 3 5.5 4 5.5 Q 5 5.5 5 7
+               Q 5 5 6.25 5 Q 7.5 5 7.5 7
+               Q 7.5 5 8.75 5 Q 10 5 10 7
+               Q 10 5.5 11 5.5 Q 12 5.5 12 7
+               L 12 12.5
+               Q 12 13.5 11 13.5
+               L 4 13.5
+               Q 3 13.5 3 12.5 Z"
+            fill="currentColor"
+          />
+          {/* Thumb hump on the left side */}
+          <path
+            d="M 2 9 Q 1.25 9 1.25 10 Q 1.25 11 2 11 L 3 11 L 3 9 Z"
+            fill="currentColor"
           />
         </svg>
       );
@@ -101,43 +113,51 @@ function GlyphSvg({ type }: { type: ConditionType }) {
         </svg>
       );
     case 'Restrained':
-      // Chain link pair — bound.
+      // Padlock — bound. Filled body with a stroked shackle on top.
       return (
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
-          <rect
-            x="2.5"
-            y="5"
-            width="6"
-            height="6"
-            rx="2"
+          {/* Shackle */}
+          <path
+            d="M 5 8 L 5 5.5 Q 5 3 8 3 Q 11 3 11 5.5 L 11 8"
             fill="none"
             stroke={stroke}
-            strokeWidth={sw}
+            strokeWidth={sw + 0.4}
+            strokeLinecap="round"
           />
-          <rect
-            x="7.5"
-            y="5"
-            width="6"
-            height="6"
-            rx="2"
-            fill="none"
-            stroke={stroke}
-            strokeWidth={sw}
+          {/* Body */}
+          <rect x="3" y="7.5" width="10" height="7" rx="1.25" fill="currentColor" />
+          {/* Keyhole */}
+          <circle cx="8" cy="10.25" r="1" fill="var(--color-bg, #1a1a1a)" />
+          <path
+            d="M 8 10.5 L 8 12.5"
+            stroke="var(--color-bg, #1a1a1a)"
+            strokeWidth="1.1"
+            strokeLinecap="round"
           />
         </svg>
       );
     case 'Slowed':
-      // Hourglass — time draining.
+      // Analog clock — circle face with two hands; minute pointing right,
+      // hour pointing up. Reads clearer than the hourglass at 14px.
       return (
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
+          <circle cx="8" cy="8" r="5.5" fill="none" stroke={stroke} strokeWidth={sw} />
+          {/* Hour hand — up */}
           <path
-            d="M 4 2.5 L 12 2.5 L 12 5 L 8 8 L 12 11 L 12 13.5 L 4 13.5 L 4 11 L 8 8 L 4 5 Z"
-            fill="none"
+            d="M 8 8 L 8 4.5"
+            stroke={stroke}
+            strokeWidth={sw + 0.25}
+            strokeLinecap="round"
+          />
+          {/* Minute hand — right */}
+          <path
+            d="M 8 8 L 11 8"
             stroke={stroke}
             strokeWidth={sw}
-            strokeLinejoin="miter"
+            strokeLinecap="round"
           />
-          <path d="M 8 8 L 8 5 L 6 4 L 10 4 Z" fill="currentColor" opacity="0.7" />
+          {/* Center pivot */}
+          <circle cx="8" cy="8" r="0.9" fill="currentColor" />
         </svg>
       );
     case 'Taunted':
@@ -163,25 +183,28 @@ function GlyphSvg({ type }: { type: ConditionType }) {
         </svg>
       );
     case 'Weakened':
-      // Downward chevron over a bar — strength wilting.
+      // Cracked heart — heart silhouette split by a jagged zig-zag down the
+      // middle. Reads as "broken / weakened".
       return (
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
           <path
-            d="M 4 4 L 8 8 L 12 4"
-            fill="none"
-            stroke={stroke}
-            strokeWidth={sw + 0.25}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            d="M 8 14
+               C 4.5 11, 1.5 9, 1.5 5.75
+               C 1.5 4, 2.75 2.75, 4.5 2.75
+               C 6 2.75, 7.25 3.75, 8 5
+               C 8.75 3.75, 10 2.75, 11.5 2.75
+               C 13.25 2.75, 14.5 4, 14.5 5.75
+               C 14.5 9, 11.5 11, 8 14 Z"
+            fill="currentColor"
           />
+          {/* Zig-zag crack down the middle, knocked out in the bg colour */}
           <path
-            d="M 4 10 L 8 14 L 12 10"
+            d="M 8 3.75 L 6.5 6 L 8.75 8 L 6.75 10 L 8.5 12 L 8 13.75"
             fill="none"
-            stroke={stroke}
-            strokeWidth={sw + 0.25}
+            stroke="var(--color-bg, #1a1a1a)"
+            strokeWidth="1.3"
+            strokeLinejoin="miter"
             strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity="0.7"
           />
         </svg>
       );

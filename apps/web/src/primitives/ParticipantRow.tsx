@@ -109,7 +109,12 @@ export function ParticipantRow({
     >
       <Sigil text={sigil} />
       <span className="flex flex-col min-w-0 gap-0.5">
-        <span className={`text-sm font-semibold tracking-tight truncate ${nameDeadClass}`}>{name}</span>
+        <span
+          className={`text-sm font-semibold tracking-tight truncate ${nameDeadClass}`}
+          title={typeof name === 'string' ? name : undefined}
+        >
+          {name}
+        </span>
         {role && (
           <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-text-mute truncate">
             {role}
