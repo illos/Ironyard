@@ -22,7 +22,8 @@ export function HpBar({ current, max, size = 'sm', compact = false, variant }: H
     return (
       <div
         className={`relative h-[22px] w-full overflow-hidden border border-line bg-hp-${zone}-dim`}
-        aria-hidden="true"
+        role="img"
+        aria-label={`${current} of ${max} stamina`}
       >
         <div
           className={`absolute inset-y-0 left-0 bg-hp-${zone} transition-[width] duration-300 ease-out`}
