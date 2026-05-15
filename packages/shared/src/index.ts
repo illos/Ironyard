@@ -234,6 +234,9 @@ export type {
 export { MaliceStateSchema } from './malice';
 export type { MaliceState } from './malice';
 
+export { ParticipantStateOverrideSchema } from './stamina-override';
+export type { ParticipantStateOverride } from './stamina-override';
+
 export { OpenActionKindSchema, OpenActionSchema } from './open-action';
 export type { OpenAction, OpenActionKind } from './open-action';
 
