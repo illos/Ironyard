@@ -40,6 +40,7 @@ import { EncounterRail } from './EncounterRail';
 import { RollInitiativeOverlay } from './initiative';
 import { OpenActionsList } from './OpenActionsList';
 import { PartyRail } from './PartyRail';
+import { CrossSideTriggerModal } from './triggers';
 import { type Toast, ToastStack } from './ToastStack';
 
 const TOAST_DISMISS_MS = 6000;
@@ -729,6 +730,28 @@ export function DirectorCombat() {
       />
 
       <ToastStack toasts={toasts} onUndo={handleToastUndo} onDismiss={handleToastDismiss} />
+
+      {activeEncounter.pendingTriggers !== null && isActingAsDirector && (
+        <CrossSideTriggerModal
+          pendingTriggers={activeEncounter.pendingTriggers}
+          resolveName={(id) =>
+            activeEncounter.participants.find(
+              (p): p is import('@ironyard/shared').Participant =>
+                isParticipantEntry(p) && p.id === id,
+            )?.name ?? id
+          }
+          onResolve={(order) =>
+            dispatch(
+              buildIntent({
+                campaignId,
+                type: 'ResolveTriggerOrder',
+                payload: { pendingTriggerSetId: activeEncounter.pendingTriggers!.id, order },
+                actor,
+              }),
+            )
+          }
+        />
+      )}
     </main>
   );
 }

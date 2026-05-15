@@ -18,6 +18,7 @@ import {
   type Monster,
   type OpenAction,
   type Participant,
+  type PendingTriggerSet,
   type PickNextActorPayload,
   type RemoveConditionPayload,
   type RemoveParticipantPayload,
@@ -95,6 +96,10 @@ export type ActiveEncounter = {
   currentPickingSide: 'heroes' | 'foes' | null;
   actedThisRound: string[];
   malice: MaliceState;
+  // Pass 3 Slice 1 — Q10 cross-side trigger resolution. Null until the engine
+  // pauses for director ordering; cleared after ResolveTriggerOrder fires.
+  // Defensive ?? null on read — older snapshots may not carry this field.
+  pendingTriggers: PendingTriggerSet | null;
 };
 
 // Compact intent-log entry. Just enough for the play screen to drive toasts,
@@ -136,6 +141,7 @@ function reflect(
       currentPickingSide: null,
       actedThisRound: [],
       malice: { current: 0, lastMaliciousStrikeRound: null },
+      pendingTriggers: null,
     };
   }
   if (type === IntentTypes.EndEncounter) {
@@ -621,6 +627,7 @@ function snapshotToEncounter(state: unknown): ActiveEncounter | null {
     currentPickingSide?: 'heroes' | 'foes' | null;
     actedThisRound?: string[];
     malice?: MaliceState;
+    pendingTriggers?: PendingTriggerSet | null;
   };
 
   if (typeof enc.id !== 'string') return null;
@@ -636,6 +643,7 @@ function snapshotToEncounter(state: unknown): ActiveEncounter | null {
     currentPickingSide: enc.currentPickingSide ?? null,
     actedThisRound: enc.actedThisRound ?? [],
     malice: enc.malice ?? { current: 0, lastMaliciousStrikeRound: null },
+    pendingTriggers: enc.pendingTriggers ?? null,
   };
 }
 
