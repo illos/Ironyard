@@ -28,9 +28,12 @@ export interface ParticipantRowProps {
   isActed?: boolean;
   /** True when this participant is surprised (cannot act on first round). */
   isSurprised?: boolean;
-  /** Lower-priority ring shown when this participant is the current attack target.
-   *  Suppressed when isTurn is true (turn ring takes precedence). Default false. */
-  isTarget?: boolean;
+  /** Targeting state for the reticle button.
+   *  - `index === null` → not targeted; reticle is idle (neutral)
+   *  - `index === N` → targeted; reticle pulses red and shows the target number
+   *  Forward-compat with multi-target: when an ability hits up to K creatures,
+   *  it consumes targets in `index` order (1..K). Today only [0] is used. */
+  target?: { index: number | null; onToggle: () => void };
   /** Per-character pack scope. Pass 1: pass undefined and the global accent applies. */
   pack?: Pack;
   onSelect?: () => void;
@@ -52,21 +55,21 @@ export function ParticipantRow({
   acted = false,
   isActed = false,
   isSurprised = false,
-  isTarget = false,
+  target,
   pack,
   onSelect,
   pickAffordance,
 }: ParticipantRowProps) {
   const hasActed = acted || isActed;
+  const isTargeted = target?.index != null;
   const packClass = pack ? `pack-${pack}` : '';
   // Active-turn row gets the pulsing accent ring (keyframes in styles.css).
   // border-pk keeps a static edge so the row still reads at the pulse's nadir.
   const turnClass = isTurn ? 'border-pk turn-pulse' : '';
   const activeClass = active && !isTurn ? 'border-pk' : '';
-  const targetClass = isTarget && !isTurn ? 'shadow-[0_0_0_1px_var(--accent)]' : '';
-  // self-pick gets a subtle hero-tone outline (lower priority than isTurn / isTarget)
+  // self-pick gets a subtle hero-tone outline (lower priority than isTurn)
   const selfPickClass =
-    !isTurn && !isTarget && pickAffordance?.kind === 'self'
+    !isTurn && pickAffordance?.kind === 'self'
       ? 'shadow-[0_0_0_1px_var(--color-hero)]'
       : '';
   const actedClass = hasActed ? 'opacity-55' : '';
@@ -82,7 +85,7 @@ export function ParticipantRow({
     <button
       type="button"
       onClick={handleClick}
-      className={`relative grid grid-cols-[32px_1fr_auto_auto_auto_110px] items-center gap-3 px-3 py-2 bg-ink-2 border border-line text-left transition-colors hover:border-pk hover:bg-ink-3 ${packClass} ${turnClass} ${activeClass} ${targetClass} ${selfPickClass} ${actedClass} ${foeTapClass}`}
+      className={`relative grid grid-cols-[32px_1fr_auto_auto_auto_110px_28px] items-center gap-3 px-3 py-2 bg-ink-2 border border-line text-left transition-colors hover:border-pk hover:bg-ink-3 ${packClass} ${turnClass} ${activeClass} ${selfPickClass} ${actedClass} ${foeTapClass}`}
     >
       <Sigil text={sigil} />
       <span className="flex flex-col min-w-0 gap-0.5">
@@ -103,6 +106,47 @@ export function ParticipantRow({
         </span>
         <HpBar current={staminaCurrent} max={staminaMax} compact />
       </span>
+
+      {/* Reticle target button — always present; pulses red + shows index when targeted */}
+      {target && (
+        <span
+          role="button"
+          tabIndex={0}
+          onClick={(e) => {
+            e.stopPropagation();
+            target.onToggle();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.stopPropagation();
+              target.onToggle();
+            }
+          }}
+          className={`relative inline-flex h-6 w-6 items-center justify-center rounded-full border transition-colors cursor-pointer ${
+            isTargeted
+              ? 'border-foe text-foe target-pulse'
+              : 'border-line text-text-mute hover:border-foe hover:text-foe'
+          }`}
+          title={isTargeted ? `Target ${target.index}` : 'Set as target'}
+          aria-label={isTargeted ? `Untarget (target ${target.index})` : 'Target this creature'}
+          aria-pressed={isTargeted}
+        >
+          {/* Crosshair — small SVG so the icon scales cleanly. */}
+          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
+            <circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" strokeWidth="1.25" />
+            <line x1="8" y1="1" x2="8" y2="4" stroke="currentColor" strokeWidth="1.25" />
+            <line x1="8" y1="12" x2="8" y2="15" stroke="currentColor" strokeWidth="1.25" />
+            <line x1="1" y1="8" x2="4" y2="8" stroke="currentColor" strokeWidth="1.25" />
+            <line x1="12" y1="8" x2="15" y2="8" stroke="currentColor" strokeWidth="1.25" />
+          </svg>
+          {isTargeted && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] px-0.5 rounded-full bg-foe text-ink-0 font-mono text-[9px] leading-[14px] text-center">
+              {target.index}
+            </span>
+          )}
+        </span>
+      )}
 
       {/* Meta badges — ACTED and SURPRISED */}
       {hasActed && (

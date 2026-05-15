@@ -12,7 +12,9 @@ export interface EncounterRailProps {
   // Phase 5 Pass 2a — role-asymmetric rendering + target signal.
   viewerRole: 'director' | 'player';
   selfParticipantId: string | null;
-  targetParticipantId: string | null;
+  /** Ordered target ids. Index in this array drives the reticle's target-number badge. */
+  targetParticipantIds: string[];
+  onToggleTarget: (id: string) => void;
   // Phase 5 Pass 2b1 — zipper-initiative picking phase.
   currentPickingSide: 'heroes' | 'foes' | null;
   actedThisRound: string[];
@@ -29,7 +31,8 @@ export function EncounterRail({
   onSelect,
   viewerRole,
   selfParticipantId,
-  targetParticipantId,
+  targetParticipantIds,
+  onToggleTarget,
   currentPickingSide,
   actedThisRound,
   viewerId,
@@ -64,7 +67,10 @@ export function EncounterRail({
               isTurn={activeParticipantId === f.id}
               isActed={actedThisRound.includes(f.id)}
               isSurprised={f.surprised}
-              isTarget={targetParticipantId === f.id}
+              target={{
+                index: targetParticipantIds.indexOf(f.id) >= 0 ? targetParticipantIds.indexOf(f.id) + 1 : null,
+                onToggle: () => onToggleTarget(f.id),
+              }}
               pickAffordance={pickAffordance ?? undefined}
               onSelect={() => onSelect(f.id)}
             />

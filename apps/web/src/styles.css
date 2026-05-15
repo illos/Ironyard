@@ -29,3 +29,18 @@
 @media (prefers-reduced-motion: reduce) {
   .turn-pulse { animation: none; }
 }
+
+/* Pass 2b1+ — targeted reticle pulse. Pulses the foe-tone glow so a
+   targeted creature reads from across the table. Same cadence as turn-pulse. */
+@keyframes ironyard-target-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--foe);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--foe) 35%, transparent);
+  }
+}
+.target-pulse { animation: ironyard-target-pulse var(--motion-pulse) ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .target-pulse { animation: none; }
+}

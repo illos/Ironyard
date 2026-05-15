@@ -13,7 +13,9 @@ export interface PartyRailProps {
   // Phase 5 Pass 2a — role-asymmetric rendering + target signal.
   viewerRole: 'director' | 'player';
   selfParticipantId: string | null;
-  targetParticipantId: string | null;
+  /** Ordered target ids. Index in this array drives the reticle's target-number badge. */
+  targetParticipantIds: string[];
+  onToggleTarget: (id: string) => void;
   // Phase 5 Pass 2b1 — zipper-initiative picking phase.
   currentPickingSide: 'heroes' | 'foes' | null;
   actedThisRound: string[];
@@ -30,7 +32,8 @@ export function PartyRail({
   actedIds,
   viewerRole,
   selfParticipantId,
-  targetParticipantId,
+  targetParticipantIds,
+  onToggleTarget,
   currentPickingSide,
   actedThisRound,
   viewerId,
@@ -67,7 +70,10 @@ export function PartyRail({
               acted={actedIds.has(h.id)}
               isActed={actedThisRound.includes(h.id)}
               isSurprised={h.surprised}
-              isTarget={targetParticipantId === h.id}
+              target={{
+                index: targetParticipantIds.indexOf(h.id) >= 0 ? targetParticipantIds.indexOf(h.id) + 1 : null,
+                onToggle: () => onToggleTarget(h.id),
+              }}
               pickAffordance={pickAffordance ?? undefined}
               onSelect={() => onSelect(h.id)}
             />

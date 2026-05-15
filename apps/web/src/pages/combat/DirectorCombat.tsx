@@ -204,15 +204,46 @@ export function DirectorCombat() {
       )?.id ?? null
     );
   }, [activeEncounter, me.data?.user.id]);
-  const [targetParticipantId, setTargetParticipantId] = useState<string | null>(null);
+  // Ordered list of target participant ids. Single-target abilities consume
+  // `targetParticipantIds[0]`; multi-target abilities (future) consume up to
+  // `maxTargets` entries in order. Auto-target seeds the first opposite-side
+  // alive participant when the active turn changes.
+  const [targetParticipantIds, setTargetParticipantIds] = useState<string[]>([]);
 
-  // Role-driven row click: directors focus the DetailPane; players set a target.
-  // Tap-toggles: tapping the already-targeted row clears the target.
+  // Auto-target on active-turn change. When a PC's turn starts, default to the
+  // first alive foe; when a foe's turn starts, default to the first alive PC.
+  // Manual overrides (via the reticle button) last until the active turn
+  // changes again.
+  const activeParticipantId = activeEncounter?.activeParticipantId ?? null;
+  useEffect(() => {
+    if (!activeEncounter || !activeParticipantId) {
+      setTargetParticipantIds([]);
+      return;
+    }
+    const active = activeEncounter.participants.find(
+      (p) => isParticipantEntry(p) && p.id === activeParticipantId,
+    );
+    if (!active || !isParticipantEntry(active)) return;
+    const oppositeKind = active.kind === 'pc' ? 'monster' : 'pc';
+    const firstOpposite = activeEncounter.participants.find(
+      (p) => isParticipantEntry(p) && p.kind === oppositeKind && p.currentStamina > 0,
+    );
+    if (firstOpposite && isParticipantEntry(firstOpposite)) {
+      setTargetParticipantIds([firstOpposite.id]);
+    } else {
+      setTargetParticipantIds([]);
+    }
+  }, [activeEncounter, activeParticipantId]);
+
+  // Row click focuses the DetailPane for both roles. Targeting is exclusively
+  // via the per-row reticle button (Pass 2b1+).
   const handleFocus = useCallback((id: string) => setSelectedId(id), []);
-  const handleTarget = useCallback((id: string) => {
-    setTargetParticipantId((prev) => (prev === id ? null : id));
+  const handleRowClick = handleFocus;
+  const handleToggleTarget = useCallback((id: string) => {
+    setTargetParticipantIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
   }, []);
-  const handleRowClick = viewerRole === 'director' ? handleFocus : handleTarget;
 
   // Player view: DetailPane focus is render-derived from selfParticipantId so
   // the lock can't leak into director state via a transient useEffect run
@@ -601,7 +632,8 @@ export function DirectorCombat() {
               actedIds={actedIds}
               viewerRole={viewerRole}
               selfParticipantId={selfParticipantId}
-              targetParticipantId={targetParticipantId}
+              targetParticipantIds={targetParticipantIds}
+              onToggleTarget={handleToggleTarget}
               currentPickingSide={currentPickingSide}
               actedThisRound={actedThisRound}
               viewerId={viewerId}
@@ -616,7 +648,8 @@ export function DirectorCombat() {
               onSelect={handleRowClick}
               viewerRole={viewerRole}
               selfParticipantId={selfParticipantId}
-              targetParticipantId={targetParticipantId}
+              targetParticipantIds={targetParticipantIds}
+              onToggleTarget={handleToggleTarget}
               currentPickingSide={currentPickingSide}
               actedThisRound={actedThisRound}
               viewerId={viewerId}
@@ -663,7 +696,7 @@ export function DirectorCombat() {
               monsterByParticipantId={monsterByParticipantId}
               disabled={disabled}
               campaignId={campaignId}
-              targetParticipantId={targetParticipantId}
+              targetParticipantId={targetParticipantIds[0] ?? null}
               selfParticipantId={selfParticipantId}
               viewerRole={viewerRole}
               isActiveTurn={
