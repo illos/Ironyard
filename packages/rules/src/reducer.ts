@@ -4,15 +4,19 @@ import {
   applyAdjustVictories,
   applyApplyDamage,
   applyApplyHeal,
+  applyApplyParticipantOverride,
   applyApproveCharacter,
+  applyBecomeDoomed,
   applyClaimOpenAction,
   applyClearLobby,
+  applyClearParticipantOverride,
   applyDenyCharacter,
   applyEndEncounter,
   applyEndRound,
   applyEndSession,
   applyEndTurn,
   applyEquipItem,
+  applyExecuteTrigger,
   applyGainHeroToken,
   applyGainMalice,
   applyGainResource,
@@ -20,6 +24,7 @@ import {
   applyJoinLobby,
   applyJumpBehindScreen,
   applyKickPlayer,
+  applyKnockUnconscious,
   applyLeaveLobby,
   applyLoadEncounterTemplate,
   applyMarkActionUsed,
@@ -32,6 +37,7 @@ import {
   applyRemoveCondition,
   applyRemoveParticipant,
   applyRespite,
+  applyResolveTriggerOrder,
   applyRollInitiative,
   applyRollPower,
   applyRollResistance,
@@ -87,14 +93,20 @@ export function applyIntent(
       return applyAdjustVictories(state, intent);
     case IntentTypes.ApproveCharacter:
       return applyApproveCharacter(state, intent);
+    case IntentTypes.BecomeDoomed:
+      return applyBecomeDoomed(state, intent);
     case IntentTypes.ClaimOpenAction:
       return applyClaimOpenAction(state, intent);
     case IntentTypes.ApplyDamage:
       return applyApplyDamage(state, intent);
     case IntentTypes.ApplyHeal:
       return applyApplyHeal(state, intent);
+    case IntentTypes.ApplyParticipantOverride:
+      return applyApplyParticipantOverride(state, intent);
     case IntentTypes.ClearLobby:
       return applyClearLobby(state, intent);
+    case IntentTypes.ClearParticipantOverride:
+      return applyClearParticipantOverride(state, intent);
     case IntentTypes.DenyCharacter:
       return applyDenyCharacter(state, intent);
     case IntentTypes.EndEncounter:
@@ -107,6 +119,8 @@ export function applyIntent(
       return applyEndTurn(state, intent);
     case IntentTypes.EquipItem:
       return applyEquipItem(state, intent);
+    case IntentTypes.ExecuteTrigger:
+      return applyExecuteTrigger(state, intent);
     case IntentTypes.GainHeroToken:
       return applyGainHeroToken(state, intent);
     case IntentTypes.GainMalice:
@@ -121,6 +135,8 @@ export function applyIntent(
       return applyJumpBehindScreen(state, intent);
     case IntentTypes.KickPlayer:
       return applyKickPlayer(state, intent);
+    case IntentTypes.KnockUnconscious:
+      return applyKnockUnconscious(state, intent);
     case IntentTypes.LeaveLobby:
       return applyLeaveLobby(state, intent);
     case IntentTypes.LoadEncounterTemplate:
@@ -145,6 +161,8 @@ export function applyIntent(
       return applyRemoveCondition(state, intent);
     case IntentTypes.RemoveParticipant:
       return applyRemoveParticipant(state, intent);
+    case IntentTypes.ResolveTriggerOrder:
+      return applyResolveTriggerOrder(state, intent);
     case IntentTypes.RollInitiative:
       return applyRollInitiative(state, intent);
     case IntentTypes.RollPower:
@@ -175,6 +193,18 @@ export function applyIntent(
       return applyStartSession(state, intent);
     case IntentTypes.StartTurn:
       return applyStartTurn(state, intent);
+    case IntentTypes.StaminaTransitioned: {
+      // Pass 3 Slice 1 — server-only event substrate. No state mutation; the
+      // emit-site reducer (apply-damage, apply-heal, etc.) already mutated state.
+      // This case exists so the dispatch is exhaustive and the log captures the
+      // transition for slice-2 consumers + UI subscribers.
+      const p = intent.payload as { participantId: string; from: string; to: string; cause: string };
+      return {
+        state,
+        derived: [],
+        log: [{ kind: 'info', text: `stamina: ${p.participantId} ${p.from} → ${p.to} (${p.cause})`, intentId: intent.id }],
+      };
+    }
     case IntentTypes.SubmitCharacter:
       return applySubmitCharacter(state, intent);
     case IntentTypes.SwapKit:
