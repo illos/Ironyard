@@ -261,6 +261,24 @@ export type { PendingTriggerSet } from './pending-triggers';
 export { TriggerEventDescSchema } from './trigger-event';
 export type { TriggerEventDesc } from './trigger-event';
 
+export {
+  PerEncounterFlagsSchema,
+  PerTurnEntrySchema,
+  PerTurnFlagKeySchema,
+  PerRoundFlagsSchema,
+  PerEncounterLatchesSchema,
+  defaultPerEncounterFlags,
+  defaultPerRoundFlags,
+  defaultPerEncounterLatches,
+} from './per-encounter-flags';
+export type {
+  PerEncounterFlags,
+  PerTurnEntry,
+  PerTurnFlagKey,
+  PerRoundFlags,
+  PerEncounterLatches,
+} from './per-encounter-flags';
+
 export { OpenActionKindSchema, OpenActionSchema } from './open-action';
 export type { OpenAction, OpenActionKind } from './open-action';
 
