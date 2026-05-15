@@ -89,11 +89,15 @@ describe('applyDamageStep', () => {
     expect(r.after).toBe(13);
   });
 
-  it('stamina floors at 0; overkill does not go negative', () => {
+  it('overkill stamina goes negative; monster dies at ≤ 0', () => {
+    // Pass 3 Slice 1: stamina no longer floors at 0. Monsters die at ≤ 0 stamina;
+    // the new state machine lets currentStamina go to the overkill value so the
+    // exact delivered amount is preserved.
     const t = makeTarget({ currentStamina: 3 });
     const r = applyDamageStep(t, 10, 'untyped');
     expect(r.delivered).toBe(10);
-    expect(r.after).toBe(0);
+    expect(r.after).toBe(-7);
+    expect(r.newParticipant.staminaState).toBe('dead');
   });
 
   it('zero damage is a no-op', () => {

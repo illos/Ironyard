@@ -1,13 +1,11 @@
-import type { DamageType, Participant, TypedResistance } from '@ironyard/shared';
-
-// Slice 3 subset of §2.12. Steps 1-5 in the canon (weakness, then immunity,
-// then stamina). Steps 6+ (winded/dying/dead transitions, temp stamina) land
-// in slice 4+.
-//
-// When winded/dying transitions land: Revenant ancestry replaces "dying" with
-// "inert" at negative-winded; fire damage while inert is insta-death; 12h inert
-// → regain recovery-value stamina. See docs/rule-questions.md Q16 and
-// docs/rules-canon.md §10.1 footnote.
+import type { DamageType, Participant, StaminaState, TypedResistance } from '@ironyard/shared';
+import {
+  applyKnockOut,
+  applyTransitionSideEffects,
+  checkInertFireInstantDeath,
+  recomputeStaminaState,
+  wouldHitDead,
+} from './stamina';
 
 function sumMatching(list: readonly TypedResistance[], type: DamageType): number {
   let total = 0;
@@ -20,24 +18,81 @@ export type DamageStepResult = {
   before: number; // stamina before
   after: number; // stamina after
   newParticipant: Participant;
+  // Pass 3 Slice 1 extensions.
+  transitionedTo: StaminaState | null;
+  knockedOut: boolean;
 };
 
+// Canon §2.12 engine resolution order. Slice 1 implements steps 1-4 + 6 + 7
+// (state recompute + KO interception + inert-fire-instant-death). Step 5
+// (temp stamina) is not yet implemented — preserved as a TODO for a later slice.
+//
+// `intent` defaults to 'kill' so existing callers compile unchanged.
+// Task 10 will update applyApplyDamage to pass intent through from the payload.
 export function applyDamageStep(
   target: Participant,
   amount: number,
   damageType: DamageType,
+  intent: 'kill' | 'knock-out' = 'kill',
 ): DamageStepResult {
+  // Step 1-2: base + pre-immunity external modifiers (none in slice 1).
   let delivered = amount;
+  // Step 3: weakness.
   delivered += sumMatching(target.weaknesses, damageType);
+  // Step 4: immunity.
   delivered = Math.max(0, delivered - sumMatching(target.immunities, damageType));
 
   const before = target.currentStamina;
-  const after = Math.max(0, before - delivered);
+
+  // Inert + fire-typed-listed → instant death, bypasses normal flow.
+  if (checkInertFireInstantDeath(target, damageType, delivered) === 'instant-death') {
+    const killed: Participant = {
+      ...target,
+      currentStamina: -target.maxStamina - 1,
+      staminaState: 'dead',
+      staminaOverride: null,
+      conditions: [],
+    };
+    return {
+      delivered,
+      before,
+      after: killed.currentStamina,
+      newParticipant: killed,
+      transitionedTo: 'dead',
+      knockedOut: false,
+    };
+  }
+
+  // KO interception path — applies BEFORE damage is recorded.
+  const wouldBe = before - delivered;
+  if (intent === 'knock-out' && wouldHitDead(target, wouldBe)) {
+    const ko = applyKnockOut(target);
+    return {
+      delivered: 0,
+      before,
+      after: before,
+      newParticipant: ko,
+      transitionedTo: 'unconscious',
+      knockedOut: true,
+    };
+  }
+
+  // Step 6: apply damage. Step 5 (temp stamina) not implemented.
+  const after = before - delivered;
+  const intermediate = { ...target, currentStamina: after };
+
+  // Step 7: recompute state + apply side-effects.
+  const { newState, transitioned } = recomputeStaminaState(intermediate);
+  const newParticipant = transitioned
+    ? applyTransitionSideEffects(intermediate, target.staminaState, newState)
+    : intermediate;
 
   return {
     delivered,
     before,
     after,
-    newParticipant: { ...target, currentStamina: after },
+    newParticipant,
+    transitionedTo: transitioned ? newState : null,
+    knockedOut: false,
   };
 }
