@@ -42,6 +42,8 @@ import {
   applyRollPower,
   applyRollResistance,
   applySetCondition,
+  applySetParticipantPerEncounterLatch,
+  applySetParticipantPosthumousDramaEligible,
   applySetResource,
   applySetStamina,
   applySpendHeroToken,
@@ -171,6 +173,10 @@ export function applyIntent(
       return applyRollResistance(state, intent);
     case IntentTypes.SetCondition:
       return applySetCondition(state, intent);
+    case IntentTypes.SetParticipantPerEncounterLatch:
+      return applySetParticipantPerEncounterLatch(state, intent);
+    case IntentTypes.SetParticipantPosthumousDramaEligible:
+      return applySetParticipantPosthumousDramaEligible(state, intent);
     case IntentTypes.SetResource:
       return applySetResource(state, intent);
     case IntentTypes.SetStamina:

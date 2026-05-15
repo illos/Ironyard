@@ -38,6 +38,10 @@ export { applyRollInitiative } from './roll-initiative';
 export { applyRollPower } from './roll-power';
 export { applyRollResistance } from './roll-resistance';
 export { applySetCondition } from './set-condition';
+export {
+  applySetParticipantPerEncounterLatch,
+  applySetParticipantPosthumousDramaEligible,
+} from './set-participant-flag';
 export { applySetResource } from './set-resource';
 export { applySetStamina } from './set-stamina';
 export { applySpendHeroToken } from './spend-hero-token';

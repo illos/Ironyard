@@ -93,6 +93,14 @@ export { RollResistancePayloadSchema } from './roll-resistance';
 export type { RollResistancePayload } from './roll-resistance';
 export { SetConditionPayloadSchema } from './set-condition';
 export type { SetConditionPayload } from './set-condition';
+export {
+  SetParticipantPerEncounterLatchPayloadSchema,
+  SetParticipantPosthumousDramaEligiblePayloadSchema,
+} from './set-participant-flag';
+export type {
+  SetParticipantPerEncounterLatchPayload,
+  SetParticipantPosthumousDramaEligiblePayload,
+} from './set-participant-flag';
 export { SetResourcePayloadSchema } from './set-resource';
 export type { SetResourcePayload } from './set-resource';
 export { SetStaminaPayloadSchema } from './set-stamina';
@@ -200,6 +208,8 @@ export const IntentTypes = {
   RollPower: 'RollPower',
   RollResistance: 'RollResistance',
   SetCondition: 'SetCondition',
+  SetParticipantPerEncounterLatch: 'SetParticipantPerEncounterLatch',
+  SetParticipantPosthumousDramaEligible: 'SetParticipantPosthumousDramaEligible',
   SetResource: 'SetResource',
   SetStamina: 'SetStamina',
   SpendHeroToken: 'SpendHeroToken',
@@ -235,6 +245,8 @@ export const SERVER_ONLY_INTENTS = new Set<string>([
   IntentTypes.ExecuteTrigger,
   IntentTypes.GrantExtraMainAction,
   IntentTypes.RaiseOpenAction,
+  IntentTypes.SetParticipantPerEncounterLatch,
+  IntentTypes.SetParticipantPosthumousDramaEligible,
   IntentTypes.StaminaTransitioned,
   IntentTypes.TroubadourAutoRevive,
 ]);
