@@ -28,6 +28,7 @@ export const SYNTHETIC_ABILITIES: Ability[] = [
     tier: null,
     isSubclass: false,
     sourceClassId: null,
+    targetCharacteristic: null,
   },
   {
     id: 'polder.shadowmeld',
@@ -43,5 +44,6 @@ export const SYNTHETIC_ABILITIES: Ability[] = [
     tier: null,
     isSubclass: false,
     sourceClassId: null,
+    targetCharacteristic: null,
   },
 ];
