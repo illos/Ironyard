@@ -156,10 +156,17 @@ export function removeTriggerEndedConditions(
 // a full DerivedIntent (with causedBy / actor / source filled in from the
 // parent intent). Separating "compute the damage amount" from "build the
 // envelope" keeps this module dependency-free of the intent envelope shape.
+//
+// Pass 3 Slice 1 — canon clarification: "ability roll" and "test" are two
+// subkinds of power roll. The Bleeding hook fires on dying-hero actions
+// (main, triggered) and on either subkind of power roll. The previous
+// 'might_or_agility_roll' was ambiguous; it's renamed to '...test' for
+// tests and 'ability_roll' is new for power-roll-during-ability.
 export type BleedingTrigger =
   | { kind: 'main_action' }
   | { kind: 'triggered_action' }
-  | { kind: 'might_or_agility_roll' };
+  | { kind: 'might_or_agility_test' }      // renamed from might_or_agility_roll for canon precision
+  | { kind: 'ability_roll' };               // new: any ability roll regardless of characteristic
 
 export type BleedingDamageSpec = {
   // The amount to deal. Computed as `bleedingD6 + actor.level` per canon

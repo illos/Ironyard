@@ -1,6 +1,7 @@
 import type { ConditionInstance, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
+  bleedingDamageHook,
   computeRollContributions,
   gateActionForDazed,
   removeTriggerEndedConditions,
@@ -247,5 +248,48 @@ describe('removeTriggerEndedConditions', () => {
     const next = removeTriggerEndedConditions(subject, { kind: 'teleport' });
     expect(next.find((c) => c.type === 'Bleeding')).toBeDefined();
     expect(next.find((c) => c.type === 'Grabbed')).toBeUndefined();
+  });
+});
+
+describe('BleedingTrigger discriminant — slice 1 split', () => {
+  it('fires on ability_roll trigger', () => {
+    const actor = pc({
+      level: 2,
+      conditions: [cond('Bleeding', 'spell_1')],
+    });
+    const result = bleedingDamageHook(actor, { kind: 'ability_roll' }, 4);
+    expect(result).toHaveProperty('amount');
+    if ('amount' in result) {
+      expect(result.amount).toBe(6); // 4 + level 2
+      expect(result.reason).toMatch(/ability_roll/);
+    }
+  });
+
+  it('fires on might_or_agility_test trigger', () => {
+    const actor = pc({
+      level: 3,
+      conditions: [cond('Bleeding', 'spell_1')],
+    });
+    const result = bleedingDamageHook(actor, { kind: 'might_or_agility_test' }, 3);
+    expect(result).toHaveProperty('amount');
+    if ('amount' in result) {
+      expect(result.amount).toBe(6); // 3 + level 3
+      expect(result.reason).toMatch(/might_or_agility_test/);
+    }
+  });
+
+  it('does not fire if actor is not Bleeding', () => {
+    const actor = pc({ level: 2 });
+    const result = bleedingDamageHook(actor, { kind: 'ability_roll' }, 4);
+    expect(result).toEqual({ skipped: 'not-bleeding' });
+  });
+
+  it('requires manual override if bleedingD6 is undefined', () => {
+    const actor = pc({
+      level: 1,
+      conditions: [cond('Bleeding', 'spell_1')],
+    });
+    const result = bleedingDamageHook(actor, { kind: 'ability_roll' }, undefined);
+    expect(result).toEqual({ skipped: 'manual-override-required' });
   });
 });

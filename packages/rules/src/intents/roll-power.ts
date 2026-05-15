@@ -176,10 +176,8 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
   // RollPower is the main-action surface today AND because Might/Agility
   // characteristic also triggers. We classify the trigger for the log only —
   // damage is identical regardless of which branch fired.
-  const bleedingTrigger: BleedingTrigger =
-    characteristic === 'might' || characteristic === 'agility'
-      ? { kind: 'might_or_agility_roll' }
-      : { kind: 'main_action' };
+  // Pass 3 Slice 1: RollPower is always an ability roll, so use 'ability_roll' trigger.
+  const bleedingTrigger: BleedingTrigger = { kind: 'ability_roll' };
   const bleedingLog: LogEntry[] = [];
   if (requireCanon('conditions.the-9-conditions')) {
     const bleed = bleedingDamageHook(attacker, bleedingTrigger, bleedingD6);
