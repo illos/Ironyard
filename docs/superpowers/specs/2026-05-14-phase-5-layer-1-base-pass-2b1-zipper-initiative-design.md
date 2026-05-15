@@ -394,7 +394,55 @@ Pass 2b1 is done when:
 
 After the plan lands and the dev server comes up, eye-testing will likely surface gaps that aren't visible at design time. Each is a small change layered on top of the Pass-2b1 plan. Capturing them here so the spec stays a complete record of what shipped.
 
-_(empty; append numbered entries as they ship)_
+### 1. RollInitiativeOverlay was not full-viewport and rendered black text on the dark theme
+
+**Symptom.** The overlay was positioned `absolute inset-0` against a relatively-positioned left-pane wrapper — so it covered only the rails, not the InlineHeader or the right pane. And because the wrapping element was a native `<dialog>`, its user-agent style `color: CanvasText` (black) bled through to all descendants, making the heading and surprise checklist labels unreadable against the dark theme.
+
+**Fix** ([`6f42fd9`](../../..)). Two changes in `RollInitiativeOverlay.tsx`:
+- `absolute inset-0 z-10` → `fixed inset-0 z-50` so the overlay covers the whole viewport.
+- `text-text` set explicitly on both the `<dialog>` root and the inner card so children inherit the dark-theme foreground.
+
+### 2. Picking a participant immediately rendered their row as ACTED — hiding the pulse + End-turn button
+
+**Symptom.** When a player clicked **I'll go now** (or director picked a foe), the row simultaneously rendered as the active turn (`isTurn=true` → pulse + ring) AND as already-acted (`isActed=true` → 55% opacity + ACTED badge). The dimming visually won, masking the pulse, and the InlineHeader's End-turn affordance was hard to associate with the dimmed row.
+
+Root cause: `applyPickNextActor` was appending the picked participant to `actedThisRound` at pick time. Semantically `actedThisRound` should mean "their turn ended this round" — not "they're currently being picked."
+
+**Fix** ([`8abeb2a`](../../..)). Moved the `actedThisRound` append out of `applyPickNextActor` and into `applyEndTurn`. Engine, WS mirror, and tests updated:
+- `applyEndTurn` now appends `activeParticipantId` (the ending creature) to `actedThisRound` before computing `nextPickingSide`, with an idempotent guard (no double-add if already present).
+- `useSessionSocket`'s `PickNextActor` reflect drops the acted append; its `EndTurn` reflect computes `nextActed` and threads it into the side-flip derivation.
+- `reducer-pick-next-actor.spec.ts` asserts `actedThisRound` stays empty after PickNextActor (and `activeParticipantId === picked`).
+
+`activeParticipantId !== null` is still the guard preventing double-pick mid-turn, so dropping the early acted-add doesn't change correctness — only the semantic + visual state.
+
+### 3. Targeting redesigned — per-row reticle button, auto-target opposite side, ordered target list
+
+**Symptom.** Pass 2a's role-asymmetric tap-to-target gesture (player taps row → targets; director uses AbilityCard dropdown) didn't read as deliberate, only worked for one role, and had no forward-compat shape for multi-target abilities.
+
+**Fix** ([`68d2557`](../../..)). Scope expansion beyond the original Pass 2b1 design:
+- `ParticipantRow.target` prop (replaces `isTarget`): `{ index: number | null; onToggle: () => void }`. Idle = small gray crosshair SVG that hovers to foe-tone. Targeted = crosshair turns foe-tone, pulses red via a new `@keyframes ironyard-target-pulse` (with `prefers-reduced-motion` fallback), and shows a 1-based **target number badge** for forward-compat with multi-target.
+- `DirectorCombat` state migrates from `targetParticipantId: string | null` to `targetParticipantIds: string[]` (ordered). Single-target abilities still consume `[0]` (DetailPane / AbilityCard / TargetBanner / FullSheetTab keep their existing `targetParticipantId` prop, fed from `targetParticipantIds[0]`). Future multi-target abilities consume `targets.slice(0, ability.maxTargets)`.
+- New `useEffect` watches `activeParticipantId`: PC active → first alive foe becomes `[Target 1]`; foe active → first alive PC. Manual reticle toggles override until the next turn change.
+- Row click now focuses the DetailPane for both roles. The Pass-2a player-only tap-to-target gesture is removed. Same UX for director and player.
+- Memory entry added at `feedback_targeting_explicit_reticle_with_indices.md` so future passes don't reintroduce tap-to-target.
+
+### 4. Hooks-after-guard-returns broke DirectorCombat on the first render
+
+**Symptom.** Browser blew up with `Rendered more hooks than during the previous render` and "React has detected a change in the order of Hooks called by DirectorCombat." Same Rules-of-Hooks pattern as Pass 1 PS #6.
+
+Root cause: Tasks 18+19 had introduced two `useCallback` handlers (`handlePickNextActor`, `handleRollInitiative`) **below** the existing campaign-loading guard returns. The bug was latent until PS #3 above added a new `useEffect` (above the guards). On the first render the guards exited early — fewer hooks ran. On the next render the guards passed — the trailing `useCallback`s fired, and React's hook-count check tripped.
+
+**Fix** ([`f9c99db`](../../..)). Demoted both handlers from `useCallback` to plain inline functions, matching the pattern of the other handlers (`handleStartRound`, `handleEndTurn`, `handleEndEncounter`) that already live below the guards. Neither is referenced by a downstream `useEffect`, so referential stability isn't needed.
+
+**Lesson.** Pass 1 PS #6 already documented this pattern; reinforce when adding any hook to DirectorCombat that every hook line must be lower than every guard `return` line. Cheap check before committing: `grep -n "use[A-Z]\\|return (" DirectorCombat.tsx` — confirm every hook line < every return line.
+
+### Acceptance addendum
+
+In addition to the 15 Pass-2b1 acceptance criteria above:
+
+16. The Roll-Initiative overlay covers the full viewport (including the InlineHeader) and renders with the dark-theme foreground color.
+17. Picking a participant via **I'll go now** or director foe-tap renders the row in the active-turn visual state (pulse + accent ring) with no `ACTED` dim. The InlineHeader's End-turn button is visible to the active player.
+18. Each row in PartyRail and EncounterRail has a reticle button. Clicking it toggles inclusion in `targetParticipantIds`; targeted rows show a red-pulsing reticle with a 1-based number badge. `StartTurn` auto-seeds the first alive opposite-side participant as Target 1.
 
 ### Maintenance note
 
