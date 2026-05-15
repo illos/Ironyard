@@ -67,6 +67,8 @@ export { RemoveConditionPayloadSchema } from './remove-condition';
 export type { RemoveConditionPayload } from './remove-condition';
 export { RemoveParticipantPayloadSchema } from './remove-participant';
 export type { RemoveParticipantPayload } from './remove-participant';
+export { RollInitiativePayloadSchema } from './roll-initiative';
+export type { RollInitiativePayload } from './roll-initiative';
 export { RollPowerPayloadSchema } from './roll-power';
 export type { RollPowerPayload } from './roll-power';
 export { RollResistancePayloadSchema } from './roll-resistance';
@@ -162,6 +164,7 @@ export const IntentTypes = {
   RemoveCondition: 'RemoveCondition',
   RemoveParticipant: 'RemoveParticipant',
   RaiseOpenAction: 'RaiseOpenAction',
+  RollInitiative: 'RollInitiative',
   RollPower: 'RollPower',
   RollResistance: 'RollResistance',
   SetCondition: 'SetCondition',
