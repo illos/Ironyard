@@ -1,17 +1,17 @@
 import type { ConditionInstance, ConditionType } from '@ironyard/shared';
 
-// Slice 11: muted-but-distinct backgrounds for the nine canon conditions.
-// Per docs/rules-canon.md §3.1; reserved-condition list is closed.
+// Phase 5 Pass 2b2a — nine distinct hues per condition (categorical palette).
+// Maps each ConditionType to its token-bound Tailwind classes.
 const COLORS: Record<ConditionType, string> = {
-  Bleeding: 'bg-foe text-text ring-foe',
-  Dazed: 'bg-ink-2 text-text ring-line',
-  Frightened: 'bg-ink-2 text-text ring-line',
-  Grabbed: 'bg-ink-2 text-text ring-line',
-  Prone: 'bg-ink-2 text-text ring-line',
-  Restrained: 'bg-ink-2 text-text ring-line',
-  Slowed: 'bg-ink-2 text-text ring-line',
-  Taunted: 'bg-ink-2 text-text ring-line',
-  Weakened: 'bg-ink-2 text-text ring-line',
+  Bleeding:   'bg-cond-bleed/14  text-cond-bleed  ring-cond-bleed/50',
+  Dazed:      'bg-cond-daze/14   text-cond-daze   ring-cond-daze/50',
+  Frightened: 'bg-cond-fright/14 text-cond-fright ring-cond-fright/50',
+  Grabbed:    'bg-cond-grab/14   text-cond-grab   ring-cond-grab/50',
+  Prone:      'bg-cond-prone/14  text-cond-prone  ring-cond-prone/50',
+  Restrained: 'bg-cond-restr/14  text-cond-restr  ring-cond-restr/50',
+  Slowed:     'bg-cond-slow/14   text-cond-slow   ring-cond-slow/50',
+  Taunted:    'bg-cond-taunt/14  text-cond-taunt  ring-cond-taunt/50',
+  Weakened:   'bg-cond-weak/14   text-cond-weak   ring-cond-weak/50',
 };
 
 type Props = {
