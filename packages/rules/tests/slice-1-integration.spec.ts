@@ -598,18 +598,19 @@ describe('slice-1 integration — Q10 cross-side trigger resolution cascade', ()
   };
 
   function buildStateWithPendingTriggers() {
+    const base = withEncounter([
+      makeHeroParticipant(HERO_ID, { ownerId: OWNER_ID }),
+      makeHeroParticipant(MONSTER_ID, { ownerId: null }), // reuse hero factory for simplicity
+    ]);
     return {
-      ...withEncounter([
-        makeHeroParticipant(HERO_ID, { ownerId: OWNER_ID }),
-        makeHeroParticipant(MONSTER_ID, { ownerId: null }), // reuse hero factory for simplicity
-      ]),
-      pendingTriggers,
+      ...base,
+      encounter: base.encounter ? { ...base.encounter, pendingTriggers } : null,
     } as CampaignState;
   }
 
   it('ResolveTriggerOrder emits ExecuteTrigger derived intents in the chosen order', () => {
     const state = buildStateWithPendingTriggers();
-    expect(state.pendingTriggers).not.toBeNull();
+    expect(state.encounter?.pendingTriggers).not.toBeNull();
 
     // Director picks order: monster fires first, then hero
     const result = applyIntent(
@@ -659,12 +660,12 @@ describe('slice-1 integration — Q10 cross-side trigger resolution cascade', ()
       }),
     );
     expect(result.errors ?? []).toEqual([]);
-    expect(result.state.pendingTriggers).toBeNull();
+    expect(result.state.encounter?.pendingTriggers).toBeNull();
   });
 
   it('pendingTriggers cleared at EndEncounter even if ResolveTriggerOrder was never called', () => {
     const state = buildStateWithPendingTriggers();
-    expect(state.pendingTriggers).not.toBeNull();
+    expect(state.encounter?.pendingTriggers).not.toBeNull();
 
     const encounterId = state.encounter?.id ?? '';
     const endResult = applyIntent(
@@ -676,7 +677,7 @@ describe('slice-1 integration — Q10 cross-side trigger resolution cascade', ()
       }),
     );
     expect(endResult.errors ?? []).toEqual([]);
-    expect(endResult.state.pendingTriggers).toBeNull();
+    // encounter is null after EndEncounter — pendingTriggers is gone with it.
     expect(endResult.state.encounter).toBeNull();
   });
 
@@ -696,6 +697,6 @@ describe('slice-1 integration — Q10 cross-side trigger resolution cascade', ()
     );
     expect(result.errors?.[0]?.code).toBe('not_authorized');
     // pendingTriggers unchanged
-    expect(result.state.pendingTriggers).not.toBeNull();
+    expect(result.state.encounter?.pendingTriggers).not.toBeNull();
   });
 });

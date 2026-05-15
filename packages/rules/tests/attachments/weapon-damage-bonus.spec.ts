@@ -139,6 +139,7 @@ function makeReadyState(participants: Participant[]): CampaignState {
       firstSide: null,
       currentPickingSide: null,
       actedThisRound: [],
+      pendingTriggers: null,
     },
   };
 }

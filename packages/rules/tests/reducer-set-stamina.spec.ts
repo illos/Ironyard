@@ -88,6 +88,7 @@ function ready(over?: Partial<Participant>): CampaignState {
       firstSide: null,
       currentPickingSide: null,
       actedThisRound: [],
+      pendingTriggers: null,
     },
   };
 }
@@ -117,6 +118,7 @@ describe('applyIntent — SetStamina', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
     const r = applyIntent(

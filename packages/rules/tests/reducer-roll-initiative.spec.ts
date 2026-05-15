@@ -59,6 +59,7 @@ function readyState(parts: Participant[]): CampaignState {
       firstSide: null, currentPickingSide: null, actedThisRound: [],
       activeParticipantId: null,
       turnState: {}, malice: { current: 0, lastMaliciousStrikeRound: null },
+      pendingTriggers: null,
     },
   };
 }

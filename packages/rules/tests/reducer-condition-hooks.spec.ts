@@ -133,6 +133,7 @@ function readyState(parts: Participant[] = [pc(), monster()]): CampaignState {
       firstSide: null,
       currentPickingSide: null,
       actedThisRound: [],
+      pendingTriggers: null,
     },
   };
 }

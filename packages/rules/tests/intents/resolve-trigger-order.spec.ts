@@ -37,8 +37,7 @@ function stateWithPendingTriggers(
       makeHeroParticipant(HERO_ID, { ownerId: OWNER_ID }),
       makeMonsterParticipant(MONSTER_ID),
     ],
-    encounter: makeRunningEncounterPhase('enc-1'),
-    pendingTriggers,
+    encounter: makeRunningEncounterPhase('enc-1', { pendingTriggers }),
   });
 }
 
@@ -144,6 +143,6 @@ describe('applyResolveTriggerOrder', () => {
     const s = stateWithPendingTriggers();
     const result = applyResolveTriggerOrder(s, resolveIntent());
     expect(result.errors ?? []).toEqual([]);
-    expect(result.state.pendingTriggers).toBeNull();
+    expect(result.state.encounter?.pendingTriggers).toBeNull();
   });
 });

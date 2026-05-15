@@ -186,6 +186,7 @@ export function applyStartEncounter(
     firstSide: null,
     currentPickingSide: null,
     actedThisRound: [],
+    pendingTriggers: null,
   };
 
   return {

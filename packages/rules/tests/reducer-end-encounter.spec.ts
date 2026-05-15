@@ -132,6 +132,7 @@ function withEncounter(): CampaignState {
       firstSide: null,
       currentPickingSide: null,
       actedThisRound: [],
+      pendingTriggers: null,
     },
   };
 }
@@ -195,6 +196,7 @@ describe('applyIntent — EndEncounter', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
     const r = endEncounter(s);
@@ -234,6 +236,7 @@ describe('applyIntent — EndEncounter', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
 
@@ -275,6 +278,7 @@ describe('applyIntent — EndEncounter', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
 
@@ -297,6 +301,7 @@ describe('applyIntent — EndEncounter', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
 
@@ -323,6 +328,7 @@ describe('applyIntent — EndEncounter', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
 
@@ -371,6 +377,7 @@ describe('applyIntent — EndEncounter', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
     const r = endEncounter(s);
@@ -440,6 +447,7 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
+      pendingTriggers: null,
         },
       };
 
@@ -474,6 +482,7 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
+      pendingTriggers: null,
         },
       };
 
@@ -505,6 +514,7 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
+      pendingTriggers: null,
         },
       };
 
@@ -540,6 +550,7 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
+      pendingTriggers: null,
         },
       };
 
@@ -587,6 +598,7 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
+      pendingTriggers: null,
         },
       };
 
@@ -626,6 +638,7 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
+          pendingTriggers: null,
         },
       };
 
@@ -641,18 +654,6 @@ describe('applyIntent — EndEncounter', () => {
       const s: CampaignState = {
         ...emptyCampaignState(campaignId, 'user-owner'),
         participants: [],
-        pendingTriggers: {
-          id: 'ptrig_test',
-          triggerEvent: {
-            kind: 'damage-applied',
-            targetId: 'm_goblin',
-            attackerId: 'pc_alice',
-            amount: 5,
-            type: 'fire',
-          },
-          candidates: [],
-          order: null,
-        },
         encounter: {
           id: 'enc_test',
           currentRound: 1,
@@ -662,12 +663,25 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
+          pendingTriggers: {
+            id: 'ptrig_test',
+            triggerEvent: {
+              kind: 'damage-applied',
+              targetId: 'm_goblin',
+              attackerId: 'pc_alice',
+              amount: 5,
+              type: 'fire',
+            },
+            candidates: [],
+            order: null,
+          },
         },
       };
 
       const r = endEncounter(s);
       expect(r.errors).toBeUndefined();
-      expect(r.state.pendingTriggers).toBeNull();
+      // encounter is null after EndEncounter — pendingTriggers is gone with it.
+      expect(r.state.encounter).toBeNull();
     });
 
     it('emits a StaminaTransitioned derived intent for each doomed-died participant', () => {
@@ -709,6 +723,7 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
+      pendingTriggers: null,
         },
       };
 

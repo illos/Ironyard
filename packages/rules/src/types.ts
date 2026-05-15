@@ -64,6 +64,11 @@ export type EncounterPhase = {
   currentPickingSide: 'heroes' | 'foes' | null;
   // `actedThisRound` — participant ids that have already taken their turn this round.
   actedThisRound: string[];
+  // Pass 3 Slice 1 — Q10 cross-side trigger resolution. Set non-null when the
+  // engine is paused waiting for a director to pick triggered-action order.
+  // Cleared after ResolveTriggerOrder fires the cascade, or at EndEncounter.
+  // Encounter-scoped: only meaningful while an encounter is active.
+  pendingTriggers: PendingTriggerSet | null;
 };
 
 // Keep ActiveEncounter as an alias for backwards compatibility within this
@@ -100,10 +105,6 @@ export type CampaignState = {
   attendingCharacterIds: string[];
   // Hero tokens available this session.
   heroTokens: number;
-  // Pass 3 Slice 1 — Q10 cross-side trigger resolution. Set non-null when the
-  // engine is paused waiting for a director to pick triggered-action order.
-  // Cleared after ResolveTriggerOrder fires the cascade, or at EndEncounter.
-  pendingTriggers: PendingTriggerSet | null;
 };
 
 export type LogEntry = {
@@ -136,6 +137,5 @@ export function emptyCampaignState(campaignId: string, ownerId: string): Campaig
     currentSessionId: null,
     attendingCharacterIds: [],
     heroTokens: 0,
-    pendingTriggers: null,
   };
 }

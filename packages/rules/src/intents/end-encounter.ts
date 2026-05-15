@@ -150,8 +150,6 @@ export function applyEndEncounter(state: CampaignState, intent: StampedIntent): 
       participants: finalParticipants,
       encounter: null,
       openActions: [],
-      // Defensive: clear pendingTriggers — shouldn't be set across encounters.
-      pendingTriggers: null,
     },
     derived,
     log: [

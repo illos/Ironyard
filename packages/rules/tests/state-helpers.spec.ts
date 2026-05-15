@@ -220,6 +220,7 @@ function stateWithZ(
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
+      pendingTriggers: null,
     },
   };
 }

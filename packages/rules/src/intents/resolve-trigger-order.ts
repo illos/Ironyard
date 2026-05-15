@@ -22,7 +22,7 @@ export function applyResolveTriggerOrder(state: CampaignState, intent: StampedIn
     };
   }
 
-  const pt = state.pendingTriggers;
+  const pt = state.encounter?.pendingTriggers ?? null;
   if (pt === null) {
     return {
       state,
@@ -83,7 +83,7 @@ export function applyResolveTriggerOrder(state: CampaignState, intent: StampedIn
     state: {
       ...state,
       seq: state.seq + 1,
-      pendingTriggers: null,
+      encounter: state.encounter ? { ...state.encounter, pendingTriggers: null } : null,
     },
     derived,
     log: [

@@ -160,6 +160,7 @@ export function makeRunningEncounterPhase(
     firstSide: null,
     currentPickingSide: null,
     actedThisRound: [],
+    pendingTriggers: null,
     ...overrides,
   };
 }

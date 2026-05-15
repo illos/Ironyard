@@ -128,6 +128,7 @@ function ready(): CampaignState {
       firstSide: null,
       currentPickingSide: null,
       actedThisRound: [],
+      pendingTriggers: null,
     },
   };
 }
@@ -464,6 +465,7 @@ describe('applyIntent — RemoveCondition', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
     const r = applyIntent(

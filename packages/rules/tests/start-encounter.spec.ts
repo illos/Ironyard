@@ -234,6 +234,7 @@ describe('applyStartEncounter — new atomic payload shape', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     });
 

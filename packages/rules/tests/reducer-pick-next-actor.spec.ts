@@ -59,6 +59,7 @@ function readyState(parts: Participant[], picking: 'heroes' | 'foes' = 'heroes')
       firstSide: picking, currentPickingSide: picking, actedThisRound: [],
       activeParticipantId: null,
       turnState: {}, malice: { current: 0, lastMaliciousStrikeRound: null },
+      pendingTriggers: null,
     },
   };
 }

@@ -84,6 +84,7 @@ function readyState(participantIds: string[] = ['alice', 'bob', 'cleric']): Camp
       firstSide: 'heroes',
       currentPickingSide: 'heroes',
       actedThisRound: [],
+      pendingTriggers: null,
     },
   };
 }
@@ -317,6 +318,7 @@ describe('applyStartTurn per-turn heroic resource gain', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
   }
@@ -510,6 +512,7 @@ describe('applyStartTurn — turnActionUsage', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
   }
@@ -547,6 +550,7 @@ describe('applyStartTurn — turnActionUsage', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
     const r = applyIntent(s, intent('StartTurn', { participantId: 'pc-1' }));
@@ -577,6 +581,7 @@ describe('applyStartTurn — turnActionUsage', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
     const r = applyIntent(s, intent('StartTurn', { participantId: 'censor' }));
@@ -613,6 +618,7 @@ describe('applyEndRound — Pass 3 Slice 1 triggeredActionUsedThisRound reset', 
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
 
@@ -642,6 +648,7 @@ describe('applyEndRound — Pass 3 Slice 1 triggeredActionUsedThisRound reset', 
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
 
@@ -681,6 +688,7 @@ describe('applyEndRound — Pass 3 Slice 1 triggeredActionUsedThisRound reset', 
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
 

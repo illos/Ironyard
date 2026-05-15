@@ -53,6 +53,7 @@ function withRosterAndEncounter(): CampaignState {
       firstSide: null,
       currentPickingSide: null,
       actedThisRound: [],
+      pendingTriggers: null,
     },
   };
   return s;
@@ -308,6 +309,7 @@ describe('applyIntent — RollPower', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
     const r = applyIntent(
@@ -343,6 +345,7 @@ describe('applyIntent — ApplyDamage', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
   }
@@ -393,6 +396,7 @@ describe('end-to-end: RollPower → derived ApplyDamage cascade', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
 

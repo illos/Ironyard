@@ -163,6 +163,7 @@ describe('full encounter resource generation cycle (canon § 5 integration)', ()
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
+      pendingTriggers: null,
       },
     };
 
