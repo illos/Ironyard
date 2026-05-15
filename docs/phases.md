@@ -157,6 +157,7 @@ The decomposition below is sequenced for shipping; each gets its own spec → pl
 | **2b.8** | **Q17B ancestry signature-trait engine gaps** — audit each ancestry signature trait that today fails to fold; classify each as (a) modelable with existing schema, (b) needs new effect/condition shape (likely overlaps 2b.4), or (c) permanent-defer | per-ancestry, varies | 🚧 |
 | **2b.9** | **Q10 cross-side ordering of simultaneous triggered actions** — when both a hero and a monster have a triggered action that fires on the same event, what order do they resolve in? Currently undefined in the engine | action-economy resolution rules | 🚧 |
 | **2b.10** | **Canon housekeeping** — flip § 5 + § 10 parent flags now that subsections are ✅; refresh § 10.16 to reflect what's been closed each sub-epic; update the 2C spec status header (currently stale "Designed, awaiting plan." → shipped). Rides alongside every sub-epic | docs only | trivial |
+| **2b.11** | **Minion squads** — N minions sharing one row + one Turn-flow; squad-level action-economy bookkeeping; consecutive-act semantics when a squad is picked in zipper initiative; encounter-builder grouping UI (canon § 8.6 initiative groups). Composes with Pass 5 Layer 1 Pass 2b1's side-aware picker without schema rework | new SquadParticipant entity (or `participant.squadId`); EncounterBuilder grouping UI; PickNextActor extension for squad-as-target; consecutive-turn cascade | 🚧 — blocked by Pass 5 Layer 1 Pass 2b1 |
 
 ### Sequencing notes
 
@@ -167,6 +168,7 @@ The decomposition below is sequenced for shipping; each gets its own spec → pl
 - **2b.4 is the deepest architectural change.** Some conditional attachments need per-encounter state (flight, recent damage) which forces the applier to re-evaluate mid-encounter rather than statically on character build. May want to split 2b.4 further once we brainstorm it.
 - **2b.7, 2b.8, 2b.9 are independent of everything else.** Can slot in any time.
 - **2b.10 rides alongside every sub-epic** — each delivers a piece of canon ✅ that updates the doc.
+- **2b.11 is blocked on Pass 5 Layer 1 Pass 2b1.** The squad-pick UX builds on zipper initiative's side-aware picker; 2b1 must ship first.
 
 ### Acceptance
 
