@@ -56,6 +56,15 @@ export type EncounterPhase = {
   // `lastMaliciousStrikeRound` is reserved for the canon §5.5 "not two rounds
   // in a row" rule; slice 7 only initializes it to null.
   malice: MaliceState;
+  // 2b.11 zipper-initiative fields (Task 2 adds runtime default, Task 7 wires
+  // StartEncounter). Optional here so existing code that constructs EncounterPhase
+  // without these fields (e.g. test fixtures pre-Task-7) still compiles.
+  // `firstSide` — which side won the roll-off and picks first (canon § 4.1).
+  firstSide?: 'heroes' | 'foes';
+  // `currentPickingSide` — whose pick is next; null between turns/rounds.
+  currentPickingSide?: 'heroes' | 'foes' | null;
+  // `actedThisRound` — participant ids that have already taken their turn this round.
+  actedThisRound?: string[];
 };
 
 // Keep ActiveEncounter as an alias for backwards compatibility within this

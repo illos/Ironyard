@@ -1,6 +1,7 @@
 import type { Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { type CampaignState, emptyCampaignState, isParticipant, sumPartyVictories, aliveHeroes, averageVictoriesAlive } from '../src/index';
+import { nextPickingSide, participantSide } from '../src/state-helpers';
 
 const campaignId = 'test_campaign';
 const ownerId = 'user_owner';
@@ -136,5 +137,90 @@ describe('averageVictoriesAlive', () => {
     const s = stateWithPCs([5, 5, 1]);
     (s.participants[2] as Participant).currentStamina = -11;  // dead
     expect(averageVictoriesAlive(s)).toBe(5);  // (5+5)/2 = 5
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Task 2b.11 — zipper-initiative helpers
+// ---------------------------------------------------------------------------
+
+function pcZ(id: string): Participant {
+  return {
+    id, name: id, kind: 'pc', level: 1, currentStamina: 30, maxStamina: 30,
+    characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
+    immunities: [], weaknesses: [], conditions: [], heroicResources: [],
+    extras: [], surges: 0, recoveries: { current: 0, max: 0 }, recoveryValue: 0,
+    ownerId: null, characterId: null,
+    weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
+    activeAbilities: [], victories: 0,
+    turnActionUsage: { main: false, maneuver: false, move: false },
+  };
+}
+
+function monsterZ(id: string): Participant {
+  return { ...pcZ(id), kind: 'monster' };
+}
+
+function stateWithZ(
+  parts: Participant[],
+  acted: string[],
+  current: 'heroes' | 'foes' | null,
+): CampaignState {
+  const s = emptyCampaignState('c1', 'owner');
+  return {
+    ...s,
+    participants: parts,
+    encounter: {
+      id: 'e1',
+      currentRound: 1,
+      // turnOrder is the legacy flat-order field; zipper-initiative replaces
+      // it in Task 12. Keep it empty here so the fixture satisfies EncounterPhase.
+      turnOrder: [],
+      firstSide: 'heroes' as const,
+      currentPickingSide: current,
+      actedThisRound: acted,
+      activeParticipantId: null,
+      turnState: {},
+      malice: { current: 0, lastMaliciousStrikeRound: null },
+    },
+  };
+}
+
+describe('participantSide', () => {
+  it('returns heroes for PCs and foes for monsters', () => {
+    expect(participantSide(pcZ('alice'))).toBe('heroes');
+    expect(participantSide(monsterZ('goblin'))).toBe('foes');
+  });
+});
+
+describe('nextPickingSide', () => {
+  it('flips to the other side when both sides have unacted creatures', () => {
+    const s = stateWithZ([pcZ('alice'), monsterZ('goblin')], [], 'heroes');
+    expect(nextPickingSide(s)).toBe('foes');
+  });
+
+  it('flips back to heroes when foes side just acted', () => {
+    const s = stateWithZ([pcZ('alice'), monsterZ('goblin')], ['goblin'], 'foes');
+    expect(nextPickingSide(s)).toBe('heroes');
+  });
+
+  it('stays on heroes when foes are exhausted (run-out rule)', () => {
+    const s = stateWithZ([pcZ('alice'), pcZ('bob'), monsterZ('goblin')], ['goblin'], 'foes');
+    expect(nextPickingSide(s)).toBe('heroes');
+  });
+
+  it('stays on foes when heroes are exhausted', () => {
+    const s = stateWithZ([pcZ('alice'), monsterZ('goblin'), monsterZ('orc')], ['alice'], 'heroes');
+    expect(nextPickingSide(s)).toBe('foes');
+  });
+
+  it('returns null when both sides are fully acted (round end)', () => {
+    const s = stateWithZ([pcZ('alice'), monsterZ('goblin')], ['alice', 'goblin'], 'heroes');
+    expect(nextPickingSide(s)).toBeNull();
+  });
+
+  it('returns null when there is no encounter', () => {
+    const s = emptyCampaignState('c1', 'owner');
+    expect(nextPickingSide(s)).toBeNull();
   });
 });

@@ -2,6 +2,7 @@ import type { Participant } from '@ironyard/shared';
 import type { CampaignState } from './types';
 import { isParticipant } from './types';
 
+
 /**
  * Sum of per-character Victories across all PC participants in the lobby.
  * Replacement for the deprecated `state.partyVictories` field — that field
@@ -43,4 +44,40 @@ export function averageVictoriesAlive(state: CampaignState): number {
   if (alive.length === 0) return 0;
   const sum = alive.reduce((t, p) => t + (p.victories ?? 0), 0);
   return Math.floor(sum / alive.length);
+}
+
+/**
+ * Side of a participant for zipper-initiative purposes (canon § 4.1).
+ * PCs are heroes; monsters are foes. The minion-squads epic (2b.11) will
+ * preserve this mapping — squads inherit their members' side.
+ */
+export function participantSide(p: Participant): 'heroes' | 'foes' {
+  return p.kind === 'pc' ? 'heroes' : 'foes';
+}
+
+/**
+ * Derive the next picking side from `actedThisRound` and side membership.
+ * Canon § 4.1 run-out rule:
+ *  - if both sides have unacted creatures, flip to the other side
+ *  - if only one side has unacted creatures, stay on that side
+ *  - if neither does, return null (round is ready to end)
+ *
+ * Used by `applyEndTurn` and by the WS client's `reflect()` so client and
+ * server always agree on whose pick is next.
+ */
+export function nextPickingSide(state: CampaignState): 'heroes' | 'foes' | null {
+  if (!state.encounter) return null;
+  const acted = new Set(state.encounter.actedThisRound ?? []);
+  let unactedHeroes = 0;
+  let unactedFoes = 0;
+  for (const p of state.participants) {
+    if (!isParticipant(p) || acted.has(p.id)) continue;
+    if (participantSide(p) === 'heroes') unactedHeroes++;
+    else unactedFoes++;
+  }
+  if (unactedHeroes === 0 && unactedFoes === 0) return null;
+  if (unactedHeroes === 0) return 'foes';
+  if (unactedFoes === 0) return 'heroes';
+  const current = state.encounter.currentPickingSide ?? null;
+  return current === 'heroes' ? 'foes' : 'heroes';
 }
