@@ -23,6 +23,7 @@ export type {
 } from './types';
 
 export { applyDamageStep } from './damage';
+export { applyKnockOut, applyTransitionSideEffects, recomputeStaminaState } from './stamina';
 export { cancelEdgesAndBanes, resolvePowerRoll, tierFromTotal } from './power-roll';
 export type { PowerRollOutcome, Tier } from './power-roll';
 

@@ -3,13 +3,19 @@ import {
   type AdjustVictoriesPayload,
   type ApplyDamagePayload,
   type ApplyHealPayload,
+  type ApplyParticipantOverridePayload,
+  type BecomeDoomedPayload,
+  type ClearParticipantOverridePayload,
   type ConditionInstance,
   type EndTurnPayload,
+  type ExecuteTriggerPayload,
   type GainHeroTokenPayload,
   type GainMalicePayload,
   type GainResourcePayload,
+  type GrantExtraMainActionPayload,
   type Intent,
   IntentTypes,
+  type KnockUnconsciousPayload,
   type LoadEncounterTemplatePayload,
   type MaliceState,
   type MarkActionUsedPayload,
@@ -22,6 +28,7 @@ import {
   type PickNextActorPayload,
   type RemoveConditionPayload,
   type RemoveParticipantPayload,
+  type ResolveTriggerOrderPayload,
   type ResourceRef,
   type RollInitiativePayload,
   type RollPowerPayload,
@@ -34,12 +41,14 @@ import {
   type SpendRecoveryPayload,
   type SpendResourcePayload,
   type SpendSurgePayload,
+  type StaminaTransitionedPayload,
   type StartEncounterPayload,
   type StartSessionPayload,
   type StartTurnPayload,
   type UpdateSessionAttendancePayload,
   ulid,
 } from '@ironyard/shared';
+import { applyKnockOut, applyTransitionSideEffects, recomputeStaminaState } from '@ironyard/rules';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -145,6 +154,11 @@ function reflect(
     };
   }
   if (type === IntentTypes.EndEncounter) {
+    // dieAtEncounterEnd: doomed participants whose override has dieAtEncounterEnd=true
+    // transition to dead at encounter end. Mirror that locally before clearing state.
+    // The full encounter state is wiped (return null) but we still update participants
+    // for a brief moment before the snapshot replaces the mirror — this is fine since
+    // the encounter is over.
     return null;
   }
   if (!prev) return prev;
@@ -214,11 +228,15 @@ function reflect(
     return {
       ...prev,
       activeParticipantId: null,
-      participants: wasRoundOne
-        ? prev.participants.map((p) =>
-            isParticipantEntry(p) && p.surprised ? { ...p, surprised: false } : p,
-          )
-        : prev.participants,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p)) return p;
+        const cleared: Participant = {
+          ...p,
+          // Reset per-round triggered-action usage slot (slice 1 — canon §4.10).
+          triggeredActionUsedThisRound: false,
+        };
+        return wasRoundOne && p.surprised ? { ...cleared, surprised: false } : cleared;
+      }),
     };
   }
 
@@ -293,11 +311,15 @@ function reflect(
     const { targetId, amount } = payload as ApplyDamagePayload;
     return {
       ...prev,
-      participants: prev.participants.map((p) =>
-        isParticipantEntry(p) && p.id === targetId
-          ? { ...p, currentStamina: Math.max(0, p.currentStamina - amount) }
-          : p,
-      ),
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== targetId) return p;
+        const after = p.currentStamina - amount;
+        const intermediate = { ...p, currentStamina: after };
+        const { newState, transitioned } = recomputeStaminaState(intermediate);
+        return transitioned
+          ? applyTransitionSideEffects(intermediate, p.staminaState ?? 'healthy', newState)
+          : intermediate;
+      }),
     };
   }
 
@@ -354,13 +376,117 @@ function reflect(
     const { targetId, amount } = payload as ApplyHealPayload;
     return {
       ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== targetId) return p;
+        const after = Math.min(p.maxStamina, p.currentStamina + amount);
+        const intermediate = { ...p, currentStamina: after };
+        const { newState, transitioned } = recomputeStaminaState(intermediate);
+        // Clear dying Bleeding + update staminaState when transitioning
+        return transitioned
+          ? applyTransitionSideEffects(intermediate, p.staminaState ?? 'healthy', newState)
+          : intermediate;
+      }),
+    };
+  }
+
+  // ---- Pass 3 Slice 1 — stamina state machine reflects ----
+
+  if (type === IntentTypes.BecomeDoomed) {
+    const { participantId, source } = payload as BecomeDoomedPayload;
+    // source is 'hakaan-doomsight' | 'manual'. Mirror the doomed override shape
+    // that the reducer emits so staminaState derives correctly client-side.
+    const isDoomsight = source === 'hakaan-doomsight';
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== participantId) return p;
+        const override = {
+          kind: 'doomed' as const,
+          source: source as 'hakaan-doomsight' | 'manual',
+          canRegainStamina: !isDoomsight,
+          autoTier3OnPowerRolls: isDoomsight,
+          staminaDeathThreshold: isDoomsight ? ('none' as const) : ('staminaMax' as const),
+          dieAtEncounterEnd: isDoomsight,
+        };
+        const withOverride = { ...p, staminaOverride: override };
+        const { newState } = recomputeStaminaState(withOverride);
+        return { ...withOverride, staminaState: newState };
+      }),
+    };
+  }
+
+  if (type === IntentTypes.KnockUnconscious) {
+    const { targetId } = payload as KnockUnconsciousPayload;
+    return {
+      ...prev,
       participants: prev.participants.map((p) =>
-        isParticipantEntry(p) && p.id === targetId
-          ? { ...p, currentStamina: Math.min(p.maxStamina, p.currentStamina + amount) }
-          : p,
+        isParticipantEntry(p) && p.id === targetId ? applyKnockOut(p) : p,
       ),
     };
   }
+
+  if (type === IntentTypes.ApplyParticipantOverride) {
+    const { participantId, override } = payload as ApplyParticipantOverridePayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== participantId) return p;
+        const withOverride = { ...p, staminaOverride: override ?? null };
+        const { newState } = recomputeStaminaState(withOverride);
+        return { ...withOverride, staminaState: newState };
+      }),
+    };
+  }
+
+  if (type === IntentTypes.ClearParticipantOverride) {
+    const { participantId } = payload as ClearParticipantOverridePayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== participantId) return p;
+        const cleared = { ...p, staminaOverride: null };
+        const { newState } = recomputeStaminaState(cleared);
+        return { ...cleared, staminaState: newState };
+      }),
+    };
+  }
+
+  if (type === IntentTypes.ResolveTriggerOrder) {
+    // The cascade unfolds via subsequent ExecuteTrigger derived intents.
+    // Clear pendingTriggers now so the director modal closes immediately.
+    void (payload as ResolveTriggerOrderPayload);
+    return { ...prev, pendingTriggers: null };
+  }
+
+  if (type === IntentTypes.GrantExtraMainAction) {
+    const { participantId } = payload as GrantExtraMainActionPayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== participantId) return p;
+        const usage = p.turnActionUsage ?? { main: false, maneuver: false, move: false };
+        return { ...p, turnActionUsage: { ...usage, main: false } };
+      }),
+    };
+  }
+
+  if (type === IntentTypes.ExecuteTrigger) {
+    // No-op mirror (slice 1 stub). The actual effect flows through downstream
+    // derived intents (RollPower, ApplyDamage, etc.) that have their own cases.
+    void (payload as ExecuteTriggerPayload);
+    return prev;
+  }
+
+  if (type === IntentTypes.StaminaTransitioned) {
+    // Already-applied state change — stamina helpers above have already set
+    // staminaState correctly when the triggering intent (ApplyDamage, ApplyHeal,
+    // etc.) was mirrored. This derived intent is no-op in the mirror; it exists
+    // for logging and slice-2 class-δ triggers on the server side.
+    void (payload as StaminaTransitionedPayload);
+    return prev;
+  }
+
+  // ---- end Pass 3 Slice 1 ----
 
   if (type === IntentTypes.SpendRecovery) {
     const { participantId } = payload as SpendRecoveryPayload;

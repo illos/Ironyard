@@ -2,14 +2,21 @@ import {
   type AdjustVictoriesPayload,
   type ApplyDamagePayload,
   type ApplyHealPayload,
+  type ApplyParticipantOverridePayload,
+  type BecomeDoomedPayload,
+  type ClearParticipantOverridePayload,
   type EndTurnPayload,
+  type ExecuteTriggerPayload,
   type GainResourcePayload,
+  type GrantExtraMainActionPayload,
   IntentTypes,
+  type KnockUnconsciousPayload,
   type MarkActionUsedPayload,
   type MarkSurprisedPayload,
   type Participant,
   type PickNextActorPayload,
   type RemoveConditionPayload,
+  type ResolveTriggerOrderPayload,
   type RollInitiativePayload,
   type RollPowerPayload,
   type SetConditionPayload,
@@ -17,6 +24,7 @@ import {
   type SpendRecoveryPayload,
   type SpendResourcePayload,
   type SpendSurgePayload,
+  type StaminaTransitionedPayload,
   type StartRoundPayload,
   type StartTurnPayload,
 } from '@ironyard/shared';
@@ -170,6 +178,42 @@ export function describeIntent(args: DescribeArgs): string {
       const { amount } = intent.payload as { amount: number };
       return `Director spent ${amount} Malice`;
     }
+    // ---- Pass 3 Slice 1 — stamina state machine describes ----
+    case IntentTypes.BecomeDoomed: {
+      const p = intent.payload as BecomeDoomedPayload;
+      const actor = nameOf(participantsBefore, p.participantId);
+      return `${actor} becomes doomed (${p.source})`;
+    }
+    case IntentTypes.KnockUnconscious: {
+      const p = intent.payload as KnockUnconsciousPayload;
+      return `${nameOf(participantsBefore, p.targetId)} knocked unconscious`;
+    }
+    case IntentTypes.ApplyParticipantOverride: {
+      const p = intent.payload as ApplyParticipantOverridePayload;
+      return `${nameOf(participantsBefore, p.participantId)}: ${p.override.kind} override applied`;
+    }
+    case IntentTypes.ClearParticipantOverride: {
+      const p = intent.payload as ClearParticipantOverridePayload;
+      return `${nameOf(participantsBefore, p.participantId)}: override cleared`;
+    }
+    case IntentTypes.ResolveTriggerOrder: {
+      const p = intent.payload as ResolveTriggerOrderPayload;
+      const names = p.order.map((id) => nameOf(participantsBefore, id)).join(' → ');
+      return `Trigger order resolved: ${names}`;
+    }
+    case IntentTypes.GrantExtraMainAction: {
+      const p = intent.payload as GrantExtraMainActionPayload;
+      return `${nameOf(participantsBefore, p.participantId)} gains extra main action (critical hit)`;
+    }
+    case IntentTypes.ExecuteTrigger: {
+      const p = intent.payload as ExecuteTriggerPayload;
+      return `${nameOf(participantsBefore, p.participantId)} fires triggered action`;
+    }
+    case IntentTypes.StaminaTransitioned: {
+      const p = intent.payload as StaminaTransitionedPayload;
+      return `${nameOf(participantsBefore, p.participantId)}: ${p.from} → ${p.to}`;
+    }
+    // ---- end Pass 3 Slice 1 ----
     default:
       return `Dispatched ${intent.type}`;
   }
