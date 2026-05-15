@@ -1,6 +1,7 @@
-import { ApplyHealPayloadSchema } from '@ironyard/shared';
-import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import { ApplyHealPayloadSchema, IntentTypes } from '@ironyard/shared';
+import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
+import { applyTransitionSideEffects, recomputeStaminaState } from '../stamina';
 
 // Slice 7: restore HP up to maxStamina. Used as the derived intent emitted by
 // SpendRecovery; future heal abilities reuse this dispatch path. A
@@ -48,9 +49,33 @@ export function applyApplyHeal(state: CampaignState, intent: StampedIntent): Int
   const before = target.currentStamina;
   const after = Math.min(before + amount, target.maxStamina);
   const delivered = after - before;
-  const updatedTarget = { ...target, currentStamina: after };
+  const intermediate = { ...target, currentStamina: after };
+
+  // Pass 3 Slice 1 — recompute state after heal. If state changes (e.g. dying →
+  // healthy/winded), apply side-effects (clears non-removable dying Bleeding).
+  const { newState, transitioned } = recomputeStaminaState(intermediate);
+  const finalTarget = transitioned
+    ? applyTransitionSideEffects(intermediate, target.staminaState, newState)
+    : intermediate;
+
+  // Emit derived StaminaTransitioned when state changes.
+  const derived: DerivedIntent[] = transitioned
+    ? [{
+        type: IntentTypes.StaminaTransitioned,
+        actor: intent.actor,
+        payload: {
+          participantId: targetId,
+          from: target.staminaState,
+          to: finalTarget.staminaState,
+          cause: 'heal',
+        },
+        source: 'server' as const,
+        causedBy: intent.id,
+      }]
+    : [];
+
   const updatedParticipants = state.participants.map((p) =>
-    isParticipant(p) && p.id === targetId ? updatedTarget : p,
+    isParticipant(p) && p.id === targetId ? finalTarget : p,
   );
 
   return {
@@ -59,7 +84,7 @@ export function applyApplyHeal(state: CampaignState, intent: StampedIntent): Int
       seq: state.seq + 1,
       participants: updatedParticipants,
     },
-    derived: [],
+    derived,
     log: [
       {
         kind: 'info',
