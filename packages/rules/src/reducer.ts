@@ -29,6 +29,7 @@ import {
   applyRemoveCondition,
   applyRemoveParticipant,
   applyRespite,
+  applyRollInitiative,
   applyRollPower,
   applyRollResistance,
   applySetCondition,
@@ -136,6 +137,8 @@ export function applyIntent(
       return applyRemoveCondition(state, intent);
     case IntentTypes.RemoveParticipant:
       return applyRemoveParticipant(state, intent);
+    case IntentTypes.RollInitiative:
+      return applyRollInitiative(state, intent);
     case IntentTypes.RollPower:
       return applyRollPower(state, intent);
     case IntentTypes.RollResistance:

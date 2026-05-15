@@ -25,6 +25,7 @@ export { applyRaiseOpenAction } from './raise-open-action';
 export { applyRespite } from './respite';
 export { applyRemoveCondition } from './remove-condition';
 export { applyRemoveParticipant } from './remove-participant';
+export { applyRollInitiative } from './roll-initiative';
 export { applyRollPower } from './roll-power';
 export { applyRollResistance } from './roll-resistance';
 export { applySetCondition } from './set-condition';
