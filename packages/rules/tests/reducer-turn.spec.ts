@@ -176,27 +176,48 @@ describe('StartTurn / EndTurn', () => {
     expect(r.errors?.[0]?.code).toBe('participant_missing');
   });
 
-  it('EndTurn advances to the next participant in order', () => {
+  it('EndTurn clears activeParticipantId (zipper: director picks next via PickNextActor)', () => {
+    // Under zipper initiative, EndTurn no longer auto-advances the participant;
+    // it clears activeParticipantId and derives currentPickingSide.
+    // All 3 participants are PCs (heroes); foes side is empty, so run-out rule
+    // keeps currentPickingSide on 'heroes'.
     const r = applyIntent(inRoundOne(), intent('EndTurn', {}));
     expect(r.errors).toBeUndefined();
-    expect(r.state.encounter?.activeParticipantId).toBe('bob');
+    expect(r.state.encounter?.activeParticipantId).toBeNull();
+    expect(r.state.encounter?.currentPickingSide).toBe('heroes');
   });
 
-  it('EndTurn at the last in order parks activeParticipantId at null', () => {
+  it('EndTurn always clears activeParticipantId regardless of position in order', () => {
+    // Old assertion was "parks at null when last in order"; now it always parks.
     const s = applyIntent(inRoundOne(), intent('StartTurn', { participantId: 'cleric' })).state;
     const r = applyIntent(s, intent('EndTurn', {}));
     expect(r.state.encounter?.activeParticipantId).toBeNull();
+    expect(r.state.encounter?.currentPickingSide).toBe('heroes');
   });
 
-  it('full round walkthrough: StartRound → 3× EndTurn → null → EndRound', () => {
-    let s = inRoundOne(); // StartEncounter sets round 1; StartRound (in inRoundOne) advances to 2
+  it('full round walkthrough (zipper): StartRound → EndTurn × 3 → null × 3 → EndRound', () => {
+    // Under zipper initiative each EndTurn clears activeParticipantId and
+    // currentPickingSide reflects who picks next. actedThisRound is not updated
+    // by EndTurn itself (PickNextActor updates it); so after each EndTurn the
+    // unacted counts remain the same — run-out rule: all-heroes roster keeps
+    // currentPickingSide on 'heroes'.
+    let s = inRoundOne(); // round 2 after StartRound
     expect(s.encounter?.activeParticipantId).toBe('alice');
-    s = applyIntent(s, intent('EndTurn', {})).state;
-    expect(s.encounter?.activeParticipantId).toBe('bob');
-    s = applyIntent(s, intent('EndTurn', {})).state;
-    expect(s.encounter?.activeParticipantId).toBe('cleric');
+
     s = applyIntent(s, intent('EndTurn', {})).state;
     expect(s.encounter?.activeParticipantId).toBeNull();
+    expect(s.encounter?.currentPickingSide).toBe('heroes');
+
+    // Simulate director picking bob via StartTurn (PickNextActor wires this in full flow).
+    s = applyIntent(s, intent('StartTurn', { participantId: 'bob' })).state;
+    s = applyIntent(s, intent('EndTurn', {})).state;
+    expect(s.encounter?.activeParticipantId).toBeNull();
+    expect(s.encounter?.currentPickingSide).toBe('heroes');
+
+    s = applyIntent(s, intent('StartTurn', { participantId: 'cleric' })).state;
+    s = applyIntent(s, intent('EndTurn', {})).state;
+    expect(s.encounter?.activeParticipantId).toBeNull();
+
     s = applyIntent(s, intent('EndRound', {})).state;
     expect(s.encounter?.currentRound).toBe(2);
     expect(s.encounter?.activeParticipantId).toBeNull();
@@ -362,6 +383,50 @@ describe('applyStartTurn per-turn heroic resource gain', () => {
     expect(r.errors).toBeUndefined();
     const pc = r.state.participants.find((p) => isParticipant(p) && p.id === 'talent');
     expect(pc && isParticipant(pc) ? pc.heroicResources[0]?.value : null).toBe(0);
+  });
+});
+
+describe('EndTurn (zipper-init)', () => {
+  function stateWith(picking: 'heroes' | 'foes', acted: string[], active: string | null): CampaignState {
+    const s = readyState(['alice', 'bob']);  // 2 PCs
+    // Add a monster to give us a foes side too. readyState's `part()` makes PCs;
+    // mutate one to monster.
+    const goblin: Participant = { ...s.participants[0] as Participant, id: 'goblin', kind: 'monster', name: 'goblin' };
+    const next: CampaignState = {
+      ...s,
+      participants: [...s.participants, goblin],
+      encounter: {
+        ...(s.encounter as NonNullable<CampaignState['encounter']>),
+        firstSide: 'heroes' as const,
+        currentPickingSide: picking,
+        actedThisRound: acted,
+        activeParticipantId: active,
+      },
+    };
+    return next;
+  }
+
+  it('clears activeParticipantId and flips to the other side when both sides have unacted', () => {
+    const s = stateWith('heroes', ['alice'], 'alice');
+    const r = applyIntent(s, intent('EndTurn', {}));
+    expect(r.errors).toBeUndefined();
+    expect(r.state.encounter?.activeParticipantId).toBeNull();
+    expect(r.state.encounter?.currentPickingSide).toBe('foes');
+  });
+
+  it('stays on the same side when the other side is exhausted (run-out rule)', () => {
+    // alice and bob remain on heroes; goblin already acted.
+    const s = stateWith('foes', ['goblin'], 'goblin');
+    const r = applyIntent(s, intent('EndTurn', {}));
+    expect(r.errors).toBeUndefined();
+    expect(r.state.encounter?.currentPickingSide).toBe('heroes');
+  });
+
+  it('returns currentPickingSide null when both sides are exhausted', () => {
+    const s = stateWith('foes', ['alice', 'bob', 'goblin'], 'goblin');
+    const r = applyIntent(s, intent('EndTurn', {}));
+    expect(r.errors).toBeUndefined();
+    expect(r.state.encounter?.currentPickingSide).toBeNull();
   });
 });
 

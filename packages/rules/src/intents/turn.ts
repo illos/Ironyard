@@ -9,7 +9,7 @@ import {
 } from '@ironyard/shared';
 import { HEROIC_RESOURCES } from '../heroic-resources';
 import { requireCanon } from '../require-canon';
-import { aliveHeroes } from '../state-helpers';
+import { aliveHeroes, nextPickingSide } from '../state-helpers';
 import type {
   ActiveEncounter,
   CampaignState,
@@ -309,13 +309,14 @@ export function applyEndTurn(state: CampaignState, intent: StampedIntent): Inten
   const guard = requireEncounter(state, intent, 'EndTurn');
   if (!guard.ok) return guard.result;
 
-  const order = guard.encounter.turnOrder;
   const currentId = guard.encounter.activeParticipantId;
-  const currentIdx = currentId === null ? -1 : order.indexOf(currentId);
-  // Falling off the end (or off a stale id) parks at null; explicit StartRound
-  // or EndRound moves the lifecycle on from there.
-  const nextId =
-    currentIdx >= 0 && currentIdx + 1 < order.length ? (order[currentIdx + 1] ?? null) : null;
+  // Zipper initiative (canon § 4.1): clear activeParticipantId, derive the
+  // next picking side from `actedThisRound` + side membership. Run-out rule
+  // is encoded in `nextPickingSide()`.
+  const nextSide = nextPickingSide({
+    ...state,
+    encounter: { ...guard.encounter, activeParticipantId: null },
+  });
 
   // Slice 6: clear the ending creature's per-turn flags. StartTurn re-seeds
   // them next turn.
@@ -332,8 +333,8 @@ export function applyEndTurn(state: CampaignState, intent: StampedIntent): Inten
   const log: LogEntry[] = [
     {
       kind: 'info',
-      text: nextId
-        ? `${currentId ?? 'no one'} ends turn, ${nextId} is up`
+      text: nextSide
+        ? `${currentId ?? 'no one'} ends turn; ${nextSide} pick next`
         : `${currentId ?? 'no one'} ends turn; round end pending`,
       intentId: intent.id,
     },
@@ -433,7 +434,8 @@ export function applyEndTurn(state: CampaignState, intent: StampedIntent): Inten
       participants: updatedParticipants,
       encounter: {
         ...guard.encounter,
-        activeParticipantId: nextId,
+        activeParticipantId: null,
+        currentPickingSide: nextSide,
         turnState: remainingTurnState,
       },
     },
