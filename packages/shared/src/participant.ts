@@ -94,5 +94,18 @@ export const ParticipantSchema = z.object({
   // "edge on rolls against" and "can't take triggered actions" consequences
   // of being surprised are Phase 2b umbrella work — 2b1 only carries the flag.
   surprised: z.boolean().default(false),
+  // Pass 5 Pass 2b2a — monster meta stamped at StartEncounter from the
+  // monster definition. Null on PC participants and on pre-2b2a snapshots.
+  role: z.string().nullable().default(null),
+  ancestry: z.array(z.string()).default([]),
+  size: z.string().nullable().default(null),
+  speed: z.number().int().nullable().default(null),
+  stability: z.number().int().nullable().default(null),
+  freeStrike: z.number().int().nullable().default(null),
+  ev: z.number().int().nullable().default(null),
+  withCaptain: z.string().nullable().default(null),
+  // Pass 5 Pass 2b2a — PC class display name stamped at StartEncounter from
+  // the character blob. Null on monster participants and pre-2b2a snapshots.
+  className: z.string().nullable().default(null),
 });
 export type Participant = z.infer<typeof ParticipantSchema>;
