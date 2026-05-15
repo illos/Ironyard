@@ -2,6 +2,7 @@ import type { Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { type CampaignState, emptyCampaignState, isParticipant, sumPartyVictories, aliveHeroes, averageVictoriesAlive } from '../src/index';
 import { nextPickingSide, participantSide } from '../src/state-helpers';
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 
 const campaignId = 'test_campaign';
 const ownerId = 'user_owner';
@@ -43,6 +44,10 @@ function pc(over: Partial<Participant> = {}): Participant {
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
     ...over,
@@ -86,6 +91,10 @@ function monster(over: Partial<Participant> = {}): Participant {
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
     ...over,
@@ -193,6 +202,10 @@ function pcZ(id: string): Participant {
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
   };

@@ -1,5 +1,6 @@
 import { AddMonsterPayloadSchema, type Monster, type Participant } from '@ironyard/shared';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 
 // Convert a Monster stat block into a lobby Participant. Named separately from
 // the handler so tests and future helpers can call it directly.
@@ -46,6 +47,10 @@ export function participantFromMonster(
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
   };
 }
 

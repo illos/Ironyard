@@ -17,6 +17,7 @@ import { applyRollPower } from '../../src/intents/roll-power';
 import type { ResolvedKit, StaticDataBundle } from '../../src/static-data';
 import type { CampaignState, StampedIntent } from '../../src/types';
 import { emptyCampaignState } from '../../src/types';
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -108,6 +109,10 @@ function makeParticipant(
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
     ...overrides,

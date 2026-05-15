@@ -1,3 +1,4 @@
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
@@ -39,6 +40,10 @@ function pc(id: string, ownerId: string | null = id): Participant {
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
   };

@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import { HeroRecoveriesCell } from './HeroRecoveriesCell';
 import type { Participant } from '@ironyard/shared';
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 
 afterEach(cleanup);
 
@@ -21,6 +22,10 @@ function makePc(recoveries: { current: number; max: number }): Participant {
     freeStrike: null, ev: null, withCaptain: null, className: 'Tactician',
     staminaState: 'healthy', staminaOverride: null, bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
   } as Participant;

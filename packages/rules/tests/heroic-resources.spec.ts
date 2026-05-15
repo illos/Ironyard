@@ -1,3 +1,4 @@
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 import type { Intent, Participant } from '@ironyard/shared';
 import { HEROIC_RESOURCE_NAMES } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
@@ -75,6 +76,10 @@ function pcWithResource(opts: {
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
   };

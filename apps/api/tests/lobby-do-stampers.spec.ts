@@ -6,6 +6,7 @@
 import type { CampaignState } from '@ironyard/rules';
 import type { Intent } from '@ironyard/shared';
 import { describe, expect, it, vi } from 'vitest';
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 
 // ── Mock data/index (monsters + items lookup) ──────────────────────────────
 vi.mock('../src/data/index', () => ({
@@ -339,6 +340,10 @@ describe('stampKickPlayer', () => {
           staminaOverride: null,
           bodyIntact: true,
           triggeredActionUsedThisRound: false,
+          perEncounterFlags: defaultPerEncounterFlags(),
+          posthumousDramaEligible: false,
+          psionFlags: defaultPsionFlags(),
+          maintainedAbilities: [],
           purchasedTraits: [],
           equippedTitleIds: [],
         },
@@ -381,6 +386,10 @@ describe('stampKickPlayer', () => {
           staminaOverride: null,
           bodyIntact: true,
           triggeredActionUsedThisRound: false,
+          perEncounterFlags: defaultPerEncounterFlags(),
+          posthumousDramaEligible: false,
+          psionFlags: defaultPsionFlags(),
+          maintainedAbilities: [],
           purchasedTraits: [],
           equippedTitleIds: [],
         },

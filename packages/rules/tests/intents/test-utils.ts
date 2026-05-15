@@ -1,6 +1,7 @@
 import type { Intent, Monster, Participant } from '@ironyard/shared';
 import type { CampaignState, EncounterPhase, StampedIntent } from '../../src/types';
 import { emptyCampaignState } from '../../src/types';
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 
 export const T = 1_700_000_000_000;
 export const CAMPAIGN_ID = 'camp-test';
@@ -75,6 +76,10 @@ export function makeHeroParticipant(id: string, overrides: Partial<Participant> 
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
     ...overrides,
   };
 }
@@ -121,6 +126,10 @@ export function makeMonsterParticipant(
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
     ...overrides,
   };
 }

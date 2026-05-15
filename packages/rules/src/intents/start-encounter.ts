@@ -1,3 +1,4 @@
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 import {
   type Participant,
   StartEncounterPayloadSchema,
@@ -150,6 +151,10 @@ export function applyStartEncounter(
       staminaOverride: null,
       bodyIntact: true,
       triggeredActionUsedThisRound: false,
+      perEncounterFlags: defaultPerEncounterFlags(),
+      posthumousDramaEligible: false,
+      psionFlags: defaultPsionFlags(),
+      maintainedAbilities: [],
     };
   });
 

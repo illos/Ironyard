@@ -1,6 +1,7 @@
 import type { Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { applyDamageStep } from '../src/damage';
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 
 function makeTarget(over: Partial<Participant> = {}): Participant {
   return {
@@ -39,6 +40,10 @@ function makeTarget(over: Partial<Participant> = {}): Participant {
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
     ...over,

@@ -1,3 +1,4 @@
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 import {
   type AddMonsterPayload,
   type AdjustVictoriesPayload,
@@ -234,6 +235,10 @@ function reflect(
           ...p,
           // Reset per-round triggered-action usage slot (slice 1 — canon §4.10).
           triggeredActionUsedThisRound: false,
+          perEncounterFlags: defaultPerEncounterFlags(),
+          posthumousDramaEligible: false,
+          psionFlags: defaultPsionFlags(),
+          maintainedAbilities: [],
         };
         return wasRoundOne && p.surprised ? { ...cleared, surprised: false } : cleared;
       }),
@@ -626,6 +631,10 @@ function participantFromMonsterClient(
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
   };

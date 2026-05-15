@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Participant } from '@ironyard/shared';
 import { applyDamageStep } from '../src/damage';
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 
 function hero(overrides: Partial<Participant> = {}): Participant {
   return {
@@ -41,6 +42,10 @@ function hero(overrides: Partial<Participant> = {}): Participant {
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
     ...overrides,
   } as Participant;
 }

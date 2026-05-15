@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Participant } from '@ironyard/shared';
 import { recomputeStaminaState, wouldHitDead } from '../src/stamina';
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 
 function pc(overrides: Partial<Participant> = {}): Participant {
   return {
@@ -39,6 +40,10 @@ function pc(overrides: Partial<Participant> = {}): Participant {
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    perEncounterFlags: defaultPerEncounterFlags(),
+    posthumousDramaEligible: false,
+    psionFlags: defaultPsionFlags(),
+    maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
     ...overrides,

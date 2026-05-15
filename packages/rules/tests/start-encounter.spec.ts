@@ -1,3 +1,4 @@
+import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 import type { HeroClass, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
@@ -205,6 +206,10 @@ describe('applyStartEncounter — new atomic payload shape', () => {
       staminaOverride: null,
       bodyIntact: true,
       triggeredActionUsedThisRound: false,
+      perEncounterFlags: defaultPerEncounterFlags(),
+      posthumousDramaEligible: false,
+      psionFlags: defaultPsionFlags(),
+      maintainedAbilities: [],
       purchasedTraits: [],
       equippedTitleIds: [],
     };
