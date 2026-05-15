@@ -6,8 +6,11 @@ import {
   type GainResourcePayload,
   IntentTypes,
   type MarkActionUsedPayload,
+  type MarkSurprisedPayload,
   type Participant,
+  type PickNextActorPayload,
   type RemoveConditionPayload,
+  type RollInitiativePayload,
   type RollPowerPayload,
   type SetConditionPayload,
   type SetStaminaPayload,
@@ -63,6 +66,13 @@ export function describeIntent(args: DescribeArgs): string {
       const abilityLabel = p.abilityName ?? p.abilityId;
       return `${attacker} rolls ${abilityLabel} vs ${targetNames} (${tag})`;
     }
+    case IntentTypes.RollInitiative: {
+      const p = intent.payload as RollInitiativePayload;
+      const reason = p.rolledD10 !== undefined ? ` (d10=${p.rolledD10})` : '';
+      const surpriseSummary =
+        p.surprised.length > 0 ? `; ${p.surprised.length} surprised` : '';
+      return `Initiative — ${p.winner} first${reason}${surpriseSummary}`;
+    }
     case IntentTypes.StartRound: {
       void (intent.payload as StartRoundPayload);
       return 'Round started';
@@ -101,6 +111,16 @@ export function describeIntent(args: DescribeArgs): string {
       // Auto-emitted from RollPower (causedBy is set) — suppress so the parent
       // RollPower toast isn't double-described.
       return '';
+    }
+    case IntentTypes.MarkSurprised: {
+      const p = intent.payload as MarkSurprisedPayload;
+      return p.surprised
+        ? `${nameOf(participantsBefore, p.participantId)} marked surprised`
+        : `${nameOf(participantsBefore, p.participantId)} unmarked surprised`;
+    }
+    case IntentTypes.PickNextActor: {
+      const p = intent.payload as PickNextActorPayload;
+      return `${nameOf(participantsBefore, p.participantId)} picked next`;
     }
     case IntentTypes.AdjustVictories: {
       const payload = intent.payload as AdjustVictoriesPayload;
