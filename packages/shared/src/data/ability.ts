@@ -38,6 +38,12 @@ export const AbilitySchema = z.object({
   tier: z.number().int().min(1).max(10).nullable().default(null),
   isSubclass: z.boolean().default(false),
   sourceClassId: z.string().nullable().default(null),
+
+  // Phase 5 Pass 2b2a — the "vs X" half of the power-roll header.
+  // Extracted by parse-ability.ts when the markdown contains a "vs Stamina"
+  // / "vs Reason" / "vs Reflexes" clause. Null when the ability has no
+  // standard power-roll header.
+  targetCharacteristic: z.enum(['Stamina', 'Reason', 'Reflexes']).nullable().default(null),
 });
 export type Ability = z.infer<typeof AbilitySchema>;
 

@@ -143,7 +143,8 @@ export function parsePowerRollFromContent(content: string): PowerRoll | undefine
 
     // Header: **Power Roll + <anything>:** (characteristic name or numeric bonus)
     // Accepts: "Power Roll + Might:", "Power Roll + Might or Agility:",
-    //          "Power Roll + 3:", "Power Roll +3:"
+    //          "Power Roll + 3:", "Power Roll +3:",
+    //          "Power Roll + Might vs Stamina:" (Phase 5 Pass 2b2a — "vs X" variant)
     const head = /^\*\*Power Roll\s*\+\s*([^*:]+?):\*\*\s*$/.exec(line);
     if (head && head[1] !== undefined) {
       bonus = head[1].trim();
@@ -167,6 +168,33 @@ export function parsePowerRollFromContent(content: string): PowerRoll | undefine
     };
   }
   return undefined;
+}
+
+// ── targetCharacteristic extraction ───────────────────────────────────────────
+
+// Phase 5 Pass 2b2a — extract the target characteristic from the power-roll
+// header. Matches "vs Stamina" / "vs Reason" / "vs Reflexes" anywhere in the
+// bold power-roll header line (e.g. "**Power Roll + Might vs Stamina:**").
+// Returns null when the ability has no standard power-roll header with a "vs X"
+// clause.
+function extractTargetCharacteristic(
+  content: string,
+): 'Stamina' | 'Reason' | 'Reflexes' | null {
+  const lines = content.split(/\r?\n/);
+  for (const rawLine of lines) {
+    const line = rawLine.replace(/^>\s*/, '').trim();
+    // Only look inside the bold power-roll header line.
+    if (!/^\*\*Power Roll/.test(line)) continue;
+    const m = /\bvs\s+(Stamina|Reason|Reflexes)\b/i.exec(line);
+    if (m && m[1]) {
+      const raw = m[1];
+      return (raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase()) as
+        | 'Stamina'
+        | 'Reason'
+        | 'Reflexes';
+    }
+  }
+  return null;
 }
 
 // ── Main entry ─────────────────────────────────────────────────────────────────
@@ -229,6 +257,9 @@ export function parseAbilityMarkdown(md: string, filePath = ''): Ability | null 
 
   const powerRoll = parsePowerRollFromContent(content);
 
+  // Phase 5 Pass 2b2a — extract "vs X" target characteristic from power-roll header.
+  const targetCharacteristic = extractTargetCharacteristic(content);
+
   // Run through AbilitySchema so Zod applies defaults and validates.
   const result = AbilitySchema.safeParse({
     id,
@@ -243,6 +274,7 @@ export function parseAbilityMarkdown(md: string, filePath = ''): Ability | null 
     tier,
     isSubclass,
     sourceClassId,
+    targetCharacteristic,
   });
 
   if (!result.success) return null;

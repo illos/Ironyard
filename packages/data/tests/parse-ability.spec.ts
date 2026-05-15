@@ -127,3 +127,73 @@ level: 7
     expect(a?.id).toBe('conduit-arise-11-piety-t7');
   });
 });
+
+describe('parseAbilityMarkdown — targetCharacteristic extraction', () => {
+  it('extracts the target characteristic from a "vs X" power-roll header', () => {
+    const md = `---
+item_name: Reaving Slash
+type: feature/ability/fury/1st-level-feature
+class: fury
+action_type: Main action
+---
+
+**Power Roll + Might vs Stamina:**
+
+- **≤11:** 3 damage
+- **12-16:** 5 damage
+- **17+:** 8 damage
+`;
+    const a = parseAbilityMarkdown(md, '/abs/Abilities/Fury/Reaving Slash.md');
+    expect(a).not.toBeNull();
+    expect(a!.targetCharacteristic).toBe('Stamina');
+  });
+
+  it('returns null when no "vs X" clause is present', () => {
+    const md = `---
+item_name: Maintenance
+type: feature/ability/fury/1st-level-feature
+class: fury
+action_type: Maneuver
+---
+
+Effect: maintain your essence pool.
+`;
+    const a = parseAbilityMarkdown(md, '/abs/Abilities/Fury/Maintenance.md');
+    expect(a).not.toBeNull();
+    expect(a!.targetCharacteristic).toBeNull();
+  });
+
+  it('recognises all three target characteristics (Stamina, Reason, Reflexes)', () => {
+    const reasonMd = `---
+item_name: X
+type: feature/ability/tactician/1st-level-feature
+class: tactician
+action_type: Main action
+---
+
+**Power Roll + Intuition vs Reason:**
+
+- **≤11:** 0
+- **12-16:** 0
+- **17+:** 0
+`;
+    const reason = parseAbilityMarkdown(reasonMd, '/abs/Abilities/Tactician/X.md');
+    expect(reason!.targetCharacteristic).toBe('Reason');
+
+    const reflexesMd = `---
+item_name: Y
+type: feature/ability/shadow/1st-level-feature
+class: shadow
+action_type: Main action
+---
+
+**Power Roll + Agility vs Reflexes:**
+
+- **≤11:** 0
+- **12-16:** 0
+- **17+:** 0
+`;
+    const reflexes = parseAbilityMarkdown(reflexesMd, '/abs/Abilities/Shadow/Y.md');
+    expect(reflexes!.targetCharacteristic).toBe('Reflexes');
+  });
+});
