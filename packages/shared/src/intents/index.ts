@@ -55,6 +55,8 @@ export type {
 } from './load-encounter-template';
 export { MarkActionUsedPayloadSchema } from './mark-action-used';
 export type { MarkActionUsedPayload } from './mark-action-used';
+export { MarkSurprisedPayloadSchema } from './mark-surprised';
+export type { MarkSurprisedPayload } from './mark-surprised';
 export { NotePayloadSchema } from './note';
 export type { NotePayload } from './note';
 export { PickNextActorPayloadSchema } from './pick-next-actor';
@@ -160,6 +162,7 @@ export const IntentTypes = {
   LeaveLobby: 'LeaveLobby',
   LoadEncounterTemplate: 'LoadEncounterTemplate',
   MarkActionUsed: 'MarkActionUsed',
+  MarkSurprised: 'MarkSurprised',
   Note: 'Note',
   PickNextActor: 'PickNextActor',
   PushItem: 'PushItem',

@@ -22,6 +22,7 @@ import {
   applyLeaveLobby,
   applyLoadEncounterTemplate,
   applyMarkActionUsed,
+  applyMarkSurprised,
   applyNote,
   applyPickNextActor,
   applyPushItem,
@@ -124,6 +125,8 @@ export function applyIntent(
       return applyLoadEncounterTemplate(state, intent);
     case IntentTypes.MarkActionUsed:
       return applyMarkActionUsed(state, intent);
+    case IntentTypes.MarkSurprised:
+      return applyMarkSurprised(state, intent);
     case IntentTypes.Note:
       return applyNote(state, intent);
     case IntentTypes.PickNextActor:

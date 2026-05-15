@@ -18,6 +18,7 @@ export { applyKickPlayer } from './kick-player';
 export { applyLeaveLobby } from './leave-lobby';
 export { applyLoadEncounterTemplate } from './load-encounter-template';
 export { applyMarkActionUsed } from './mark-action-used';
+export { applyMarkSurprised } from './mark-surprised';
 export { applyNote } from './note';
 export { applyPickNextActor } from './pick-next-actor';
 export { applyPushItem } from './push-item';
