@@ -60,6 +60,15 @@ export function makeHeroParticipant(id: string, overrides: Partial<Participant> 
     victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
     surprised: false,
+    role: null,
+    ancestry: [],
+    size: null,
+    speed: null,
+    stability: null,
+    freeStrike: null,
+    ev: null,
+    withCaptain: null,
+    className: null,
     ...overrides,
   };
 }
@@ -91,6 +100,15 @@ export function makeMonsterParticipant(
     victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
     surprised: false,
+    role: null,
+    ancestry: [],
+    size: null,
+    speed: null,
+    stability: null,
+    freeStrike: null,
+    ev: null,
+    withCaptain: null,
+    className: null,
     ...overrides,
   };
 }

@@ -483,6 +483,15 @@ function participantFromMonsterClient(
     victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
     surprised: false,
+    role: monster.roles[0] ?? null,
+    ancestry: monster.ancestry,
+    size: monster.size,
+    speed: monster.speed,
+    stability: monster.stability,
+    freeStrike: monster.freeStrike,
+    ev: monster.ev.ev,
+    withCaptain: null,
+    className: null,
   };
 }
 

@@ -133,6 +133,15 @@ function makePcParticipant(id: string) {
     victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
     surprised: false,
+    role: null as string | null,
+    ancestry: [] as string[],
+    size: null as string | null,
+    speed: null as number | null,
+    stability: null as number | null,
+    freeStrike: null as number | null,
+    ev: null as number | null,
+    withCaptain: null as string | null,
+    className: null as string | null,
   };
 }
 
@@ -245,6 +254,15 @@ describe('handleSideEffect Respite', () => {
           victories: 0,
           turnActionUsage: { main: false, maneuver: false, move: false },
           surprised: false,
+          role: null as string | null,
+          ancestry: [] as string[],
+          size: null as string | null,
+          speed: null as number | null,
+          stability: null as number | null,
+          freeStrike: null as number | null,
+          ev: null as number | null,
+          withCaptain: null as string | null,
+          className: null as string | null,
         },
       ],
     });
