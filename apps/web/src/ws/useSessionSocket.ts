@@ -490,7 +490,7 @@ function participantFromMonsterClient(
     stability: monster.stability,
     freeStrike: monster.freeStrike,
     ev: monster.ev.ev,
-    withCaptain: null,
+    withCaptain: monster.withCaptain ?? null,
     className: null,
   };
 }

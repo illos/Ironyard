@@ -136,7 +136,9 @@ export function applyStartEncounter(
       freeStrike: null,
       ev: null,
       withCaptain: null,
-      className: null,
+      className: stamped.character.classId
+        ? (ctx.staticData.classes.get(stamped.character.classId)?.name ?? null)
+        : null,
     };
   });
 

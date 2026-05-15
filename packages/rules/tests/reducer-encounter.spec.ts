@@ -1,4 +1,4 @@
-import type { Intent, Participant } from '@ironyard/shared';
+import type { Intent, Monster, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
   type CampaignState,
@@ -482,5 +482,90 @@ describe('applyRollPower — derived MarkActionUsed (Pass 2a)', () => {
       const r = applyIntent(withRosterAndEncounter(), intent('RollPower', payload));
       expect(r.derived.some((d) => d.type === 'MarkActionUsed')).toBe(false);
     }
+  });
+});
+
+describe('Pass 2b2a — monster meta + PC className stamping', () => {
+  /** Minimal Monster fixture carrying all 8 meta fields including withCaptain. */
+  function makeMonsterStatBlock(overrides: Partial<Monster> = {}): Monster {
+    return {
+      id: 'goblin-sniper',
+      name: 'Goblin Sniper',
+      level: 1,
+      roles: ['artillery'],
+      ancestry: ['goblin'],
+      ev: { ev: 6 },
+      stamina: { base: 15, withCaptain: 20 },
+      immunities: [],
+      weaknesses: [],
+      speed: 5,
+      movement: [],
+      size: '1S',
+      stability: 0,
+      freeStrike: 2,
+      withCaptain: '+2 bonus to speed',
+      characteristics: { might: -1, agility: 2, reason: 0, intuition: 1, presence: -1 },
+      abilities: [],
+      ...overrides,
+    };
+  }
+
+  it('stamps role / ancestry / size / speed / stability / freeStrike / ev / withCaptain onto monster participants', () => {
+    const monsterBlob = makeMonsterStatBlock();
+    const stampedMonsters = [
+      {
+        monsterId: monsterBlob.id,
+        quantity: 1,
+        monster: monsterBlob,
+      },
+    ];
+    const s = { ...emptyCampaignState(campaignId, 'user-owner'), currentSessionId: 'sess-test' };
+    const r = applyIntent(s, intent('StartEncounter', { stampedMonsters }));
+    expect(r.errors).toBeUndefined();
+    const mp = r.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'monster',
+    );
+    expect(mp).toBeDefined();
+    expect(mp?.role).toBe('artillery');
+    expect(mp?.ancestry).toEqual(['goblin']);
+    expect(mp?.size).toBe('1S');
+    expect(mp?.speed).toBe(5);
+    expect(mp?.stability).toBe(0);
+    expect(mp?.freeStrike).toBe(2);
+    expect(mp?.ev).toBe(6);
+    expect(mp?.withCaptain).toBe('+2 bonus to speed');
+  });
+
+  it('stamps className onto PC participants from the character class registry', () => {
+    const ctx: ReducerContext = { staticData: buildBundleWithFury() };
+    // buildFuryL1Fixture uses classId: 'fury'; the bundle maps 'fury' → { name: 'Fury' }
+    const character = buildFuryL1Fixture();
+    const stampedPcs = [{ characterId: 'char-1', ownerId: 'user-player', name: 'Kaela', character }];
+    const s = { ...emptyCampaignState(campaignId, 'user-owner'), currentSessionId: 'sess-test' };
+    const r = applyIntent(s, intent('StartEncounter', { stampedPcs }), ctx);
+    expect(r.errors).toBeUndefined();
+    const pcParticipant = r.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'pc',
+    );
+    expect(pcParticipant).toBeDefined();
+    expect(pcParticipant?.className).toBe('Fury');
+  });
+
+  it('leaves monster-meta fields null on PC participants', () => {
+    const ctx: ReducerContext = { staticData: buildBundleWithFury() };
+    const character = buildFuryL1Fixture();
+    const stampedPcs = [{ characterId: 'char-2', ownerId: 'user-player', name: 'Ryn', character }];
+    const s = { ...emptyCampaignState(campaignId, 'user-owner'), currentSessionId: 'sess-test' };
+    const r = applyIntent(s, intent('StartEncounter', { stampedPcs }), ctx);
+    const pcParticipant = r.state.participants.find(
+      (p): p is Participant => isParticipant(p) && p.kind === 'pc',
+    );
+    expect(pcParticipant?.role).toBeNull();
+    expect(pcParticipant?.size).toBeNull();
+    expect(pcParticipant?.speed).toBeNull();
+    expect(pcParticipant?.stability).toBeNull();
+    expect(pcParticipant?.freeStrike).toBeNull();
+    expect(pcParticipant?.ev).toBeNull();
+    expect(pcParticipant?.withCaptain).toBeNull();
   });
 });
