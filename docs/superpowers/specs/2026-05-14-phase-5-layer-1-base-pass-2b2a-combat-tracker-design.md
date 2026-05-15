@@ -430,7 +430,20 @@ Pass 2b2a is done when:
 
 After the plan lands and the dev server comes up, eye-testing will likely surface gaps that aren't visible at design time. Each is a small change layered on top of the Pass-2b2a plan. Capturing them here so the spec stays a complete record of what shipped.
 
-(Empty — populated post-shipping.)
+### 1. Combat tracker crashed on encounters with pre-2b2a participants — WS-mirror undefined-vs-null gap
+
+**Symptom.** Opening `/campaigns/$id/play` on an encounter that started before 2b2a deployed threw `TypeError: Cannot read properties of undefined (reading 'split')` from `parseMonsterRole`. Stack: `EncounterRail` → `roleReadoutFor` → `parseMonsterRole(p.role)`. The crash bypassed the `monster-fallback` branch because the check `p.role === null` is strict equality, but the field was `undefined` (not `null`) on WS-mirrored monster snapshots.
+
+**Root cause.** Identical to Pass 2a PS #1. The WS mirror in `useSessionSocket.ts` builds Participant snapshots without running them through `ParticipantSchema.parse`, so the new `.default(null)` clauses never fire — fields are genuinely `undefined`, not the `null` the TypeScript type promises. Every Pass-2b2a-introduced field that the consumer accesses without defaulting is a latent crash.
+
+**Fix** ([`d7e112d`](../../..)). Defensive `undefined`-tolerance in three consumers:
+- `rail-utils.ts` — `p.role === null` → `p.role == null` (loose equality catches both null and undefined).
+- `DetailHeader.tsx` — `focused.ancestry.length > 0` → `(focused.ancestry ?? []).length > 0`, same guard on the `.map()` site.
+- `MonsterStatBlock.tsx` — destructured `immunities` / `weaknesses` rebound as `safeImmunities` / `safeWeaknesses` with `?? []` fallback (used by `hasDefenses` and the render); `withCaptain !== null` → `withCaptain != null`.
+
+Plus regression tests in `RoleReadout.spec.tsx` (asserts `roleReadoutFor({ role: undefined })` returns `monster-fallback`) and `MonsterStatBlock.spec.tsx` (asserts a monster with `immunities/weaknesses/withCaptain` all `undefined` renders without throwing).
+
+**Lesson.** Same as Pass 2a PS #1: when adding optional `nullable().default(...)` fields to `ParticipantSchema`, the WS-mirror path bypasses Zod parsing. Every consumer of a new field must defend against runtime `undefined` regardless of the TypeScript contract. The WS mirror itself should ideally re-parse through the schema, but that's a broader refactor — for now, consumer-side `??` / `==` is the pragmatic guard.
 
 ### Maintenance note
 
