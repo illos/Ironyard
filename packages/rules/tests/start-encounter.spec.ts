@@ -244,6 +244,17 @@ describe('applyStartEncounter — new atomic payload shape', () => {
     expect(result.state.participants).toHaveLength(0);
   });
 
+  it('seeds zipper-init fields to null/null/[] on a fresh encounter', () => {
+    const result = applyIntent(
+      baseState(),
+      makeIntent({ characterIds: [], monsters: [], stampedPcs: [], stampedMonsters: [] }),
+    );
+
+    expect(result.state.encounter?.firstSide).toBeNull();
+    expect(result.state.encounter?.currentPickingSide).toBeNull();
+    expect(result.state.encounter?.actedThisRound).toEqual([]);
+  });
+
   it('rejects with no_active_session when currentSessionId is null', () => {
     const result = applyIntent(
       baseState({ currentSessionId: null }),
