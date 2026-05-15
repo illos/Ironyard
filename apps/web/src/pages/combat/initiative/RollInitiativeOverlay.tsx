@@ -75,10 +75,10 @@ export function RollInitiativeOverlay({ participants, isActingAsDirector, onRoll
   return (
     <dialog
       open
-      className="absolute inset-0 z-10 m-0 flex w-full max-w-none items-center justify-center bg-ink-0/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 m-0 flex h-full max-h-none w-full max-w-none items-center justify-center bg-ink-0/85 text-text backdrop-blur-sm"
       aria-label="Roll initiative"
     >
-      <div className="w-full max-w-md bg-ink-1 border border-line p-6 flex flex-col gap-4">
+      <div className="w-full max-w-md bg-ink-1 border border-line text-text p-6 flex flex-col gap-4">
         <h2 className="font-mono uppercase text-lg tracking-wider">Roll Initiative</h2>
         <div className="text-text-dim text-sm">
           {counts.heroes} HEROES · {counts.foes} FOES
