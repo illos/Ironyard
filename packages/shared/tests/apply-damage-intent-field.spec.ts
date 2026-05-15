@@ -30,3 +30,26 @@ describe('OpenActionKindSchema title-doomed-opt-in', () => {
     expect(OpenActionKindSchema.parse('title-doomed-opt-in')).toBe('title-doomed-opt-in');
   });
 });
+
+describe('ApplyDamagePayloadSchema — slice 2a bypassDamageReduction', () => {
+  it('accepts bypassDamageReduction: true', () => {
+    const parsed = ApplyDamagePayloadSchema.parse({
+      targetId: 'pc-conduit',
+      amount: 5,
+      damageType: 'psychic',
+      sourceIntentId: 'src1',
+      bypassDamageReduction: true,
+    });
+    expect(parsed.bypassDamageReduction).toBe(true);
+  });
+
+  it('defaults bypassDamageReduction to false when omitted', () => {
+    const parsed = ApplyDamagePayloadSchema.parse({
+      targetId: 't',
+      amount: 5,
+      damageType: 'fire',
+      sourceIntentId: 'src1',
+    });
+    expect(parsed.bypassDamageReduction).toBe(false);
+  });
+});

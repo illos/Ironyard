@@ -12,5 +12,10 @@ export const ApplyDamagePayloadSchema = z.object({
   damageType: DamageTypeSchema,
   sourceIntentId: z.string().min(1),
   intent: z.enum(['kill', 'knock-out']).default('kill'),
+  // Pass 3 Slice 2a: when true, the reducer skips immunity reduction and
+  // weakness addition ("cannot be reduced" semantics — e.g. Conduit's
+  // Pray-on-1 outcome and future sources). Default false preserves
+  // pre-slice-2a behavior.
+  bypassDamageReduction: z.boolean().optional().default(false),
 });
 export type ApplyDamagePayload = z.infer<typeof ApplyDamagePayloadSchema>;
