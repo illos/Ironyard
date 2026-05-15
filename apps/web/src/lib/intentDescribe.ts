@@ -77,8 +77,7 @@ export function describeIntent(args: DescribeArgs): string {
     case IntentTypes.RollInitiative: {
       const p = intent.payload as RollInitiativePayload;
       const reason = p.rolledD10 !== undefined ? ` (d10=${p.rolledD10})` : '';
-      const surpriseSummary =
-        p.surprised.length > 0 ? `; ${p.surprised.length} surprised` : '';
+      const surpriseSummary = p.surprised.length > 0 ? `; ${p.surprised.length} surprised` : '';
       return `Initiative — ${p.winner} first${reason}${surpriseSummary}`;
     }
     case IntentTypes.StartRound: {

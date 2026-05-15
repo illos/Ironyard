@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
+import { DndContext, type DragEndEvent, closestCenter } from '@dnd-kit/core';
 import {
   SortableContext,
   arrayMove,
-  verticalListSortingStrategy,
   useSortable,
+  verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { PendingTriggerSet } from '@ironyard/shared';
+import { useState } from 'react';
 import { formatTriggerEvent } from '../../../lib/format-trigger-event';
 
 type Candidate = PendingTriggerSet['candidates'][number];
@@ -37,7 +37,11 @@ export function CrossSideTriggerModal({ pendingTriggers, resolveName, onResolve 
   }
 
   return (
-    <div role="dialog" className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <dialog
+      open
+      aria-modal="true"
+      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 w-full h-full max-w-none max-h-none"
+    >
       <div className="bg-ink-2 p-6 max-w-lg border border-line">
         <h2 className="text-sm font-mono uppercase tracking-wider mb-2">Resolve trigger order</h2>
         <p className="text-xs text-ink-mute mb-4">
@@ -71,7 +75,7 @@ export function CrossSideTriggerModal({ pendingTriggers, resolveName, onResolve 
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }
 
@@ -100,9 +104,7 @@ function SortableRow({
       <span className="flex-1">
         {name} — {cand.triggeredActionId}
       </span>
-      <span
-        className={`text-xs uppercase ${cand.side === 'foes' ? 'text-foe' : 'text-accent'}`}
-      >
+      <span className={`text-xs uppercase ${cand.side === 'foes' ? 'text-foe' : 'text-accent'}`}>
         {cand.side}
       </span>
     </li>

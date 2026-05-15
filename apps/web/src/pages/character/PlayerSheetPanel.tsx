@@ -20,7 +20,8 @@ type Props = {
  * data to show.
  */
 export function PlayerSheetPanel({ participant, campaignId }: Props) {
-  const characterId = participant?.kind === 'pc' ? (participant.characterId ?? undefined) : undefined;
+  const characterId =
+    participant?.kind === 'pc' ? (participant.characterId ?? undefined) : undefined;
   const ch = useCharacter(characterId);
 
   if (!ch.data) return null;

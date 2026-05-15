@@ -1,8 +1,8 @@
 import type { Character, Participant } from '@ironyard/shared';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import * as SessionSocket from '../../../ws/useSessionSocket';
 import * as Queries from '../../../api/queries';
+import * as SessionSocket from '../../../ws/useSessionSocket';
 import { DoomsightBecomeDoomedButton } from '../DoomsightBecomeDoomedButton';
 
 afterEach(() => {
@@ -132,7 +132,10 @@ describe('DoomsightBecomeDoomedButton', () => {
     fireEvent.click(screen.getByRole('button', { name: /yes.*become doomed/i }));
     expect(mockDispatch).toHaveBeenCalledOnce();
     // biome-ignore lint/suspicious/noExplicitAny: test-only access to mock call args
-    const sentIntent = (mockDispatch.mock.calls[0] as any[])[0] as { type: string; payload: unknown };
+    const sentIntent = (mockDispatch.mock.calls[0] as any[])[0] as {
+      type: string;
+      payload: unknown;
+    };
     expect(sentIntent.type).toBe('BecomeDoomed');
     expect(sentIntent.payload).toMatchObject({
       participantId: 'p1',

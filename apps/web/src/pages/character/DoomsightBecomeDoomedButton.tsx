@@ -1,4 +1,9 @@
-import { type BecomeDoomedPayload, IntentTypes, type Character, type Participant } from '@ironyard/shared';
+import {
+  type BecomeDoomedPayload,
+  type Character,
+  IntentTypes,
+  type Participant,
+} from '@ironyard/shared';
 import { useState } from 'react';
 import { buildIntent } from '../../api/dispatch';
 import { useMe } from '../../api/queries';
@@ -26,9 +31,7 @@ export function DoomsightBecomeDoomedButton({ character, participant, campaignId
   if (!(character.ancestryChoices?.traitIds ?? []).includes('doomsight')) return null;
 
   const disabled =
-    !participant ||
-    participant.staminaState === 'dead' ||
-    participant.staminaState === 'doomed';
+    !participant || participant.staminaState === 'dead' || participant.staminaState === 'doomed';
 
   const handleConfirm = () => {
     if (!participant || !me.data) return;
@@ -48,10 +51,7 @@ export function DoomsightBecomeDoomedButton({ character, participant, campaignId
   };
 
   return (
-    <section
-      aria-label="Doomsight"
-      className="border border-foe/30 bg-foe/5 p-3 rounded"
-    >
+    <section aria-label="Doomsight" className="border border-foe/30 bg-foe/5 p-3 rounded">
       <h3 className="text-sm font-bold uppercase tracking-wider text-foe">Doomsight</h3>
       <p className="text-xs text-text-mute mt-1">Predetermine a heroic death.</p>
       <button
@@ -64,10 +64,10 @@ export function DoomsightBecomeDoomedButton({ character, participant, campaignId
       </button>
 
       {showConfirm && (
-        <div
-          role="dialog"
+        <dialog
+          open
           aria-modal="true"
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 w-full h-full max-w-none max-h-none"
         >
           <div className="bg-ink-2 p-6 max-w-md border border-line">
             <p className="text-sm">
@@ -75,11 +75,7 @@ export function DoomsightBecomeDoomedButton({ character, participant, campaignId
               can&apos;t die from stamina, dies at encounter end. Continue?
             </p>
             <div className="mt-4 flex gap-2 justify-end">
-              <button
-                type="button"
-                onClick={() => setShowConfirm(false)}
-                className="min-h-11 px-3"
-              >
+              <button type="button" onClick={() => setShowConfirm(false)} className="min-h-11 px-3">
                 Cancel
               </button>
               <button
@@ -91,7 +87,7 @@ export function DoomsightBecomeDoomedButton({ character, participant, campaignId
               </button>
             </div>
           </div>
-        </div>
+        </dialog>
       )}
     </section>
   );
