@@ -279,6 +279,11 @@ export type {
   PerEncounterLatches,
 } from './per-encounter-flags';
 
+export { MaintainedAbilitySchema } from './maintained-ability';
+export type { MaintainedAbility } from './maintained-ability';
+export { PsionFlagsSchema, defaultPsionFlags } from './psion-flags';
+export type { PsionFlags } from './psion-flags';
+
 export { OpenActionKindSchema, OpenActionSchema } from './open-action';
 export type { OpenAction, OpenActionKind } from './open-action';
 
