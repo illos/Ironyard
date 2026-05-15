@@ -76,7 +76,6 @@ function makeCampaignState(overrides: Partial<CampaignState> = {}): CampaignStat
     currentSessionId: null,
     attendingCharacterIds: [],
     heroTokens: 0,
-    pendingTriggers: null,
     ...overrides,
   };
 }

@@ -604,3 +604,22 @@ Slice 1 is done when:
 ## PS — post-shipping fixes
 
 Future post-shipping fixes to Slice 1 layer the same way: append a numbered entry to this PS section with a one-line symptom, a one-paragraph fix, and the relevant commit SHA. Once a follow-up entry has shipped *and* been verified in real use, leave it in place — the doc is the historical record, not a TODO list.
+
+### 1. Final-review fixes shipped at commit completion
+
+After the slice 1 plan tasks shipped, a final code review against the 20 acceptance criteria surfaced six gaps; all closed in commits 1960d15 / 4c2fb12 / 7714817 / 673ddeb:
+
+- **AC#5 unconscious-→-dead path missing in `applyDamageStep`** — added short-circuit before KO check (canon §2.9: any damage on an unconscious target kills immediately; `currentStamina` set to `-maxStamina - 1`, conditions cleared). Commit `1960d15`.
+- **AC#13 `TriggersPendingPill` not mounted in player UI** — imported from `./triggers` barrel and rendered in a sub-header bar (`bg-ink-2 border-b`) between `InlineHeader` and `SplitPane` when `pendingTriggers !== null && !isActingAsDirector`. Mounted in `DirectorCombat.tsx`. Commit `4c2fb12`.
+- **AC#18 two lint format errors** — `biome check --write` auto-fixed `pending-triggers.spec.ts` (multiline expect collapsed) and `intentDescribe.slice1.spec.ts` (array literal inlined). Commit `4c2fb12`.
+- **WS-mirror `BecomeDoomed` config drift on `source: 'manual'`** — mirror was emitting `canRegainStamina:false, staminaDeathThreshold:'staminaMax'` for manual source; engine uses identical config for both sources (both get `canRegainStamina:true, staminaDeathThreshold:'none'` per canon §2.9). Aligned mirror to engine. Commit `7714817`.
+- **WS-mirror `ApplyDamage` reflect didn't handle `intent:'knock-out'` or inert-fire** — replaced manual `recomputeStaminaState` path with shared `applyDamageStep(target, amount, damageType, intent)`. KO interception, inert-fire instant-death, and unconscious-→-dead all now handled optimistically client-side. Commit `7714817`.
+- **`pendingTriggers` schema location mismatch (CampaignState top-level vs encounter)** — moved `pendingTriggers: PendingTriggerSet | null` from `CampaignState` to `EncounterPhase`. The server broadcasts `CampaignState` as JSON; the client `snapshotToEncounter` reads `enc.pendingTriggers` from the encounter sub-object. Before this fix, a snapshot reload would silently drop any in-flight pending-trigger state. Updated `resolve-trigger-order.ts` to read/write `state.encounter.pendingTriggers`, removed stale top-level clear from `end-encounter.ts` (encounter:null already destroys it), and updated all 21 test files to construct `EncounterPhase` with `pendingTriggers: null`. Commit `673ddeb`.
+
+### 2. Deferred to follow-up (not blocking slice 1 acceptance)
+
+- **AC#9 — ClaimOpenAction extends for title-doomed-opt-in.** Today, claiming the OA just removes it; the doomed override must be applied separately. Slice 1 integration test confirms the workaround (director applies via `ApplyParticipantOverride`). Either extend `applyClaimOpenAction` to recognize `kind: 'title-doomed-opt-in'` and apply the override, or amend AC#9 to match current behavior.
+- **`appliedAtSeq: 0` on engine-generated conditions.** Bleeding-from-dying, Unconscious + Prone from KO all carry `appliedAtSeq: 0` because the helpers in `stamina.ts` don't have access to the reducer's seq. Either thread seq through the helper signatures, or accept that engine-generated conditions don't participate in save_ends seq ordering (they're all manual-duration anyway).
+- **Heal-from-unconscious doesn't clear `Unconscious` / `Prone` conditions.** `applyTransitionSideEffects` clears Bleeding on heal but not Unconscious/Prone. Likely needs the same filter step.
+- **`clampForDoomed` and `recoveryValue` helpers in `stamina.ts` are stubbed** for future use. Dead code in slice 1 until inert/rubble auto-revive (12h regain) or doomed-stamina-clamping land.
+- **Reducer trust-check boilerplate** repeated across 5 new reducers. Future refactor candidate: a `requireActiveDirector(state, intent)` and `requireParticipant(state, id)` helper.
