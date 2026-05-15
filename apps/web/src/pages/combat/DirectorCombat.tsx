@@ -255,7 +255,13 @@ export function DirectorCombat() {
   // Phase 5 Pass 2b1 — zipper-initiative picking-phase state.
   // Must live ABOVE guard-returns (Rules of Hooks).
   const firstSide = activeEncounter?.firstSide ?? null;
-  const currentPickingSide = activeEncounter?.currentPickingSide ?? null;
+  // Raw `currentPickingSide` from the encounter stays "foes"/"heroes" through
+  // an active turn; it only flips at EndTurn. For UI affordances (rail pick
+  // buttons, header picking-side pill) we want "is the pick window OPEN" —
+  // i.e. picking side is set AND no participant is currently mid-turn.
+  const rawPickingSide = activeEncounter?.currentPickingSide ?? null;
+  const inPickWindow = rawPickingSide !== null && !activeEncounter?.activeParticipantId;
+  const currentPickingSide = inPickWindow ? rawPickingSide : null;
   const actedThisRound = activeEncounter?.actedThisRound ?? [];
   const viewerId = me.data?.user.id ?? null;
 
@@ -603,9 +609,7 @@ export function DirectorCombat() {
         activeParticipantName={
           (participants.find((p) => p.id === activeEncounter?.activeParticipantId)?.name) ?? null
         }
-        pickingSide={
-          currentPickingSide && !activeEncounter?.activeParticipantId ? currentPickingSide : null
-        }
+        pickingSide={currentPickingSide}
         onStartRound={handleStartRound}
         onEndTurn={handleEndTurn}
         onEndRound={handleEndRound}
