@@ -2,6 +2,9 @@ import { z } from 'zod';
 
 // Draw Steel has exactly 9 conditions (rules-canon.md §3.1). The set is closed —
 // class-specific statuses like the Talent's Strained are deliberately *not* here.
+// Pass 3 Slice 1: `Unconscious` added as an engine-managed condition applied by
+// the KO-interception path (`applyKnockOut`). Not a player-dispatchable condition;
+// removed when the participant regains consciousness.
 export const CONDITION_TYPES = [
   'Bleeding',
   'Dazed',
@@ -11,6 +14,7 @@ export const CONDITION_TYPES = [
   'Restrained',
   'Slowed',
   'Taunted',
+  'Unconscious',
   'Weakened',
 ] as const;
 
@@ -20,11 +24,15 @@ export type ConditionType = z.infer<typeof ConditionTypeSchema>;
 // Duration variants per rules-canon.md §3.2. `trigger` carries a free-form
 // description for slice-5 data-only purposes; slice 6's hook system will wire
 // triggers to actual end conditions.
+// Pass 3 Slice 1: `manual` added for engine-managed conditions that have no
+// automatic expiry (dying-induced Bleeding, KO-applied Unconscious). These are
+// cleared explicitly by reducer logic (recover from dying, KnockUnconscious lift).
 export const ConditionDurationSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('EoT') }),
   z.object({ kind: z.literal('save_ends') }),
   z.object({ kind: z.literal('until_start_next_turn'), ownerId: z.string().min(1) }),
   z.object({ kind: z.literal('end_of_encounter') }),
+  z.object({ kind: z.literal('manual') }),
   z.object({ kind: z.literal('trigger'), description: z.string().min(1).max(200) }),
 ]);
 export type ConditionDuration = z.infer<typeof ConditionDurationSchema>;

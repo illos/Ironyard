@@ -152,6 +152,7 @@ function describeDuration(d: TierOutcome['conditions'][number]['duration']): str
     case 'EoT': return 'EoT';
     case 'until_start_next_turn': return 'SoT';
     case 'end_of_encounter': return 'EoE';
+    case 'manual': return 'manual';
     case 'trigger': return 'trig';
   }
 }
