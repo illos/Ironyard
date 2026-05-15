@@ -5,7 +5,7 @@ import { formatExpiry } from './format-expiry';
 function makeOA(overrides: Partial<OpenAction>): OpenAction {
   return {
     id: 'oa-1',
-    kind: '__sentinel_2b_0__' as OpenAction['kind'],
+    kind: 'title-doomed-opt-in' as OpenAction['kind'],
     participantId: 'p1',
     raisedAtRound: 1,
     raisedByIntentId: 'i-1',

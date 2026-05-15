@@ -16,10 +16,12 @@ export type OpenActionCopy = {
 };
 
 export const OPEN_ACTION_COPY: Partial<Record<OpenActionKind, OpenActionCopy>> = {
-  // 2b.0.1 entries land here. Example shape (do not commit until consumer ships):
-  // 'pray-to-the-gods': {
-  //   title: (oa) => 'Pray to the Gods',
-  //   body: (oa) => 'Roll 1d3 of piety risk for a domain effect or +1 piety.',
-  //   claimLabel: () => 'Pray',
-  // },
+  'title-doomed-opt-in': {
+    title: () => 'Embrace your doom?',
+    body: () =>
+      'Your stamina has hit 0. Per the *Doomed* title, you may become doomed — ' +
+      'automatically obtain a tier 3 outcome on every power roll, but you cannot ' +
+      'regain Stamina, and you die at the end of the encounter.',
+    claimLabel: () => 'Become doomed',
+  },
 };

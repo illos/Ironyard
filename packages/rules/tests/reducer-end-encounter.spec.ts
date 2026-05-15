@@ -511,7 +511,7 @@ describe('applyIntent — EndEncounter', () => {
         openActions: [
           {
             id: 'oa_1',
-            kind: '__sentinel_2b_0__' as const,
+            kind: 'title-doomed-opt-in' as const,
             participantId: 'pc_alice',
             raisedAtRound: 1,
             raisedByIntentId: 'i_raise_1',

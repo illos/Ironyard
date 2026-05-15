@@ -6,7 +6,7 @@ import { OpenActionsList } from './OpenActionsList';
 function fakeOA(overrides: Partial<OpenAction> = {}): OpenAction {
   return {
     id: 'oa-1',
-    kind: '__sentinel_2b_0__',
+    kind: 'title-doomed-opt-in',
     participantId: 'pc-1',
     raisedAtRound: 1,
     raisedByIntentId: 'i-1',
@@ -31,7 +31,7 @@ describe('OpenActionsList', () => {
     expect(html).toBe('');
   });
 
-  it('renders an entry with a generic title when the kind has no copy registered', () => {
+  it('renders an entry with the registered copy title for title-doomed-opt-in', () => {
     const html = renderToStaticMarkup(
       <OpenActionsList
         openActions={[fakeOA()]}
@@ -42,7 +42,7 @@ describe('OpenActionsList', () => {
         onClaim={() => {}}
       />,
     );
-    expect(html).toContain('__sentinel_2b_0__');
+    expect(html).toContain('Embrace your doom?');
   });
 
   it('renders the Claim button enabled for the targeted PC\'s owner', () => {

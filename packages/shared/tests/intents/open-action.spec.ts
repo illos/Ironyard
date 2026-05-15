@@ -8,7 +8,7 @@ describe('RaiseOpenActionPayloadSchema', () => {
   it('accepts a well-formed payload', () => {
     expect(
       RaiseOpenActionPayloadSchema.safeParse({
-        kind: '__sentinel_2b_0__',
+        kind: 'title-doomed-opt-in',
         participantId: 'pc-1',
         expiresAtRound: 3,
         payload: {},
@@ -28,7 +28,7 @@ describe('RaiseOpenActionPayloadSchema', () => {
 
   it('expiresAtRound defaults to null (persist until claimed/encounter end)', () => {
     const r = RaiseOpenActionPayloadSchema.parse({
-      kind: '__sentinel_2b_0__',
+      kind: 'title-doomed-opt-in',
       participantId: 'pc-1',
       payload: {},
     });

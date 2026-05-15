@@ -1,17 +1,19 @@
 import { z } from 'zod';
 
 /**
- * Open Action kinds. Empty in 2b.0 — first entries (pray-to-the-gods,
- * the four spatial triggers, etc.) are added by 2b.0.1 alongside their
- * raisers and copy registry entries. Each new kind extends this enum;
- * the OpenActionSchema validator picks them up automatically.
+ * Open Action kinds. Pass 3 Slice 1 adds the first real kind.
+ * Each new kind extends this enum; the OpenActionSchema validator picks
+ * them up automatically.
  *
- * Zod's `z.enum` requires a non-empty tuple, so a `__sentinel_2b_0__`
- * placeholder ships here in 2b.0. The first kind-add commit in 2b.0.1
- * MUST remove the sentinel as it replaces it with the real first kind.
+ * Pass 3 Slice 1
  */
 export const OpenActionKindSchema = z.enum([
-  '__sentinel_2b_0__',
+  // Pass 3 Slice 1
+  'title-doomed-opt-in',
+  // Slice 2 entries (added when slice 2 lands):
+  //   'pray-to-the-gods'
+  //   'spatial-trigger-elementalist-essence'
+  //   ...
 ]);
 
 export type OpenActionKind = z.infer<typeof OpenActionKindSchema>;

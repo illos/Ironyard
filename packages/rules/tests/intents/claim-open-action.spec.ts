@@ -18,7 +18,7 @@ function stateWithOA(opts: { participantId: string; ownerId: string }) {
   s.openActions = [
     {
       id: 'oa-1',
-      kind: '__sentinel_2b_0__',
+      kind: 'title-doomed-opt-in',
       participantId: opts.participantId,
       raisedAtRound: 1,
       raisedByIntentId: 'i-prev',

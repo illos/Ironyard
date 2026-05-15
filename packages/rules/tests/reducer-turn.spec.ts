@@ -246,7 +246,7 @@ describe('applyEndRound + OpenAction expiry', () => {
       openActions: [
         {
           id: 'oa-now',
-          kind: '__sentinel_2b_0__',
+          kind: 'title-doomed-opt-in',
           participantId: 'alice',
           raisedAtRound: 3,
           raisedByIntentId: 'x',
@@ -255,7 +255,7 @@ describe('applyEndRound + OpenAction expiry', () => {
         },
         {
           id: 'oa-later',
-          kind: '__sentinel_2b_0__',
+          kind: 'title-doomed-opt-in',
           participantId: 'alice',
           raisedAtRound: 3,
           raisedByIntentId: 'x',
@@ -264,7 +264,7 @@ describe('applyEndRound + OpenAction expiry', () => {
         },
         {
           id: 'oa-null',
-          kind: '__sentinel_2b_0__',
+          kind: 'title-doomed-opt-in',
           participantId: 'alice',
           raisedAtRound: 3,
           raisedByIntentId: 'x',

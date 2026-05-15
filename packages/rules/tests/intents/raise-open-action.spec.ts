@@ -26,7 +26,7 @@ describe('applyRaiseOpenAction', () => {
       type: 'RaiseOpenAction',
       actor: ownerActor,
       payload: {
-        kind: '__sentinel_2b_0__',
+        kind: 'title-doomed-opt-in',
         participantId: 'pc-1',
         expiresAtRound: 2,
         payload: { foo: 'bar' },
@@ -37,7 +37,7 @@ describe('applyRaiseOpenAction', () => {
     expect(result.state.openActions).toHaveLength(1);
     const oa = result.state.openActions[0]!;
     expect(oa.id).toMatch(/^oa_/);
-    expect(oa.kind).toBe('__sentinel_2b_0__');
+    expect(oa.kind).toBe('title-doomed-opt-in');
     expect(oa.participantId).toBe('pc-1');
     expect(oa.raisedAtRound).toBe(s.encounter!.currentRound);
     expect(oa.raisedByIntentId).toBe(intent.id);
@@ -64,7 +64,7 @@ describe('applyRaiseOpenAction', () => {
       type: 'RaiseOpenAction',
       actor: ownerActor,
       payload: {
-        kind: '__sentinel_2b_0__',
+        kind: 'title-doomed-opt-in',
         participantId: 'pc-1',
         expiresAtRound: null,
         payload: {},
