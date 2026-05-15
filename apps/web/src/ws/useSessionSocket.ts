@@ -215,8 +215,15 @@ function reflect(
 
   if (type === IntentTypes.EndTurn) {
     void (payload as EndTurnPayload);
-    // Pure derivation matches the engine — see `nextPickingSide` in state-helpers.ts.
-    const acted = new Set(prev.actedThisRound);
+    // The ending participant joins actedThisRound here (canon § 4.1 — they're
+    // "done" when their turn ends). Then derive next picking side from the
+    // updated acted set + side membership.
+    const endingId = prev.activeParticipantId;
+    const nextActed =
+      endingId && !prev.actedThisRound.includes(endingId)
+        ? [...prev.actedThisRound, endingId]
+        : prev.actedThisRound;
+    const acted = new Set(nextActed);
     let unactedHeroes = 0;
     let unactedFoes = 0;
     for (const p of prev.participants) {
@@ -232,6 +239,7 @@ function reflect(
     return {
       ...prev,
       activeParticipantId: null,
+      actedThisRound: nextActed,
       currentPickingSide: next,
     };
   }
@@ -253,7 +261,6 @@ function reflect(
     const { participantId } = payload as PickNextActorPayload;
     return {
       ...prev,
-      actedThisRound: [...prev.actedThisRound, participantId],
       activeParticipantId: participantId,
     };
   }

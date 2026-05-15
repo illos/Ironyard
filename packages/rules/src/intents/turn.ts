@@ -318,12 +318,21 @@ export function applyEndTurn(state: CampaignState, intent: StampedIntent): Inten
   if (!guard.ok) return guard.result;
 
   const currentId = guard.encounter.activeParticipantId;
-  // Zipper initiative (canon § 4.1): clear activeParticipantId, derive the
-  // next picking side from `actedThisRound` + side membership. Run-out rule
-  // is encoded in `nextPickingSide()`.
+  // Zipper initiative (canon § 4.1): the ending participant joins
+  // `actedThisRound` here (not at PickNextActor time — they're "done" when
+  // the turn ends, not when it starts). nextPickingSide consumes the updated
+  // acted set to apply the run-out rule.
+  const nextActedThisRound =
+    currentId && !guard.encounter.actedThisRound.includes(currentId)
+      ? [...guard.encounter.actedThisRound, currentId]
+      : guard.encounter.actedThisRound;
   const nextSide = nextPickingSide({
     ...state,
-    encounter: { ...guard.encounter, activeParticipantId: null },
+    encounter: {
+      ...guard.encounter,
+      activeParticipantId: null,
+      actedThisRound: nextActedThisRound,
+    },
   });
 
   // Slice 6: clear the ending creature's per-turn flags. StartTurn re-seeds
@@ -444,6 +453,7 @@ export function applyEndTurn(state: CampaignState, intent: StampedIntent): Inten
         ...guard.encounter,
         activeParticipantId: null,
         currentPickingSide: nextSide,
+        actedThisRound: nextActedThisRound,
         turnState: remainingTurnState,
       },
     },

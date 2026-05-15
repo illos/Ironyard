@@ -154,7 +154,6 @@ export function applyPickNextActor(state: CampaignState, intent: StampedIntent):
       seq: state.seq + 1,
       encounter: {
         ...enc,
-        actedThisRound: [...enc.actedThisRound, participantId],
         activeParticipantId: participantId,
       },
     },

@@ -63,7 +63,10 @@ describe('PickNextActor', () => {
       intent('PickNextActor', { participantId: 'alice' }, { actor: { userId: 'alice-user', role: 'player' } }),
     );
     expect(r.errors).toBeUndefined();
-    expect(r.state.encounter?.actedThisRound).toEqual(['alice']);
+    // actedThisRound stays empty — the picked participant joins it at EndTurn,
+    // not at PickNextActor (canon: "acted" = finished turn).
+    expect(r.state.encounter?.actedThisRound).toEqual([]);
+    expect(r.state.encounter?.activeParticipantId).toBe('alice');
     // The derived StartTurn is emitted by the reducer; verify it exists.
     expect(r.derived.some((d) => d.type === 'StartTurn')).toBe(true);
   });
@@ -75,7 +78,7 @@ describe('PickNextActor', () => {
       intent('PickNextActor', { participantId: 'bob' }, { actor: { userId: 'director-user', role: 'director' } }),
     );
     expect(r.errors).toBeUndefined();
-    expect(r.state.encounter?.actedThisRound).toEqual(['bob']);
+    expect(r.state.encounter?.activeParticipantId).toBe('bob');
   });
 
   it('rejects a non-owner non-director pick', () => {
