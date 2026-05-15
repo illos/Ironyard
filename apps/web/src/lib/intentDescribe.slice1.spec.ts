@@ -19,7 +19,7 @@ function makeIntent(
     seq: 1,
     type,
     payload,
-    actor: { userId: 'u1', displayName: 'GM', characterId: null },
+    actor: { userId: 'u1', role: 'director' },
     source: 'manual',
     voided: false,
     ...overrides,
