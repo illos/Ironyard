@@ -466,6 +466,21 @@ JSX consumes `${INLINE_FILL[zone]}` / `${INLINE_BG[zone]}` instead of template-i
 
 **Lesson.** Tailwind v4 JIT requires literal class strings. Any time a class name is composed from a variable, hoist the variants into a static `Record<KeyEnum, 'class-name'>` map so the scanner sees every literal. Template interpolation will compile and pass tests but silently produce empty CSS.
 
+### 3. HeroResourceCell — inline total next to label; drop the +N overflow line
+
+**Symptom.** At the table the overflow numeric below the pips read awkwardly. With Sir John at 11 Focus, the cell stacked `FOCUS` / `●●●●●●●●` / `+3` across three lines — the `+3` looked like a stat modifier, not "you have 11 total." Pips read as the source of truth; the total only appeared when overflowing.
+
+**Fix** ([`d6c323c`](../../..)). Inline the total numeric next to the resource name on the label line; pips become a pure glance-aid. `HeroResourceCell` now renders:
+
+```
+FOCUS 11      (name mono-mute + value bright bold)
+●●●●●●●●     (8 pips, capped at 8 filled regardless of value)
+```
+
+The `+{overflow}` block is removed entirely. Pip semantics unchanged (`min(value, 8)` filled). Spec test renamed to "value > 8 fills all 8 pips and shows the full total on the label" — drops the `/\+2/` assertion, adds `getByText('10')` for the on-label total.
+
+**Lesson.** When a cell has both a discrete visual and a numeric, the numeric should be the source of truth and live on the labeled line; the visual should saturate without leaking arithmetic. The original design's two-line overflow read as a separate datum.
+
 ### Maintenance note
 
 Future post-shipping fixes to Pass 2b2a layer the same way: append a numbered entry to this PS section with a one-line symptom, a one-paragraph fix, and the relevant commit SHA. Once a follow-up entry has shipped *and* been verified in real use, leave it in place — the doc is the historical record, not a TODO list.
