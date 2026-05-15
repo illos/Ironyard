@@ -60,7 +60,6 @@ export function applyStartRound(state: CampaignState, intent: StampedIntent): In
   if (!guard.ok) return guard.result;
 
   const round = (guard.encounter.currentRound ?? 0) + 1;
-  const firstId = guard.encounter.turnOrder[0] ?? null;
 
   // Canon § 5.5: at the start of each round (including round 1), the
   // Director gains `aliveHeroes + roundNumber` malice. Round 1 is applied
@@ -75,7 +74,10 @@ export function applyStartRound(state: CampaignState, intent: StampedIntent): In
       encounter: {
         ...guard.encounter,
         currentRound: round,
-        activeParticipantId: firstId,
+        // Zipper initiative: reset pick state for the new round.
+        currentPickingSide: guard.encounter.firstSide,
+        actedThisRound: [],
+        activeParticipantId: null,
         malice: {
           ...guard.encounter.malice,
           current: nextMalice,
@@ -121,10 +123,19 @@ export function applyEndRound(state: CampaignState, intent: StampedIntent): Inte
     (o) => o.expiresAtRound === null || o.expiresAtRound !== currentRound,
   );
 
+  // Phase 5 Pass 2b1: end-of-round-1 surprise sweep (canon § 4.1).
+  const nextParticipants =
+    guard.encounter.currentRound === 1
+      ? state.participants.map((p) =>
+          isParticipant(p) && p.surprised ? { ...p, surprised: false } : p,
+        )
+      : state.participants;
+
   return {
     state: {
       ...state,
       seq: state.seq + 1,
+      participants: nextParticipants,
       openActions: nextOpenActions,
       encounter: {
         ...guard.encounter,

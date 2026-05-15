@@ -474,7 +474,9 @@ describe('applyIntent — EndTurn Talent Clarity EoT damage hook', () => {
     };
     s = applyIntent(s, intent('SetInitiative', { order: ['pc_talent', 'm_goblin'] })).state;
     s = applyIntent(s, intent('StartRound', {})).state;
-    s = applyIntent(s, intent('StartTurn', { participantId: 'pc_talent' })).state;
+    // StartRound no longer pre-activates; directly set activeParticipantId to
+    // simulate a mid-turn state (avoids the d3-roll requirement in StartTurn).
+    s = { ...s, encounter: { ...s.encounter!, activeParticipantId: 'pc_talent' } };
     return s;
   }
 

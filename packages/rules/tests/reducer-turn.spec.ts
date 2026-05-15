@@ -121,20 +121,24 @@ describe('StartRound / EndRound', () => {
     return s;
   }
 
-  it('StartRound increments currentRound and activates the first in order', () => {
-    // StartEncounter already sets currentRound to 1; StartRound advances to 2
+  it('StartRound increments currentRound and sets currentPickingSide to firstSide', () => {
+    // StartEncounter already sets currentRound to 1; StartRound advances to 2.
+    // Zipper initiative: StartRound no longer auto-activates first participant;
+    // it resets currentPickingSide to firstSide so the director can pick.
     const r = applyIntent(withOrder(), intent('StartRound', {}));
     expect(r.errors).toBeUndefined();
     expect(r.state.encounter?.currentRound).toBe(2);
-    expect(r.state.encounter?.activeParticipantId).toBe('alice');
+    expect(r.state.encounter?.currentPickingSide).toBe('heroes');
+    expect(r.state.encounter?.activeParticipantId).toBeNull();
   });
 
-  it('StartRound a second time increments by 1 again', () => {
+  it('StartRound a second time increments by 1 again and resets pick state', () => {
     let s = applyIntent(withOrder(), intent('StartRound', {})).state; // round 2
     s = applyIntent(s, intent('EndRound', {})).state;
     const r = applyIntent(s, intent('StartRound', {}));
     expect(r.state.encounter?.currentRound).toBe(3);
-    expect(r.state.encounter?.activeParticipantId).toBe('alice');
+    expect(r.state.encounter?.currentPickingSide).toBe('heroes');
+    expect(r.state.encounter?.activeParticipantId).toBeNull();
   });
 
   it('StartRound with empty turnOrder leaves activeParticipantId null', () => {
@@ -202,8 +206,12 @@ describe('StartTurn / EndTurn', () => {
     // unacted counts remain the same — run-out rule: all-heroes roster keeps
     // currentPickingSide on 'heroes'.
     let s = inRoundOne(); // round 2 after StartRound
-    expect(s.encounter?.activeParticipantId).toBe('alice');
+    // StartRound no longer auto-activates; it sets currentPickingSide so the director picks.
+    expect(s.encounter?.activeParticipantId).toBeNull();
+    expect(s.encounter?.currentPickingSide).toBe('heroes');
 
+    // Director picks alice via StartTurn (PickNextActor wires this in full flow).
+    s = applyIntent(s, intent('StartTurn', { participantId: 'alice' })).state;
     s = applyIntent(s, intent('EndTurn', {})).state;
     expect(s.encounter?.activeParticipantId).toBeNull();
     expect(s.encounter?.currentPickingSide).toBe('heroes');
@@ -427,6 +435,67 @@ describe('EndTurn (zipper-init)', () => {
     const r = applyIntent(s, intent('EndTurn', {}));
     expect(r.errors).toBeUndefined();
     expect(r.state.encounter?.currentPickingSide).toBeNull();
+  });
+});
+
+describe('StartRound (zipper-init)', () => {
+  it('rounds 2+ reset currentPickingSide to firstSide and clear actedThisRound', () => {
+    const base = readyState(['alice', 'bob']);
+    // Force into "round 1 ended" state with heroes having won.
+    const s: CampaignState = {
+      ...base,
+      encounter: {
+        ...(base.encounter as NonNullable<CampaignState['encounter']>),
+        firstSide: 'heroes',
+        currentPickingSide: null,
+        actedThisRound: ['alice', 'bob'],
+        activeParticipantId: null,
+        currentRound: 1,
+      },
+    };
+    const r = applyIntent(s, intent('StartRound', {}));
+    expect(r.errors).toBeUndefined();
+    expect(r.state.encounter?.currentRound).toBe(2);
+    expect(r.state.encounter?.currentPickingSide).toBe('heroes');
+    expect(r.state.encounter?.actedThisRound).toEqual([]);
+  });
+});
+
+describe('EndRound (zipper-init)', () => {
+  it('clears surprised on every participant at end of round 1', () => {
+    const base = readyState(['alice']);
+    const s: CampaignState = {
+      ...base,
+      participants: base.participants.map((p) =>
+        isParticipant(p) ? { ...p, surprised: true } : p,
+      ),
+      encounter: {
+        ...(base.encounter as NonNullable<CampaignState['encounter']>),
+        currentRound: 1,
+      },
+    };
+    const r = applyIntent(s, intent('EndRound', {}));
+    expect(r.errors).toBeUndefined();
+    const alice = r.state.participants[0] as Participant;
+    expect(alice.surprised).toBe(false);
+  });
+
+  it('leaves surprised alone on rounds > 1 (already cleared earlier)', () => {
+    const base = readyState(['alice']);
+    const s: CampaignState = {
+      ...base,
+      participants: base.participants.map((p) =>
+        isParticipant(p) ? { ...p, surprised: true } : p,
+      ),
+      encounter: {
+        ...(base.encounter as NonNullable<CampaignState['encounter']>),
+        currentRound: 2,
+      },
+    };
+    const r = applyIntent(s, intent('EndRound', {}));
+    expect(r.errors).toBeUndefined();
+    // round-2 surprise is a defensive-no-op; the field stays as-is.
+    expect((r.state.participants[0] as Participant).surprised).toBe(true);
   });
 });
 
