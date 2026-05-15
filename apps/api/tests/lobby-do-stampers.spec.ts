@@ -340,6 +340,8 @@ describe('stampKickPlayer', () => {
           staminaOverride: null,
           bodyIntact: true,
           triggeredActionUsedThisRound: false,
+          purchasedTraits: [],
+          equippedTitleIds: [],
         },
         {
           id: 'monster-xyz',
@@ -380,6 +382,8 @@ describe('stampKickPlayer', () => {
           staminaOverride: null,
           bodyIntact: true,
           triggeredActionUsedThisRound: false,
+          purchasedTraits: [],
+          equippedTitleIds: [],
         },
       ],
     });

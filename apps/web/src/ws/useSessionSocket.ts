@@ -496,6 +496,8 @@ function participantFromMonsterClient(
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    purchasedTraits: [],
+    equippedTitleIds: [],
   };
 }
 

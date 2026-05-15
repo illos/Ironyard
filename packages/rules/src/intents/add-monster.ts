@@ -40,6 +40,8 @@ export function participantFromMonster(
     ev: monster.ev.ev,
     withCaptain: monster.withCaptain ?? null,
     className: null,
+    purchasedTraits: [],
+    equippedTitleIds: [],
     staminaState: 'healthy',
     staminaOverride: null,
     bodyIntact: true,

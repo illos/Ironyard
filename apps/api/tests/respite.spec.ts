@@ -147,6 +147,8 @@ function makePcParticipant(id: string) {
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    purchasedTraits: [],
+    equippedTitleIds: [],
   };
 }
 
@@ -272,6 +274,8 @@ describe('handleSideEffect Respite', () => {
           staminaOverride: null,
           bodyIntact: true,
           triggeredActionUsedThisRound: false,
+          purchasedTraits: [],
+          equippedTitleIds: [],
         },
       ],
     });

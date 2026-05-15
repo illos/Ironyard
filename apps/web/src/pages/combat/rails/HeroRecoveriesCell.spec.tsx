@@ -21,6 +21,8 @@ function makePc(recoveries: { current: number; max: number }): Participant {
     freeStrike: null, ev: null, withCaptain: null, className: 'Tactician',
     staminaState: 'healthy', staminaOverride: null, bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    purchasedTraits: [],
+    equippedTitleIds: [],
   } as Participant;
 }
 

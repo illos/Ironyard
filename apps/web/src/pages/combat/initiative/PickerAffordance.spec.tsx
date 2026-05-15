@@ -39,6 +39,8 @@ function pc(id: string, ownerId: string | null): Participant {
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    purchasedTraits: [],
+    equippedTitleIds: [],
   };
 }
 function monster(id: string): Participant {

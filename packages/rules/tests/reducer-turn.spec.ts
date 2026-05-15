@@ -61,6 +61,8 @@ function part(id: string, name = id): Participant {
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    purchasedTraits: [],
+    equippedTitleIds: [],
   };
 }
 

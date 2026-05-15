@@ -35,6 +35,8 @@ function hero(overrides: Partial<Participant> = {}): Participant {
     ev: null,
     withCaptain: null,
     className: 'Tactician',
+    purchasedTraits: [],
+    equippedTitleIds: [],
     staminaState: 'healthy',
     staminaOverride: null,
     bodyIntact: true,

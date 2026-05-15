@@ -67,6 +67,8 @@ function pc(over: Partial<Participant> = {}): Participant {
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    purchasedTraits: [],
+    equippedTitleIds: [],
     ...over,
   };
 }

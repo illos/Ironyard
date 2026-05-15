@@ -205,6 +205,8 @@ describe('applyStartEncounter — new atomic payload shape', () => {
       staminaOverride: null,
       bodyIntact: true,
       triggeredActionUsedThisRound: false,
+      purchasedTraits: [],
+      equippedTitleIds: [],
     };
     const s = baseState({ participants: [oldMonster] });
 

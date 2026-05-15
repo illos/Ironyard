@@ -109,6 +109,16 @@ export const ParticipantSchema = z.object({
   // Phase 5 Pass 2b2a — PC class display name stamped at StartEncounter from
   // the character blob. Null on monster participants and pre-2b2a snapshots.
   className: z.string().nullable().default(null),
+  // Pass 3 Slice 1 — purchased ancestry trait ids stamped at StartEncounter
+  // from character.ancestryChoices.traitIds. Allows reducer helpers to detect
+  // Hakaan-Doomsight and other purchased-trait gating without a character
+  // lookup at runtime. Empty default keeps pre-slice-1 snapshots parseable.
+  purchasedTraits: z.array(z.string()).default([]),
+  // Pass 3 Slice 1 — title id(s) equipped at encounter start, derived from
+  // character.titleId. Allows reducer helpers to detect Title Doomed without
+  // a character lookup. Single element array when the character has a title;
+  // empty otherwise. Empty default keeps pre-slice-1 snapshots parseable.
+  equippedTitleIds: z.array(z.string()).default([]),
   // Pass 3 Slice 1 — canon §2.7-2.9 state machine.
   // Derived from currentStamina + staminaOverride via recomputeStaminaState.
   // The reducer recomputes after every stamina-mutating intent and emits

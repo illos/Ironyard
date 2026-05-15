@@ -129,7 +129,10 @@ export function applyStartEncounter(
       turnActionUsage: { main: false, maneuver: false, move: false },
       surprised: false,
       role: null,
-      ancestry: [],
+      // Stamp ancestry id from character blob so reducer helpers (Revenant
+      // inert-intercept, Hakaan rubble-intercept) can check p.ancestry without
+      // a character lookup. Single-element array matches the monster convention.
+      ancestry: stamped.character.ancestryId ? [stamped.character.ancestryId] : [],
       size: null,
       speed: null,
       stability: null,
@@ -139,6 +142,10 @@ export function applyStartEncounter(
       className: stamped.character.classId
         ? (ctx.staticData.classes.get(stamped.character.classId)?.name ?? null)
         : null,
+      // Pass 3 Slice 1 — stamp purchased ancestry traits and title for
+      // reducer-side trait-gating (Hakaan-Doomsight, Title Doomed).
+      purchasedTraits: stamped.character.ancestryChoices?.traitIds ?? [],
+      equippedTitleIds: stamped.character.titleId ? [stamped.character.titleId] : [],
       staminaState: 'healthy',
       staminaOverride: null,
       bodyIntact: true,

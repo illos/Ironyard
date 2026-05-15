@@ -108,6 +108,8 @@ function makeParticipant(
     staminaOverride: null,
     bodyIntact: true,
     triggeredActionUsedThisRound: false,
+    purchasedTraits: [],
+    equippedTitleIds: [],
     ...overrides,
   };
 }
