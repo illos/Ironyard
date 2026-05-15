@@ -55,6 +55,7 @@ function withRosterAndEncounter(): CampaignState {
       currentPickingSide: null,
       actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
     },
   };
   return s;
@@ -319,6 +320,7 @@ describe('applyIntent — RollPower', () => {
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
     const r = applyIntent(
@@ -355,6 +357,7 @@ describe('applyIntent — ApplyDamage', () => {
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
   }
@@ -406,6 +409,7 @@ describe('end-to-end: RollPower → derived ApplyDamage cascade', () => {
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 

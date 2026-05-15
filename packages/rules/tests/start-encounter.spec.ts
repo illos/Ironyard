@@ -240,6 +240,7 @@ describe('applyStartEncounter — new atomic payload shape', () => {
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     });
 

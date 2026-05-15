@@ -143,6 +143,7 @@ function readyState(parts: Participant[] = [pc(), monster()]): CampaignState {
       currentPickingSide: null,
       actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
     },
   };
 }

@@ -170,6 +170,7 @@ export function makeRunningEncounterPhase(
     currentPickingSide: null,
     actedThisRound: [],
     pendingTriggers: null,
+    perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
     ...overrides,
   };
 }

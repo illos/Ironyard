@@ -192,6 +192,7 @@ export function applyStartEncounter(
     currentPickingSide: null,
     actedThisRound: [],
     pendingTriggers: null,
+    perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
   };
 
   return {

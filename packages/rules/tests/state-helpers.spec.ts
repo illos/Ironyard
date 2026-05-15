@@ -234,6 +234,7 @@ function stateWithZ(
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
     },
   };
 }

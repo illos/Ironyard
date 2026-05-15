@@ -61,6 +61,7 @@ function readyState(round: number | null = 1): CampaignState {
       activeParticipantId: null,
       turnState: {}, malice: { current: 0, lastMaliciousStrikeRound: null },
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
     },
   };
 }

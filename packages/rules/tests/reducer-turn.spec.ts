@@ -90,6 +90,7 @@ function readyState(participantIds: string[] = ['alice', 'bob', 'cleric']): Camp
       currentPickingSide: 'heroes',
       actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
     },
   };
 }
@@ -324,6 +325,7 @@ describe('applyStartTurn per-turn heroic resource gain', () => {
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
   }
@@ -518,6 +520,7 @@ describe('applyStartTurn — turnActionUsage', () => {
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
   }
@@ -556,6 +559,7 @@ describe('applyStartTurn — turnActionUsage', () => {
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
     const r = applyIntent(s, intent('StartTurn', { participantId: 'pc-1' }));
@@ -587,6 +591,7 @@ describe('applyStartTurn — turnActionUsage', () => {
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
     const r = applyIntent(s, intent('StartTurn', { participantId: 'censor' }));
@@ -624,6 +629,7 @@ describe('applyEndRound — Pass 3 Slice 1 triggeredActionUsedThisRound reset', 
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 
@@ -654,6 +660,7 @@ describe('applyEndRound — Pass 3 Slice 1 triggeredActionUsedThisRound reset', 
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 
@@ -694,6 +701,7 @@ describe('applyEndRound — Pass 3 Slice 1 triggeredActionUsedThisRound reset', 
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 

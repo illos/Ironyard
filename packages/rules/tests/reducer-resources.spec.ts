@@ -138,6 +138,7 @@ function ready(extra?: Partial<Participant>): CampaignState {
       currentPickingSide: null,
       actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
     },
   };
 }
@@ -509,6 +510,7 @@ describe('applyIntent — EndTurn Talent Clarity EoT damage hook', () => {
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
     s = applyIntent(s, intent('StartRound', {})).state;

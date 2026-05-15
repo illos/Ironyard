@@ -169,6 +169,7 @@ describe('full encounter resource generation cycle (canon § 5 integration)', ()
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 

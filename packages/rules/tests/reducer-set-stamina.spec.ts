@@ -94,6 +94,7 @@ function ready(over?: Partial<Participant>): CampaignState {
       currentPickingSide: null,
       actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
     },
   };
 }
@@ -124,6 +125,7 @@ describe('applyIntent — SetStamina', () => {
         currentPickingSide: null,
         actedThisRound: [],
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
     const r = applyIntent(

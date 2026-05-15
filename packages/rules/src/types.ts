@@ -69,6 +69,15 @@ export type EncounterPhase = {
   // Cleared after ResolveTriggerOrder fires the cascade, or at EndEncounter.
   // Encounter-scoped: only meaningful while an encounter is active.
   pendingTriggers: PendingTriggerSet | null;
+  // Pass 3 Slice 2a — encounter-scoped per-turn flags. heroesActedThisTurn
+  // tracks PC participant IDs who used an ability this turn; Troubadour's
+  // three-heroes-acted-this-turn drama trigger reads .length >= 3. Reset at
+  // StartTurn (clearing the previous turn's set).
+  perEncounterFlags: {
+    perTurn: {
+      heroesActedThisTurn: string[];  // serialized as array; conceptually a set
+    };
+  };
 };
 
 // Keep ActiveEncounter as an alias for backwards compatibility within this

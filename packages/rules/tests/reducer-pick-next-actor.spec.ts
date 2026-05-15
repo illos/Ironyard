@@ -65,6 +65,7 @@ function readyState(parts: Participant[], picking: 'heroes' | 'foes' = 'heroes')
       activeParticipantId: null,
       turnState: {}, malice: { current: 0, lastMaliciousStrikeRound: null },
       pendingTriggers: null,
+      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
     },
   };
 }
