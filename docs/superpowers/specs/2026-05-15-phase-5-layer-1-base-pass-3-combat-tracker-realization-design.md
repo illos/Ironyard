@@ -13,7 +13,7 @@ Close the gap between tracker chrome quality and tracker engine completeness acr
 ## Goals
 
 - Make the OpenActions chrome from 2b2a *do something* at the table — populate the empty `OpenActionKindSchema` enum with the real spatial / class-internal kinds and fire them from the engine's event hooks.
-- Run the damage state machine end-to-end (winded / dying / dead / unconscious + death saves + KO), with a generic per-trait override pattern that absorbs the known concrete cases (Revenant, Hakaan ×2, Title Doomed, CoP) without N one-off code paths.
+- Run the damage state machine end-to-end (winded / dying / dead / unconscious / inert / rubble / doomed + KO interception), with a generic per-trait override pattern that absorbs the known concrete cases (Revenant inert, Hakaan rubble, Hakaan doomed, Title Doomed, CoP) without N one-off code paths. Draw Steel has no death-save mechanic — Bleeding-d6 on dying-hero actions is the natural dying-to-dead progression.
 - Close Q10 (cross-side trigger order) by shipping a `ResolveTriggerOrder` intent + prompt UI; close Q16 (Revenant inert) which has been gating on 2b.5 since the Phase 2b umbrella was written.
 - Collapse minion swarms from N-row drag to one squad row with one turn-flow — the highest-impact tracker simplification on the board.
 - Light up the embellished Mode-C active-character chip (winded ring / hero-token pips / heroic-resource readout) and settle the Mode-B nav surface design that's been open since Pass 2b2c was deferred.
@@ -38,29 +38,31 @@ The cross-phase nature (engine work from Phase 2b folded under a Phase-5 chrome-
 
 The schema, intent, and state-shape additions that span more than one slice. Locked here so per-slice specs reference these rather than re-debate them.
 
-### `Participant.stamina*` state surface (slice 1, read by slices 2 + 5)
+### `Participant` stamina state surface (slice 1, read by slices 2 + 5)
 
-Today's `Participant` schema carries flat `currentStamina: number` (with `min(0)` constraint) + `maxStamina: number` + a nested `recoveries: { current, max }` object + a `recoveryValue: number`. Slice 1's brainstorm settles whether to:
+Settled in slice 1 brainstorm 2026-05-15: flat-sibling layout. Today's `Participant` schema carries flat `currentStamina: number` (with `min(0)` constraint) + `maxStamina: number` + a nested `recoveries: { current, max }` object + a `recoveryValue: number`. Slice 1:
 
-- **(a) Keep the existing flat fields** and add sibling fields `staminaState`, `staminaOverride`, `deathSaves`, relaxing the `currentStamina.min(0)` constraint to allow negative values for dying (per canon § 2.8, hero stamina goes negative; the comment at `participant.ts:32` already flags this as a slice-7-era constraint that future work would loosen).
-- **(b) Nest into a single `stamina: { current, max, state, override, deathSaves }` object** with `recoveries` and `recoveryValue` remaining as siblings.
+- Relaxes the `currentStamina.min(0)` constraint to `.int()` (allows negative values for dying per canon § 2.8).
+- Adds sibling fields `staminaState`, `staminaOverride`, `bodyIntact`, `triggeredActionUsedThisRound`.
+- Preserves the existing `recoveries: { current, max }` + `recoveryValue` shape unchanged.
 
-Either way, the *contract* this umbrella commits to is:
+The contract this umbrella commits to:
 
 ```ts
-// Stamina state (logical shape — physical layout TBD in slice 1 brainstorm)
-current:    number;       // can go negative; lower bound = -maxStamina
-max:        number;
-state:      'healthy' | 'winded' | 'dying' | 'dead' | 'unconscious' | 'inert' | 'rubble' | 'doomed';
-override:   ParticipantStateOverride | null;
-deathSaves: { failures: number; lastRoll: number | null } | null;  // populated only in 'dying'
+// Existing — bound relaxed
+currentStamina: number;                     // can go negative; floor at -maxStamina
+maxStamina:     number;
+
+// New siblings — slice 1
+staminaState:   'healthy' | 'winded' | 'dying' | 'dead' | 'unconscious' | 'inert' | 'rubble' | 'doomed';
+staminaOverride: ParticipantStateOverride | null;
+bodyIntact:     boolean;
+triggeredActionUsedThisRound: boolean;
 ```
 
-`state` is derived from `current` + `max` + `override` per the state-machine rules. The reducer emits `StaminaTransitioned { participantId, from, to, cause }` as a derived intent whenever `state` changes, which slice 2's class-δ triggers and slice 5's action-effect framework subscribe to.
+**No death-save field** — Draw Steel has no death-save mechanic. The dying → dead progression is driven by Bleeding-d6 damage on dying-hero actions. The umbrella's earlier reference to "death saves" was D&D-flavored colloquial shorthand and is corrected here.
 
-The existing `recoveries: { current, max }` + `recoveryValue` shape is preserved unchanged across this Pass — death saves and KO recovery read from it, but it's not restructured.
-
-Slice 1's per-slice spec settles the exact field layout (option (a) vs (b)) and whether `state` is stored or computed; this contract guarantees the shape that consumers depend on.
+`staminaState` is derived from `currentStamina` + `maxStamina` + `staminaOverride` via `recomputeStaminaState(participant)`. Reducers that mutate stamina call it and, when the state changes, emit `StaminaTransitioned { participantId, from, to, cause }` as a derived intent — the substrate slice 2's class-δ triggers and slice 5's action-effect framework subscribe to.
 
 ### `ParticipantStateOverride` discriminated union (slice 1)
 
@@ -94,9 +96,10 @@ New variants land as 2b.7/2b.8 trait/title/complication work surfaces more sourc
 
 `OpenActionKindSchema` (today empty per 2b.0) gains real entries:
 
-Added by slice 1 (damage-state opt-ins — these belong with the state machine that owns the doomed state):
-- `hakaan-doomed-opt-in` — offered to dying Hakaan PCs when they could opt into the doomed state
-- `title-doomed-opt-in` — offered to non-Hakaan PCs with the *Doomed* title equipped at `reachedZeroStamina` if conscious
+Added by slice 1 (damage-state opt-in):
+- `title-doomed-opt-in` — offered to non-Hakaan PCs with the *Doomed* title equipped at `reachedZeroStamina` if conscious.
+
+Note: Hakaan-Doomsight does NOT use the OA framework. Per slice 1 brainstorm decision, the Hakaan PC's `Become Doomed` is a direct player intent (`BecomeDoomed { participantId, source: 'hakaan-doomsight' }`) dispatched from a button on the player sheet, available any time during an encounter. Director/player collaboration about *when* to press the button happens at the table, outside the app.
 
 Added by slice 2 (class-δ raisers and class-internal affordances):
 - `pray-to-the-gods` — Conduit class-internal raise
@@ -114,17 +117,24 @@ Each gets a copy-registry entry. The 2b2a chrome (already shipped) starts having
 
 | Intent | Slice | Notes |
 |---|---|---|
-| `SaveAgainstDeath` | 1 | Dying participants roll death saves; payload `{ participantId, roll, characteristicMod }` |
-| `KnockUnconscious` | 1 | Attacker-chooses-non-lethal path at `wouldHitDead` |
-| `ResolveTriggerOrder` | 1 | Q10 — payload `{ triggerId, order: { participantId, triggeredActionId }[] }`; director-only |
+| `BecomeDoomed` | 1 | Hakaan-Doomsight player-pressed (or director-applied with `source: 'manual'`); sets doomed override |
+| `KnockUnconscious` | 1 | Out-of-combat explicit KO; bypasses ApplyDamage |
+| `ApplyParticipantOverride` | 1 | Director-only manual override application (covers all 4 kinds) |
+| `ClearParticipantOverride` | 1 | Director-only override revert |
+| `ResolveTriggerOrder` | 1 | Q10 — payload `{ pendingTriggerSetId, order: string[] }`; director-only |
+| `GrantExtraMainAction` | 1 | Server-only derived intent fired on nat 19/20 main-action `RollPower` |
+| `ExecuteTrigger` | 1 | Server-only derived cascade step during cross-side trigger resolution |
+| `StaminaTransitioned` | 1 | Server-only derived event; substrate for slice 2 + slice 5 |
 | `StartMaintenance` / `StopMaintenance` | 2 | Elementalist sustained-ability state machine |
 | `PickSquadNext` | 3 | Squad-aware extension of `PickNextActor`; one squad picks → all members act consecutively |
+
+`ApplyDamage`'s payload also gains an optional `intent: 'kill' | 'knock-out'` field (slice 1) for the KO interception path.
 
 ### Participant schema additions (across slices)
 
 | Field | Slice | Notes |
 |---|---|---|
-| `staminaState` + `staminaOverride` + `deathSaves` (siblings or nested — slice 1 picks) | 1 | Extends existing `currentStamina` / `maxStamina`; relaxes `currentStamina.min(0)` to allow negative for dying |
+| `staminaState` + `staminaOverride` (flat siblings) | 1 | Extends existing `currentStamina` / `maxStamina`; relaxes `currentStamina.min(0)` to allow negative for dying. No `deathSaves` field — Draw Steel has no death-save mechanic. |
 | `triggeredActionUsedThisRound` | 1 | § 4.10; round-tick reset at `EndRound` |
 | `perEncounterFlags` | 2 | `{ tookDamageThisRound: boolean, forceMovedThisTurn: boolean, ... }` — class-δ triggers + conditional attachments read this |
 | `bodyIntact` | 1 | Reified from 2b.0's permissive flag; Troubadour posthumous reads it |
@@ -164,28 +174,33 @@ Each slice ships through its own brainstorm → spec → plan → subagent-drive
 
 **Folds in:** 2b.5 (full), 2b.6 (extended to "per-trait damage-state overrides"), 2b.9 (Q10 cross-side trigger ordering), § 4.10 critical-hit extra-main-action rule.
 
-**Engine deliverables:**
-- Stamina state machine: healthy / winded / dying / dead / unconscious per § 2.7-2.9.
-- Death saves (§ 2.8 dying state, with auto-Bleeding `removable: false`); recoveries and waking-from-unconscious paths.
+**Engine deliverables:** (per [slice 1 spec](2026-05-15-pass-3-slice-1-damage-state-machine-design.md))
+- Stamina state machine: healthy / winded / dying / dead / unconscious / inert / rubble / doomed per § 2.7-2.9.
+- Dying state with auto-Bleeding (`removable: false`, `source: 'dying-state'`). **No death saves** — Draw Steel doesn't have them; the Bleeding-d6 hook on dying-hero actions is the natural progression toward dead.
+- KO interception (§ 2.9): `ApplyDamage.intent: 'kill' | 'knock-out'` payload field; opt-in at a would-kill blow stops damage, applies Unconscious + Prone conditions, next damage kills.
 - `ParticipantStateOverride` generic mechanism with five concrete plugs:
-  - **Revenant inert** (intercepts `enteringDying`)
-  - **Hakaan rubble** (intercepts `wouldHitDead` while not doomed)
-  - **Hakaan doomed** — predetermined (set at `StartEncounter`) + spontaneous opt-in (offered as Open Action at `enteringDying`)
-  - **Title *Doomed*** (offered as Open Action at `reachedZeroStamina` if conscious)
-  - **Curse of Punishment** (`recoveries-exhausted` predicate → dying entry path)
-- Cross-side triggered-action ordering via `ResolveTriggerOrder` intent + director prompt UI (Q10).
-- Critical-hit rule: nat 19/20 on an ability used as a main action grants an extra main action immediately (even off-turn, even dazed) — fires as a derived intent off `RollPower` with the appropriate context.
+  - **Revenant inert** (intercepts `→ dying` automatically when `character.ancestry.id === 'revenant'`)
+  - **Hakaan rubble** (intercepts `→ dead` automatically when `character.ancestry.id === 'hakaan'` + Doomsight equipped + not currently doomed)
+  - **Hakaan doomed** — direct `BecomeDoomed` player intent from the sheet button (no OA, no predetermination — collaboration happens at the table)
+  - **Title *Doomed*** — `title-doomed-opt-in` Open Action raised at `reachedZeroStamina` while conscious; player claims to enter doomed state
+  - **Curse of Punishment** — `recoveries-exhausted` predicate enters dying state regardless of stamina; clears automatically when recoveries refill (Q3 = A)
+- Cross-side triggered-action ordering via `ResolveTriggerOrder` intent + `CrossSideTriggerModal` director-only modal with foe-first default order, drag-to-reorder, single resolve button (Q10 closed).
+- Critical-hit rule: nat 19/20 on `RollPower` for a main-action ability grants `GrantExtraMainAction` derived intent (even off-turn, even dazed).
+- Bleeding-trigger discriminant extension: `main_action | triggered_action | might_or_agility_test | ability_roll` (renames `might_or_agility_roll` for precision and adds `ability_roll`).
 
 **UI surface in slice 1 (minimal):**
-- `ParticipantRow` state tag adds new values: `Winded`, `Dying (N/3)`, `Dead`, `KO`, `Inert`, `Rubble`, `Doomed`.
-- Death-save dispatcher UI on the dying participant's sheet/row.
-- Cross-side trigger resolution prompt (director-only).
-- *Visual polish* for the state tags ships in slices 4 + 5 (chip embellishment, skull emblem).
+- `ParticipantRow` state tag adds new values: `WINDED`, `DYING`, `DEAD`, `KO` (with 💤 glyph), `INERT (12h)`, `RUBBLE (12h)`, `DOOMED` (with 🔥 glyph).
+- `DoomsightBecomeDoomedButton` on `PlayerSheetPanel` for Hakaan-Doomsight PCs.
+- `CrossSideTriggerModal` (director-only) + passive `TriggersPendingPill` for players.
+- *Visual polish* for state tags ships in slices 4 + 5 (chip embellishment, skull emblem, glow).
 
-**Opens to verify before per-slice brainstorm:**
-- Curse of Punishment: does the dying state clear automatically when recoveries refill (via Respite while alive at >0 stamina), or is it sticky until manual cure?
+**Verified during slice 1 brainstorm:**
+- Death saves: not in Draw Steel canon. Dying → dead is purely Bleeding-d6 progression on actions.
+- CoP recoveries-refill: dying clears automatically when predicate de-asserts (option A).
+- KO interception: damage doesn't apply at all; stamina stops at pre-blow value (option A).
+- Hakaan Doomsight: player-pressed button, always available, no encounter-predetermination logic in engine.
 
-**Closes:** rule-questions Q10, Q16, Q-doomed (new). Phase 2b acceptance criterion #3.
+**Closes:** rule-questions Q10, Q16, new Q-doomed (Hakaan + Title doomed mechanics). Phase 2b acceptance criterion #3.
 
 ### Slice 2 — Class-δ triggers + conditional attachments
 
@@ -308,10 +323,10 @@ Each slice ships through its own brainstorm → spec → plan → subagent-drive
 - **Mode-B nav (D3) is unresolved.** Slice 4's brainstorm has to settle Templates vs Approvals vs Sessions vs combiner. Risk: spec-writing gets blocked on a design call that should have been made earlier. Mitigation: the umbrella explicitly flags this as a per-slice brainstorm decision; doesn't gate this spec.
 - **Slice 5's framework primitive is new ground.** No existing event-bus pattern in `apps/web/src/` — `useSessionSocket`'s reflect path is the closest analog but it's intent-input-driven, not event-output-driven. Risk: slice 5 ends up spending half its budget on the framework before the first effect renders. Mitigation: per-slice brainstorm scopes the framework to the minimum needed for the five concrete plugs; no premature generality.
 - **Cross-side trigger ordering UX (Q10) is unspecified.** Slice 1 ships `ResolveTriggerOrder` + a director prompt, but the prompt's shape (list of pending triggers, side-grouped headers, drag-to-reorder, etc.) is a design call. Mitigation: per-slice brainstorm.
-- **Hakaan doomed has two distinct entry paths** (predetermined at `StartEncounter` vs. opt-in at `enteringDying`). The opt-in path uses the Open Action framework — which means slice 1 either pre-empts slice 2's OA kind registry, or ships its own kind enum entries (`hakaan-doomed-opt-in`, `title-doomed-opt-in`). Sequencing call: slice 1 owns these entries because the doomed state itself is slice 1; slice 2's OA work is about class-δ raisers and class-internal affordances, not damage-state opt-ins. The kind enum gains these two entries in slice 1's spec.
+- **Hakaan doomed is a direct player intent**, not an Open Action — per slice 1 brainstorm 2026-05-15. The Hakaan PC's sheet shows a `Become Doomed` button (visible when Hakaan ancestry + Doomsight purchased trait equipped) that dispatches `BecomeDoomed { source: 'hakaan-doomsight' }` directly. Director/player collaboration about when to press happens at the table, outside the app. No `hakaan-doomed-opt-in` OA kind is registered. The Title *Doomed* path *is* an OA (`title-doomed-opt-in`) because the title's trigger condition (`reachedZeroStamina` while conscious) is engine-detectable and the OA framework is the right "you can now do this" surface; the OA enum gains this single entry in slice 1.
 - **Curse of Punishment recovery-refill clearing the dying state** is unverified. Slice 1's brainstorm asks the user to verify against the printed book.
 - **Hakaan doomed spontaneous opt-in is gated on "Director's approval"** (canon flavor text). The Open Action implementation translates this to: the OA appears in the dying participant's list as a normal claim; canon-trust handles the Director-approval semantics at the table. Engine doesn't gate the claim on director consent; if the table wants stricter enforcement, the director can simply reject and the player doesn't claim.
-- **Backwards compat for pre-Pass-3 snapshots.** Pre-Pass-3 encounters load with flat `currentStamina`/`maxStamina` + nested `recoveries: { current, max }` + `recoveryValue`. Slice 1's loader adds (or computes) the new state fields with `staminaState: derived-from-stamina`, `staminaOverride: null`, `deathSaves: null`. Slice 4's `colorPack` defaults to `null` on existing characters → resolved to class-default at next encounter start. Slice 3's `squadId` is null on existing participants → they render as non-squad rows. No D1 migration intent required.
+- **Backwards compat for pre-Pass-3 snapshots.** Pre-Pass-3 encounters load with flat `currentStamina`/`maxStamina` + nested `recoveries: { current, max }` + `recoveryValue`. Slice 1's loader populates `staminaState` by running `recomputeStaminaState` over each participant; `staminaOverride` defaults to `null`; `bodyIntact` defaults to `true`; `triggeredActionUsedThisRound` defaults to `false`. Slice 4's `colorPack` defaults to `null` on existing characters → resolved to class-default at next encounter start. Slice 3's `squadId` is null on existing participants → they render as non-squad rows. No D1 migration intent required.
 
 ## Acceptance (umbrella-level)
 
