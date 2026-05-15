@@ -9,8 +9,8 @@ const PIP_COUNT = 8;
 
 /**
  * Phase 5 Pass 2b2a — heroic-resource readout for the PartyRail row.
- * Shows the resource display name + an 8-pip row + an optional +N overflow
- * numeric when the value exceeds 8.
+ * Shows the resource display name + total value inline, then an 8-pip row
+ * as a glance-only visual indicator (capped at 8 filled regardless of value).
  *
  * Pip color reads `var(--pk, var(--accent))` — the per-row pack-class scope
  * (set by ParticipantRow's `pack` prop) overrides --pk when Layer 2 ships
@@ -23,13 +23,12 @@ export function HeroResourceCell({ participant }: HeroResourceCellProps) {
   if (!resource) return null;
 
   const filled = Math.min(resource.value, PIP_COUNT);
-  const overflow = Math.max(0, resource.value - PIP_COUNT);
-  const displayName = capitalize(resource.name);
 
   return (
     <div className="flex flex-col items-end gap-1 leading-none">
       <span className="font-mono text-[9px] uppercase tracking-[0.06em] text-text-mute">
-        {displayName}
+        {capitalize(resource.name)}{' '}
+        <span className="text-text font-bold tabular-nums">{resource.value}</span>
       </span>
       <span className="flex gap-[2px]">
         {Array.from({ length: PIP_COUNT }, (_, i) => {
@@ -46,11 +45,6 @@ export function HeroResourceCell({ participant }: HeroResourceCellProps) {
           );
         })}
       </span>
-      {overflow > 0 && (
-        <span className="font-mono text-[10px] tabular-nums text-text-dim">
-          +{overflow}
-        </span>
-      )}
     </div>
   );
 }

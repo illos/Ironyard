@@ -45,17 +45,17 @@ function makePc(overrides: Partial<Participant> = {}): Participant {
 describe('HeroResourceCell', () => {
   it('renders the resource name + filled/unfilled pip row', () => {
     render(<HeroResourceCell participant={makePc({ heroicResources: [{ name: 'focus', value: 3, floor: 0 }] })} />);
-    expect(screen.getByText('Focus')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
     const pips = screen.getAllByTestId('resource-pip');
     expect(pips).toHaveLength(8);
     expect(pips.filter((p) => p.dataset.filled === 'true')).toHaveLength(3);
   });
 
-  it('fills all 8 pips + renders the +N overflow numeric when value > 8', () => {
+  it('value > 8 fills all 8 pips and shows the full total on the label', () => {
     render(<HeroResourceCell participant={makePc({ heroicResources: [{ name: 'ferocity', value: 10, floor: 0 }] })} />);
     const pips = screen.getAllByTestId('resource-pip');
     expect(pips.filter((p) => p.dataset.filled === 'true')).toHaveLength(8);
-    expect(screen.getByText(/\+2/)).toBeInTheDocument();
+    expect(screen.getByText('10')).toBeInTheDocument();
   });
 
   it('renders nothing when the participant has no heroic resource', () => {
