@@ -3,6 +3,9 @@ import { ActiveAbilityInstanceSchema } from './active-ability';
 import { CharacteristicsSchema } from './characteristic';
 import { ConditionInstanceSchema } from './condition';
 import { TypedResistanceSchema } from './damage';
+import { MaintainedAbilitySchema } from './maintained-ability';
+import { PerEncounterFlagsSchema, defaultPerEncounterFlags } from './per-encounter-flags';
+import { PsionFlagsSchema, defaultPsionFlags } from './psion-flags';
 import { ExtraResourceInstanceSchema, HeroicResourceInstanceSchema } from './resource';
 import { ParticipantStateOverrideSchema } from './stamina-override';
 
@@ -136,5 +139,22 @@ export const ParticipantSchema = z.object({
   // Canon §4.10 — round-tick reset by applyEndRound. Gates triggered-action
   // availability.
   triggeredActionUsedThisRound: z.boolean().default(false),
+  // Pass 3 Slice 2a — per-turn / per-round / per-encounter flag bag consumed
+  // by class-feature triggers (Fury Ferocity, Censor Wrath, Tactician Focus,
+  // Shadow Insight, Null Discipline, Talent Clarity, Troubadour latches).
+  // Reset semantics live in turn.ts (perTurn entries clear at EndTurn of
+  // scopedToTurnOf, perRound at EndRound, perEncounter at EndEncounter).
+  perEncounterFlags: PerEncounterFlagsSchema.default(defaultPerEncounterFlags()),
+  // Pass 3 Slice 2a — posthumous Drama eligibility latch. Set true when a
+  // hero dies; consumed by GainResource (Drama crossing 30) to dispatch the
+  // auto-revive open action. Cleared on revive.
+  posthumousDramaEligible: z.boolean().default(false),
+  // Pass 3 Slice 2a — Psion 10th-level flags (Clarity damage opt-out). Reset
+  // at EndTurn.
+  psionFlags: PsionFlagsSchema.default(defaultPsionFlags()),
+  // Pass 3 Slice 2a — Elementalist Maintenance: abilities the hero is keeping
+  // up at a per-turn essence cost. StartTurn deducts costPerTurn after the
+  // per-turn essence gain; auto-drops if essence would go negative.
+  maintainedAbilities: z.array(MaintainedAbilitySchema).default([]),
 });
 export type Participant = z.infer<typeof ParticipantSchema>;

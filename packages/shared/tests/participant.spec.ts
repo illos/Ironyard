@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ParticipantSchema } from '../src/participant';
+import { defaultPerEncounterFlags, defaultPsionFlags } from '../src';
 
 describe('ParticipantSchema.turnActionUsage', () => {
   it('defaults to all-false when omitted', () => {
@@ -78,5 +79,70 @@ describe('ParticipantSchema slice-1 additions', () => {
       },
     });
     expect(p.staminaOverride?.kind).toBe('doomed');
+  });
+});
+
+describe('Participant — slice 2a additions', () => {
+  const base = {
+    id: 'p1',
+    name: 'Korva',
+    kind: 'pc' as const,
+    level: 5,
+    currentStamina: 30,
+    maxStamina: 30,
+    characteristics: { might: 2, agility: 1, reason: 0, intuition: 0, presence: 0 },
+  };
+
+  it('defaults the new slice-2a fields correctly on a minimal PC', () => {
+    const minimal = ParticipantSchema.parse(base);
+    expect(minimal.perEncounterFlags).toEqual(defaultPerEncounterFlags());
+    expect(minimal.posthumousDramaEligible).toBe(false);
+    expect(minimal.psionFlags).toEqual(defaultPsionFlags());
+    expect(minimal.maintainedAbilities).toEqual([]);
+  });
+
+  it('round-trips populated values for the slice-2a fields', () => {
+    const populated = ParticipantSchema.parse({
+      ...base,
+      perEncounterFlags: {
+        perTurn: {
+          entries: [
+            { scopedToTurnOf: 'p1', key: 'damageDealtThisTurn', value: true },
+          ],
+        },
+        perRound: {
+          tookDamage: true,
+          judgedTargetDamagedMe: false,
+          damagedJudgedTarget: false,
+          markedTargetDamagedByAnyone: false,
+          dealtSurgeDamage: false,
+          directorSpentMalice: false,
+          creatureForceMoved: false,
+        },
+        perEncounter: {
+          firstTimeWindedTriggered: true,
+          firstTimeDyingTriggered: false,
+          troubadourThreeHeroesTriggered: false,
+          troubadourAnyHeroWindedTriggered: false,
+          troubadourReviveOARaised: false,
+        },
+      },
+      posthumousDramaEligible: true,
+      psionFlags: { clarityDamageOptOutThisTurn: true },
+      maintainedAbilities: [
+        { abilityId: 'elementalist-storm-aegis', costPerTurn: 2, startedAtRound: 2 },
+      ],
+    });
+
+    expect(populated.perEncounterFlags.perTurn.entries).toEqual([
+      { scopedToTurnOf: 'p1', key: 'damageDealtThisTurn', value: true },
+    ]);
+    expect(populated.perEncounterFlags.perRound.tookDamage).toBe(true);
+    expect(populated.perEncounterFlags.perEncounter.firstTimeWindedTriggered).toBe(true);
+    expect(populated.posthumousDramaEligible).toBe(true);
+    expect(populated.psionFlags).toEqual({ clarityDamageOptOutThisTurn: true });
+    expect(populated.maintainedAbilities).toEqual([
+      { abilityId: 'elementalist-storm-aegis', costPerTurn: 2, startedAtRound: 2 },
+    ]);
   });
 });
