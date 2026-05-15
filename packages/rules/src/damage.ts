@@ -63,6 +63,25 @@ export function applyDamageStep(
     };
   }
 
+  // Canon §2.9: any damage on an already-unconscious target kills them.
+  if (target.staminaState === 'unconscious' && delivered > 0) {
+    const killed: Participant = {
+      ...target,
+      currentStamina: target.kind === 'pc' ? -target.maxStamina - 1 : 0,
+      staminaState: 'dead',
+      staminaOverride: null,
+      conditions: [],
+    };
+    return {
+      delivered,
+      before,
+      after: killed.currentStamina,
+      newParticipant: killed,
+      transitionedTo: 'dead',
+      knockedOut: false,
+    };
+  }
+
   // KO interception path — applies BEFORE damage is recorded.
   const wouldBe = before - delivered;
   if (intent === 'knock-out' && wouldHitDead(target, wouldBe)) {

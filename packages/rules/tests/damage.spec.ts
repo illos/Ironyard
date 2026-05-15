@@ -107,8 +107,8 @@ describe('applyDamageStep — KO interception', () => {
   });
 
   it('an unconscious target takes further damage and dies', () => {
-    // Start at -14 (one below dead threshold of -15 for maxStamina=30).
-    // 1 more damage → -15 ≤ -windedValue(15) → dead.
+    // Canon §2.9: any damage on an already-unconscious target kills immediately —
+    // even 1 point bypasses normal threshold logic and sets dead + clears conditions.
     const start = hero({
       currentStamina: -14,
       maxStamina: 30,
@@ -132,6 +132,11 @@ describe('applyDamageStep — KO interception', () => {
     });
     const r = applyDamageStep(start, 1, 'fire');
     expect(r.newParticipant.staminaState).toBe('dead');
+    expect(r.newParticipant.conditions).toHaveLength(0);
+    expect(r.transitionedTo).toBe('dead');
+    expect(r.knockedOut).toBe(false);
+    // Short-circuit kills with pc dead stamina = -maxStamina - 1
+    expect(r.newParticipant.currentStamina).toBe(-31);
   });
 });
 
