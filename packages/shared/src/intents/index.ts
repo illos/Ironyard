@@ -11,6 +11,10 @@ export { ApplyDamagePayloadSchema } from './apply-damage';
 export type { ApplyDamagePayload } from './apply-damage';
 export { ApplyHealPayloadSchema } from './apply-heal';
 export type { ApplyHealPayload } from './apply-heal';
+export { ApplyParticipantOverridePayloadSchema } from './apply-participant-override';
+export type { ApplyParticipantOverridePayload } from './apply-participant-override';
+export { BecomeDoomedPayloadSchema } from './become-doomed';
+export type { BecomeDoomedPayload } from './become-doomed';
 export {
   RaiseOpenActionPayloadSchema,
   ClaimOpenActionPayloadSchema,
@@ -21,6 +25,8 @@ export type {
 } from './raise-open-action';
 export { ClearLobbyPayloadSchema } from './clear-lobby';
 export type { ClearLobbyPayload } from './clear-lobby';
+export { ClearParticipantOverridePayloadSchema } from './clear-participant-override';
+export type { ClearParticipantOverridePayload } from './clear-participant-override';
 export { DenyCharacterPayloadSchema } from './deny-character';
 export type { DenyCharacterPayload } from './deny-character';
 export { EndEncounterPayloadSchema } from './end-encounter';
@@ -41,6 +47,8 @@ export { JumpBehindScreenPayloadSchema } from './jump-behind-screen';
 export type { JumpBehindScreenPayload } from './jump-behind-screen';
 export { KickPlayerPayloadSchema } from './kick-player';
 export type { KickPlayerPayload } from './kick-player';
+export { KnockUnconsciousPayloadSchema } from './knock-unconscious';
+export type { KnockUnconsciousPayload } from './knock-unconscious';
 export { LeaveLobbyPayloadSchema } from './leave-lobby';
 export type { LeaveLobbyPayload } from './leave-lobby';
 export {
@@ -67,6 +75,8 @@ export { RemoveApprovedCharacterPayloadSchema } from './remove-approved-characte
 export type { RemoveApprovedCharacterPayload } from './remove-approved-character';
 export { RespitePayloadSchema } from './respite';
 export type { RespitePayload, SafelyCarryWarning } from './respite';
+export { ResolveTriggerOrderPayloadSchema } from './resolve-trigger-order';
+export type { ResolveTriggerOrderPayload } from './resolve-trigger-order';
 export { RemoveConditionPayloadSchema } from './remove-condition';
 export type { RemoveConditionPayload } from './remove-condition';
 export { RemoveParticipantPayloadSchema } from './remove-participant';
@@ -142,9 +152,12 @@ export const IntentTypes = {
   AdjustVictories: 'AdjustVictories',
   ApplyDamage: 'ApplyDamage',
   ApplyHeal: 'ApplyHeal',
+  ApplyParticipantOverride: 'ApplyParticipantOverride',
   ApproveCharacter: 'ApproveCharacter',
+  BecomeDoomed: 'BecomeDoomed',
   ClaimOpenAction: 'ClaimOpenAction',
   ClearLobby: 'ClearLobby',
+  ClearParticipantOverride: 'ClearParticipantOverride',
   DenyCharacter: 'DenyCharacter',
   EndEncounter: 'EndEncounter',
   EndRound: 'EndRound',
@@ -157,6 +170,7 @@ export const IntentTypes = {
   JoinLobby: 'JoinLobby',
   JumpBehindScreen: 'JumpBehindScreen',
   KickPlayer: 'KickPlayer',
+  KnockUnconscious: 'KnockUnconscious',
   LeaveLobby: 'LeaveLobby',
   LoadEncounterTemplate: 'LoadEncounterTemplate',
   MarkActionUsed: 'MarkActionUsed',
@@ -179,6 +193,7 @@ export const IntentTypes = {
   SpendRecovery: 'SpendRecovery',
   SpendResource: 'SpendResource',
   Respite: 'Respite',
+  ResolveTriggerOrder: 'ResolveTriggerOrder',
   SpendSurge: 'SpendSurge',
   StartEncounter: 'StartEncounter',
   StartRound: 'StartRound',
