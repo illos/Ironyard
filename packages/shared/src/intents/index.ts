@@ -35,12 +35,16 @@ export { EndSessionPayloadSchema } from './end-session';
 export type { EndSessionPayload } from './end-session';
 export { EquipItemPayloadSchema } from './equip-item';
 export type { EquipItemPayload } from './equip-item';
+export { ExecuteTriggerPayloadSchema } from './execute-trigger';
+export type { ExecuteTriggerPayload } from './execute-trigger';
 export { GainHeroTokenPayloadSchema } from './gain-hero-token';
 export type { GainHeroTokenPayload } from './gain-hero-token';
 export { GainMalicePayloadSchema } from './gain-malice';
 export type { GainMalicePayload } from './gain-malice';
 export { GainResourcePayloadSchema } from './gain-resource';
 export type { GainResourcePayload } from './gain-resource';
+export { GrantExtraMainActionPayloadSchema } from './grant-extra-main-action';
+export type { GrantExtraMainActionPayload } from './grant-extra-main-action';
 export { JoinLobbyPayloadSchema } from './join-lobby';
 export type { JoinLobbyPayload } from './join-lobby';
 export { JumpBehindScreenPayloadSchema } from './jump-behind-screen';
@@ -103,6 +107,8 @@ export { SpendResourcePayloadSchema } from './spend-resource';
 export type { SpendResourcePayload } from './spend-resource';
 export { SpendSurgePayloadSchema } from './spend-surge';
 export type { SpendSurgePayload } from './spend-surge';
+export { StaminaStateSchema, StaminaTransitionedPayloadSchema } from './stamina-transitioned';
+export type { StaminaState, StaminaTransitionedPayload } from './stamina-transitioned';
 export {
   MonsterEntrySchema,
   StartEncounterPayloadSchema,
@@ -164,9 +170,11 @@ export const IntentTypes = {
   EndSession: 'EndSession',
   EndTurn: 'EndTurn',
   EquipItem: 'EquipItem',
+  ExecuteTrigger: 'ExecuteTrigger',
   GainHeroToken: 'GainHeroToken',
   GainMalice: 'GainMalice',
   GainResource: 'GainResource',
+  GrantExtraMainAction: 'GrantExtraMainAction',
   JoinLobby: 'JoinLobby',
   JumpBehindScreen: 'JumpBehindScreen',
   KickPlayer: 'KickPlayer',
@@ -197,6 +205,7 @@ export const IntentTypes = {
   SpendSurge: 'SpendSurge',
   StartEncounter: 'StartEncounter',
   StartRound: 'StartRound',
+  StaminaTransitioned: 'StaminaTransitioned',
   StartSession: 'StartSession',
   StartTurn: 'StartTurn',
   SubmitCharacter: 'SubmitCharacter',
@@ -208,3 +217,14 @@ export const IntentTypes = {
   UseConsumable: 'UseConsumable',
 } as const;
 export type KnownIntentType = (typeof IntentTypes)[keyof typeof IntentTypes];
+
+// Intent types that are only valid when dispatched by the server (the DO or its
+// derived-intent pipeline). Clients dispatching these are rejected at the lobby
+// envelope boundary. See docs/intent-protocol.md §3.
+export const SERVER_ONLY_INTENTS = new Set<string>([
+  IntentTypes.ApplyDamage,
+  IntentTypes.ExecuteTrigger,
+  IntentTypes.GrantExtraMainAction,
+  IntentTypes.RaiseOpenAction,
+  IntentTypes.StaminaTransitioned,
+]);
