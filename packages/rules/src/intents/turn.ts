@@ -72,9 +72,7 @@ export function applyStartRound(state: CampaignState, intent: StampedIntent): In
   // sweep covers everyone else (who would otherwise stay marked from the
   // previous round until their own turn began).
   const nextParticipants = state.participants.map((p) =>
-    isParticipant(p)
-      ? { ...p, turnActionUsage: { main: false, maneuver: false, move: false } }
-      : p,
+    isParticipant(p) ? { ...p, turnActionUsage: { main: false, maneuver: false, move: false } } : p,
   );
 
   return {
@@ -135,12 +133,21 @@ export function applyEndRound(state: CampaignState, intent: StampedIntent): Inte
   );
 
   // Phase 5 Pass 2b1: end-of-round-1 surprise sweep (canon § 4.1).
-  const nextParticipants =
-    guard.encounter.currentRound === 1
-      ? state.participants.map((p) =>
-          isParticipant(p) && p.surprised ? { ...p, surprised: false } : p,
-        )
-      : state.participants;
+  // Pass 3 Slice 1 — canon §4.10: reset triggeredActionUsedThisRound each round.
+  const nextParticipants = state.participants.map((p) => {
+    if (!isParticipant(p)) return p;
+    const clearSurprise = guard.encounter.currentRound === 1 && p.surprised;
+    if (clearSurprise && p.triggeredActionUsedThisRound) {
+      return { ...p, surprised: false, triggeredActionUsedThisRound: false };
+    }
+    if (clearSurprise) {
+      return { ...p, surprised: false };
+    }
+    if (p.triggeredActionUsedThisRound) {
+      return { ...p, triggeredActionUsedThisRound: false };
+    }
+    return p;
+  });
 
   return {
     state: {

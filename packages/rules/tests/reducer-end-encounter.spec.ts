@@ -222,7 +222,7 @@ describe('applyIntent — EndEncounter', () => {
         heroicResources: [{ name: 'wrath', value: 7, floor: 0 }],
       }),
     ];
-    let s: CampaignState = {
+    const s: CampaignState = {
       ...emptyCampaignState(campaignId, 'user-owner'),
       participants,
       encounter: {
@@ -434,7 +434,7 @@ describe('applyIntent — EndEncounter', () => {
         encounter: {
           id: 'enc_test',
           currentRound: 1,
-            activeParticipantId: null,
+          activeParticipantId: null,
           turnState: {},
           malice: { current: 0, lastMaliciousStrikeRound: null },
           firstSide: null,
@@ -445,8 +445,12 @@ describe('applyIntent — EndEncounter', () => {
 
       const r = endEncounter(s);
       expect(r.errors).toBeUndefined();
-      const censor = r.state.participants.find((p): p is Participant => isParticipant(p) && p.id === 'pc_censor');
-      const mystic = r.state.participants.find((p): p is Participant => isParticipant(p) && p.id === 'pc_mystic');
+      const censor = r.state.participants.find(
+        (p): p is Participant => isParticipant(p) && p.id === 'pc_censor',
+      );
+      const mystic = r.state.participants.find(
+        (p): p is Participant => isParticipant(p) && p.id === 'pc_mystic',
+      );
       expect(censor?.heroicResources[0]?.value).toBe(0);
       expect(mystic?.heroicResources[0]?.value).toBe(0);
     });
@@ -464,7 +468,7 @@ describe('applyIntent — EndEncounter', () => {
         encounter: {
           id: 'enc_test',
           currentRound: 1,
-            activeParticipantId: null,
+          activeParticipantId: null,
           turnState: {},
           malice: { current: 0, lastMaliciousStrikeRound: null },
           firstSide: null,
@@ -475,7 +479,9 @@ describe('applyIntent — EndEncounter', () => {
 
       const r = endEncounter(s);
       expect(r.errors).toBeUndefined();
-      const talent = r.state.participants.find((p): p is Participant => isParticipant(p) && p.id === 'pc_talent');
+      const talent = r.state.participants.find(
+        (p): p is Participant => isParticipant(p) && p.id === 'pc_talent',
+      );
       expect(talent?.heroicResources[0]?.value).toBe(0);
       expect(talent?.heroicResources[0]?.floor).toBe(-3); // floor preserved
     });
@@ -493,7 +499,7 @@ describe('applyIntent — EndEncounter', () => {
         encounter: {
           id: 'enc_test',
           currentRound: 1,
-            activeParticipantId: null,
+          activeParticipantId: null,
           turnState: {},
           malice: { current: 0, lastMaliciousStrikeRound: null },
           firstSide: null,
@@ -504,7 +510,9 @@ describe('applyIntent — EndEncounter', () => {
 
       const r = endEncounter(s);
       expect(r.errors).toBeUndefined();
-      const p = r.state.participants.find((x): x is Participant => isParticipant(x) && x.id === 'pc_with_surges');
+      const p = r.state.participants.find(
+        (x): x is Participant => isParticipant(x) && x.id === 'pc_with_surges',
+      );
       expect(p?.surges).toBe(0);
     });
 
@@ -526,7 +534,7 @@ describe('applyIntent — EndEncounter', () => {
         encounter: {
           id: 'enc_test',
           currentRound: 1,
-              activeParticipantId: null,
+          activeParticipantId: null,
           turnState: {},
           malice: { current: 0, lastMaliciousStrikeRound: null },
           firstSide: null,
@@ -538,6 +546,185 @@ describe('applyIntent — EndEncounter', () => {
       const r = endEncounter(s);
       expect(r.errors).toBeUndefined();
       expect(r.state.openActions).toEqual([]);
+    });
+  });
+
+  // Pass 3 Slice 1 — Task 15a: dieAtEncounterEnd + pendingTriggers
+  describe('Pass 3 Slice 1 — doomed dieAtEncounterEnd', () => {
+    it('transitions a doomed participant with dieAtEncounterEnd=true to dead at encounter end', () => {
+      const doomedPc = pc({
+        id: 'pc_doomed',
+        maxStamina: 30,
+        currentStamina: 10,
+        staminaState: 'doomed',
+        staminaOverride: {
+          kind: 'doomed',
+          source: 'hakaan-doomsight',
+          canRegainStamina: true,
+          autoTier3OnPowerRolls: true,
+          staminaDeathThreshold: 'none',
+          dieAtEncounterEnd: true,
+        },
+        conditions: [
+          {
+            type: 'Bleeding',
+            source: { kind: 'effect', id: 'some-effect' },
+            duration: { kind: 'EoT' },
+            appliedAtSeq: 1,
+            removable: true,
+          },
+        ],
+      });
+      const s: CampaignState = {
+        ...emptyCampaignState(campaignId, 'user-owner'),
+        participants: [doomedPc],
+        encounter: {
+          id: 'enc_test',
+          currentRound: 1,
+          activeParticipantId: null,
+          turnState: {},
+          malice: { current: 0, lastMaliciousStrikeRound: null },
+          firstSide: null,
+          currentPickingSide: null,
+          actedThisRound: [],
+        },
+      };
+
+      const r = endEncounter(s);
+      expect(r.errors).toBeUndefined();
+      const died = findParticipant(r.state, 'pc_doomed');
+      expect(died.staminaState).toBe('dead');
+      expect(died.currentStamina).toBe(-doomedPc.maxStamina - 1);
+      expect(died.staminaOverride).toBeNull();
+      expect(died.conditions).toEqual([]);
+    });
+
+    it('leaves a doomed participant with dieAtEncounterEnd=false unchanged at encounter end', () => {
+      const doomedPc = pc({
+        id: 'pc_doomed_stay',
+        maxStamina: 30,
+        currentStamina: 5,
+        staminaState: 'doomed',
+        staminaOverride: {
+          kind: 'doomed',
+          source: 'title-doomed',
+          canRegainStamina: false,
+          autoTier3OnPowerRolls: true,
+          staminaDeathThreshold: 'staminaMax',
+          dieAtEncounterEnd: false,
+        },
+      });
+      const s: CampaignState = {
+        ...emptyCampaignState(campaignId, 'user-owner'),
+        participants: [doomedPc],
+        encounter: {
+          id: 'enc_test',
+          currentRound: 1,
+          activeParticipantId: null,
+          turnState: {},
+          malice: { current: 0, lastMaliciousStrikeRound: null },
+          firstSide: null,
+          currentPickingSide: null,
+          actedThisRound: [],
+        },
+      };
+
+      const r = endEncounter(s);
+      expect(r.errors).toBeUndefined();
+      const survived = findParticipant(r.state, 'pc_doomed_stay');
+      expect(survived.staminaState).toBe('doomed');
+      expect(survived.staminaOverride).not.toBeNull();
+      expect(survived.currentStamina).toBe(5);
+    });
+
+    it('clears pendingTriggers at encounter end', () => {
+      const s: CampaignState = {
+        ...emptyCampaignState(campaignId, 'user-owner'),
+        participants: [],
+        pendingTriggers: {
+          id: 'ptrig_test',
+          triggerEvent: {
+            kind: 'damage-applied',
+            targetId: 'm_goblin',
+            attackerId: 'pc_alice',
+            amount: 5,
+            type: 'fire',
+          },
+          candidates: [],
+          order: null,
+        },
+        encounter: {
+          id: 'enc_test',
+          currentRound: 1,
+          activeParticipantId: null,
+          turnState: {},
+          malice: { current: 0, lastMaliciousStrikeRound: null },
+          firstSide: null,
+          currentPickingSide: null,
+          actedThisRound: [],
+        },
+      };
+
+      const r = endEncounter(s);
+      expect(r.errors).toBeUndefined();
+      expect(r.state.pendingTriggers).toBeNull();
+    });
+
+    it('emits a StaminaTransitioned derived intent for each doomed-died participant', () => {
+      const p1 = pc({
+        id: 'pc_a',
+        maxStamina: 20,
+        staminaState: 'doomed',
+        staminaOverride: {
+          kind: 'doomed',
+          source: 'hakaan-doomsight',
+          canRegainStamina: true,
+          autoTier3OnPowerRolls: true,
+          staminaDeathThreshold: 'none',
+          dieAtEncounterEnd: true,
+        },
+      });
+      const p2 = pc({
+        id: 'pc_b',
+        maxStamina: 30,
+        staminaState: 'doomed',
+        staminaOverride: {
+          kind: 'doomed',
+          source: 'title-doomed',
+          canRegainStamina: false,
+          autoTier3OnPowerRolls: true,
+          staminaDeathThreshold: 'staminaMax',
+          dieAtEncounterEnd: true,
+        },
+      });
+      const s: CampaignState = {
+        ...emptyCampaignState(campaignId, 'user-owner'),
+        participants: [p1, p2],
+        encounter: {
+          id: 'enc_test',
+          currentRound: 1,
+          activeParticipantId: null,
+          turnState: {},
+          malice: { current: 0, lastMaliciousStrikeRound: null },
+          firstSide: null,
+          currentPickingSide: null,
+          actedThisRound: [],
+        },
+      };
+
+      const r = endEncounter(s);
+      expect(r.errors).toBeUndefined();
+      const transitions = r.derived.filter((d) => d.type === 'StaminaTransitioned');
+      expect(transitions).toHaveLength(2);
+      const ids = transitions.map((d) => (d.payload as { participantId: string }).participantId);
+      expect(ids).toContain('pc_a');
+      expect(ids).toContain('pc_b');
+      for (const t of transitions) {
+        const payload = t.payload as { from: string; to: string; cause: string };
+        expect(payload.from).toBe('doomed');
+        expect(payload.to).toBe('dead');
+        expect(payload.cause).toBe('encounter-end');
+      }
     });
   });
 });

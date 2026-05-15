@@ -1,5 +1,6 @@
-import { RespitePayloadSchema } from '@ironyard/shared';
-import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import { IntentTypes, RespitePayloadSchema } from '@ironyard/shared';
+import { recomputeStaminaState } from '../stamina';
+import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
 
 export function applyRespite(state: CampaignState, intent: StampedIntent): IntentResult {
@@ -46,20 +47,56 @@ export function applyRespite(state: CampaignState, intent: StampedIntent): Inten
   //     so a hero who finished an encounter with negative clarity has
   //     it cleared on respite).
   //   - increment victories by 1 if the PC is attending (canon § 8.1)
+  //   - Pass 3 Slice 1: if a CoP extra-dying-trigger override is held and
+  //     recoveries.current > 0 after the refill, clear the override and
+  //     re-derive staminaState via recomputeStaminaState.
   // Monsters and any other roster entries are untouched.
   const attending = new Set(state.attendingCharacterIds);
+  const derived: DerivedIntent[] = [];
   const newParticipants = state.participants.map((entry) => {
     if (!isParticipant(entry) || entry.kind !== 'pc') return entry;
     const fixedResources = entry.heroicResources.map((r) => (r.value < 0 ? { ...r, value: 0 } : r));
     const isAttending = entry.characterId !== null && attending.has(entry.characterId);
     const victoriesNext = isAttending ? (entry.victories ?? 0) + 1 : (entry.victories ?? 0);
-    return {
+
+    // Base participant after standard respite fields are applied.
+    let updated = {
       ...entry,
       recoveries: { current: entry.recoveries.max, max: entry.recoveries.max },
       currentStamina: entry.maxStamina,
       heroicResources: fixedResources,
       victories: victoriesNext,
     };
+
+    // Pass 3 Slice 1 — CoP override: predicate 'recoveries-exhausted' no longer
+    // holds once recoveries.current > 0 after the refill. Clear the override and
+    // re-derive staminaState.
+    if (
+      updated.staminaOverride?.kind === 'extra-dying-trigger' &&
+      updated.staminaOverride.predicate === 'recoveries-exhausted' &&
+      updated.recoveries.current > 0
+    ) {
+      const prevState = updated.staminaState;
+      updated = { ...updated, staminaOverride: null };
+      const { newState } = recomputeStaminaState(updated);
+      updated = { ...updated, staminaState: newState };
+      if (newState !== prevState) {
+        derived.push({
+          actor: intent.actor,
+          source: 'server' as const,
+          type: IntentTypes.StaminaTransitioned,
+          payload: {
+            participantId: entry.id,
+            from: prevState,
+            to: newState,
+            cause: 'recoveries-refilled',
+          },
+          causedBy: intent.id,
+        });
+      }
+    }
+
+    return updated;
   });
 
   const heroCount = newParticipants.filter((e) => isParticipant(e) && e.kind === 'pc').length;
@@ -92,7 +129,7 @@ export function applyRespite(state: CampaignState, intent: StampedIntent): Inten
       participants: newParticipants,
       partyVictories: 0,
     },
-    derived: [],
+    derived,
     log: [
       {
         kind: 'info',

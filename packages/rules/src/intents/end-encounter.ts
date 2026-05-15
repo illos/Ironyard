@@ -1,6 +1,12 @@
-import { EndEncounterPayloadSchema, type Participant } from '@ironyard/shared';
+import { EndEncounterPayloadSchema, IntentTypes, type Participant } from '@ironyard/shared';
 import { requireCanon } from '../require-canon';
-import type { CampaignState, IntentResult, RosterEntry, StampedIntent } from '../types';
+import type {
+  CampaignState,
+  DerivedIntent,
+  IntentResult,
+  RosterEntry,
+  StampedIntent,
+} from '../types';
 import { isParticipant } from '../types';
 
 // Phase 1 cleanup: closes out the active encounter. Walks every participant
@@ -107,15 +113,47 @@ export function applyEndEncounter(state: CampaignState, intent: StampedIntent): 
     isParticipant(entry) ? resetParticipantForEndOfEncounter(entry) : entry,
   );
 
+  // Pass 3 Slice 1 — fire doomed dieAtEncounterEnd: transition any participant
+  // with staminaOverride.kind === 'doomed' && dieAtEncounterEnd === true to
+  // 'dead'. Emit a StaminaTransitioned derived intent for each.
+  const derived: DerivedIntent[] = [];
+  const finalParticipants: RosterEntry[] = resetParticipants.map((entry) => {
+    if (!isParticipant(entry)) return entry;
+    if (entry.staminaOverride?.kind === 'doomed' && entry.staminaOverride.dieAtEncounterEnd) {
+      derived.push({
+        actor: intent.actor,
+        source: 'server' as const,
+        type: IntentTypes.StaminaTransitioned,
+        payload: {
+          participantId: entry.id,
+          from: entry.staminaState,
+          to: 'dead',
+          cause: 'encounter-end',
+        },
+        causedBy: intent.id,
+      });
+      return {
+        ...entry,
+        currentStamina: -entry.maxStamina - 1,
+        staminaState: 'dead' as const,
+        staminaOverride: null,
+        conditions: [],
+      };
+    }
+    return entry;
+  });
+
   return {
     state: {
       ...state,
       seq: state.seq + 1,
-      participants: resetParticipants,
+      participants: finalParticipants,
       encounter: null,
       openActions: [],
+      // Defensive: clear pendingTriggers — shouldn't be set across encounters.
+      pendingTriggers: null,
     },
-    derived: [],
+    derived,
     log: [
       {
         kind: 'info',

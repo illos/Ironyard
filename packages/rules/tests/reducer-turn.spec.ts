@@ -284,7 +284,16 @@ describe('applyEndRound + OpenAction expiry', () => {
 describe('applyStartTurn per-turn heroic resource gain', () => {
   function pcWithResource(opts: {
     id: string;
-    resourceName: 'wrath' | 'piety' | 'essence' | 'ferocity' | 'discipline' | 'insight' | 'focus' | 'clarity' | 'drama';
+    resourceName:
+      | 'wrath'
+      | 'piety'
+      | 'essence'
+      | 'ferocity'
+      | 'discipline'
+      | 'insight'
+      | 'focus'
+      | 'clarity'
+      | 'drama';
     value: number;
     floor?: number;
   }): Participant {
@@ -321,7 +330,9 @@ describe('applyStartTurn per-turn heroic resource gain', () => {
   });
 
   it('d3-class (Talent clarity) gains rolls.d3 on turn start', () => {
-    const s = stateWith([pcWithResource({ id: 'talent', resourceName: 'clarity', value: 0, floor: -4 })]);
+    const s = stateWith([
+      pcWithResource({ id: 'talent', resourceName: 'clarity', value: 0, floor: -4 }),
+    ]);
     const r = applyIntent(s, intent('StartTurn', { participantId: 'talent', rolls: { d3: 3 } }));
     expect(r.errors).toBeUndefined();
     const pc = r.state.participants.find((p) => isParticipant(p) && p.id === 'talent');
@@ -335,13 +346,17 @@ describe('applyStartTurn per-turn heroic resource gain', () => {
   });
 
   it('d3-class with rolls.d3 missing → rejected (missing_dice)', () => {
-    const s = stateWith([pcWithResource({ id: 'talent', resourceName: 'clarity', value: 0, floor: -4 })]);
+    const s = stateWith([
+      pcWithResource({ id: 'talent', resourceName: 'clarity', value: 0, floor: -4 }),
+    ]);
     const r = applyIntent(s, intent('StartTurn', { participantId: 'talent' }));
     expect(r.errors?.[0]?.code).toBe('missing_dice');
   });
 
   it('d3 out of range (4) → rejected at schema layer', () => {
-    const s = stateWith([pcWithResource({ id: 'talent', resourceName: 'clarity', value: 0, floor: -4 })]);
+    const s = stateWith([
+      pcWithResource({ id: 'talent', resourceName: 'clarity', value: 0, floor: -4 }),
+    ]);
     const r = applyIntent(s, intent('StartTurn', { participantId: 'talent', rolls: { d3: 4 } }));
     expect(r.errors?.[0]?.code).toBe('invalid_payload');
   });
@@ -355,7 +370,9 @@ describe('applyStartTurn per-turn heroic resource gain', () => {
   });
 
   it('Talent with negative clarity still gains normally (no clamp on gain)', () => {
-    const s = stateWith([pcWithResource({ id: 'talent', resourceName: 'clarity', value: -2, floor: -4 })]);
+    const s = stateWith([
+      pcWithResource({ id: 'talent', resourceName: 'clarity', value: -2, floor: -4 }),
+    ]);
     const r = applyIntent(s, intent('StartTurn', { participantId: 'talent', rolls: { d3: 2 } }));
     expect(r.errors).toBeUndefined();
     const pc = r.state.participants.find((p) => isParticipant(p) && p.id === 'talent');
@@ -364,11 +381,20 @@ describe('applyStartTurn per-turn heroic resource gain', () => {
 });
 
 describe('EndTurn (zipper-init)', () => {
-  function stateWith(picking: 'heroes' | 'foes', acted: string[], active: string | null): CampaignState {
-    const s = readyState(['alice', 'bob']);  // 2 PCs
+  function stateWith(
+    picking: 'heroes' | 'foes',
+    acted: string[],
+    active: string | null,
+  ): CampaignState {
+    const s = readyState(['alice', 'bob']); // 2 PCs
     // Add a monster to give us a foes side too. readyState's `part()` makes PCs;
     // mutate one to monster.
-    const goblin: Participant = { ...s.participants[0] as Participant, id: 'goblin', kind: 'monster', name: 'goblin' };
+    const goblin: Participant = {
+      ...(s.participants[0] as Participant),
+      id: 'goblin',
+      kind: 'monster',
+      name: 'goblin',
+    };
     const next: CampaignState = {
       ...s,
       participants: [...s.participants, goblin],
@@ -501,8 +527,14 @@ describe('applyStartTurn — turnActionUsage', () => {
   });
 
   it('does not touch other participants turnActionUsage', () => {
-    const pc1: Participant = { ...part('pc-1'), turnActionUsage: { main: true, maneuver: true, move: true } };
-    const pc2: Participant = { ...part('pc-2'), turnActionUsage: { main: true, maneuver: false, move: true } };
+    const pc1: Participant = {
+      ...part('pc-1'),
+      turnActionUsage: { main: true, maneuver: true, move: true },
+    };
+    const pc2: Participant = {
+      ...part('pc-2'),
+      turnActionUsage: { main: true, maneuver: false, move: true },
+    };
     const s: CampaignState = {
       ...emptyCampaignState(campaignId, 'user-owner'),
       participants: [pc1, pc2],
@@ -558,5 +590,108 @@ describe('applyStartTurn — turnActionUsage', () => {
       maneuver: false,
       move: false,
     });
+  });
+});
+
+// Pass 3 Slice 1 — Task 15b: EndRound resets triggeredActionUsedThisRound (canon §4.10)
+describe('applyEndRound — Pass 3 Slice 1 triggeredActionUsedThisRound reset', () => {
+  it('resets triggeredActionUsedThisRound to false on every participant regardless of prior value', () => {
+    const participants = [
+      { ...part('alice'), triggeredActionUsedThisRound: true },
+      { ...part('bob'), triggeredActionUsedThisRound: true },
+      { ...part('carol'), triggeredActionUsedThisRound: false },
+    ];
+    const s: CampaignState = {
+      ...emptyCampaignState(campaignId, 'user-owner'),
+      participants,
+      encounter: {
+        id: 'enc_test',
+        currentRound: 2,
+        activeParticipantId: null,
+        turnState: {},
+        malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
+      },
+    };
+
+    const r = applyIntent(s, intent('EndRound', {}));
+    expect(r.errors).toBeUndefined();
+    for (const entry of r.state.participants) {
+      if (isParticipant(entry)) {
+        expect(entry.triggeredActionUsedThisRound).toBe(false);
+      }
+    }
+  });
+
+  it('preserves surprise-clearing on round 1 (pre-existing behavior)', () => {
+    const participants = [
+      { ...part('alice'), surprised: true, triggeredActionUsedThisRound: true },
+      { ...part('bob'), surprised: false, triggeredActionUsedThisRound: true },
+    ];
+    const s: CampaignState = {
+      ...emptyCampaignState(campaignId, 'user-owner'),
+      participants,
+      encounter: {
+        id: 'enc_round1',
+        currentRound: 1,
+        activeParticipantId: null,
+        turnState: {},
+        malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
+      },
+    };
+
+    const r = applyIntent(s, intent('EndRound', {}));
+    expect(r.errors).toBeUndefined();
+    // Surprise cleared on round 1
+    for (const entry of r.state.participants) {
+      if (isParticipant(entry)) {
+        expect(entry.surprised).toBe(false);
+        // triggeredActionUsedThisRound also reset
+        expect(entry.triggeredActionUsedThisRound).toBe(false);
+      }
+    }
+  });
+
+  it('preserves OpenAction expiry on EndRound (pre-existing behavior)', () => {
+    const s: CampaignState = {
+      ...emptyCampaignState(campaignId, 'user-owner'),
+      participants: [{ ...part('alice'), triggeredActionUsedThisRound: true }],
+      openActions: [
+        {
+          id: 'oa_1',
+          kind: 'title-doomed-opt-in' as const,
+          participantId: 'alice',
+          raisedAtRound: 1,
+          raisedByIntentId: 'i_raise_1',
+          expiresAtRound: 2,
+          payload: {},
+        },
+      ],
+      encounter: {
+        id: 'enc_test',
+        currentRound: 2,
+        activeParticipantId: null,
+        turnState: {},
+        malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
+      },
+    };
+
+    const r = applyIntent(s, intent('EndRound', {}));
+    expect(r.errors).toBeUndefined();
+    // OpenAction that expires at round 2 is gone
+    expect(r.state.openActions).toHaveLength(0);
+    // triggeredActionUsedThisRound also reset
+    const alice = r.state.participants.find((p) => isParticipant(p) && p.id === 'alice');
+    expect(alice && isParticipant(alice) ? alice.triggeredActionUsedThisRound : undefined).toBe(
+      false,
+    );
   });
 });

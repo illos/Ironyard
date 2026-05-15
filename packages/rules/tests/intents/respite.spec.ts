@@ -222,11 +222,104 @@ describe('applyRespite', () => {
     });
     const result = applyRespite(state, RESPITE_INTENT);
     expect(result.errors).toBeUndefined();
-    const charA = result.state.participants.find((p) => isParticipant(p) && p.characterId === 'char-a');
-    const charB = result.state.participants.find((p) => isParticipant(p) && p.characterId === 'char-b');
-    const charC = result.state.participants.find((p) => isParticipant(p) && p.characterId === 'char-c');
+    const charA = result.state.participants.find(
+      (p) => isParticipant(p) && p.characterId === 'char-a',
+    );
+    const charB = result.state.participants.find(
+      (p) => isParticipant(p) && p.characterId === 'char-b',
+    );
+    const charC = result.state.participants.find(
+      (p) => isParticipant(p) && p.characterId === 'char-c',
+    );
     expect(charA?.victories).toBe(3);
     expect(charB?.victories).toBe(3);
     expect(charC?.victories).toBe(2); // not attending
+  });
+
+  // Pass 3 Slice 1 — Task 15c: CoP override clears when recoveries refill
+  describe('Pass 3 Slice 1 — CoP extra-dying-trigger override clears on respite', () => {
+    it('clears CoP override and recomputes staminaState to healthy when recoveries refill above 0', () => {
+      // PC is dying because CoP override + recoveries 0. Stamina is positive (20/30)
+      // so the only reason it's dying is the CoP predicate.
+      const state = baseState({
+        participants: [
+          makeHeroParticipant('pc:cop-hero', {
+            maxStamina: 30,
+            currentStamina: 20,
+            recoveries: { current: 0, max: 3 },
+            staminaState: 'dying',
+            staminaOverride: {
+              kind: 'extra-dying-trigger',
+              source: 'curse-of-punishment',
+              predicate: 'recoveries-exhausted',
+            },
+          }),
+        ],
+      });
+
+      const result = applyRespite(state, RESPITE_INTENT);
+      expect(result.errors).toBeUndefined();
+
+      const pc = result.state.participants.find((p) => isParticipant(p) && p.id === 'pc:cop-hero');
+      expect(pc && isParticipant(pc) ? pc.staminaOverride : 'MISSING').toBeNull();
+      expect(pc && isParticipant(pc) ? pc.staminaState : 'MISSING').toBe('healthy');
+    });
+
+    it('emits a StaminaTransitioned derived intent with cause recoveries-refilled when CoP override cleared', () => {
+      const state = baseState({
+        participants: [
+          makeHeroParticipant('pc:cop-hero', {
+            maxStamina: 30,
+            currentStamina: 20,
+            recoveries: { current: 0, max: 3 },
+            staminaState: 'dying',
+            staminaOverride: {
+              kind: 'extra-dying-trigger',
+              source: 'curse-of-punishment',
+              predicate: 'recoveries-exhausted',
+            },
+          }),
+        ],
+      });
+
+      const result = applyRespite(state, RESPITE_INTENT);
+      expect(result.errors).toBeUndefined();
+
+      const transitions = result.derived.filter((d) => d.type === 'StaminaTransitioned');
+      expect(transitions).toHaveLength(1);
+      const payload = transitions[0]?.payload as {
+        participantId: string;
+        from: string;
+        to: string;
+        cause: string;
+      };
+      expect(payload.participantId).toBe('pc:cop-hero');
+      expect(payload.from).toBe('dying');
+      expect(payload.to).toBe('healthy');
+      expect(payload.cause).toBe('recoveries-refilled');
+    });
+
+    it('does not clear staminaOverride for a PC without CoP override', () => {
+      const state = baseState({
+        participants: [
+          makeHeroParticipant('pc:normal', {
+            maxStamina: 30,
+            currentStamina: 25,
+            recoveries: { current: 0, max: 3 },
+            staminaState: 'healthy',
+            staminaOverride: null,
+          }),
+        ],
+      });
+
+      const result = applyRespite(state, RESPITE_INTENT);
+      expect(result.errors).toBeUndefined();
+
+      const pc = result.state.participants.find((p) => isParticipant(p) && p.id === 'pc:normal');
+      expect(pc && isParticipant(pc) ? pc.staminaOverride : 'MISSING').toBeNull();
+      // No StaminaTransitioned derived intents from this PC
+      const transitions = result.derived.filter((d) => d.type === 'StaminaTransitioned');
+      expect(transitions).toHaveLength(0);
+    });
   });
 });
