@@ -48,7 +48,7 @@ import {
   type UpdateSessionAttendancePayload,
   ulid,
 } from '@ironyard/shared';
-import { applyKnockOut, applyTransitionSideEffects, recomputeStaminaState } from '@ironyard/rules';
+import { applyDamageStep, applyKnockOut, applyTransitionSideEffects, recomputeStaminaState } from '@ironyard/rules';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -308,17 +308,15 @@ function reflect(
   }
 
   if (type === IntentTypes.ApplyDamage) {
-    const { targetId, amount } = payload as ApplyDamagePayload;
+    const { targetId, amount, damageType, intent: damageIntent } = payload as ApplyDamagePayload;
     return {
       ...prev,
       participants: prev.participants.map((p) => {
         if (!isParticipantEntry(p) || p.id !== targetId) return p;
-        const after = p.currentStamina - amount;
-        const intermediate = { ...p, currentStamina: after };
-        const { newState, transitioned } = recomputeStaminaState(intermediate);
-        return transitioned
-          ? applyTransitionSideEffects(intermediate, p.staminaState ?? 'healthy', newState)
-          : intermediate;
+        // Use shared applyDamageStep for full parity: handles KO interception,
+        // inert-fire instant death, unconscious-→-dead, and state transitions.
+        const result = applyDamageStep(p, amount, damageType, damageIntent ?? 'kill');
+        return result.newParticipant;
       }),
     };
   }
@@ -393,9 +391,9 @@ function reflect(
 
   if (type === IntentTypes.BecomeDoomed) {
     const { participantId, source } = payload as BecomeDoomedPayload;
-    // source is 'hakaan-doomsight' | 'manual'. Mirror the doomed override shape
-    // that the reducer emits so staminaState derives correctly client-side.
-    const isDoomsight = source === 'hakaan-doomsight';
+    // Both hakaan-doomsight and manual share the same override shape per
+    // become-doomed.ts:54-61. Mirror must match exactly so client-side
+    // staminaState derives correctly without waiting for the server snapshot.
     return {
       ...prev,
       participants: prev.participants.map((p) => {
@@ -403,10 +401,10 @@ function reflect(
         const override = {
           kind: 'doomed' as const,
           source: source as 'hakaan-doomsight' | 'manual',
-          canRegainStamina: !isDoomsight,
-          autoTier3OnPowerRolls: isDoomsight,
-          staminaDeathThreshold: isDoomsight ? ('none' as const) : ('staminaMax' as const),
-          dieAtEncounterEnd: isDoomsight,
+          canRegainStamina: true,
+          autoTier3OnPowerRolls: true,
+          staminaDeathThreshold: 'none' as const,
+          dieAtEncounterEnd: true,
         };
         const withOverride = { ...p, staminaOverride: override };
         const { newState } = recomputeStaminaState(withOverride);
