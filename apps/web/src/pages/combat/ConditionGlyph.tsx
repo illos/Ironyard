@@ -25,10 +25,17 @@ const GLYPH_CLASSES: Record<ConditionType, string> = {
   Weakened: 'bg-cond-weak/14 text-cond-weak ring-cond-weak/50',
 };
 
+/** Per-condition Tailwind class set (background tint + text colour + ring). */
+export function conditionPaletteClasses(type: ConditionType): string {
+  return GLYPH_CLASSES[type];
+}
+
 // SVG glyph per condition. All 16×16 viewBox; stroke uses `currentColor` so
 // the per-condition hue applies via the text-cond-* class on the parent.
 // Designed to read at 14px without antialias noise (1.4-1.75 stroke widths).
-function GlyphSvg({ type }: { type: ConditionType }) {
+// Exported so the conditions picker can render the same glyphs on its
+// chooser buttons (eye-test 2026-05-15).
+export function ConditionGlyphSvg({ type }: { type: ConditionType }) {
   const stroke = 'currentColor';
   const sw = 1.5;
   switch (type) {
@@ -68,28 +75,22 @@ function GlyphSvg({ type }: { type: ConditionType }) {
         </svg>
       );
     case 'Grabbed':
-      // Stylized closed fist — palm rectangle with knuckle bumps on the top
-      // edge and a small thumb hump on the side. Reads as "gripped/held".
+      // Anchor — ring up top, stock crossbar, vertical shank, curved arms
+      // with horn tips. Reads as "anchored / held in place".
       return (
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
-          {/* Four knuckle bumps along the top */}
-          <path
-            d="M 3 7
-               Q 3 5.5 4 5.5 Q 5 5.5 5 7
-               Q 5 5 6.25 5 Q 7.5 5 7.5 7
-               Q 7.5 5 8.75 5 Q 10 5 10 7
-               Q 10 5.5 11 5.5 Q 12 5.5 12 7
-               L 12 12.5
-               Q 12 13.5 11 13.5
-               L 4 13.5
-               Q 3 13.5 3 12.5 Z"
-            fill="currentColor"
-          />
-          {/* Thumb hump on the left side */}
-          <path
-            d="M 2 9 Q 1.25 9 1.25 10 Q 1.25 11 2 11 L 3 11 L 3 9 Z"
-            fill="currentColor"
-          />
+          <g fill="none" stroke={stroke} strokeWidth={sw} strokeLinecap="round">
+            {/* Ring */}
+            <circle cx="8" cy="2.75" r="1.4" />
+            {/* Stock (horizontal crossbar) */}
+            <path d="M 5.25 5.5 L 10.75 5.5" />
+            {/* Shank (vertical) */}
+            <path d="M 8 4 L 8 13" />
+            {/* Curved arms with hooked tips */}
+            <path d="M 3 10 Q 3 13 8 13 Q 13 13 13 10" />
+            <path d="M 3 10 L 2 9.5" />
+            <path d="M 13 10 L 14 9.5" />
+          </g>
         </svg>
       );
     case 'Prone':
@@ -161,11 +162,21 @@ function GlyphSvg({ type }: { type: ConditionType }) {
         </svg>
       );
     case 'Taunted':
-      // Crosshair target — taunt locks attention.
+      // Crossed swords — provocation / "fight me".
       return (
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
-          <circle cx="8" cy="8" r="5.5" fill="none" stroke={stroke} strokeWidth={sw} />
-          <circle cx="8" cy="8" r="2" fill="currentColor" opacity="0.85" />
+          <g stroke={stroke} strokeLinecap="round" fill="none">
+            {/* Sword 1 — blade tip top-left, hilt bottom-right */}
+            <path d="M 2.5 2.5 L 11 11" strokeWidth={sw + 0.1} />
+            <path d="M 11 11 L 13.5 13.5" strokeWidth={sw + 1.1} />
+            {/* Crossguard 1 */}
+            <path d="M 10 12.5 L 12.5 10" strokeWidth={sw + 0.25} />
+            {/* Sword 2 — blade tip top-right, hilt bottom-left */}
+            <path d="M 13.5 2.5 L 5 11" strokeWidth={sw + 0.1} />
+            <path d="M 5 11 L 2.5 13.5" strokeWidth={sw + 1.1} />
+            {/* Crossguard 2 */}
+            <path d="M 3.5 10 L 6 12.5" strokeWidth={sw + 0.25} />
+          </g>
         </svg>
       );
     case 'Unconscious':
@@ -240,7 +251,7 @@ export function ConditionGlyph({ condition }: ConditionGlyphProps) {
       aria-label={title}
       className={`inline-flex h-[22px] w-[22px] items-center justify-center rounded-full ring-1 ring-inset ${GLYPH_CLASSES[condition.type]}`}
     >
-      <GlyphSvg type={condition.type} />
+      <ConditionGlyphSvg type={condition.type} />
     </span>
   );
 }

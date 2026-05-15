@@ -43,9 +43,9 @@ export function HpBar({ current, max, size = 'sm', compact = false, variant }: H
           className={`absolute inset-y-0 left-0 ${INLINE_FILL[zone]} transition-[width] duration-300 ease-out`}
           style={{ width: `${pct * 100}%` }}
         />
-        <div className="relative z-10 flex h-full items-center justify-center font-mono text-[13px] font-bold tabular-nums leading-none text-text [text-shadow:0_1px_2px_rgb(0_0_0/0.7)]">
+        <div className="relative z-10 flex h-full items-center justify-center font-mono text-[13px] font-extrabold tabular-nums leading-none text-ink-0">
           {current}
-          <span className="text-text-dim font-medium text-[10px] ml-px opacity-85">/{max}</span>
+          <span className="font-bold text-[10px] ml-px opacity-75">/{max}</span>
         </div>
       </div>
     );

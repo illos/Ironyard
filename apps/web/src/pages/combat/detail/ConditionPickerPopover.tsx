@@ -7,6 +7,7 @@ import {
 import { useState } from 'react';
 import { Button } from '../../../primitives';
 import { ConditionChip } from '../ConditionChip';
+import { ConditionGlyphSvg, conditionPaletteClasses } from '../ConditionGlyph';
 
 const CONDITION_TYPES: ConditionType[] = [
   'Bleeding',
@@ -70,7 +71,7 @@ export function ConditionPickerPopover({
       {conditionMenuOpen && (
         <div className="mt-3 border border-line bg-ink-0 p-3 grid grid-cols-3 sm:grid-cols-5 gap-2">
           {CONDITION_TYPES.map((cond) => (
-            <Button
+            <button
               key={cond}
               type="button"
               onClick={() => {
@@ -82,10 +83,11 @@ export function ConditionPickerPopover({
                 });
                 setConditionMenuOpen(false);
               }}
-              className="min-h-11 w-full justify-center"
+              className={`min-h-11 w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium ring-1 ring-inset transition-colors hover:brightness-110 active:brightness-95 ${conditionPaletteClasses(cond)}`}
             >
-              {cond}
-            </Button>
+              <ConditionGlyphSvg type={cond} />
+              <span>{cond}</span>
+            </button>
           ))}
         </div>
       )}
