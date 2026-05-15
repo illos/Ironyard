@@ -1,10 +1,33 @@
 import { describe, expect, it } from 'vitest';
 import { OpenActionKindSchema, OpenActionSchema } from '../src/open-action';
+import { OPEN_ACTION_COPY } from '../src';
 
 describe('OpenActionKindSchema', () => {
-  it('is an empty enum in 2b.0 (consumers register kinds in 2b.0.1)', () => {
-    // Smoke check — schema accepts no values today.
-    expect(() => OpenActionKindSchema.parse('pray-to-the-gods')).toThrow();
+  it('rejects unknown kinds', () => {
+    expect(() => OpenActionKindSchema.parse('not-a-real-kind')).toThrow();
+  });
+});
+
+describe('OpenActionKindSchema — slice 2a additions', () => {
+  const newKinds = [
+    'spatial-trigger-elementalist-essence',
+    'spatial-trigger-tactician-ally-heroic',
+    'spatial-trigger-null-field',
+    'spatial-trigger-troubadour-line-of-effect',
+    'pray-to-the-gods',
+    'troubadour-auto-revive',
+  ];
+
+  it.each(newKinds)('accepts kind %s', (kind) => {
+    expect(() => OpenActionKindSchema.parse(kind)).not.toThrow();
+  });
+
+  it.each(newKinds)('has a copy registry entry for %s', (kind) => {
+    const entry = OPEN_ACTION_COPY[kind as keyof typeof OPEN_ACTION_COPY];
+    expect(entry).toBeDefined();
+    expect(typeof entry?.title).toBe('function');
+    expect(typeof entry?.body).toBe('function');
+    expect(typeof entry?.claimLabel).toBe('function');
   });
 });
 

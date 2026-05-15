@@ -10,10 +10,14 @@ import { z } from 'zod';
 export const OpenActionKindSchema = z.enum([
   // Pass 3 Slice 1
   'title-doomed-opt-in',
-  // Slice 2 entries (added when slice 2 lands):
-  //   'pray-to-the-gods'
-  //   'spatial-trigger-elementalist-essence'
-  //   ...
+  // Slice 2a — class-δ spatial triggers
+  'spatial-trigger-elementalist-essence',
+  'spatial-trigger-tactician-ally-heroic',
+  'spatial-trigger-null-field',
+  'spatial-trigger-troubadour-line-of-effect',
+  // Slice 2a — class-internal raisers
+  'pray-to-the-gods',
+  'troubadour-auto-revive',
 ]);
 
 export type OpenActionKind = z.infer<typeof OpenActionKindSchema>;
