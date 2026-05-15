@@ -6,6 +6,8 @@ import {
 } from '@ironyard/shared';
 import { useState } from 'react';
 import { HpBar, Section } from '../../../primitives';
+import { RoleReadout } from '../rails/RoleReadout';
+import { roleReadoutFor } from '../rails/rail-utils';
 import { ConditionPickerPopover } from './ConditionPickerPopover';
 import { StaminaEditPopover } from './StaminaEditPopover';
 
@@ -34,17 +36,20 @@ export function DetailHeader({
     <>
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2">
-            <span
-              className={`inline-flex h-6 px-2 items-center justify-center rounded-full text-[10px] font-semibold uppercase tracking-wider ${
-                focused.kind === 'monster' ? 'bg-foe text-ink-0' : 'bg-accent text-ink-0'
-              }`}
-            >
-              {focused.kind}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-text-mute">
+              <RoleReadout data={roleReadoutFor(focused)} />
             </span>
-            {focused.kind === 'monster' && monsterLevel !== null && (
-              <span className="text-xs text-text-mute font-mono tabular-nums">
-                L{monsterLevel}
+            {focused.kind === 'monster' && focused.ancestry.length > 0 && (
+              <span className="flex gap-1">
+                {focused.ancestry.map((a) => (
+                  <span
+                    key={a}
+                    className="font-mono text-[9px] uppercase tracking-[0.06em] text-text-mute bg-ink-2 border border-line px-1"
+                  >
+                    {a}
+                  </span>
+                ))}
               </span>
             )}
           </div>
