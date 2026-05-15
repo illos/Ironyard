@@ -94,6 +94,9 @@ function ready(): CampaignState {
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
+      firstSide: null,
+      currentPickingSide: null,
+      actedThisRound: [],
     },
   };
 }
@@ -428,6 +431,9 @@ describe('applyIntent — RemoveCondition', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
     const r = applyIntent(

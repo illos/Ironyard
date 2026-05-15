@@ -98,6 +98,9 @@ function withEncounter(): CampaignState {
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
+      firstSide: null,
+      currentPickingSide: null,
+      actedThisRound: [],
     },
   };
 }
@@ -159,6 +162,9 @@ describe('applyIntent — EndEncounter', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
     const r = endEncounter(s);
@@ -196,6 +202,9 @@ describe('applyIntent — EndEncounter', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
 
@@ -235,6 +244,9 @@ describe('applyIntent — EndEncounter', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
 
@@ -255,6 +267,9 @@ describe('applyIntent — EndEncounter', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
 
@@ -279,6 +294,9 @@ describe('applyIntent — EndEncounter', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
 
@@ -325,6 +343,9 @@ describe('applyIntent — EndEncounter', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
     const r = endEncounter(s);
@@ -392,6 +413,9 @@ describe('applyIntent — EndEncounter', () => {
           activeParticipantId: null,
           turnState: {},
           malice: { current: 0, lastMaliciousStrikeRound: null },
+          firstSide: null,
+          currentPickingSide: null,
+          actedThisRound: [],
         },
       };
 
@@ -420,6 +444,9 @@ describe('applyIntent — EndEncounter', () => {
           activeParticipantId: null,
           turnState: {},
           malice: { current: 0, lastMaliciousStrikeRound: null },
+          firstSide: null,
+          currentPickingSide: null,
+          actedThisRound: [],
         },
       };
 
@@ -447,6 +474,9 @@ describe('applyIntent — EndEncounter', () => {
           activeParticipantId: null,
           turnState: {},
           malice: { current: 0, lastMaliciousStrikeRound: null },
+          firstSide: null,
+          currentPickingSide: null,
+          actedThisRound: [],
         },
       };
 
@@ -478,6 +508,9 @@ describe('applyIntent — EndEncounter', () => {
           activeParticipantId: null,
           turnState: {},
           malice: { current: 0, lastMaliciousStrikeRound: null },
+          firstSide: null,
+          currentPickingSide: null,
+          actedThisRound: [],
         },
       };
 

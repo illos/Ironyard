@@ -94,6 +94,9 @@ function ready(extra?: Partial<Participant>): CampaignState {
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
+      firstSide: null,
+      currentPickingSide: null,
+      actedThisRound: [],
     },
   };
 }
@@ -462,6 +465,9 @@ describe('applyIntent — EndTurn Talent Clarity EoT damage hook', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
     s = applyIntent(s, intent('SetInitiative', { order: ['pc_talent', 'm_goblin'] })).state;

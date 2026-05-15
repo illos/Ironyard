@@ -161,6 +161,9 @@ export function applyStartEncounter(
     activeParticipantId: null,
     turnState: {},
     malice: { current: initialMalice, lastMaliciousStrikeRound: null },
+    firstSide: null,
+    currentPickingSide: null,
+    actedThisRound: [],
   };
 
   return {

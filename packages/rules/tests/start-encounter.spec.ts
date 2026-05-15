@@ -216,6 +216,9 @@ describe('applyStartEncounter — new atomic payload shape', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     });
 

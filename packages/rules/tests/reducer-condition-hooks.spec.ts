@@ -99,6 +99,9 @@ function readyState(parts: Participant[] = [pc(), monster()]): CampaignState {
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
+      firstSide: null,
+      currentPickingSide: null,
+      actedThisRound: [],
     },
   };
 }

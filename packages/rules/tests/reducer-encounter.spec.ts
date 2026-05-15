@@ -51,6 +51,9 @@ function withRosterAndEncounter(): CampaignState {
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
+      firstSide: null,
+      currentPickingSide: null,
+      actedThisRound: [],
     },
   };
   return s;
@@ -273,6 +276,9 @@ describe('applyIntent — RollPower', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
     const r = applyIntent(
@@ -306,6 +312,9 @@ describe('applyIntent — ApplyDamage', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
   }
@@ -354,6 +363,9 @@ describe('end-to-end: RollPower → derived ApplyDamage cascade', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
 

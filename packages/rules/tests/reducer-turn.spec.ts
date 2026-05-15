@@ -66,6 +66,9 @@ function readyState(participantIds: string[] = ['alice', 'bob', 'cleric']): Camp
       activeParticipantId: null,
       turnState: {},
       malice: { current: 0, lastMaliciousStrikeRound: null },
+      firstSide: 'heroes',
+      currentPickingSide: 'heroes',
+      actedThisRound: [],
     },
   };
 }
@@ -303,6 +306,9 @@ describe('applyStartTurn per-turn heroic resource gain', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
   }
@@ -372,6 +378,9 @@ describe('applyStartTurn — turnActionUsage', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
   }
@@ -401,6 +410,9 @@ describe('applyStartTurn — turnActionUsage', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
     const r = applyIntent(s, intent('StartTurn', { participantId: 'pc-1' }));
@@ -429,6 +441,9 @@ describe('applyStartTurn — turnActionUsage', () => {
         activeParticipantId: null,
         turnState: {},
         malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
     const r = applyIntent(s, intent('StartTurn', { participantId: 'censor' }));

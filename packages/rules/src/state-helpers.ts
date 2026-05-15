@@ -67,7 +67,7 @@ export function participantSide(p: Participant): 'heroes' | 'foes' {
  */
 export function nextPickingSide(state: CampaignState): 'heroes' | 'foes' | null {
   if (!state.encounter) return null;
-  const acted = new Set(state.encounter.actedThisRound ?? []);
+  const acted = new Set(state.encounter.actedThisRound);
   let unactedHeroes = 0;
   let unactedFoes = 0;
   for (const p of state.participants) {
@@ -78,6 +78,5 @@ export function nextPickingSide(state: CampaignState): 'heroes' | 'foes' | null 
   if (unactedHeroes === 0 && unactedFoes === 0) return null;
   if (unactedHeroes === 0) return 'foes';
   if (unactedFoes === 0) return 'heroes';
-  const current = state.encounter.currentPickingSide ?? null;
-  return current === 'heroes' ? 'foes' : 'heroes';
+  return state.encounter.currentPickingSide === 'heroes' ? 'foes' : 'heroes';
 }

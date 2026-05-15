@@ -56,15 +56,16 @@ export type EncounterPhase = {
   // `lastMaliciousStrikeRound` is reserved for the canon §5.5 "not two rounds
   // in a row" rule; slice 7 only initializes it to null.
   malice: MaliceState;
-  // 2b.11 zipper-initiative fields (Task 2 adds runtime default, Task 7 wires
-  // StartEncounter). Optional here so existing code that constructs EncounterPhase
-  // without these fields (e.g. test fixtures pre-Task-7) still compiles.
+  // 2b.11 zipper-initiative fields. Required-nullable so callers guard `!== null`
+  // (not `!== undefined`) and Zod deserialization can apply `.default(null)` on
+  // snapshots written before Task 7 wires StartEncounter. Task 7 sets firstSide
+  // from the RollInitiative result; Task 2 adds the Zod schema with defaults.
   // `firstSide` — which side won the roll-off and picks first (canon § 4.1).
-  firstSide?: 'heroes' | 'foes';
+  firstSide: 'heroes' | 'foes' | null;
   // `currentPickingSide` — whose pick is next; null between turns/rounds.
-  currentPickingSide?: 'heroes' | 'foes' | null;
+  currentPickingSide: 'heroes' | 'foes' | null;
   // `actedThisRound` — participant ids that have already taken their turn this round.
-  actedThisRound?: string[];
+  actedThisRound: string[];
 };
 
 // Keep ActiveEncounter as an alias for backwards compatibility within this

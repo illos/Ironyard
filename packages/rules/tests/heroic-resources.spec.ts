@@ -145,6 +145,9 @@ describe('full encounter resource generation cycle (canon § 5 integration)', ()
         activeParticipantId: null,
         turnState: {},
         malice: { current: 9, lastMaliciousStrikeRound: null }, // canon worked example post-round-1
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
       },
     };
 
