@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
+import type { StaminaState } from '@ironyard/shared';
 import type { Pack } from '../theme/ThemeProvider';
 import { Button } from './Button';
 import { HpBar } from './HpBar';
 import { Sigil } from './Sigil';
+import { StaminaStateTag } from './StaminaStateTag';
 
 /** Affordance shown on the row when a pick action is available. */
 export type PickAffordance =
@@ -39,6 +41,9 @@ export interface ParticipantRowProps {
   onSelect?: () => void;
   /** Contextual pick affordance for zipper-initiative target selection. */
   pickAffordance?: PickAffordance;
+  /** Pass 3 Slice 1 — canon §2.7-2.9 stamina state.
+   *  Defaults to 'healthy' (no tag shown, no name decoration). */
+  staminaState?: StaminaState;
 }
 
 export function ParticipantRow({
@@ -59,9 +64,14 @@ export function ParticipantRow({
   pack,
   onSelect,
   pickAffordance,
+  staminaState = 'healthy',
 }: ParticipantRowProps) {
   const hasActed = acted || isActed;
   const isTargeted = target?.index != null;
+  // Tailwind v4 JIT: static class lookups — no template interpolation (Pass 2b2a PS #2).
+  const DEAD_NAME_CLASS = 'line-through opacity-60';
+  const ALIVE_NAME_CLASS = '';
+  const nameDeadClass = staminaState === 'dead' ? DEAD_NAME_CLASS : ALIVE_NAME_CLASS;
   const packClass = pack ? `pack-${pack}` : '';
   // Active-turn row gets the pulsing accent ring (keyframes in styles.css).
   // border-pk keeps a static edge so the row still reads at the pulse's nadir.
@@ -99,11 +109,14 @@ export function ParticipantRow({
     >
       <Sigil text={sigil} />
       <span className="flex flex-col min-w-0 gap-0.5">
-        <span className="text-sm font-semibold tracking-tight truncate">{name}</span>
+        <span className={`text-sm font-semibold tracking-tight truncate ${nameDeadClass}`}>{name}</span>
         {role && (
           <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-text-mute truncate">
             {role}
           </span>
+        )}
+        {staminaState !== 'healthy' && (
+          <StaminaStateTag state={staminaState} />
         )}
       </span>
       <span className="flex gap-0.5">{conditions}</span>
