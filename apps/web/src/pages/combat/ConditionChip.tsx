@@ -1,4 +1,5 @@
 import type { ConditionInstance, ConditionType } from '@ironyard/shared';
+import { ConditionGlyphSvg } from './ConditionGlyph';
 
 // Phase 5 Pass 2b2a — nine distinct hues per condition (categorical palette).
 // Maps each ConditionType to its token-bound Tailwind classes.
@@ -41,6 +42,7 @@ export function ConditionChip({ condition, onRemove, removable = true }: Props) 
     <span
       className={`inline-flex items-center gap-2 min-h-11 px-3 py-1 rounded-full text-sm font-medium ring-1 ring-inset select-none ${COLORS[condition.type]}`}
     >
+      <ConditionGlyphSvg type={condition.type} />
       <span>{condition.type}</span>
       <span className="text-xs opacity-70 font-mono tabular-nums">{durationLabel}</span>
       {removable && (
