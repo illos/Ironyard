@@ -57,6 +57,8 @@ export { MarkActionUsedPayloadSchema } from './mark-action-used';
 export type { MarkActionUsedPayload } from './mark-action-used';
 export { NotePayloadSchema } from './note';
 export type { NotePayload } from './note';
+export { PickNextActorPayloadSchema } from './pick-next-actor';
+export type { PickNextActorPayload } from './pick-next-actor';
 export { PushItemPayloadSchema } from './push-item';
 export type { PushItemPayload } from './push-item';
 export { RemoveApprovedCharacterPayloadSchema } from './remove-approved-character';
@@ -159,6 +161,7 @@ export const IntentTypes = {
   LoadEncounterTemplate: 'LoadEncounterTemplate',
   MarkActionUsed: 'MarkActionUsed',
   Note: 'Note',
+  PickNextActor: 'PickNextActor',
   PushItem: 'PushItem',
   RemoveApprovedCharacter: 'RemoveApprovedCharacter',
   RemoveCondition: 'RemoveCondition',

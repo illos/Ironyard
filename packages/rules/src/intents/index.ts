@@ -19,6 +19,7 @@ export { applyLeaveLobby } from './leave-lobby';
 export { applyLoadEncounterTemplate } from './load-encounter-template';
 export { applyMarkActionUsed } from './mark-action-used';
 export { applyNote } from './note';
+export { applyPickNextActor } from './pick-next-actor';
 export { applyPushItem } from './push-item';
 export { applyRemoveApprovedCharacter } from './remove-approved-character';
 export { applyRaiseOpenAction } from './raise-open-action';

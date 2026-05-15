@@ -23,6 +23,7 @@ import {
   applyLoadEncounterTemplate,
   applyMarkActionUsed,
   applyNote,
+  applyPickNextActor,
   applyPushItem,
   applyRaiseOpenAction,
   applyRemoveApprovedCharacter,
@@ -125,6 +126,8 @@ export function applyIntent(
       return applyMarkActionUsed(state, intent);
     case IntentTypes.Note:
       return applyNote(state, intent);
+    case IntentTypes.PickNextActor:
+      return applyPickNextActor(state, intent);
     case IntentTypes.PushItem:
       return applyPushItem(state, intent);
     case IntentTypes.RaiseOpenAction:
