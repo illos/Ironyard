@@ -15,15 +15,15 @@ export interface ParticipantRowProps {
   sigil: string;
   name: ReactNode;
   role?: ReactNode;
-  conditions?: ReactNode;     // pre-rendered ConditionChip[] etc.
-  resource?: ReactNode;       // pre-rendered Pip rows etc.
+  conditions?: ReactNode; // pre-rendered ConditionChip[] etc.
+  resource?: ReactNode; // pre-rendered Pip rows etc.
   recoveries?: ReactNode;
   staminaCurrent: number;
   staminaMax: number;
-  active?: boolean;           // selected for detail pane
-  isTurn?: boolean;           // currently the acting participant
+  active?: boolean; // selected for detail pane
+  isTurn?: boolean; // currently the acting participant
   /** @deprecated prefer isActed */
-  acted?: boolean;            // turn already used this round
+  acted?: boolean; // turn already used this round
   /** True when this participant has already taken their turn this round. */
   isActed?: boolean;
   /** True when this participant is surprised (cannot act on first round). */

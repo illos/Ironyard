@@ -3,30 +3,41 @@ import { participantSide } from '../state-helpers';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
 
-export function applyRollInitiative(
-  state: CampaignState,
-  intent: StampedIntent,
-): IntentResult {
+export function applyRollInitiative(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = RollInitiativePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
       state,
       derived: [],
-      log: [{ kind: 'error', text: `RollInitiative rejected: ${parsed.error.message}`, intentId: intent.id }],
+      log: [
+        {
+          kind: 'error',
+          text: `RollInitiative rejected: ${parsed.error.message}`,
+          intentId: intent.id,
+        },
+      ],
       errors: [{ code: 'invalid_payload', message: parsed.error.message }],
     };
   }
   if (!state.encounter) {
     return {
-      state, derived: [],
+      state,
+      derived: [],
       log: [{ kind: 'error', text: 'RollInitiative: no active encounter', intentId: intent.id }],
       errors: [{ code: 'no_active_encounter', message: 'no active encounter' }],
     };
   }
   if (state.encounter.firstSide !== null) {
     return {
-      state, derived: [],
-      log: [{ kind: 'info', text: 'RollInitiative ignored: firstSide already set', intentId: intent.id }],
+      state,
+      derived: [],
+      log: [
+        {
+          kind: 'info',
+          text: 'RollInitiative ignored: firstSide already set',
+          intentId: intent.id,
+        },
+      ],
       errors: [{ code: 'already_rolled', message: 'initiative already rolled this encounter' }],
     };
   }
@@ -36,8 +47,15 @@ export function applyRollInitiative(
   for (const sid of surprised) {
     if (!ids.has(sid)) {
       return {
-        state, derived: [],
-        log: [{ kind: 'error', text: `RollInitiative: unknown participant ${sid}`, intentId: intent.id }],
+        state,
+        derived: [],
+        log: [
+          {
+            kind: 'error',
+            text: `RollInitiative: unknown participant ${sid}`,
+            intentId: intent.id,
+          },
+        ],
         errors: [{ code: 'unknown_participant', message: `unknown participant id ${sid}` }],
       };
     }
@@ -59,16 +77,40 @@ export function applyRollInitiative(
   // One side fully surprised AND the other side has at least one un-surprised participant
   if (heroesAllSurprised && !foesAllSurprised && winner !== 'foes') {
     return {
-      state, derived: [],
-      log: [{ kind: 'error', text: 'RollInitiative: all heroes surprised; foes must win', intentId: intent.id }],
-      errors: [{ code: 'surprise_override_mismatch', message: 'heroes fully surprised — winner must be foes' }],
+      state,
+      derived: [],
+      log: [
+        {
+          kind: 'error',
+          text: 'RollInitiative: all heroes surprised; foes must win',
+          intentId: intent.id,
+        },
+      ],
+      errors: [
+        {
+          code: 'surprise_override_mismatch',
+          message: 'heroes fully surprised — winner must be foes',
+        },
+      ],
     };
   }
   if (foesAllSurprised && !heroesAllSurprised && winner !== 'heroes') {
     return {
-      state, derived: [],
-      log: [{ kind: 'error', text: 'RollInitiative: all foes surprised; heroes must win', intentId: intent.id }],
-      errors: [{ code: 'surprise_override_mismatch', message: 'foes fully surprised — winner must be heroes' }],
+      state,
+      derived: [],
+      log: [
+        {
+          kind: 'error',
+          text: 'RollInitiative: all foes surprised; heroes must win',
+          intentId: intent.id,
+        },
+      ],
+      errors: [
+        {
+          code: 'surprise_override_mismatch',
+          message: 'foes fully surprised — winner must be heroes',
+        },
+      ],
     };
   }
 
@@ -76,11 +118,12 @@ export function applyRollInitiative(
     isParticipant(p) && willBeSurprised.has(p.id) ? { ...p, surprised: true } : p,
   );
 
-  const reason = rolledD10 !== undefined
-    ? `d10=${rolledD10} → ${winner} first`
-    : (heroesAllSurprised || foesAllSurprised)
-      ? `auto-pick: one side fully surprised → ${winner} first`
-      : `manual: ${winner} first`;
+  const reason =
+    rolledD10 !== undefined
+      ? `d10=${rolledD10} → ${winner} first`
+      : heroesAllSurprised || foesAllSurprised
+        ? `auto-pick: one side fully surprised → ${winner} first`
+        : `manual: ${winner} first`;
 
   return {
     state: {

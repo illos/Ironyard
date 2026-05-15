@@ -2,7 +2,6 @@ import type { Participant } from '@ironyard/shared';
 import type { CampaignState } from './types';
 import { isParticipant } from './types';
 
-
 /**
  * Sum of per-character Victories across all PC participants in the lobby.
  * Replacement for the deprecated `state.partyVictories` field — that field

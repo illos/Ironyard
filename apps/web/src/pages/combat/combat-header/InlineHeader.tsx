@@ -100,13 +100,7 @@ export function InlineHeader({
         />
       )}
       {isActingAsDirector && (
-        <Button
-          type="button"
-          onClick={onUndo}
-          disabled={!canUndo}
-          size="sm"
-          className="min-h-9"
-        >
+        <Button type="button" onClick={onUndo} disabled={!canUndo} size="sm" className="min-h-9">
           Undo
         </Button>
       )}
@@ -133,20 +127,28 @@ export function InlineHeader({
           {pickingSide === 'heroes' ? 'HEROES PICK' : 'DIRECTOR PICKS'}
         </span>
       )}
-      {isActingAsDirector && hasEncounter && round !== null && !isAtTurnEnd && activeParticipantName !== null && (
-        <Button
-          type="button"
-          onClick={onEndTurn}
-          disabled={wsClosed}
-          variant="primary"
-          size="sm"
-          className="min-h-9"
-        >
-          End turn
-        </Button>
-      )}
-      {!isActingAsDirector && hasEncounter && round !== null && !isAtTurnEnd && activeParticipantName !== null && (
-        isPlayerActiveTurn ? (
+      {isActingAsDirector &&
+        hasEncounter &&
+        round !== null &&
+        !isAtTurnEnd &&
+        activeParticipantName !== null && (
+          <Button
+            type="button"
+            onClick={onEndTurn}
+            disabled={wsClosed}
+            variant="primary"
+            size="sm"
+            className="min-h-9"
+          >
+            End turn
+          </Button>
+        )}
+      {!isActingAsDirector &&
+        hasEncounter &&
+        round !== null &&
+        !isAtTurnEnd &&
+        activeParticipantName !== null &&
+        (isPlayerActiveTurn ? (
           <Button
             type="button"
             onClick={onEndTurn}
@@ -159,10 +161,10 @@ export function InlineHeader({
           </Button>
         ) : (
           <span className="font-mono uppercase tracking-[0.08em] text-[10px] text-text-mute">
-            {activeParticipantName ?? '—'}<span className="text-text-mute/70">'s turn</span>
+            {activeParticipantName ?? '—'}
+            <span className="text-text-mute/70">'s turn</span>
           </span>
-        )
-      )}
+        ))}
       {isActingAsDirector && hasEncounter && round !== null && isAtTurnEnd && (
         <Button
           type="button"

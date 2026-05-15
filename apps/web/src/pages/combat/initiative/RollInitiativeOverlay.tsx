@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
 import type { Participant } from '@ironyard/shared';
+import { useMemo, useState } from 'react';
 
 type Side = 'heroes' | 'foes';
 
@@ -23,7 +23,8 @@ export function RollInitiativeOverlay({ participants, isActingAsDirector, onRoll
   const [rolledValue, setRolledValue] = useState<number | null>(null);
 
   const counts = useMemo(() => {
-    let heroes = 0, foes = 0;
+    let heroes = 0;
+    let foes = 0;
     for (const p of participants) {
       if (sideOf(p) === 'heroes') heroes++;
       else foes++;
@@ -72,9 +73,9 @@ export function RollInitiativeOverlay({ participants, isActingAsDirector, onRoll
 
   // === Render ===
   return (
-    <div
-      className="absolute inset-0 z-10 flex items-center justify-center bg-ink-0/80 backdrop-blur-sm"
-      role="dialog"
+    <dialog
+      open
+      className="absolute inset-0 z-10 m-0 flex w-full max-w-none items-center justify-center bg-ink-0/80 backdrop-blur-sm"
       aria-label="Roll initiative"
     >
       <div className="w-full max-w-md bg-ink-1 border border-line p-6 flex flex-col gap-4">
@@ -83,9 +84,7 @@ export function RollInitiativeOverlay({ participants, isActingAsDirector, onRoll
           {counts.heroes} HEROES · {counts.foes} FOES
         </div>
         {surprised.size > 0 && (
-          <div className="font-mono uppercase text-xs text-foe">
-            {surprised.size} surprised
-          </div>
+          <div className="font-mono uppercase text-xs text-foe">{surprised.size} surprised</div>
         )}
         {autoPick && (
           <div className="font-mono uppercase text-xs text-accent">
@@ -169,7 +168,9 @@ export function RollInitiativeOverlay({ participants, isActingAsDirector, onRoll
 
         {isActingAsDirector && (
           <div className="border-t border-line-soft pt-4 flex flex-col gap-2">
-            <div className="font-mono uppercase text-xs text-text-mute">Tap rows behind to mark surprised</div>
+            <div className="font-mono uppercase text-xs text-text-mute">
+              Tap rows behind to mark surprised
+            </div>
             {participants.map((p) => (
               <label key={p.id} className="flex items-center gap-2 text-sm">
                 <input
@@ -179,14 +180,12 @@ export function RollInitiativeOverlay({ participants, isActingAsDirector, onRoll
                   onChange={() => toggleSurprised(p.id)}
                 />
                 <span>{p.name}</span>
-                <span className="font-mono uppercase text-xs text-text-mute">
-                  ({sideOf(p)})
-                </span>
+                <span className="font-mono uppercase text-xs text-text-mute">({sideOf(p)})</span>
               </label>
             ))}
           </div>
         )}
       </div>
-    </div>
+    </dialog>
   );
 }

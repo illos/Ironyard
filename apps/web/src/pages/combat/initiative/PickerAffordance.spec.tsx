@@ -4,18 +4,33 @@ import { derivePickAffordance } from './PickerAffordance';
 
 function pc(id: string, ownerId: string | null): Participant {
   return {
-    id, name: id, kind: 'pc', level: 1, currentStamina: 30, maxStamina: 30,
+    id,
+    name: id,
+    kind: 'pc',
+    level: 1,
+    currentStamina: 30,
+    maxStamina: 30,
     characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
-    immunities: [], weaknesses: [], conditions: [], heroicResources: [],
-    extras: [], surges: 0, recoveries: { current: 0, max: 0 }, recoveryValue: 0,
-    ownerId, characterId: null,
-    weaponDamageBonus: { melee: [0,0,0], ranged: [0,0,0] },
-    activeAbilities: [], victories: 0,
+    immunities: [],
+    weaknesses: [],
+    conditions: [],
+    heroicResources: [],
+    extras: [],
+    surges: 0,
+    recoveries: { current: 0, max: 0 },
+    recoveryValue: 0,
+    ownerId,
+    characterId: null,
+    weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
+    activeAbilities: [],
+    victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
     surprised: false,
   };
 }
-function monster(id: string): Participant { return { ...pc(id, null), kind: 'monster' }; }
+function monster(id: string): Participant {
+  return { ...pc(id, null), kind: 'monster' };
+}
 
 const onPick = () => {};
 

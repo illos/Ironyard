@@ -241,9 +241,7 @@ export function applyStartTurn(state: CampaignState, intent: StampedIntent): Int
                   intentId: intent.id,
                 },
               ],
-              errors: [
-                { code: 'missing_dice', message: `${resource.name} requires rolls.d3` },
-              ],
+              errors: [{ code: 'missing_dice', message: `${resource.name} requires rolls.d3` }],
             };
           }
           const newValue = resource.value + providedD3;

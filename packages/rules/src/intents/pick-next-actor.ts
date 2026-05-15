@@ -1,23 +1,28 @@
-import { IntentTypes, PickNextActorPayloadSchema, type Participant } from '@ironyard/shared';
+import { IntentTypes, type Participant, PickNextActorPayloadSchema } from '@ironyard/shared';
+import { participantSide } from '../state-helpers';
 import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
-import { participantSide } from '../state-helpers';
 
-export function applyPickNextActor(
-  state: CampaignState,
-  intent: StampedIntent,
-): IntentResult {
+export function applyPickNextActor(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = PickNextActorPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
-      state, derived: [],
-      log: [{ kind: 'error', text: `PickNextActor rejected: ${parsed.error.message}`, intentId: intent.id }],
+      state,
+      derived: [],
+      log: [
+        {
+          kind: 'error',
+          text: `PickNextActor rejected: ${parsed.error.message}`,
+          intentId: intent.id,
+        },
+      ],
       errors: [{ code: 'invalid_payload', message: parsed.error.message }],
     };
   }
   if (!state.encounter) {
     return {
-      state, derived: [],
+      state,
+      derived: [],
       log: [{ kind: 'error', text: 'PickNextActor: no active encounter', intentId: intent.id }],
       errors: [{ code: 'no_active_encounter', message: 'no active encounter' }],
     };
@@ -25,15 +30,23 @@ export function applyPickNextActor(
   const enc = state.encounter;
   if (enc.currentRound === null || enc.firstSide === null) {
     return {
-      state, derived: [],
+      state,
+      derived: [],
       log: [{ kind: 'error', text: 'PickNextActor: initiative not rolled', intentId: intent.id }],
       errors: [{ code: 'initiative_not_rolled', message: 'RollInitiative must fire first' }],
     };
   }
   if (enc.activeParticipantId !== null) {
     return {
-      state, derived: [],
-      log: [{ kind: 'error', text: 'PickNextActor: a turn is already in progress', intentId: intent.id }],
+      state,
+      derived: [],
+      log: [
+        {
+          kind: 'error',
+          text: 'PickNextActor: a turn is already in progress',
+          intentId: intent.id,
+        },
+      ],
       errors: [{ code: 'turn_in_progress', message: 'end the current turn before picking' }],
     };
   }
@@ -44,24 +57,50 @@ export function applyPickNextActor(
   );
   if (!target) {
     return {
-      state, derived: [],
-      log: [{ kind: 'error', text: `PickNextActor: unknown participant ${participantId}`, intentId: intent.id }],
+      state,
+      derived: [],
+      log: [
+        {
+          kind: 'error',
+          text: `PickNextActor: unknown participant ${participantId}`,
+          intentId: intent.id,
+        },
+      ],
       errors: [{ code: 'unknown_participant', message: `unknown participant ${participantId}` }],
     };
   }
   if (enc.actedThisRound.includes(participantId)) {
     return {
-      state, derived: [],
-      log: [{ kind: 'error', text: `PickNextActor: ${participantId} already acted this round`, intentId: intent.id }],
+      state,
+      derived: [],
+      log: [
+        {
+          kind: 'error',
+          text: `PickNextActor: ${participantId} already acted this round`,
+          intentId: intent.id,
+        },
+      ],
       errors: [{ code: 'already_acted', message: `${participantId} already acted this round` }],
     };
   }
   const side = participantSide(target);
   if (side !== enc.currentPickingSide) {
     return {
-      state, derived: [],
-      log: [{ kind: 'error', text: `PickNextActor: ${participantId} is on the wrong side`, intentId: intent.id }],
-      errors: [{ code: 'wrong_side', message: `currentPickingSide is ${enc.currentPickingSide}; ${participantId} is on ${side}` }],
+      state,
+      derived: [],
+      log: [
+        {
+          kind: 'error',
+          text: `PickNextActor: ${participantId} is on the wrong side`,
+          intentId: intent.id,
+        },
+      ],
+      errors: [
+        {
+          code: 'wrong_side',
+          message: `currentPickingSide is ${enc.currentPickingSide}; ${participantId} is on ${side}`,
+        },
+      ],
     };
   }
 
@@ -71,16 +110,29 @@ export function applyPickNextActor(
     const isOwner = target.ownerId !== null && intent.actor.userId === target.ownerId;
     if (!isDirector && !isOwner) {
       return {
-        state, derived: [],
+        state,
+        derived: [],
         log: [{ kind: 'error', text: 'PickNextActor: not permitted', intentId: intent.id }],
-        errors: [{ code: 'not_permitted', message: 'only the PC owner or active director may pick this hero' }],
+        errors: [
+          {
+            code: 'not_permitted',
+            message: 'only the PC owner or active director may pick this hero',
+          },
+        ],
       };
     }
   } else {
     if (!isDirector) {
       return {
-        state, derived: [],
-        log: [{ kind: 'error', text: 'PickNextActor: foe picks are director-only', intentId: intent.id }],
+        state,
+        derived: [],
+        log: [
+          {
+            kind: 'error',
+            text: 'PickNextActor: foe picks are director-only',
+            intentId: intent.id,
+          },
+        ],
         errors: [{ code: 'not_permitted', message: 'only the active director may pick a foe' }],
       };
     }
