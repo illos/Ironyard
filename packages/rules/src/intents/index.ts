@@ -12,6 +12,7 @@ export { applyEquipItem } from './equip-item';
 export { applyGainHeroToken } from './gain-hero-token';
 export { applyGainMalice } from './gain-malice';
 export { applyGainResource } from './gain-resource';
+export { applyGrantExtraMainAction } from './grant-extra-main-action';
 export { applyJoinLobby } from './join-lobby';
 export { applyJumpBehindScreen } from './jump-behind-screen';
 export { applyKickPlayer } from './kick-player';

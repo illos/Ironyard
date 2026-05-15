@@ -16,6 +16,7 @@ import {
   applyGainHeroToken,
   applyGainMalice,
   applyGainResource,
+  applyGrantExtraMainAction,
   applyJoinLobby,
   applyJumpBehindScreen,
   applyKickPlayer,
@@ -112,6 +113,8 @@ export function applyIntent(
       return applyGainMalice(state, intent);
     case IntentTypes.GainResource:
       return applyGainResource(state, intent);
+    case IntentTypes.GrantExtraMainAction:
+      return applyGrantExtraMainAction(state, intent);
     case IntentTypes.JoinLobby:
       return applyJoinLobby(state, intent);
     case IntentTypes.JumpBehindScreen:

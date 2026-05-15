@@ -237,6 +237,23 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
     });
   }
 
+  // Pass 3 Slice 1 §4.10 — nat 19/20 with a main-action ability grants the
+  // actor an extra main action this turn. Works even off-turn, even while
+  // Dazed. Not granted to dead actors.
+  const natural = rolls.d10[0] + rolls.d10[1];
+  const isCrit = natural === 19 || natural === 20;
+  const isMainActionAbility = parsed.data.abilityType === 'action';
+  const actorAlive = attacker.staminaState !== 'dead';
+  if (isCrit && isMainActionAbility && actorAlive) {
+    derived.push({
+      actor: intent.actor,
+      source: 'auto' as const,
+      type: IntentTypes.GrantExtraMainAction,
+      payload: { participantId: attackerId },
+      causedBy: intent.id,
+    });
+  }
+
   return {
     state: {
       ...state,
