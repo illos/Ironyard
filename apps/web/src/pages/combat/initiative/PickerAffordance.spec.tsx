@@ -35,6 +35,10 @@ function pc(id: string, ownerId: string | null): Participant {
     ev: null,
     withCaptain: null,
     className: null,
+    staminaState: 'healthy',
+    staminaOverride: null,
+    bodyIntact: true,
+    triggeredActionUsedThisRound: false,
   };
 }
 function monster(id: string): Participant {

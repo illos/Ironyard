@@ -1,4 +1,4 @@
-import type { Intent, MaliceState, Member, OpenAction, Participant } from '@ironyard/shared';
+import type { Intent, MaliceState, Member, OpenAction, Participant, PendingTriggerSet } from '@ironyard/shared';
 import type { StaticDataBundle } from './static-data';
 
 // The lobby roster is a flat list of fully-materialized participants.
@@ -100,6 +100,10 @@ export type CampaignState = {
   attendingCharacterIds: string[];
   // Hero tokens available this session.
   heroTokens: number;
+  // Pass 3 Slice 1 — Q10 cross-side trigger resolution. Set non-null when the
+  // engine is paused waiting for a director to pick triggered-action order.
+  // Cleared after ResolveTriggerOrder fires the cascade, or at EndEncounter.
+  pendingTriggers: PendingTriggerSet | null;
 };
 
 export type LogEntry = {
@@ -132,5 +136,6 @@ export function emptyCampaignState(campaignId: string, ownerId: string): Campaig
     currentSessionId: null,
     attendingCharacterIds: [],
     heroTokens: 0,
+    pendingTriggers: null,
   };
 }

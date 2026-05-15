@@ -237,6 +237,11 @@ export type { MaliceState } from './malice';
 export { ParticipantStateOverrideSchema } from './stamina-override';
 export type { ParticipantStateOverride } from './stamina-override';
 
+export { PendingTriggerSetSchema } from './pending-triggers';
+export type { PendingTriggerSet } from './pending-triggers';
+export { TriggerEventDescSchema } from './trigger-event';
+export type { TriggerEventDesc } from './trigger-event';
+
 export { OpenActionKindSchema, OpenActionSchema } from './open-action';
 export type { OpenAction, OpenActionKind } from './open-action';
 

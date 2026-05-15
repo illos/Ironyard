@@ -102,6 +102,7 @@ function makeCampaignState(overrides: Partial<CampaignState> = {}): CampaignStat
     currentSessionId: null,
     attendingCharacterIds: [],
     heroTokens: 0,
+    pendingTriggers: null,
     ...overrides,
   };
 }
@@ -142,6 +143,10 @@ function makePcParticipant(id: string) {
     ev: null as number | null,
     withCaptain: null as string | null,
     className: null as string | null,
+    staminaState: 'healthy' as const,
+    staminaOverride: null,
+    bodyIntact: true,
+    triggeredActionUsedThisRound: false,
   };
 }
 
@@ -263,6 +268,10 @@ describe('handleSideEffect Respite', () => {
           ev: null as number | null,
           withCaptain: null as string | null,
           className: null as string | null,
+          staminaState: 'healthy' as const,
+          staminaOverride: null,
+          bodyIntact: true,
+          triggeredActionUsedThisRound: false,
         },
       ],
     });

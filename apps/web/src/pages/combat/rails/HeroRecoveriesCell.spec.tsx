@@ -19,6 +19,8 @@ function makePc(recoveries: { current: number; max: number }): Participant {
     turnActionUsage: { main: false, maneuver: false, move: false }, surprised: false,
     role: null, ancestry: [], size: null, speed: null, stability: null,
     freeStrike: null, ev: null, withCaptain: null, className: 'Tactician',
+    staminaState: 'healthy', staminaOverride: null, bodyIntact: true,
+    triggeredActionUsedThisRound: false,
   } as Participant;
 }
 
