@@ -1,4 +1,5 @@
 import type { Participant } from '@ironyard/shared';
+import { capitalize } from './rail-utils';
 
 export interface HeroResourceCellProps {
   participant: Participant;
@@ -23,8 +24,7 @@ export function HeroResourceCell({ participant }: HeroResourceCellProps) {
 
   const filled = Math.min(resource.value, PIP_COUNT);
   const overflow = Math.max(0, resource.value - PIP_COUNT);
-  const displayName =
-    resource.name.charAt(0).toUpperCase() + resource.name.slice(1);
+  const displayName = capitalize(resource.name);
 
   return (
     <div className="flex flex-col items-end gap-1 leading-none">

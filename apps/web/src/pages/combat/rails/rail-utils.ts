@@ -16,6 +16,14 @@ export function initials(name: string): string {
  * Resolve a Participant into the data shape RoleReadout consumes.
  * Pre-2b2a monster snapshots (role === null) fall back to the FOE readout.
  */
+/**
+ * Capitalize the first letter of a string (for HeroicResourceName enum members
+ * which are lowercase in the schema but displayed mixed-case in the UI).
+ */
+export function capitalize(s: string): string {
+  return s.length === 0 ? s : s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 export function roleReadoutFor(p: Participant): RoleReadoutData {
   if (p.kind === 'monster') {
     if (p.role === null) {

@@ -25,6 +25,7 @@ import { AbilityCard } from '../AbilityCard';
 import { isParticipantEntry, useSessionSocket } from '../../../ws/useSessionSocket';
 import { InventoryPanel } from '../inventory/InventoryPanel';
 import { SwapKitModal } from '../inventory/SwapKitModal';
+import { capitalize } from '../rails/rail-utils';
 
 export interface FullSheetTabProps {
   focused: Participant;
@@ -506,10 +507,6 @@ function AddHeroicResource({
       </div>
     </div>
   );
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 // ── PC-only panels ────────────────────────────────────────────────────────────
