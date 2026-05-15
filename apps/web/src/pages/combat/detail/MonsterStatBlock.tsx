@@ -30,7 +30,10 @@ const CHAR_LABELS: { key: keyof Participant['characteristics']; label: string }[
  */
 export function MonsterStatBlock({ participant }: MonsterStatBlockProps) {
   const { characteristics, size, speed, stability, freeStrike, ev, immunities, weaknesses, withCaptain } = participant;
-  const hasDefenses = immunities.length > 0 || weaknesses.length > 0;
+  // ?? [] guards WS-mirrored snapshots where Zod .default([]) hasn't fired
+  const safeImmunities = immunities ?? [];
+  const safeWeaknesses = weaknesses ?? [];
+  const hasDefenses = safeImmunities.length > 0 || safeWeaknesses.length > 0;
 
   return (
     <div className="border border-line bg-ink-1 p-3 space-y-2">
@@ -55,22 +58,23 @@ export function MonsterStatBlock({ participant }: MonsterStatBlockProps) {
 
       {hasDefenses && (
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-          {immunities.length > 0 && (
+          {safeImmunities.length > 0 && (
             <span>
               <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-text-mute">Immune</span>{' '}
-              <span className="font-mono">{immunities.map((i) => `${i.type} ${i.value}`).join(' · ')}</span>
+              <span className="font-mono">{safeImmunities.map((i) => `${i.type} ${i.value}`).join(' · ')}</span>
             </span>
           )}
-          {weaknesses.length > 0 && (
+          {safeWeaknesses.length > 0 && (
             <span>
               <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-text-mute">Weak</span>{' '}
-              <span className="font-mono">{weaknesses.map((w) => `${w.type} ${w.value}`).join(' · ')}</span>
+              <span className="font-mono">{safeWeaknesses.map((w) => `${w.type} ${w.value}`).join(' · ')}</span>
             </span>
           )}
         </div>
       )}
 
-      {withCaptain !== null && (
+      {/* != null catches undefined from WS-mirrored snapshots (bypass Zod parse) */}
+      {withCaptain != null && (
         <div>
           <div className="font-mono text-[10px] uppercase tracking-[0.06em] text-text-mute">With Captain</div>
           <div className="text-xs text-text-dim italic mt-0.5">{withCaptain}</div>

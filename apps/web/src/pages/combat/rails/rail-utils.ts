@@ -26,7 +26,9 @@ export function capitalize(s: string): string {
 
 export function roleReadoutFor(p: Participant): RoleReadoutData {
   if (p.kind === 'monster') {
-    if (p.role === null) {
+    // == null catches both null and undefined — WS-mirrored snapshots bypass
+    // Zod parse so .default(null) clauses don't fire; field may be undefined.
+    if (p.role == null) {
       return { kind: 'monster-fallback', level: p.level };
     }
     const { rank, family } = parseMonsterRole(p.role);

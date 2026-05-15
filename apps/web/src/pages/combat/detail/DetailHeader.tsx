@@ -38,9 +38,9 @@ export function DetailHeader({
             <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-text-mute">
               <RoleReadout data={roleReadoutFor(focused)} />
             </span>
-            {focused.kind === 'monster' && focused.ancestry.length > 0 && (
+            {focused.kind === 'monster' && (focused.ancestry ?? []).length > 0 && (
               <span className="flex gap-1">
-                {focused.ancestry.map((a) => (
+                {(focused.ancestry ?? []).map((a) => (
                   <span
                     key={a}
                     className="font-mono text-[9px] uppercase tracking-[0.06em] text-text-mute bg-ink-2 border border-line px-1"

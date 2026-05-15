@@ -60,4 +60,16 @@ describe('MonsterStatBlock', () => {
     const dashes = screen.getAllByText('—');
     expect(dashes.length).toBeGreaterThanOrEqual(5);
   });
+
+  it('does not crash when WS-mirrored snapshot has undefined immunities/weaknesses/withCaptain', () => {
+    // WS-mirror snapshots bypass Zod parse; .default([]) and .default(null) clauses
+    // never fire, so array/string fields may be genuinely undefined at runtime.
+    const wsMirrored = makeMonster({
+      immunities: undefined as unknown as [],
+      weaknesses: undefined as unknown as [],
+      withCaptain: undefined as unknown as null,
+    });
+    expect(() => render(<MonsterStatBlock participant={wsMirrored} />)).not.toThrow();
+    expect(screen.queryByText(/With Captain/i)).not.toBeInTheDocument();
+  });
 });
