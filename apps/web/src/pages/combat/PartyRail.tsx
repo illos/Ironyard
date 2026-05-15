@@ -1,6 +1,7 @@
 import type { Participant } from '@ironyard/shared';
 import { ParticipantRow, Section } from '../../primitives';
-import { initials, summarizeRole } from './rails/rail-utils';
+import { initials, roleReadoutFor } from './rails/rail-utils';
+import { RoleReadout } from './rails/RoleReadout';
 import { derivePickAffordance } from './initiative';
 
 export interface PartyRailProps {
@@ -60,7 +61,7 @@ export function PartyRail({
               key={h.id}
               sigil={initials(h.name)}
               name={h.name}
-              role={isGated ? null : summarizeRole(h)}
+              role={isGated ? null : <RoleReadout data={roleReadoutFor(h)} />}
               resource={isGated ? null : undefined}
               recoveries={isGated ? null : undefined}
               staminaCurrent={h.currentStamina}

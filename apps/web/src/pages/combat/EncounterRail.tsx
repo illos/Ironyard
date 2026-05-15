@@ -1,6 +1,7 @@
 import type { Participant } from '@ironyard/shared';
 import { ParticipantRow, Section } from '../../primitives';
-import { initials, summarizeRole } from './rails/rail-utils';
+import { initials, roleReadoutFor } from './rails/rail-utils';
+import { RoleReadout } from './rails/RoleReadout';
 import { derivePickAffordance } from './initiative';
 
 export interface EncounterRailProps {
@@ -60,7 +61,7 @@ export function EncounterRail({
               key={f.id}
               sigil={initials(f.name)}
               name={f.name}
-              role={isGated ? null : summarizeRole(f)}
+              role={isGated ? null : <RoleReadout data={roleReadoutFor(f)} />}
               staminaCurrent={f.currentStamina}
               staminaMax={f.maxStamina}
               active={selectedParticipantId === f.id}
