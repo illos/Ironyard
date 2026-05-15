@@ -18,15 +18,29 @@ export function HpBar({ current, max, size = 'sm', compact = false, variant }: H
   const pct = max > 0 ? Math.max(0, Math.min(1, current / max)) : 0;
   const zone = pct >= 0.5 ? 'good' : pct >= 0.25 ? 'warn' : 'bad';
 
+  // Tailwind v4's JIT scanner only sees class strings as literals. Template
+  // interpolation like `bg-hp-${zone}` silently fails to generate CSS — use
+  // these static maps so the scanner picks up every variant.
+  const INLINE_FILL: Record<'good' | 'warn' | 'bad', string> = {
+    good: 'bg-hp-good',
+    warn: 'bg-hp-warn',
+    bad: 'bg-hp-bad',
+  };
+  const INLINE_BG: Record<'good' | 'warn' | 'bad', string> = {
+    good: 'bg-hp-good-dim',
+    warn: 'bg-hp-warn-dim',
+    bad: 'bg-hp-bad-dim',
+  };
+
   if (variant === 'inline') {
     return (
       <div
-        className={`relative h-[22px] w-full overflow-hidden border border-line bg-hp-${zone}-dim`}
+        className={`relative h-[22px] w-full overflow-hidden border border-line ${INLINE_BG[zone]}`}
         role="img"
         aria-label={`${current} of ${max} stamina`}
       >
         <div
-          className={`absolute inset-y-0 left-0 bg-hp-${zone} transition-[width] duration-300 ease-out`}
+          className={`absolute inset-y-0 left-0 ${INLINE_FILL[zone]} transition-[width] duration-300 ease-out`}
           style={{ width: `${pct * 100}%` }}
         />
         <div className="relative z-10 flex h-full items-center justify-center font-mono text-[13px] font-bold tabular-nums leading-none text-text [text-shadow:0_1px_2px_rgb(0_0_0/0.7)]">
