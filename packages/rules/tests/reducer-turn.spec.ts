@@ -57,6 +57,10 @@ function part(id: string, name = id): Participant {
     ev: null,
     withCaptain: null,
     className: null,
+    staminaState: 'healthy',
+    staminaOverride: null,
+    bodyIntact: true,
+    triggeredActionUsedThisRound: false,
   };
 }
 

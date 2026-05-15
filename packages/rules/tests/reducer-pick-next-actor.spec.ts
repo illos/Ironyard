@@ -35,6 +35,10 @@ function pc(id: string, ownerId: string | null = id): Participant {
     surprised: false,
     role: null, ancestry: [], size: null, speed: null, stability: null,
     freeStrike: null, ev: null, withCaptain: null, className: null,
+    staminaState: 'healthy',
+    staminaOverride: null,
+    bodyIntact: true,
+    triggeredActionUsedThisRound: false,
   };
 }
 

@@ -39,6 +39,10 @@ function pc(over: Partial<Participant> = {}): Participant {
     ev: null,
     withCaptain: null,
     className: null,
+    staminaState: 'healthy',
+    staminaOverride: null,
+    bodyIntact: true,
+    triggeredActionUsedThisRound: false,
     ...over,
   };
 }
@@ -76,6 +80,10 @@ function monster(over: Partial<Participant> = {}): Participant {
     ev: null,
     withCaptain: null,
     className: null,
+    staminaState: 'healthy',
+    staminaOverride: null,
+    bodyIntact: true,
+    triggeredActionUsedThisRound: false,
     ...over,
   };
 }
@@ -177,6 +185,10 @@ function pcZ(id: string): Participant {
     surprised: false,
     role: null, ancestry: [], size: null, speed: null, stability: null,
     freeStrike: null, ev: null, withCaptain: null, className: null,
+    staminaState: 'healthy',
+    staminaOverride: null,
+    bodyIntact: true,
+    triggeredActionUsedThisRound: false,
   };
 }
 

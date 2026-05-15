@@ -69,6 +69,10 @@ export function makeHeroParticipant(id: string, overrides: Partial<Participant> 
     ev: null,
     withCaptain: null,
     className: null,
+    staminaState: 'healthy',
+    staminaOverride: null,
+    bodyIntact: true,
+    triggeredActionUsedThisRound: false,
     ...overrides,
   };
 }
@@ -109,6 +113,10 @@ export function makeMonsterParticipant(
     ev: null,
     withCaptain: null,
     className: null,
+    staminaState: 'healthy',
+    staminaOverride: null,
+    bodyIntact: true,
+    triggeredActionUsedThisRound: false,
     ...overrides,
   };
 }

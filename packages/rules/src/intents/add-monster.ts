@@ -40,6 +40,10 @@ export function participantFromMonster(
     ev: monster.ev.ev,
     withCaptain: monster.withCaptain ?? null,
     className: null,
+    staminaState: 'healthy',
+    staminaOverride: null,
+    bodyIntact: true,
+    triggeredActionUsedThisRound: false,
   };
 }
 

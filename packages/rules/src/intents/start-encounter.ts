@@ -139,6 +139,10 @@ export function applyStartEncounter(
       className: stamped.character.classId
         ? (ctx.staticData.classes.get(stamped.character.classId)?.name ?? null)
         : null,
+      staminaState: 'healthy',
+      staminaOverride: null,
+      bodyIntact: true,
+      triggeredActionUsedThisRound: false,
     };
   });
 
