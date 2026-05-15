@@ -26,6 +26,8 @@ export type InlineHeaderProps = {
   isPlayerActiveTurn: boolean;
   /** Display name of whoever currently has the active turn; null between turns. */
   activeParticipantName: string | null;
+  /** When initiative is being picked and no turn is active, which side is currently choosing. */
+  pickingSide?: 'heroes' | 'foes' | null;
   onStartRound: () => void;
   onEndTurn: () => void;
   onEndRound: () => void;
@@ -52,6 +54,7 @@ export function InlineHeader({
   isActingAsDirector,
   isPlayerActiveTurn,
   activeParticipantName,
+  pickingSide,
   onStartRound,
   onEndTurn,
   onEndRound,
@@ -119,6 +122,16 @@ export function InlineHeader({
         >
           End encounter
         </Button>
+      )}
+      {/* Picking-side pill — shown when no turn is active and initiative is being chosen */}
+      {activeParticipantName === null && pickingSide && (
+        <span
+          className={`font-mono uppercase tracking-[0.08em] text-[10px] px-3 py-1 rounded ${
+            pickingSide === 'heroes' ? 'text-hero' : 'text-foe'
+          }`}
+        >
+          {pickingSide === 'heroes' ? 'HEROES PICK' : 'DIRECTOR PICKS'}
+        </span>
       )}
       {isActingAsDirector && hasEncounter && round !== null && !isAtTurnEnd && (
         <Button
