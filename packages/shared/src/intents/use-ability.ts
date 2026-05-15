@@ -15,5 +15,8 @@ export const UseAbilityPayloadSchema = z.object({
   // Dispatcher-supplied. Most ancestry signature traits with a duration use
   // 'EoT'; long-running buffs or class features would use 'end_of_encounter'.
   duration: ActiveAbilityExpirySchema,
+  talentStrainedOptInRider: z.boolean().optional(), // 10th-level Psion: opt INTO Strained: rider when not yet strained
+  talentClarityDamageOptOutThisTurn: z.boolean().optional(), // 10th-level Psion: opt OUT of EoT clarity damage this turn
+  startMaintenance: z.boolean().optional(), // Elementalist: also start maintaining this ability
 });
 export type UseAbilityPayload = z.infer<typeof UseAbilityPayloadSchema>;
