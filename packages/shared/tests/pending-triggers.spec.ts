@@ -25,9 +25,7 @@ describe('TriggerEventDescSchema', () => {
   });
 
   it('rejects unknown kind', () => {
-    expect(() =>
-      TriggerEventDescSchema.parse({ kind: 'unknown' }),
-    ).toThrow();
+    expect(() => TriggerEventDescSchema.parse({ kind: 'unknown' })).toThrow();
   });
 });
 

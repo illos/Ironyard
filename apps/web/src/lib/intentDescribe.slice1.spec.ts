@@ -26,10 +26,7 @@ function makeIntent(
   };
 }
 
-const participants = [
-  makeParticipant('p1', 'Thresh'),
-  makeParticipant('p2', 'Goblin'),
-];
+const participants = [makeParticipant('p1', 'Thresh'), makeParticipant('p2', 'Goblin')];
 
 describe('describeIntent — Pass 3 Slice 1 cases', () => {
   it('BecomeDoomed includes participant name and source', () => {

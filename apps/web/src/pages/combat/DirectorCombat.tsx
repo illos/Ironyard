@@ -40,7 +40,7 @@ import { EncounterRail } from './EncounterRail';
 import { RollInitiativeOverlay } from './initiative';
 import { OpenActionsList } from './OpenActionsList';
 import { PartyRail } from './PartyRail';
-import { CrossSideTriggerModal } from './triggers';
+import { CrossSideTriggerModal, TriggersPendingPill } from './triggers';
 import { type Toast, ToastStack } from './ToastStack';
 
 const TOAST_DISMISS_MS = 6000;
@@ -629,6 +629,13 @@ export function DirectorCombat() {
         onVictoriesGain={() => dispatchAdjustVictories(1)}
         onVictoriesSpend={() => dispatchAdjustVictories(-1)}
       />
+
+      {/* AC#13 — player-visible pending-triggers indicator */}
+      {activeEncounter.pendingTriggers !== null && !isActingAsDirector && (
+        <div className="flex items-center justify-center px-3.5 py-1 bg-ink-2 border-b border-line">
+          <TriggersPendingPill />
+        </div>
+      )}
 
       <SplitPane
         ratio="1.18fr 1fr"
