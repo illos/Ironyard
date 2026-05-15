@@ -61,6 +61,7 @@ function pcWithResource(opts: {
     activeAbilities: [],
     victories: opts.victories ?? 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
+    surprised: false,
   };
 }
 

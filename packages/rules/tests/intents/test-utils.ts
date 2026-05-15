@@ -59,6 +59,7 @@ export function makeHeroParticipant(id: string, overrides: Partial<Participant> 
     activeAbilities: [],
     victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
+    surprised: false,
     ...overrides,
   };
 }
@@ -89,6 +90,7 @@ export function makeMonsterParticipant(
     activeAbilities: [],
     victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
+    surprised: false,
     ...overrides,
   };
 }

@@ -53,6 +53,7 @@ function pc(over: Partial<Participant> = {}): Participant {
     activeAbilities: [],
     victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
+    surprised: false,
     ...over,
   };
 }
@@ -80,6 +81,7 @@ function monster(over: Partial<Participant> = {}): Participant {
     activeAbilities: [],
     victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
+    surprised: false,
     ...over,
   };
 }

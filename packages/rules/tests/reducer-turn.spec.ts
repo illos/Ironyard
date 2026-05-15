@@ -47,6 +47,7 @@ function part(id: string, name = id): Participant {
     activeAbilities: [],
     victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
+    surprised: false,
   };
 }
 

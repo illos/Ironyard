@@ -127,6 +127,7 @@ export function applyStartEncounter(
       activeAbilities: [],
       victories: stamped.character.victories ?? 0,
       turnActionUsage: { main: false, maneuver: false, move: false },
+      surprised: false,
     };
   });
 

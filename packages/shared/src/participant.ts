@@ -88,5 +88,11 @@ export const ParticipantSchema = z.object({
       move: z.boolean(),
     })
     .default({ main: false, maneuver: false, move: false }),
+  // Phase 5 Pass 2b1 — zipper-initiative surprise flag (canon § 4.1).
+  // Set by `MarkSurprised` or as part of `RollInitiative.surprised[]`.
+  // Cleared by `applyEndRound` at the end of round 1 per canon. The
+  // "edge on rolls against" and "can't take triggered actions" consequences
+  // of being surprised are Phase 2b umbrella work — 2b1 only carries the flag.
+  surprised: z.boolean().default(false),
 });
 export type Participant = z.infer<typeof ParticipantSchema>;

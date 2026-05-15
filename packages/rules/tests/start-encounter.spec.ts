@@ -191,6 +191,7 @@ describe('applyStartEncounter — new atomic payload shape', () => {
       activeAbilities: [],
       victories: 0,
       turnActionUsage: { main: false, maneuver: false, move: false },
+      surprised: false,
     };
     const s = baseState({ participants: [oldMonster] });
 

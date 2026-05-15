@@ -409,6 +409,7 @@ function participantFromMonsterClient(
     activeAbilities: [],
     victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
+    surprised: false,
   };
 }
 
