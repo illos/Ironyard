@@ -133,7 +133,7 @@ export function InlineHeader({
           {pickingSide === 'heroes' ? 'HEROES PICK' : 'DIRECTOR PICKS'}
         </span>
       )}
-      {isActingAsDirector && hasEncounter && round !== null && !isAtTurnEnd && (
+      {isActingAsDirector && hasEncounter && round !== null && !isAtTurnEnd && activeParticipantName !== null && (
         <Button
           type="button"
           onClick={onEndTurn}
@@ -145,7 +145,7 @@ export function InlineHeader({
           End turn
         </Button>
       )}
-      {!isActingAsDirector && hasEncounter && round !== null && !isAtTurnEnd && (
+      {!isActingAsDirector && hasEncounter && round !== null && !isAtTurnEnd && activeParticipantName !== null && (
         isPlayerActiveTurn ? (
           <Button
             type="button"
