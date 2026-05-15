@@ -169,7 +169,13 @@ function DetailBody({
   isActiveTurn,
   onEndTurn,
 }: Props & { focused: Participant; canEdit: boolean; resolvedTarget: Participant | null }) {
-  const [tab, setTab] = useState<TabId>(viewerRole === 'player' ? 'turn-flow' : 'full-sheet');
+  // Default tab: Turn-flow for any focused monster (director is running its
+  // turn) and for players (acting on their own PC). Full-sheet only when a
+  // director focuses a PC — they want the at-a-glance stat block since the
+  // PC's owning player drives the Turn-flow.
+  const defaultTab: TabId =
+    focused.kind === 'monster' || viewerRole === 'player' ? 'turn-flow' : 'full-sheet';
+  const [tab, setTab] = useState<TabId>(defaultTab);
 
   return (
     <div className="space-y-5">

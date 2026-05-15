@@ -322,10 +322,18 @@ export function DirectorCombat() {
   const victories = heroes[0]?.victories ?? 0;
 
   const focused = participants.find((p) => p.id === effectiveSelectedId) ?? null;
+  // True only when the round is genuinely "between": initiative has been
+  // rolled, no one is acting, and both sides have run out of unacted creatures
+  // (currentPickingSide === null = round ready to end). Without the
+  // currentPickingSide check, this would also be true mid-round during every
+  // zipper-pick window and the End-round / Start-round buttons would shadow
+  // the picking pill.
   const isAtTurnEnd =
     !!activeEncounter &&
     activeEncounter.currentRound !== null &&
-    activeEncounter.activeParticipantId === null;
+    activeEncounter.firstSide !== null &&
+    activeEncounter.activeParticipantId === null &&
+    activeEncounter.currentPickingSide === null;
   const undoable = findLatestUndoable(intentLog);
   const wsClosed = status !== 'open';
   const disabled = wsClosed;
