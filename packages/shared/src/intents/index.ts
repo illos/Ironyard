@@ -109,6 +109,12 @@ export { SpendSurgePayloadSchema } from './spend-surge';
 export type { SpendSurgePayload } from './spend-surge';
 export { StaminaStateSchema, StaminaTransitionedPayloadSchema } from './stamina-transitioned';
 export type { StaminaState, StaminaTransitionedPayload } from './stamina-transitioned';
+export { StartMaintenancePayloadSchema } from './start-maintenance';
+export type { StartMaintenancePayload } from './start-maintenance';
+export { StopMaintenancePayloadSchema } from './stop-maintenance';
+export type { StopMaintenancePayload } from './stop-maintenance';
+export { TroubadourAutoRevivePayloadSchema } from './troubadour-auto-revive';
+export type { TroubadourAutoRevivePayload } from './troubadour-auto-revive';
 export {
   MonsterEntrySchema,
   StartEncounterPayloadSchema,
@@ -206,10 +212,13 @@ export const IntentTypes = {
   StartEncounter: 'StartEncounter',
   StartRound: 'StartRound',
   StaminaTransitioned: 'StaminaTransitioned',
+  StartMaintenance: 'StartMaintenance',
   StartSession: 'StartSession',
   StartTurn: 'StartTurn',
+  StopMaintenance: 'StopMaintenance',
   SubmitCharacter: 'SubmitCharacter',
   SwapKit: 'SwapKit',
+  TroubadourAutoRevive: 'TroubadourAutoRevive',
   UnequipItem: 'UnequipItem',
   Undo: 'Undo',
   UpdateSessionAttendance: 'UpdateSessionAttendance',
@@ -227,4 +236,5 @@ export const SERVER_ONLY_INTENTS = new Set<string>([
   IntentTypes.GrantExtraMainAction,
   IntentTypes.RaiseOpenAction,
   IntentTypes.StaminaTransitioned,
+  IntentTypes.TroubadourAutoRevive,
 ]);
