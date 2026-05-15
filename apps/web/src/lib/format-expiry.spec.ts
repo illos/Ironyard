@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { formatExpiry } from './format-expiry';
 import type { OpenAction } from '@ironyard/shared';
+import { describe, expect, it } from 'vitest';
+import { formatExpiry } from './format-expiry';
 
 function makeOA(overrides: Partial<OpenAction>): OpenAction {
   return {
