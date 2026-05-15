@@ -13,7 +13,6 @@ import { StaminaEditPopover } from './StaminaEditPopover';
 
 export interface DetailHeaderProps {
   focused: Participant;
-  monsterLevel: number | null;
   canEditStamina?: boolean;
   canEditConditions?: boolean;
   dispatchSetStamina: (payload: SetStaminaPayload) => void;
@@ -23,7 +22,6 @@ export interface DetailHeaderProps {
 
 export function DetailHeader({
   focused,
-  monsterLevel,
   canEditStamina = true,
   canEditConditions = true,
   dispatchSetStamina,

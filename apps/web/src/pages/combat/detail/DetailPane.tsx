@@ -181,7 +181,6 @@ function DetailBody({
     <div className="space-y-5">
       <DetailHeader
         focused={focused}
-        monsterLevel={monsterLevelById.get(focused.id) ?? null}
         canEditStamina={canEdit}
         canEditConditions={canEdit}
         dispatchSetStamina={dispatchSetStamina}
