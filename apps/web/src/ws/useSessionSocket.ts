@@ -192,6 +192,14 @@ function reflect(
       currentPickingSide: prev.firstSide,
       actedThisRound: [],
       activeParticipantId: null,
+      // Mirror engine's per-round slot reset (see applyStartRound) so the
+      // Turn-flow UI doesn't render stale "used" pips on round 2+ before
+      // each participant's own StartTurn fires.
+      participants: prev.participants.map((p) =>
+        isParticipantEntry(p)
+          ? { ...p, turnActionUsage: { main: false, maneuver: false, move: false } }
+          : p,
+      ),
     };
   }
 

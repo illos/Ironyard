@@ -66,10 +66,22 @@ export function applyStartRound(state: CampaignState, intent: StampedIntent): In
   const aliveCount = aliveHeroes(state).length;
   const nextMalice = guard.encounter.malice.current + aliveCount + round;
 
+  // Reset every participant's per-turn slot usage at round boundary so the
+  // Turn-flow UI doesn't display stale "used" pips for the new round before
+  // their StartTurn fires. StartTurn re-resets the active participant; this
+  // sweep covers everyone else (who would otherwise stay marked from the
+  // previous round until their own turn began).
+  const nextParticipants = state.participants.map((p) =>
+    isParticipant(p)
+      ? { ...p, turnActionUsage: { main: false, maneuver: false, move: false } }
+      : p,
+  );
+
   return {
     state: {
       ...state,
       seq: state.seq + 1,
+      participants: nextParticipants,
       encounter: {
         ...guard.encounter,
         currentRound: round,
