@@ -17,17 +17,18 @@ function fakeOA(overrides: Partial<OpenAction> = {}): OpenAction {
 }
 
 describe('OpenActionsList', () => {
-  it('renders the empty state when the list is empty', () => {
+  it('renders nothing (null) when the list is empty', () => {
     const html = renderToStaticMarkup(
       <OpenActionsList
         openActions={[]}
         currentUserId="alice"
         activeDirectorId="alice"
-        participantOwnerLookup={() => 'alice'}
+        currentRound={1}
+        participantDisplayLookup={() => ({ ownerId: 'alice', name: 'Alice' })}
         onClaim={() => {}}
       />,
     );
-    expect(html).toMatch(/no open actions/i);
+    expect(html).toBe('');
   });
 
   it('renders an entry with a generic title when the kind has no copy registered', () => {
@@ -36,7 +37,8 @@ describe('OpenActionsList', () => {
         openActions={[fakeOA()]}
         currentUserId="alice"
         activeDirectorId="alice"
-        participantOwnerLookup={() => 'alice'}
+        currentRound={1}
+        participantDisplayLookup={() => ({ ownerId: 'alice', name: 'Alice' })}
         onClaim={() => {}}
       />,
     );
@@ -49,7 +51,8 @@ describe('OpenActionsList', () => {
         openActions={[fakeOA({ participantId: 'pc-1' })]}
         currentUserId="alice"
         activeDirectorId="gm"
-        participantOwnerLookup={(pid) => (pid === 'pc-1' ? 'alice' : null)}
+        currentRound={1}
+        participantDisplayLookup={(pid) => (pid === 'pc-1' ? { ownerId: 'alice', name: 'Alice' } : { ownerId: null, name: null })}
         onClaim={() => {}}
       />,
     );
@@ -64,7 +67,8 @@ describe('OpenActionsList', () => {
         openActions={[fakeOA({ participantId: 'pc-1' })]}
         currentUserId="gm"
         activeDirectorId="gm"
-        participantOwnerLookup={(pid) => (pid === 'pc-1' ? 'alice' : null)}
+        currentRound={1}
+        participantDisplayLookup={(pid) => (pid === 'pc-1' ? { ownerId: 'alice', name: 'Alice' } : { ownerId: null, name: null })}
         onClaim={() => {}}
       />,
     );
@@ -77,7 +81,8 @@ describe('OpenActionsList', () => {
         openActions={[fakeOA({ participantId: 'pc-1' })]}
         currentUserId="bob"
         activeDirectorId="gm"
-        participantOwnerLookup={(pid) => (pid === 'pc-1' ? 'alice' : null)}
+        currentRound={1}
+        participantDisplayLookup={(pid) => (pid === 'pc-1' ? { ownerId: 'alice', name: 'Alice' } : { ownerId: null, name: null })}
         onClaim={() => {}}
       />,
     );

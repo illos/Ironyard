@@ -678,28 +678,27 @@ export function DirectorCombat() {
         }
         right={
           <>
-            {openActions.length > 0 && (
-              <section className="border border-line bg-ink-1 p-3.5">
-                <OpenActionsList
-                  openActions={openActions}
-                  currentUserId={me.data.user.id}
-                  activeDirectorId={activeDirectorId ?? campaign.data.activeDirectorId ?? ''}
-                  participantOwnerLookup={(pid) => {
-                    const p = activeEncounter.participants.find(
-                      (entry) => isParticipantEntry(entry) && entry.id === pid,
-                    );
-                    return p && isParticipantEntry(p) ? p.ownerId : null;
-                  }}
-                  onClaim={(id) =>
-                    dispatch({
-                      id: ulid(),
-                      type: IntentTypes.ClaimOpenAction,
-                      payload: { openActionId: id },
-                    })
-                  }
-                />
-              </section>
-            )}
+            <OpenActionsList
+              openActions={openActions}
+              currentUserId={me.data.user.id}
+              activeDirectorId={activeDirectorId ?? campaign.data.activeDirectorId ?? ''}
+              currentRound={round}
+              participantDisplayLookup={(pid) => {
+                const p = activeEncounter.participants.find(
+                  (entry) => isParticipantEntry(entry) && entry.id === pid,
+                );
+                return p && isParticipantEntry(p)
+                  ? { ownerId: p.ownerId, name: p.name }
+                  : { ownerId: null, name: null };
+              }}
+              onClaim={(id) =>
+                dispatch({
+                  id: ulid(),
+                  type: IntentTypes.ClaimOpenAction,
+                  payload: { openActionId: id },
+                })
+              }
+            />
             <DetailPane
               focused={focused}
               participants={participants}

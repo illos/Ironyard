@@ -1,67 +1,62 @@
 import type { OpenAction } from '@ironyard/shared';
 import { OPEN_ACTION_COPY } from '@ironyard/shared';
+import { Section } from '../../primitives';
+import { OpenActionRow, type ViewerRowRelation } from './OpenActionRow';
+
+export type ParticipantDisplayLookup = (
+  participantId: string,
+) => { ownerId: string | null; name: string | null };
 
 type Props = {
   openActions: OpenAction[];
   currentUserId: string;
   activeDirectorId: string;
-  /** Resolve a participantId → owner userId (or null if monster / missing). */
-  participantOwnerLookup: (participantId: string) => string | null;
+  currentRound: number;
+  participantDisplayLookup: ParticipantDisplayLookup;
   onClaim: (openActionId: string) => void;
 };
 
 /**
- * Lobby-visible list of pending OpenActions. Visible to every connected user
- * (directors and players alike). The Claim button is enabled only for the
- * targeted participant's owner OR the active director.
- *
- * The same component mounts in CombatRun (director view) and PlayerSheetPanel
- * (player view). Per-user enablement of the Claim button is the only
- * behavioral difference between the two contexts.
+ * Phase 5 Pass 2b2a — primitive-wrapped Open Actions list. Empty state
+ * collapses entirely (returns null). Each row delegates to OpenActionRow
+ * for the for-me / watching / director-override variants.
  */
 export function OpenActionsList(props: Props) {
-  const { openActions, currentUserId, activeDirectorId, participantOwnerLookup, onClaim } = props;
+  const { openActions, currentUserId, activeDirectorId, currentRound, participantDisplayLookup, onClaim } = props;
 
-  if (openActions.length === 0) {
-    return (
-      <div className="open-actions-list open-actions-list--empty">
-        <p className="open-actions-list__empty">No open actions.</p>
-      </div>
-    );
-  }
-
+  if (openActions.length === 0) return null;
   const isDirector = currentUserId === activeDirectorId;
 
   return (
-    <div className="open-actions-list">
-      <h3 className="open-actions-list__heading">Open actions</h3>
-      <ul className="open-actions-list__items">
+    <Section heading={`OPEN ACTIONS · ${openActions.length}`}>
+      <div className="flex flex-col gap-1.5">
         {openActions.map((oa) => {
           const copy = OPEN_ACTION_COPY[oa.kind];
           const title = copy?.title(oa) ?? `Open Action: ${oa.kind}`;
           const body = copy?.body(oa) ?? '';
           const claimLabel = copy?.claimLabel(oa) ?? 'Claim';
-          const ownerId = participantOwnerLookup(oa.participantId);
-          const isOwner = ownerId !== null && currentUserId === ownerId;
-          const canClaim = isOwner || isDirector;
+          const { ownerId, name } = participantDisplayLookup(oa.participantId);
+          const isOwnerSelf = ownerId !== null && currentUserId === ownerId;
+          const viewerOwnerForRow: ViewerRowRelation = isOwnerSelf ? 'self' : 'other-player';
+          const canClaim = isOwnerSelf || isDirector;
+          const ownerName = isOwnerSelf ? 'You' : (name ?? 'someone');
 
           return (
-            <li key={oa.id} className="open-actions-list__row">
-              <div className="open-actions-list__title">{title}</div>
-              {body && <div className="open-actions-list__body">{body}</div>}
-              <button
-                type="button"
-                className="open-actions-list__claim"
-                disabled={!canClaim}
-                onClick={() => canClaim && onClaim(oa.id)}
-                title={canClaim ? '' : 'Only the targeted player or the director can claim this'}
-              >
-                {claimLabel}
-              </button>
-            </li>
+            <OpenActionRow
+              key={oa.id}
+              oa={oa}
+              title={title}
+              body={body}
+              claimLabel={claimLabel}
+              currentRound={currentRound}
+              viewerOwnerForRow={viewerOwnerForRow}
+              canClaim={canClaim}
+              ownerName={ownerName}
+              onClaim={onClaim}
+            />
           );
         })}
-      </ul>
-    </div>
+      </div>
+    </Section>
   );
 }
