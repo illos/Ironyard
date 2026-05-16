@@ -56,6 +56,7 @@ export { applyStartSession } from './start-session';
 export { applyStopMaintenance } from './stop-maintenance';
 export { applySubmitCharacter } from './submit-character';
 export { applySwapKit } from './swap-kit';
+export { applyTroubadourAutoRevive } from './troubadour-auto-revive';
 export {
   applyEndRound,
   applyEndTurn,

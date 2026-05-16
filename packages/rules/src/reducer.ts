@@ -60,6 +60,7 @@ import {
   applyStopMaintenance,
   applySubmitCharacter,
   applySwapKit,
+  applyTroubadourAutoRevive,
   applyUndo,
   applyUnequipItem,
   applyUpdateSessionAttendance,
@@ -224,6 +225,8 @@ export function applyIntent(
       return applySubmitCharacter(state, intent);
     case IntentTypes.SwapKit:
       return applySwapKit(state, intent);
+    case IntentTypes.TroubadourAutoRevive:
+      return applyTroubadourAutoRevive(state, intent);
     case IntentTypes.UnequipItem:
       return applyUnequipItem(state, intent);
     case IntentTypes.Undo:
