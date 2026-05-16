@@ -79,6 +79,8 @@ Field named `relationKind` (not `kind`) to avoid shadowing the discriminated-uni
 
 **Existing intent extension: `UseAbility`**
 
+`UseAbilityPayloadSchema` (`packages/shared/src/intents/use-ability.ts`) today has no `targetIds` field — UseAbility was built for narrative-only abilities. Slice 2b extends the schema with `targetIds: z.array(z.string().min(1)).optional()` (matching the repo's existing convention from `roll-power.ts:24`). The field stays optional so existing call sites that don't supply targets parse unchanged.
+
 After main resolution, the reducer consults the new `ABILITY_TARGETING_EFFECTS` registry (`packages/rules/src/class-triggers/ability-targeting-effects.ts`):
 
 ```ts
@@ -101,7 +103,7 @@ Both are `mode: 'replace'` for v1 PHB content. Tactician class features that mar
 
 A unit test imports the ability data and asserts both ids exist; the test fails loudly if a rename slips through.
 
-When `UseAbility.abilityId` matches a registry entry and `UseAbility.targetParticipantIds` is non-empty, the reducer emits a derived `SetTargetingRelation` per primary target. For `mode: 'replace'`, the reducer first emits `SetTargetingRelation { present: false }` for every existing entry in the relation array, then `present: true` for the new target. For `mode: 'add'`, just `present: true`.
+When `UseAbility.abilityId` matches a registry entry and `UseAbility.targetIds` is non-empty, the reducer emits a derived `SetTargetingRelation` per primary target. For `mode: 'replace'`, the reducer first emits `SetTargetingRelation { present: false }` for every existing entry in the relation array, then `present: true` for the new target. For `mode: 'add'`, just `present: true`.
 
 ### Reducer changes
 
