@@ -1,4 +1,4 @@
-import type { DamageType } from '@ironyard/shared';
+import type { Actor, DamageType } from '@ironyard/shared';
 import type { CampaignState, DerivedIntent } from '../types';
 import * as censor from './per-class/censor';
 import * as elementalist from './per-class/elementalist';
@@ -43,6 +43,26 @@ import * as troubadour from './per-class/troubadour';
 // shared or be derived from the ability record on the fly.
 export type AbilityCategory = 'signature' | 'heroic';
 
+/**
+ * Context for action-event trigger evaluation. The dispatcher and every
+ * per-class evaluator receives this. Tasks 21–24 (call sites in apply-damage,
+ * use-ability, roll-power, spend-malice, mark-action-used) build this from:
+ *   actor: the originating intent's actor (so derived emissions are attributed
+ *     to the user who caused them, not the literal 'server')
+ *   rolls: pre-rolled random values needed by class triggers. Engines in
+ *     packages/rules/src/ must not call Math.random; the impure call site rolls
+ *     and passes values in.
+ *
+ * Slice 2a entries:
+ *   - ferocityD3: Fury Ferocity per-event 1d3 (per-round tookDamage gain, etc.)
+ */
+export type ActionTriggerContext = {
+  actor: Actor;
+  rolls: {
+    ferocityD3?: number;
+  };
+};
+
 export type ActionEvent =
   | {
       kind: 'damage-applied';
@@ -76,15 +96,20 @@ export type ActionEvent =
   | { kind: 'malice-spent'; amount: number }
   | { kind: 'roll-power-outcome'; actorId: string; abilityId: string; naturalValues: number[] };
 
-export function evaluateActionTriggers(state: CampaignState, event: ActionEvent): DerivedIntent[] {
+export function evaluateActionTriggers(
+  state: CampaignState,
+  event: ActionEvent,
+  ctx: ActionTriggerContext,
+): DerivedIntent[] {
   const derived: DerivedIntent[] = [];
-  derived.push(...censor.evaluate(state, event));
-  derived.push(...fury.evaluate(state, event));
-  derived.push(...tactician.evaluate(state, event));
-  derived.push(...shadow.evaluate(state, event));
-  derived.push(...nullClass.evaluate(state, event));
-  derived.push(...talent.evaluate(state, event));
-  derived.push(...troubadour.evaluate(state, event));
-  derived.push(...elementalist.evaluate(state, event));
+  derived.push(...censor.evaluate(state, event, ctx));
+  derived.push(...fury.evaluate(state, event, ctx));
+  derived.push(...tactician.evaluate(state, event, ctx));
+  derived.push(...shadow.evaluate(state, event, ctx));
+  derived.push(...nullClass.evaluate(state, event, ctx));
+  derived.push(...talent.evaluate(state, event, ctx));
+  derived.push(...troubadour.evaluate(state, event, ctx));
+  derived.push(...elementalist.evaluate(state, event, ctx));
+  // Conduit's Pray-to-the-Gods is StartTurn-driven; not subscribed here.
   return derived;
 }

@@ -1,16 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import { type ActionEvent, evaluateActionTriggers } from '../../src/class-triggers/action-triggers';
+import {
+  type ActionEvent,
+  type ActionTriggerContext,
+  evaluateActionTriggers,
+} from '../../src/class-triggers/action-triggers';
 import type { CampaignState } from '../../src/types';
 
 // Pass 3 Slice 2a — smoke tests for the action-trigger dispatcher.
 //
 // Per-class triggers land empty in Task 11 (this commit) and are filled in by
-// Tasks 12–15. These tests pin the dispatcher contract: it accepts an event,
-// fans out to every registered per-class evaluator in deterministic order,
-// and returns the concatenation of their DerivedIntent arrays. With every
-// per-class stub returning [], the result is always []; the second test is a
-// placeholder integration smoke for the per-class registries that Tasks 12+
-// will land on top of.
+// Tasks 12–15. These tests pin the dispatcher contract: it accepts an event
+// + context, fans out to every registered per-class evaluator in deterministic
+// order, and returns the concatenation of their DerivedIntent arrays. With
+// every per-class stub returning [], the result is always []; the second test
+// is a placeholder integration smoke for the per-class registries that
+// Tasks 12+ will land on top of.
+
+const testCtx: ActionTriggerContext = {
+  actor: { userId: 'test-user', role: 'director' },
+  rolls: { ferocityD3: 2 },
+};
 
 describe('evaluateActionTriggers', () => {
   it('returns empty when no class triggers match the event', () => {
@@ -22,7 +31,7 @@ describe('evaluateActionTriggers', () => {
       amount: 1,
       type: 'fire',
     };
-    expect(evaluateActionTriggers(state, event)).toEqual([]);
+    expect(evaluateActionTriggers(state, event, testCtx)).toEqual([]);
   });
 
   it('dispatches damage-applied → Fury / Censor / Tactician per-class registries', () => {
