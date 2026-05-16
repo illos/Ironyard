@@ -58,9 +58,31 @@ export function applyRemoveParticipant(state: CampaignState, intent: StampedInte
     };
   }
 
-  const newParticipants = state.participants.filter(
+  const survivors = state.participants.filter(
     (p) => !isParticipant(p) || p.id !== participantId,
   );
+  // Pass 3 Slice 2b — strip the removed id from every survivor's
+  // targetingRelations arrays so dangling references can't outlive the
+  // referenced target.
+  const newParticipants = survivors.map((entry) => {
+    if (!isParticipant(entry)) return entry;
+    const r = entry.targetingRelations;
+    if (
+      !r.judged.includes(participantId) &&
+      !r.marked.includes(participantId) &&
+      !r.nullField.includes(participantId)
+    ) {
+      return entry;
+    }
+    return {
+      ...entry,
+      targetingRelations: {
+        judged: r.judged.filter((id) => id !== participantId),
+        marked: r.marked.filter((id) => id !== participantId),
+        nullField: r.nullField.filter((id) => id !== participantId),
+      },
+    };
+  });
   const newEncounter = state.encounter === null ? null : { ...state.encounter };
 
   return {

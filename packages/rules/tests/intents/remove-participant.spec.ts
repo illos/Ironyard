@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { IntentTypes } from '@ironyard/shared';
 import { applyIntent, isParticipant } from '../../src/index';
+import { applyRemoveParticipant } from '../../src/intents/remove-participant';
 import {
   baseState,
   makeHeroParticipant,
@@ -125,5 +127,47 @@ describe('applyRemoveParticipant', () => {
       }),
     );
     expect(result.errors?.[0]?.code).toBe('invalid_payload');
+  });
+});
+
+describe('applyRemoveParticipant — targetingRelations cleanup', () => {
+  it('strips removed id from every other participant targetingRelations arrays', () => {
+    const state = baseState({
+      participants: [
+        makeHeroParticipant('censor-1', {
+          targetingRelations: { judged: ['goblin-a', 'goblin-b'], marked: [], nullField: [] },
+        }),
+        makeHeroParticipant('tactician-1', {
+          targetingRelations: { judged: [], marked: ['goblin-a'], nullField: [] },
+        }),
+        makeHeroParticipant('null-1', {
+          targetingRelations: { judged: [], marked: [], nullField: ['goblin-a', 'goblin-c'] },
+        }),
+        makeMonsterParticipant('goblin-a'),
+        makeMonsterParticipant('goblin-b'),
+        makeMonsterParticipant('goblin-c'),
+      ],
+      encounter: makeRunningEncounterPhase('enc-1', { activeParticipantId: 'censor-1' }),
+    });
+
+    const res = applyRemoveParticipant(state, {
+      id: 'i-1',
+      campaignId: 'c1',
+      actor: { userId: 'owner-1', role: 'director' },
+      source: 'manual',
+      type: IntentTypes.RemoveParticipant,
+      payload: { participantId: 'goblin-a' },
+      timestamp: 0,
+    } as any);
+
+    const censor = res.state.participants.find((p) => isParticipant(p) && p.id === 'censor-1') as any;
+    const tactician = res.state.participants.find((p) => isParticipant(p) && p.id === 'tactician-1') as any;
+    const nullPc = res.state.participants.find((p) => isParticipant(p) && p.id === 'null-1') as any;
+
+    expect(censor.targetingRelations.judged).toEqual(['goblin-b']);
+    expect(tactician.targetingRelations.marked).toEqual([]);
+    expect(nullPc.targetingRelations.nullField).toEqual(['goblin-c']);
+    // goblin-a is gone from the roster entirely
+    expect(res.state.participants.find((p) => isParticipant(p) && (p as any).id === 'goblin-a')).toBeUndefined();
   });
 });
