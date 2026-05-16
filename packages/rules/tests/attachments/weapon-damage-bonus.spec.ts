@@ -17,7 +17,7 @@ import { applyRollPower } from '../../src/intents/roll-power';
 import type { ResolvedKit, StaticDataBundle } from '../../src/static-data';
 import type { CampaignState, StampedIntent } from '../../src/types';
 import { emptyCampaignState } from '../../src/types';
-import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
+import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -115,6 +115,7 @@ function makeParticipant(
     maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
+    targetingRelations: defaultTargetingRelations(),
     ...overrides,
   };
 }

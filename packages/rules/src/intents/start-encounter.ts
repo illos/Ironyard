@@ -1,4 +1,4 @@
-import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
+import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 import {
   type Participant,
   StartEncounterPayloadSchema,
@@ -155,6 +155,7 @@ export function applyStartEncounter(
       posthumousDramaEligible: false,
       psionFlags: defaultPsionFlags(),
       maintainedAbilities: [],
+      targetingRelations: defaultTargetingRelations(),
     };
   });
 

@@ -1,4 +1,4 @@
-import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
+import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 import type { HeroClass, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
@@ -212,6 +212,7 @@ describe('applyStartEncounter — new atomic payload shape', () => {
       maintainedAbilities: [],
       purchasedTraits: [],
       equippedTitleIds: [],
+      targetingRelations: defaultTargetingRelations(),
     };
     const s = baseState({ participants: [oldMonster] });
 

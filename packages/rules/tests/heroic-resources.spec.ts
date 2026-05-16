@@ -1,4 +1,4 @@
-import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
+import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 import type { Intent, Participant } from '@ironyard/shared';
 import { HEROIC_RESOURCE_NAMES } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
@@ -88,6 +88,7 @@ function pcWithResource(opts: {
     maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
+    targetingRelations: defaultTargetingRelations(),
   };
 }
 

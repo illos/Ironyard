@@ -48,6 +48,7 @@ import {
   applySetParticipantPosthumousDramaEligible,
   applySetResource,
   applySetStamina,
+  applySetTargetingRelation,
   applySpendHeroToken,
   applySpendMalice,
   applySpendRecovery,
@@ -190,6 +191,8 @@ export function applyIntent(
       return applySetResource(state, intent);
     case IntentTypes.SetStamina:
       return applySetStamina(state, intent);
+    case IntentTypes.SetTargetingRelation:
+      return applySetTargetingRelation(state, intent);
     case IntentTypes.SpendHeroToken:
       return applySpendHeroToken(state, intent);
     case IntentTypes.SpendMalice:

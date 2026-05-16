@@ -46,6 +46,7 @@ export {
 } from './set-participant-flag';
 export { applySetResource } from './set-resource';
 export { applySetStamina } from './set-stamina';
+export { applySetTargetingRelation } from './set-targeting-relation';
 export { applySpendHeroToken } from './spend-hero-token';
 export { applySpendMalice } from './spend-malice';
 export { applySpendRecovery } from './spend-recovery';

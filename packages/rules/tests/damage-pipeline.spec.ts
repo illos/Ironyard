@@ -1,7 +1,7 @@
 import type { Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { applyDamageStep } from '../src/damage';
-import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
+import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 
 function makeTarget(over: Partial<Participant> = {}): Participant {
   return {
@@ -46,6 +46,7 @@ function makeTarget(over: Partial<Participant> = {}): Participant {
     maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
+    targetingRelations: defaultTargetingRelations(),
     ...over,
   };
 }

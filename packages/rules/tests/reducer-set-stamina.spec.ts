@@ -1,4 +1,4 @@
-import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
+import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
@@ -74,6 +74,7 @@ function pc(over: Partial<Participant> = {}): Participant {
     maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
+    targetingRelations: defaultTargetingRelations(),
     ...over,
   };
 }

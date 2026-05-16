@@ -1,7 +1,7 @@
 import {
   IntentTypes,
   defaultPerEncounterFlags,
-  defaultPsionFlags,
+  defaultPsionFlags, defaultTargetingRelations,
   SERVER_ONLY_INTENTS,
 } from '@ironyard/shared';
 import type { Actor, Intent, Participant } from '@ironyard/shared';
@@ -58,6 +58,7 @@ function pc(over: Partial<Participant> = {}): Participant {
     maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
+    targetingRelations: defaultTargetingRelations(),
     ...over,
   };
 }
