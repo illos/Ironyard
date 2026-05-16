@@ -111,6 +111,8 @@ export { SetResourcePayloadSchema } from './set-resource';
 export type { SetResourcePayload } from './set-resource';
 export { SetStaminaPayloadSchema } from './set-stamina';
 export type { SetStaminaPayload } from './set-stamina';
+export { SetTargetingRelationPayloadSchema } from './set-targeting-relation';
+export type { SetTargetingRelationPayload } from './set-targeting-relation';
 export { SpendHeroTokenPayloadSchema } from './spend-hero-token';
 export type { SpendHeroTokenPayload } from './spend-hero-token';
 export { SpendMalicePayloadSchema } from './spend-malice';
@@ -220,6 +222,7 @@ export const IntentTypes = {
   SetParticipantPosthumousDramaEligible: 'SetParticipantPosthumousDramaEligible',
   SetResource: 'SetResource',
   SetStamina: 'SetStamina',
+  SetTargetingRelation: 'SetTargetingRelation',
   SpendHeroToken: 'SpendHeroToken',
   SpendMalice: 'SpendMalice',
   SpendRecovery: 'SpendRecovery',
