@@ -12,6 +12,7 @@ import {
   applyClearParticipantOverride,
   applyDenyCharacter,
   applyEndEncounter,
+  applyEndFlying,
   applyEndRound,
   applyEndSession,
   applyEndTurn,
@@ -42,6 +43,7 @@ import {
   applyRollPower,
   applyRollResistance,
   applySetCondition,
+  applySetMovementMode,
   applySetParticipantPerEncounterLatch,
   applySetParticipantPerRoundFlag,
   applySetParticipantPerTurnEntry,
@@ -55,6 +57,7 @@ import {
   applySpendResource,
   applySpendSurge,
   applyStartEncounter,
+  applyStartFlying,
   applyStartMaintenance,
   applyStartRound,
   applyStartSession,
@@ -120,6 +123,8 @@ export function applyIntent(
       return applyDenyCharacter(state, intent);
     case IntentTypes.EndEncounter:
       return applyEndEncounter(state, intent);
+    case IntentTypes.EndFlying:
+      return applyEndFlying(state, intent);
     case IntentTypes.EndRound:
       return applyEndRound(state, intent);
     case IntentTypes.EndSession:
@@ -180,6 +185,8 @@ export function applyIntent(
       return applyRollResistance(state, intent);
     case IntentTypes.SetCondition:
       return applySetCondition(state, intent);
+    case IntentTypes.SetMovementMode:
+      return applySetMovementMode(state, intent);
     case IntentTypes.SetParticipantPerEncounterLatch:
       return applySetParticipantPerEncounterLatch(state, intent);
     case IntentTypes.SetParticipantPerRoundFlag:
@@ -206,6 +213,8 @@ export function applyIntent(
       return applySpendSurge(state, intent);
     case IntentTypes.StartEncounter:
       return applyStartEncounter(state, intent, ctx);
+    case IntentTypes.StartFlying:
+      return applyStartFlying(state, intent);
     case IntentTypes.StartMaintenance:
       return applyStartMaintenance(state, intent);
     case IntentTypes.StartRound:

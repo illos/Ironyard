@@ -1,4 +1,5 @@
 import type { DamageType, Participant, StaminaState, TypedResistance } from '@ironyard/shared';
+import { getEffectiveWeaknesses } from './effective';
 import {
   applyKnockOut,
   applyTransitionSideEffects,
@@ -58,8 +59,11 @@ export function applyDamageStep(
   // Step 1-2: base + pre-immunity external modifiers (none in slice 1).
   let delivered = amount;
   if (!bypassDamageReduction) {
-    // Step 3: weakness.
-    delivered += sumMatching(target.weaknesses, damageType);
+    // Step 3: weakness. Phase 2b Group A+B (slice 6) — read through
+    // getEffectiveWeaknesses so conditional weaknesses layer cleanly
+    // (e.g. Devil/Dragon Knight Wings echelon-1 fire 5 while flying).
+    const effectiveWeaknesses = getEffectiveWeaknesses(target, target.level);
+    delivered += sumMatching(effectiveWeaknesses, damageType);
     // Step 4: immunity.
     delivered = Math.max(0, delivered - sumMatching(target.immunities, damageType));
   }

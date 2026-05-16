@@ -687,7 +687,12 @@ describe('applyApplyDamage — slice 2a flag writes', () => {
       className: 'Elementalist',
       characteristics: { might: 0, agility: 0, reason: 3, intuition: 0, presence: 0 },
       maintainedAbilities: [
-        { abilityId: 'instantaneous-excavation', costPerTurn: 1, startedAtRound: 1, targetId: null },
+        {
+          abilityId: 'instantaneous-excavation',
+          costPerTurn: 1,
+          startedAtRound: 1,
+          targetId: null,
+        },
         { abilityId: 'wall-of-fire', costPerTurn: 2, startedAtRound: 1, targetId: null },
       ],
     });
@@ -711,7 +716,12 @@ describe('applyApplyDamage — slice 2a flag writes', () => {
       className: 'Elementalist',
       characteristics: { might: 0, agility: 0, reason: 3, intuition: 0, presence: 0 },
       maintainedAbilities: [
-        { abilityId: 'instantaneous-excavation', costPerTurn: 1, startedAtRound: 1, targetId: null },
+        {
+          abilityId: 'instantaneous-excavation',
+          costPerTurn: 1,
+          startedAtRound: 1,
+          targetId: null,
+        },
       ],
     });
     const s = baseState({
@@ -896,5 +906,155 @@ describe('applyApplyDamage — slice 2a action-trigger evaluator wiring', () => 
     // The action-trigger evaluator runs against the pre-write state, so its
     // emitted causedBy must point to the originating ApplyDamage intent.
     expect(gain!.causedBy).toBe(intent.id);
+  });
+});
+
+// Phase 2b Group A+B (slice 6) — Wings echelon-1 fire weakness integration.
+// Verifies that `getEffectiveWeaknesses` flows through `applyDamageStep`'s
+// step-3 weakness add when a flying L1-3 Devil/DK takes fire damage.
+describe('applyApplyDamage — Devil Wings echelon-1 fire weakness 5', () => {
+  it('adds +5 fire damage to a flying L1 Devil with Wings (10 → 15 delivered)', () => {
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [
+        makeHeroParticipant(TARGET_ID, {
+          level: 1,
+          ancestry: ['devil'],
+          purchasedTraits: ['wings'],
+          movementMode: { mode: 'flying', roundsRemaining: 2 },
+          maxStamina: 30,
+          currentStamina: 30,
+        }),
+      ],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 10, damageType: 'fire' }));
+    expect(result.errors ?? []).toEqual([]);
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID);
+    // 10 base + 5 fire weakness = 15 delivered; 30 - 15 = 15 stamina (winded).
+    expect(updated?.currentStamina).toBe(15);
+  });
+
+  it('does NOT add +5 fire damage to L4+ Devil (echelon-2)', () => {
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [
+        makeHeroParticipant(TARGET_ID, {
+          level: 4,
+          ancestry: ['devil'],
+          purchasedTraits: ['wings'],
+          movementMode: { mode: 'flying', roundsRemaining: 2 },
+          maxStamina: 30,
+          currentStamina: 30,
+        }),
+      ],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 10, damageType: 'fire' }));
+    expect(result.errors ?? []).toEqual([]);
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID);
+    expect(updated?.currentStamina).toBe(20);
+  });
+
+  it('does NOT add +5 fire damage when not flying (movementMode null)', () => {
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [
+        makeHeroParticipant(TARGET_ID, {
+          level: 1,
+          ancestry: ['devil'],
+          purchasedTraits: ['wings'],
+          movementMode: null,
+          maxStamina: 30,
+          currentStamina: 30,
+        }),
+      ],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 10, damageType: 'fire' }));
+    expect(result.errors ?? []).toEqual([]);
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID);
+    expect(updated?.currentStamina).toBe(20);
+  });
+
+  it('does NOT add +5 to non-fire damage even while flying', () => {
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [
+        makeHeroParticipant(TARGET_ID, {
+          level: 1,
+          ancestry: ['devil'],
+          purchasedTraits: ['wings'],
+          movementMode: { mode: 'flying', roundsRemaining: 2 },
+          maxStamina: 30,
+          currentStamina: 30,
+        }),
+      ],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 10, damageType: 'cold' }));
+    expect(result.errors ?? []).toEqual([]);
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID);
+    expect(updated?.currentStamina).toBe(20);
+  });
+});
+
+// Phase 2b Group A+B (slice 6) — apply-damage condition-diff dispatch.
+// Verifies that engine-side Prone additions (KO interception adds Prone, and
+// the inert override transition adds Prone) route through the ancestry-trigger
+// dispatcher so Wings can emit EndFlying { reason: 'fall' }.
+describe('applyApplyDamage — ancestry-trigger Prone-add dispatch', () => {
+  it('KO interception on a flying Devil with Wings emits derived EndFlying', () => {
+    // 5 stamina; 20 damage with intent='knock-out' → would-hit-dead, KO fires.
+    // KO adds Unconscious + Prone. Wings ancestry-trigger sees Prone-add and
+    // emits a derived EndFlying { reason: 'fall' }.
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [
+        makeHeroParticipant(TARGET_ID, {
+          level: 1,
+          ancestry: ['devil'],
+          purchasedTraits: ['wings'],
+          movementMode: { mode: 'flying', roundsRemaining: 2 },
+          maxStamina: 30,
+          currentStamina: 5,
+        }),
+      ],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    const result = applyApplyDamage(
+      s,
+      applyDamageIntent({ amount: 20, damageType: 'untyped', intent: 'knock-out' }),
+    );
+    expect(result.errors ?? []).toEqual([]);
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
+    expect(updated.staminaState).toBe('unconscious');
+    expect(updated.conditions.some((c) => c.type === 'Prone')).toBe(true);
+    const endFlying = result.derived.find((d) => d.type === 'EndFlying');
+    expect(endFlying).toBeDefined();
+    expect(endFlying!.payload).toEqual({ participantId: TARGET_ID, reason: 'fall' });
+  });
+
+  it('non-flying Devil with Wings KO does NOT emit EndFlying (no movementMode)', () => {
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [
+        makeHeroParticipant(TARGET_ID, {
+          level: 1,
+          ancestry: ['devil'],
+          purchasedTraits: ['wings'],
+          movementMode: null,
+          maxStamina: 30,
+          currentStamina: 5,
+        }),
+      ],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    const result = applyApplyDamage(
+      s,
+      applyDamageIntent({ amount: 20, damageType: 'untyped', intent: 'knock-out' }),
+    );
+    expect(result.errors ?? []).toEqual([]);
+    expect(result.derived.find((d) => d.type === 'EndFlying')).toBeUndefined();
   });
 });

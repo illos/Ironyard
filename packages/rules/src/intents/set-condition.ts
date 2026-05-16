@@ -3,6 +3,7 @@ import {
   type Participant,
   SetConditionPayloadSchema,
 } from '@ironyard/shared';
+import { evaluateOnConditionApplied } from '../ancestry-triggers';
 import { isImmuneToCondition } from '../effective';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
@@ -115,13 +116,22 @@ export function applySetCondition(state: CampaignState, intent: StampedIntent): 
     isParticipant(p) && p.id === targetId ? updatedTarget : p,
   );
 
+  // Phase 2b Group A+B (slice 6) — dispatch ancestry-triggers on the
+  // post-push state so Wings can see the new Prone and emit EndFlying.
+  const postPushState: CampaignState = { ...state, participants: updatedParticipants };
+  const ancestryDerived = evaluateOnConditionApplied(
+    postPushState,
+    { participantId: targetId, condition },
+    { actor: intent.actor },
+  ).map((d) => ({ ...d, causedBy: intent.id }));
+
   return {
     state: {
       ...state,
       seq,
       participants: updatedParticipants,
     },
-    derived: [],
+    derived: ancestryDerived,
     log: [
       {
         kind: 'info',

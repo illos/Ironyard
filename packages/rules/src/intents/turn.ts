@@ -7,6 +7,7 @@ import {
   StartTurnPayloadSchema,
   defaultPerRoundFlags,
 } from '@ironyard/shared';
+import { evaluateOnEndRound } from '../ancestry-triggers';
 import { resolveParticipantClass } from '../class-triggers/helpers';
 import { getResourceConfigForParticipant } from '../heroic-resources';
 import { requireCanon } from '../require-canon';
@@ -170,6 +171,17 @@ export function applyEndRound(state: CampaignState, intent: StampedIntent): Inte
     return { ...p, perEncounterFlags: resetPerRound };
   });
 
+  // Phase 2b Group A+B (slice 6) — ancestry-trigger EndRound dispatch. Wings
+  // decrements every flying participant's `roundsRemaining`, emitting either
+  // a SetMovementMode (decrement) or EndFlying { reason: 'duration-expired' }
+  // (hit zero). Dispatch on the post-reset state so any future trigger that
+  // reads `perRound` sees the cleared values.
+  const postResetState: CampaignState = { ...state, participants: nextParticipants };
+  const ancestryDerived = evaluateOnEndRound(postResetState, { actor: intent.actor }).map((d) => ({
+    ...d,
+    causedBy: intent.id,
+  }));
+
   return {
     state: {
       ...state,
@@ -181,7 +193,7 @@ export function applyEndRound(state: CampaignState, intent: StampedIntent): Inte
         activeParticipantId: null,
       },
     },
-    derived: [],
+    derived: ancestryDerived,
     log: [
       {
         kind: 'info',

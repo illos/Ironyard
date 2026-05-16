@@ -33,6 +33,8 @@ export { DenyCharacterPayloadSchema } from './deny-character';
 export type { DenyCharacterPayload } from './deny-character';
 export { EndEncounterPayloadSchema } from './end-encounter';
 export type { EndEncounterPayload } from './end-encounter';
+export { EndFlyingPayloadSchema } from './end-flying';
+export type { EndFlyingPayload } from './end-flying';
 export { EndSessionPayloadSchema } from './end-session';
 export type { EndSessionPayload } from './end-session';
 export { EquipItemPayloadSchema } from './equip-item';
@@ -95,6 +97,8 @@ export { RollResistancePayloadSchema } from './roll-resistance';
 export type { RollResistancePayload } from './roll-resistance';
 export { SetConditionPayloadSchema } from './set-condition';
 export type { SetConditionPayload } from './set-condition';
+export { SetMovementModePayloadSchema } from './set-movement-mode';
+export type { SetMovementModePayload } from './set-movement-mode';
 export {
   SetParticipantPerEncounterLatchPayloadSchema,
   SetParticipantPerRoundFlagPayloadSchema,
@@ -144,6 +148,8 @@ export type {
   StartEncounterStampedPc,
 } from './start-encounter';
 
+export { StartFlyingPayloadSchema } from './start-flying';
+export type { StartFlyingPayload } from './start-flying';
 export { StartSessionPayloadSchema } from './start-session';
 export type { StartSessionPayload } from './start-session';
 
@@ -190,6 +196,7 @@ export const IntentTypes = {
   ClearParticipantOverride: 'ClearParticipantOverride',
   DenyCharacter: 'DenyCharacter',
   EndEncounter: 'EndEncounter',
+  EndFlying: 'EndFlying',
   EndRound: 'EndRound',
   EndSession: 'EndSession',
   EndTurn: 'EndTurn',
@@ -218,6 +225,7 @@ export const IntentTypes = {
   RollPower: 'RollPower',
   RollResistance: 'RollResistance',
   SetCondition: 'SetCondition',
+  SetMovementMode: 'SetMovementMode',
   SetParticipantPerEncounterLatch: 'SetParticipantPerEncounterLatch',
   SetParticipantPerRoundFlag: 'SetParticipantPerRoundFlag',
   SetParticipantPerTurnEntry: 'SetParticipantPerTurnEntry',
@@ -233,6 +241,7 @@ export const IntentTypes = {
   ResolveTriggerOrder: 'ResolveTriggerOrder',
   SpendSurge: 'SpendSurge',
   StartEncounter: 'StartEncounter',
+  StartFlying: 'StartFlying',
   StartRound: 'StartRound',
   StaminaTransitioned: 'StaminaTransitioned',
   StartMaintenance: 'StartMaintenance',
@@ -259,6 +268,7 @@ export const SERVER_ONLY_INTENTS = new Set<string>([
   IntentTypes.ExecuteTrigger,
   IntentTypes.GrantExtraMainAction,
   IntentTypes.RaiseOpenAction,
+  IntentTypes.SetMovementMode,
   IntentTypes.SetParticipantPerEncounterLatch,
   IntentTypes.SetParticipantPerRoundFlag,
   IntentTypes.SetParticipantPerTurnEntry,

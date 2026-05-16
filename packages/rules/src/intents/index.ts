@@ -10,6 +10,7 @@ export { applyClearLobby } from './clear-lobby';
 export { applyClearParticipantOverride } from './clear-participant-override';
 export { applyDenyCharacter } from './deny-character';
 export { applyEndEncounter } from './end-encounter';
+export { applyEndFlying } from './end-flying';
 export { applyEndSession } from './end-session';
 export { applyEquipItem } from './equip-item';
 export { applyExecuteTrigger } from './execute-trigger';
@@ -38,6 +39,7 @@ export { applyRollInitiative } from './roll-initiative';
 export { applyRollPower } from './roll-power';
 export { applyRollResistance } from './roll-resistance';
 export { applySetCondition } from './set-condition';
+export { applySetMovementMode } from './set-movement-mode';
 export {
   applySetParticipantPerEncounterLatch,
   applySetParticipantPerRoundFlag,
@@ -53,6 +55,7 @@ export { applySpendRecovery } from './spend-recovery';
 export { applySpendResource } from './spend-resource';
 export { applySpendSurge } from './spend-surge';
 export { applyStartEncounter } from './start-encounter';
+export { applyStartFlying } from './start-flying';
 export { applyStartMaintenance } from './start-maintenance';
 export { applyStartSession } from './start-session';
 export { applyStopMaintenance } from './stop-maintenance';

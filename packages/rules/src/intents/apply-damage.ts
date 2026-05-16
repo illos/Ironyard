@@ -1,4 +1,5 @@
 import { ApplyDamagePayloadSchema, IntentTypes, type Participant } from '@ironyard/shared';
+import { evaluateOnConditionApplied } from '../ancestry-triggers';
 import { evaluateActionTriggers, evaluateStaminaTransitionTriggers } from '../class-triggers';
 import { resolveParticipantClass } from '../class-triggers/helpers';
 import { applyDamageStep } from '../damage';
@@ -77,6 +78,27 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
 
   // Build derived intents.
   const derived: DerivedIntent[] = [];
+
+  // Phase 2b Group A+B (slice 6) — ancestry-trigger dispatch on newly-added
+  // conditions. Damage paths that side-effect conditions:
+  //   - KO interception (applyKnockOut) adds Unconscious + Prone
+  //   - Inert transition (applyTransitionSideEffects) adds Prone
+  // Diff target.conditions vs updatedTarget.conditions for newly added types
+  // and dispatch evaluateOnConditionApplied for each. Wings turns Prone-on-
+  // flying-Devil into a derived EndFlying { reason: 'fall' }. Other condition
+  // types currently no-op (future ancestry triggers may subscribe).
+  const beforeConditionTypes = new Set(target.conditions.map((c) => c.type));
+  const newConditions = updatedTarget.conditions.filter((c) => !beforeConditionTypes.has(c.type));
+  for (const c of newConditions) {
+    const ancestryDerived = evaluateOnConditionApplied(
+      { ...state, participants: updatedParticipants },
+      { participantId: targetId, condition: c.type },
+      { actor: intent.actor },
+    );
+    for (const d of ancestryDerived) {
+      derived.push({ ...d, causedBy: intent.id });
+    }
+  }
 
   const logText = result.knockedOut
     ? `${target.name} is knocked unconscious`
