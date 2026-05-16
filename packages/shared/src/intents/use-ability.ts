@@ -30,5 +30,11 @@ export const UseAbilityPayloadSchema = z.object({
   // (cost === 0 → 'signature', cost in {3,5,7,9} → 'heroic'; `type` → kind).
   abilityCategory: z.enum(['signature', 'heroic']).optional(),
   abilityKind: z.string().optional(),
+  // Pass 3 Slice 2b — primary targets of the ability. Optional because most
+  // UseAbility dispatches are for narrative-only buffs that don't target.
+  // Required by the reducer's ABILITY_TARGETING_EFFECTS path: when set and
+  // non-empty for a registered ability id, derives SetTargetingRelation per
+  // target. Matches the repo convention from roll-power.ts (targetIds).
+  targetIds: z.array(z.string().min(1)).optional(),
 });
 export type UseAbilityPayload = z.infer<typeof UseAbilityPayloadSchema>;

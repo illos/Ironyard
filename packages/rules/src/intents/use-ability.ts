@@ -5,6 +5,7 @@ import {
   UseAbilityPayloadSchema,
 } from '@ironyard/shared';
 import { type AbilityCategory, evaluateActionTriggers } from '../class-triggers/action-triggers';
+import { ABILITY_TARGETING_EFFECTS } from '../class-triggers/ability-targeting-effects';
 import { resolveParticipantClass } from '../class-triggers/helpers';
 import { participantSide } from '../state-helpers';
 import type {
@@ -245,6 +246,51 @@ export function applyUseAbility(state: CampaignState, intent: StampedIntent): In
   );
   for (const d of triggerDerived) {
     derived.push({ ...d, causedBy: intent.id });
+  }
+
+  // ── Slice 2b: ABILITY_TARGETING_EFFECTS derived emission ────────────────
+  // Auto-set targeting relations for the two registered PHB abilities
+  // (Judgment, Mark). Both ship with mode: 'replace' — clear existing
+  // entries before adding the new target. Skipped when targetIds is empty.
+  const targetingEffect = ABILITY_TARGETING_EFFECTS[abilityId];
+  if (
+    targetingEffect &&
+    parsed.data.targetIds &&
+    parsed.data.targetIds.length > 0 &&
+    target.kind === 'pc'
+  ) {
+    const { relationKind, mode } = targetingEffect;
+    const existing = target.targetingRelations[relationKind];
+    if (mode === 'replace') {
+      for (const exId of existing) {
+        derived.push({
+          actor: intent.actor,
+          source: 'server' as const,
+          type: IntentTypes.SetTargetingRelation,
+          payload: {
+            sourceId: target.id,
+            relationKind,
+            targetId: exId,
+            present: false,
+          },
+          causedBy: intent.id,
+        });
+      }
+    }
+    for (const newId of parsed.data.targetIds) {
+      derived.push({
+        actor: intent.actor,
+        source: 'server' as const,
+        type: IntentTypes.SetTargetingRelation,
+        payload: {
+          sourceId: target.id,
+          relationKind,
+          targetId: newId,
+          present: true,
+        },
+        causedBy: intent.id,
+      });
+    }
   }
 
   return {
