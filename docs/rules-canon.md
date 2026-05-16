@@ -721,15 +721,15 @@ Gates:
 
 | Class | Resource | Source | Status |
 |-------|----------|--------|--------|
-| Censor | Wrath (+ Virtue epic) | `Classes/Censor.md` | 🚧 § 5.4.1 — canon verified; engine `isJudgedBy` stub over-fires |
-| Conduit | Piety (+ Divine Power epic) | `Classes/Conduit.md` | 🚧 § 5.4.2 — canon ✅, gated by § 5.4 umbrella flip |
-| Elementalist | Essence | `Classes/Elementalist.md` | 🚧 § 5.4.3 — canon ✅, gated by § 5.4 umbrella flip |
-| Fury | Ferocity | `Classes/Fury.md` | 🚧 § 5.4.4 — canon ✅, gated by § 5.4 umbrella flip |
-| Null | Discipline | `Classes/Null.md` | 🚧 § 5.4.5 — canon verified; engine `hasActiveNullField` stub over-fires |
-| Shadow | Insight | `Classes/Shadow.md` | 🚧 § 5.4.6 — canon ✅, gated by § 5.4 umbrella flip |
-| Tactician | Focus | `Classes/Tactician.md` | 🚧 § 5.4.7 — canon verified; engine `isMarkedBy` stub over-fires |
+| Censor | Wrath (+ Virtue epic) | `Classes/Censor.md` | ✅ § 5.4.1 — closed slice 2b (`isJudgedBy` → `targetingRelations.judged`) |
+| Conduit | Piety (+ Divine Power epic) | `Classes/Conduit.md` | ✅ § 5.4.2 — canon verified; auto-apply live |
+| Elementalist | Essence | `Classes/Elementalist.md` | ✅ § 5.4.3 — canon verified; auto-apply live |
+| Fury | Ferocity | `Classes/Fury.md` | ✅ § 5.4.4 — canon verified; auto-apply live |
+| Null | Discipline | `Classes/Null.md` | ✅ § 5.4.5 — closed slice 2b (`hasActiveNullFieldOver` → `targetingRelations.nullField`) |
+| Shadow | Insight | `Classes/Shadow.md` | ✅ § 5.4.6 — canon verified; auto-apply live |
+| Tactician | Focus | `Classes/Tactician.md` | ✅ § 5.4.7 — closed slice 2b (`isMarkedBy` → `targetingRelations.marked`) |
 | Talent | Clarity | `Classes/Talent.md` | ✅ verified (§ 5.3) |
-| Troubadour | Drama | `Classes/Troubadour.md` | 🚧 § 5.4.8 — canon ✅, gated by § 5.4 umbrella flip |
+| Troubadour | Drama | `Classes/Troubadour.md` | ✅ § 5.4.8 — canon verified; auto-apply live |
 
 ### 5.2 Engine model (per-resource fields)
 
@@ -768,13 +768,9 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 - **Outside-of-combat rules:** can't gain clarity outside combat, but can use clarity-costing abilities without paying; cooldown until earning a victory or finishing a respite. Engine note: this is mostly a Phase 2+ surface area; the combat tracker can ignore it for Phase 1.
 - **10th-level feature (Psion):** at the start of each of the character's turns, gain `1d3 + 2` clarity instead of `1d3 + 1` (which an earlier feature, `Talent.md:1147`, set from `1d3`). The character can also opt out of taking damage from negative clarity, and can opt into a Strained sub-effect even when not strained. Engine note: per-character toggles that suppress the end-of-turn damage dispatch and allow a manual Strained-effect trigger; the per-turn gain formula is configured per-character based on level.
 
-### 5.4 Other classes 🚧
+### 5.4 Other classes ✅
 
-> 🚧 Engine deferred 2026-05-15 (umbrella). Two-gate review of the eight sub-sections found:
-> - **§ 5.4.1 Censor / § 5.4.5 Null / § 5.4.7 Tactician** — canon text verified against SteelCompendium and Heroes PDF, but the engine ships permissive stubs (`isJudgedBy`, `hasActiveNullField`, `isMarkedBy`) that over-fire because the underlying state (Judgment-target, active Null Field, Mark-target) is not yet tracked. Slice 2b/2c will replace the stubs with real predicates.
-> - **§ 5.4.4 Fury** — engine bug fixed 2026-05-15: per-round "took damage" trigger now grants **+1 ferocity flat** (canon). The 1d3 winded/dying triggers were always correct.
->
-> The umbrella slug `heroic-resources-and-surges.other-classes` is the only one the parser emits for this section (sub-headings are H4 and don't get their own slugs), so the badge here gates `requireCanon` for **all eight** primary heroic resources to manual-override until the three remaining stub issues land. § 5.4.2 Conduit, § 5.4.3 Elementalist, § 5.4.4 Fury, § 5.4.6 Shadow, and § 5.4.8 Troubadour individually pass both gates and are noted as such in their sub-section headers; once the umbrella flips back the auto-apply path will be live for them again.
+> ✅ Engine closed 2026-05-15 (slice 2b). The three permissive stubs `isJudgedBy`, `isMarkedBy`, `hasActiveNullField` are reified via player-managed `Participant.targetingRelations` (per-row chip toggle + auto-set from `UseAbility` for `'censor-judgment-t1'` and `'tactician-mark-t1'`). Each per-class predicate now reads `source.targetingRelations[kind].includes(target.id)`. The previous "auto-apply gated by the umbrella § 5.4 🚧 flip" footers on the five individually-✅ sub-sections (§ 5.4.2 Conduit / § 5.4.3 Elementalist / § 5.4.4 Fury / § 5.4.6 Shadow / § 5.4.8 Troubadour) have been removed. See [Pass 3 Slice 2b spec](superpowers/specs/2026-05-15-pass-3-slice-2b-targeting-relations-design.md).
 
 > **Source:** Each class's `<Resource> in Combat` and `<Resource> Outside of Combat` sub-section in `.reference/data-md/Rules/Classes/<Class>.md`. Per-class line citations below.
 
@@ -789,9 +785,9 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 - **Spend:** the per-ability cost from the ability's stat block (e.g. a "5-Wrath Ability" costs 5 Wrath). Per § 7.7.3 the cost is refunded if the entire effect was potency-gated and the target resists.
 - **Lifecycle:** **encounter-scoped.** Resource resets to 0 at end of encounter.
 
-#### 5.4.1 Censor — Wrath 🚧
+#### 5.4.1 Censor — Wrath ✅
 
-> 🚧 Engine deferred 2026-05-15. Canon text two-gate verified: SteelCompendium `Classes/Censor.md` lines 93–95 and Heroes PDF flat-text "Wrath in Combat" (line ~6447) agree on "first time per round a creature judged by you damages you / you damage a creature judged by you → +1 wrath each." Engine `class-triggers/per-class/censor.ts:29` ships a permissive `isJudgedBy` stub that returns `true` for any non-self damage event — the Wrath gain therefore over-fires. `requireCanon` falls back to manual-override (via the umbrella § 5.4 flip) until slice 2b/2c provides real Judgment-target state tracking. See [Pass 3 Slice 2a spec](superpowers/specs/2026-05-15-pass-3-slice-2a-class-delta-and-open-actions-design.md).
+> ✅ Engine closed 2026-05-15 (slice 2b). The `isJudgedBy` stub in `class-triggers/per-class/censor.ts` now reads `censor.targetingRelations.judged.includes(damagerId)`. Auto-apply path live for both Wrath gain triggers (judged-target damages you / you damage judged-target). See [Pass 3 Slice 2b spec](superpowers/specs/2026-05-15-pass-3-slice-2b-targeting-relations-design.md).
 
 > **Source:** `Classes/Censor.md` lines 87–99. Heroes PDF p. 79 (Wrath in Combat).
 
@@ -803,7 +799,7 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 #### 5.4.2 Conduit — Piety (+ Divine Power)
 
-> ✅ Two-gate verified 2026-05-15: SteelCompendium `Classes/Conduit.md` lines 80–86 + Heroes PDF flat-text "Piety in Combat" (line ~7589) agree on the 1d3 per-turn gain and the optional Pray-to-the-Gods rider (1 → +1 piety + 1d6+level psychic damage that can't be reduced; 2 → +1; 3 → +2 + domain effect). The "can't be reduced in any way" wording in the PDF/SC matches the slice 2a `bypassDamageReduction` interpretation (skip immunity AND weakness). Engine handles Pray via `intents/turn.ts`; auto-apply path is sound. **Note:** auto-apply is currently gated by the umbrella § 5.4 🚧 flip; this sub-section will go live again when § 5.4 is restored.
+> ✅ Two-gate verified 2026-05-15: SteelCompendium `Classes/Conduit.md` lines 80–86 + Heroes PDF flat-text "Piety in Combat" (line ~7589) agree on the 1d3 per-turn gain and the optional Pray-to-the-Gods rider (1 → +1 piety + 1d6+level psychic damage that can't be reduced; 2 → +1; 3 → +2 + domain effect). The "can't be reduced in any way" wording in the PDF/SC matches the slice 2a `bypassDamageReduction` interpretation (skip immunity AND weakness). Engine handles Pray via `intents/turn.ts`; auto-apply path is sound.
 
 > **Source:** `Classes/Conduit.md` lines 74–96. Heroes PDF p. 95 (Piety in Combat).
 
@@ -816,7 +812,7 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 #### 5.4.3 Elementalist — Essence
 
-> ✅ Two-gate verified 2026-05-15: SteelCompendium `Classes/Elementalist.md` lines 104–106 + maintenance rule line 143; Heroes PDF flat-text (line ~8919 "within 10 squares takes damage that isn't untyped or holy damage, you gain 1 essence" and line ~8604+ on the Persistent Magic maintenance constraint) agree on the +2 per-turn base, the within-10 typed-damage trigger, and the maintenance auto-drop when start-of-turn essence would go negative. Engine raises a within-10 OA (`spatial-trigger-elementalist-essence`) so the table adjudicates distance — sound. **Note:** auto-apply gated by the umbrella § 5.4 🚧 flip.
+> ✅ Two-gate verified 2026-05-15: SteelCompendium `Classes/Elementalist.md` lines 104–106 + maintenance rule line 143; Heroes PDF flat-text (line ~8919 "within 10 squares takes damage that isn't untyped or holy damage, you gain 1 essence" and line ~8604+ on the Persistent Magic maintenance constraint) agree on the +2 per-turn base, the within-10 typed-damage trigger, and the maintenance auto-drop when start-of-turn essence would go negative. Engine raises a within-10 OA (`spatial-trigger-elementalist-essence`) so the table adjudicates distance — sound.
 
 > **Source:** `Classes/Elementalist.md` lines 98–110, plus maintenance rule line 143. Heroes PDF p. 113 (Essence in Combat).
 
@@ -827,7 +823,7 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 #### 5.4.4 Fury — Ferocity
 
-> ✅ Two-gate verified 2026-05-15: SteelCompendium `Classes/Fury.md` line 90 and Heroes PDF flat-text "Ferocity in Combat" (line ~10169) both say **"the first time each combat round that you take damage, you gain 1 ferocity. The first time you become winded or are dying in an encounter, you gain 1d3 ferocity."** That is two distinct triggers: the per-round damage trigger grants **+1 ferocity** (flat), and the per-encounter winded/dying trigger grants **+1d3 ferocity**. Engine matches: `class-triggers/per-class/fury.ts` emits the flat +1 on each damage event (per-round latch); `class-triggers/stamina-transition.ts` emits the +1d3 on first-time-winded / first-time-dying (per-encounter latches). (Initial slice-2a implementation emitted 1d3 for the per-round trigger — fixed as a follow-up; see slice 2a PS entry #13.) **Note:** auto-apply is currently gated by the umbrella § 5.4 🚧 flip; this sub-section will go live again when § 5.4 is restored.
+> ✅ Two-gate verified 2026-05-15: SteelCompendium `Classes/Fury.md` line 90 and Heroes PDF flat-text "Ferocity in Combat" (line ~10169) both say **"the first time each combat round that you take damage, you gain 1 ferocity. The first time you become winded or are dying in an encounter, you gain 1d3 ferocity."** That is two distinct triggers: the per-round damage trigger grants **+1 ferocity** (flat), and the per-encounter winded/dying trigger grants **+1d3 ferocity**. Engine matches: `class-triggers/per-class/fury.ts` emits the flat +1 on each damage event (per-round latch); `class-triggers/stamina-transition.ts` emits the +1d3 on first-time-winded / first-time-dying (per-encounter latches). (Initial slice-2a implementation emitted 1d3 for the per-round trigger — fixed as a follow-up; see slice 2a PS entry #13.)
 
 > **Source:** `Classes/Fury.md` lines 77–94. Heroes PDF p. 131 (Ferocity in Combat).
 
@@ -836,9 +832,9 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
   - First time per combat round that **you take damage**: **+1 ferocity**.
   - First time per encounter that you become **winded** (§ 2.7) or are **dying** (§ 2.8): **+1d3 ferocity**.
 
-#### 5.4.5 Null — Discipline 🚧
+#### 5.4.5 Null — Discipline ✅
 
-> 🚧 Engine deferred 2026-05-15. Canon text two-gate verified: SteelCompendium `Classes/Null.md` line 85 and Heroes PDF flat-text "Discipline in Combat" (line ~11344) agree on both triggers — "first time per round an enemy in your Null Field's area uses a main action → +1 discipline" and "first time per round the Director uses an ability that costs Malice → +1 discipline." Engine `class-triggers/per-class/null.ts:38` ships a permissive `hasActiveNullField` stub that returns `true` unconditionally — the Null Field gain therefore over-fires whenever any enemy uses a main action, regardless of whether Null Field is actually active or whether the enemy is inside its area. The Malice-spend trigger is sound (Malice spends are explicit intents the engine already logs). `requireCanon` falls back to manual-override (via the umbrella § 5.4 flip) until slice 2b/2c provides active-ability + spatial lookup. See [Pass 3 Slice 2a spec](superpowers/specs/2026-05-15-pass-3-slice-2a-class-delta-and-open-actions-design.md).
+> ✅ Engine closed 2026-05-15 (slice 2b). The `hasActiveNullField` stub was renamed to `hasActiveNullFieldOver(target, source)` in `class-triggers/per-class/null.ts` and reads `nullPc.targetingRelations.nullField.includes(enemyId)`. The trigger now auto-applies directly (drops the slice-2a OA detour). See [Pass 3 Slice 2b spec](superpowers/specs/2026-05-15-pass-3-slice-2b-targeting-relations-design.md).
 
 > **Source:** `Classes/Null.md` lines 77–89. Heroes PDF p. 147 (Discipline in Combat).
 
@@ -851,7 +847,7 @@ Engine note for the second trigger: requires the engine to log Malice spends and
 
 #### 5.4.6 Shadow — Insight
 
-> ✅ Two-gate verified 2026-05-15: SteelCompendium `Classes/Shadow.md` lines 83–87 + Heroes PDF flat-text "Insight in Combat" (line ~12303) agree on the 1d3 per-turn gain, the per-round "deal damage incorporating 1 or more surges → +1 insight" trigger, and the edge/double-edge cost-reduction. Engine `class-triggers/per-class/shadow.ts` matches (per-round latch on `dealtSurgeDamage`). **Note:** auto-apply gated by the umbrella § 5.4 🚧 flip.
+> ✅ Two-gate verified 2026-05-15: SteelCompendium `Classes/Shadow.md` lines 83–87 + Heroes PDF flat-text "Insight in Combat" (line ~12303) agree on the 1d3 per-turn gain, the per-round "deal damage incorporating 1 or more surges → +1 insight" trigger, and the edge/double-edge cost-reduction. Engine `class-triggers/per-class/shadow.ts` matches (per-round latch on `dealtSurgeDamage`).
 
 > **Source:** `Classes/Shadow.md` lines 77–91. Heroes PDF p. 161 (Insight in Combat).
 
@@ -859,9 +855,9 @@ Engine note for the second trigger: requires the engine to log Malice spends and
 - **Class-specific gain trigger:** first time per combat round that you deal damage **incorporating 1 or more surges** (§ 5.6): **+1 insight**.
 - **Spend modifier (passive ability cost reduction):** when you use a heroic ability that uses a power roll, the ability costs **1 fewer insight** if you have an edge or double edge on the roll. If the ability has multiple targets, the cost reduction applies even if only one target gives you the edge. Engine: cost is computed at spend time, after edge/bane gathering, with a minimum cost of 0.
 
-#### 5.4.7 Tactician — Focus 🚧
+#### 5.4.7 Tactician — Focus ✅
 
-> 🚧 Engine deferred 2026-05-15. Canon text two-gate verified: SteelCompendium `Classes/Tactician.md` line 85 and Heroes PDF flat-text "Focus in Combat" (line ~13208) agree on both triggers — "first time per round you or any ally damages a creature you have Marked → +1 focus" and "first time per round any ally within 10 squares uses a heroic ability → +1 focus." Engine `class-triggers/per-class/tactician.ts:37` ships a permissive `isMarkedBy` stub that returns `true` for any candidate — the Mark gain therefore over-fires whenever any creature takes damage from anyone, regardless of Mark state. The ally-heroic trigger is raised as an OA (`spatial-trigger-tactician-ally-heroic-within-10`) so the table adjudicates the within-10 distance. `requireCanon` falls back to manual-override (via the umbrella § 5.4 flip) until slice 2b/2c provides real Mark-target state tracking. See [Pass 3 Slice 2a spec](superpowers/specs/2026-05-15-pass-3-slice-2a-class-delta-and-open-actions-design.md).
+> ✅ Engine closed 2026-05-15 (slice 2b). The `isMarkedBy` stub in `class-triggers/per-class/tactician.ts` now reads `tactician.targetingRelations.marked.includes(targetId)`. The ally-heroic-within-10 OA path is unchanged (spatial adjudication still raises an OA). See [Pass 3 Slice 2b spec](superpowers/specs/2026-05-15-pass-3-slice-2b-targeting-relations-design.md).
 
 > **Source:** `Classes/Tactician.md` lines 77–89. Heroes PDF p. 175 (Focus in Combat).
 
@@ -872,7 +868,7 @@ Engine note for the second trigger: requires the engine to log Malice spends and
 
 #### 5.4.8 Troubadour — Drama
 
-> ✅ Two-gate verified 2026-05-15: SteelCompendium `Classes/Troubadour.md` lines 82–91 + Heroes PDF flat-text "Drama in Combat" (line ~15217+) agree on the 1d3 per-turn gain, the four class-specific triggers (3-heroes-acted +2 / hero-winded +2 / LoE nat19-20 +3 / hero-dies +10), and the posthumous gain + 30-drama auto-revive. Engine splits implementation across `class-triggers/per-class/troubadour.ts` (3-heroes per-encounter latch, LoE nat19-20 OA raiser) and `class-triggers/stamina-transition.ts` (winded, hero-dies, drama-cross-30 auto-revive); `canGainDrama` correctly keeps a dead-but-intact Troubadour earning. **Note:** auto-apply gated by the umbrella § 5.4 🚧 flip.
+> ✅ Two-gate verified 2026-05-15: SteelCompendium `Classes/Troubadour.md` lines 82–91 + Heroes PDF flat-text "Drama in Combat" (line ~15217+) agree on the 1d3 per-turn gain, the four class-specific triggers (3-heroes-acted +2 / hero-winded +2 / LoE nat19-20 +3 / hero-dies +10), and the posthumous gain + 30-drama auto-revive. Engine splits implementation across `class-triggers/per-class/troubadour.ts` (3-heroes per-encounter latch, LoE nat19-20 OA raiser) and `class-triggers/stamina-transition.ts` (winded, hero-dies, drama-cross-30 auto-revive); `canGainDrama` correctly keeps a dead-but-intact Troubadour earning.
 
 > **Source:** `Classes/Troubadour.md` lines 76–101. Heroes PDF p. 203 (Drama in Combat).
 
