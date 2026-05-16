@@ -31,7 +31,8 @@ import { buildIntent } from '../../api/dispatch';
 import { useCampaign, useMe, useMonsters } from '../../api/queries';
 import { useIsActingAsDirector } from '../../lib/active-director';
 import { describeIntent, findLatestUndoable } from '../../lib/intentDescribe';
-import { HEROIC_RESOURCES } from '@ironyard/rules';
+import { getResourceConfigForParticipant } from '@ironyard/rules';
+import type { CampaignState } from '@ironyard/rules';
 import { Button, SplitPane } from '../../primitives';
 import { InlineHeader } from './combat-header/InlineHeader';
 import { isParticipantEntry, useSessionSocket } from '../../ws/useSessionSocket';
@@ -481,9 +482,18 @@ export function DirectorCombat() {
       (p): p is Participant => 'id' in p && p.id === participantId,
     );
     if (!participant) return;
-    const resource = participant.heroicResources[0];
-    const config = resource ? HEROIC_RESOURCES[resource.name] : undefined;
-    const needsD3 = config?.baseGain.onTurnStart.kind === 'd3';
+    // Resolve the active-config (Slice 2a: 10th-level Psion Talents get the
+    // d3-plus variant via `getResourceConfigForParticipant`). The helper only
+    // reads class + level off the participant, so the synthesised stub-state
+    // is sufficient — none of the slice-2a config branches touch other state
+    // fields. When future variants depend on other state, swap this for the
+    // real CampaignState off useSessionSocket.
+    const stubState = {
+      participants: activeEncounter?.participants ?? [],
+    } as unknown as CampaignState;
+    const config = getResourceConfigForParticipant(stubState, participant);
+    const gainKind = config?.baseGain.onTurnStart.kind;
+    const needsD3 = gainKind === 'd3' || gainKind === 'd3-plus';
     const payload = needsD3
       ? { participantId, rolls: { d3: 1 + Math.floor(Math.random() * 3) } }
       : { participantId };
