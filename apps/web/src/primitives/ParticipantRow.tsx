@@ -1,6 +1,7 @@
 import type { Participant, StaminaState, TargetingRelationKind } from '@ironyard/shared';
 import type { ReactNode } from 'react';
 import { CLASS_RELATION_KIND } from '../lib/class-relation-kind';
+import { useLongPress } from '../lib/longPress';
 import type { Pack } from '../theme/ThemeProvider';
 import { Button } from './Button';
 import { HpBar } from './HpBar';
@@ -48,7 +49,9 @@ export interface ParticipantRowProps {
    *  - `index === N` → targeted; reticle pulses red and shows the target number
    *  Forward-compat with multi-target: when an ability hits up to K creatures,
    *  it consumes targets in `index` order (1..K). Today only [0] is used. */
-  target?: { index: number | null; onToggle: () => void };
+  target?: { index: number | null; onToggle: (opts?: { additive?: boolean }) => void };
+  /** Whether this row represents a foe (monster) or hero (pc). Controls border accent color. */
+  participantKind?: 'pc' | 'monster';
   /** Per-character pack scope. Pass 1: pass undefined and the global accent applies. */
   pack?: Pack;
   onSelect?: () => void;
@@ -107,6 +110,7 @@ export function ParticipantRow({
   viewerUserId,
   isActingAsDirector = false,
   onToggleRelation,
+  participantKind = 'pc',
 }: ParticipantRowProps) {
   const hasActed = acted || isActed;
 
@@ -164,9 +168,12 @@ export function ParticipantRow({
   const nameDeadClass = staminaState === 'dead' ? DEAD_NAME_CLASS : ALIVE_NAME_CLASS;
   const packClass = pack ? `pack-${pack}` : '';
   // Active-turn row gets the pulsing accent ring (keyframes in styles.css).
-  // border-pk keeps a static edge so the row still reads at the pulse's nadir.
-  const turnClass = isTurn ? 'border-pk turn-pulse' : '';
-  const activeClass = active && !isTurn ? 'border-pk' : '';
+  // Foes use the foe-red token; heroes use the pk (pack-scoped) token.
+  const isFoe = participantKind === 'monster';
+  const turnBorderColor = isFoe ? 'border-foe' : 'border-pk';
+  const activeBorderColor = isFoe ? 'border-foe' : 'border-pk';
+  const turnClass = isTurn ? `${turnBorderColor} turn-pulse` : '';
+  const activeClass = active && !isTurn ? activeBorderColor : '';
   // self-pick gets a subtle hero-tone outline (lower priority than isTurn)
   const selfPickClass =
     !isTurn && pickAffordance?.kind === 'self' ? 'shadow-[0_0_0_1px_var(--color-hero)]' : '';
@@ -178,6 +185,12 @@ export function ParticipantRow({
   const handleClick = isFoeTap
     ? (pickAffordance as { kind: 'foe-tap'; onClick: () => void }).onClick
     : onSelect;
+
+  // Long-press on the reticle promotes the click to additive (multi-select).
+  // Hook must be called unconditionally; the handlers are spread only when target is present.
+  const longPressHandlers = useLongPress(() => {
+    target?.onToggle({ additive: true });
+  });
 
   return (
     // Div + role="button" instead of <button> so the row can contain nested
@@ -268,15 +281,17 @@ export function ParticipantRow({
           tabIndex={0}
           onClick={(e) => {
             e.stopPropagation();
-            target.onToggle();
+            const additive = e.metaKey || e.ctrlKey;
+            target.onToggle({ additive });
           }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               e.stopPropagation();
-              target.onToggle();
+              target.onToggle({ additive: false });
             }
           }}
+          {...longPressHandlers}
           className={`relative inline-flex h-6 w-6 items-center justify-center rounded-full border transition-colors cursor-pointer ${
             isTargeted
               ? 'border-foe text-foe target-pulse'

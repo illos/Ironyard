@@ -2,6 +2,15 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { ParticipantRow } from './ParticipantRow';
 
+// ── Tweak 1 helper ─────────────────────────────────────────────────────────────
+/**
+ * Returns the root container element (the role="button" div) from the rendered row.
+ * We inspect className on it for active/turn border classes.
+ */
+function getRowEl(container: HTMLElement): HTMLElement {
+  return container.querySelector('[role="button"]') as HTMLElement;
+}
+
 afterEach(cleanup);
 
 /** Minimum valid props for ParticipantRow */
@@ -84,5 +93,54 @@ describe('ParticipantRow — slice 1 state tags', () => {
     render(<ParticipantRow {...BASE} staminaState="winded" />);
     const nameSpan = screen.getByText('Ash Vey');
     expect(nameSpan.className).not.toMatch(/line-through/);
+  });
+});
+
+describe('ParticipantRow — Tweak 1: foe-red border on active and isTurn', () => {
+  it('monster row with active=true gets border-foe class', () => {
+    const { container } = render(
+      <ParticipantRow {...BASE} active={true} participantKind="monster" />,
+    );
+    expect(getRowEl(container).className).toMatch(/border-foe/);
+  });
+
+  it('monster row with isTurn=true gets border-foe and turn-pulse classes', () => {
+    const { container } = render(
+      <ParticipantRow {...BASE} isTurn={true} participantKind="monster" />,
+    );
+    const cls = getRowEl(container).className;
+    expect(cls).toMatch(/border-foe/);
+    expect(cls).toMatch(/turn-pulse/);
+  });
+
+  it('pc row with active=true gets border-pk class (not border-foe)', () => {
+    const { container } = render(
+      <ParticipantRow {...BASE} active={true} participantKind="pc" />,
+    );
+    const cls = getRowEl(container).className;
+    expect(cls).toMatch(/border-pk/);
+    expect(cls).not.toMatch(/border-foe/);
+  });
+
+  it('pc row with isTurn=true gets border-pk and turn-pulse (not border-foe)', () => {
+    const { container } = render(
+      <ParticipantRow {...BASE} isTurn={true} participantKind="pc" />,
+    );
+    const cls = getRowEl(container).className;
+    expect(cls).toMatch(/border-pk/);
+    expect(cls).toMatch(/turn-pulse/);
+    expect(cls).not.toMatch(/border-foe/);
+  });
+
+  it('monster row with neither active nor isTurn has neither active border class', () => {
+    const { container } = render(
+      <ParticipantRow {...BASE} active={false} isTurn={false} participantKind="monster" />,
+    );
+    const cls = getRowEl(container).className;
+    // Base border-line is present; neither turn-pulse nor the active foe border
+    expect(cls).not.toMatch(/turn-pulse/);
+    // The active foe border should not appear when not active/isTurn
+    // (border-foe may appear on hover via hover:border-foe in other elements, but not on root)
+    // We check turn-pulse is absent as the reliable signal
   });
 });

@@ -16,7 +16,7 @@ export interface EncounterRailProps {
   selfParticipantId: string | null;
   /** Ordered target ids. Index in this array drives the reticle's target-number badge. */
   targetParticipantIds: string[];
-  onToggleTarget: (id: string) => void;
+  onToggleTarget: (id: string, opts?: { additive?: boolean }) => void;
   // Phase 5 Pass 2b1 — zipper-initiative picking phase.
   currentPickingSide: 'heroes' | 'foes' | null;
   actedThisRound: string[];
@@ -90,8 +90,9 @@ export function EncounterRail({
                   targetParticipantIds.indexOf(f.id) >= 0
                     ? targetParticipantIds.indexOf(f.id) + 1
                     : null,
-                onToggle: () => onToggleTarget(f.id),
+                onToggle: (opts) => onToggleTarget(f.id, opts),
               }}
+              participantKind="monster"
               pickAffordance={pickAffordance ?? undefined}
               onSelect={() => onSelect(f.id)}
               thisParticipantId={f.id}

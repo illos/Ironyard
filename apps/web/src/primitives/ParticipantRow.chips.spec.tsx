@@ -328,3 +328,110 @@ describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
     expect(screen.queryByLabelText(/toggle judged/i)).toBeNull();
   });
 });
+
+// ── Tweak 3: reticle radio/additive behavior ──────────────────────────────────
+
+describe('ParticipantRow — Tweak 3: reticle toggle opts', () => {
+  const RETICLE_BASE = {
+    sigil: 'GA',
+    name: 'Goblin A',
+    staminaCurrent: 20,
+    staminaMax: 20,
+  };
+
+  it('plain click calls onToggle with additive:false', () => {
+    const onToggle = vi.fn();
+    render(
+      <ParticipantRow
+        {...RETICLE_BASE}
+        target={{ index: null, onToggle }}
+      />,
+    );
+    const reticle = screen.getByRole('button', { name: /target this creature/i });
+    fireEvent.click(reticle);
+    expect(onToggle).toHaveBeenCalledWith({ additive: false });
+  });
+
+  it('ctrl+click calls onToggle with additive:true', () => {
+    const onToggle = vi.fn();
+    render(
+      <ParticipantRow
+        {...RETICLE_BASE}
+        target={{ index: null, onToggle }}
+      />,
+    );
+    const reticle = screen.getByRole('button', { name: /target this creature/i });
+    fireEvent.click(reticle, { ctrlKey: true });
+    expect(onToggle).toHaveBeenCalledWith({ additive: true });
+  });
+
+  it('meta+click calls onToggle with additive:true', () => {
+    const onToggle = vi.fn();
+    render(
+      <ParticipantRow
+        {...RETICLE_BASE}
+        target={{ index: null, onToggle }}
+      />,
+    );
+    const reticle = screen.getByRole('button', { name: /target this creature/i });
+    fireEvent.click(reticle, { metaKey: true });
+    expect(onToggle).toHaveBeenCalledWith({ additive: true });
+  });
+
+  it('renders reticle with active targeting index when targeted', () => {
+    render(
+      <ParticipantRow
+        {...RETICLE_BASE}
+        target={{ index: 1, onToggle: vi.fn() }}
+      />,
+    );
+    // aria-label changes when targeted
+    expect(screen.getByRole('button', { name: /untarget/i })).toBeTruthy();
+  });
+});
+
+// ── Tweak 3: handleToggleTarget reducer logic ─────────────────────────────────
+// Pure unit tests of the radio/additive branching logic, extracted inline.
+
+describe('handleToggleTarget reducer logic', () => {
+  // Mirrors the logic in DirectorCombat.handleToggleTarget
+  function toggleTarget(
+    prev: string[],
+    id: string,
+    opts?: { additive?: boolean },
+  ): string[] {
+    const additive = opts?.additive ?? false;
+    if (!additive && prev.length <= 1) {
+      if (prev.length === 1 && prev[0] === id) return prev;
+      return [id];
+    }
+    return prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+  }
+
+  it('radio: click on new id when empty → [id]', () => {
+    expect(toggleTarget([], 'a', { additive: false })).toEqual(['a']);
+  });
+
+  it('radio: click on new id when 1 other selected → [id] (replaces)', () => {
+    expect(toggleTarget(['b'], 'a', { additive: false })).toEqual(['a']);
+  });
+
+  it('radio: click on already-selected sole id → no-op (same array ref)', () => {
+    const prev = ['a'];
+    expect(toggleTarget(prev, 'a', { additive: false })).toBe(prev);
+  });
+
+  it('additive: click on new id when 1 selected → adds to array', () => {
+    expect(toggleTarget(['b'], 'a', { additive: true })).toEqual(['b', 'a']);
+  });
+
+  it('additive: click on already-targeted id removes it (toggle)', () => {
+    expect(toggleTarget(['a', 'b'], 'a', { additive: true })).toEqual(['b']);
+  });
+
+  it('when prev.length >= 2, plain click (no additive) still adds/toggles', () => {
+    // Once multi-select is active, checkbox behavior takes over regardless of modifier
+    expect(toggleTarget(['a', 'b'], 'c', { additive: false })).toEqual(['a', 'b', 'c']);
+    expect(toggleTarget(['a', 'b', 'c'], 'b', { additive: false })).toEqual(['a', 'c']);
+  });
+});
