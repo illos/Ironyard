@@ -10,6 +10,7 @@ import {
   type Monster,
   type Participant,
   type SetResourcePayload,
+  type SetTargetingRelationPayload,
   type SpendRecoveryPayload,
   type SpendResourcePayload,
   type SpendSurgePayload,
@@ -19,8 +20,10 @@ import { buildIntent } from '../../../api/dispatch';
 import { useCharacter, useMe } from '../../../api/queries';
 import { useItems, useKits, useWizardStaticData } from '../../../api/static-data';
 import { pcFreeStrike } from '../../../data/monsterAbilities';
+import { CLASS_RELATION_KIND } from '../../../lib/class-relation-kind';
 import { useLongPress } from '../../../lib/longPress';
 import { Button, Section } from '../../../primitives';
+import { TargetingRelationsCard } from '../../../components/TargetingRelationsCard';
 import { AbilityCard } from '../AbilityCard';
 import { MonsterStatBlock } from './MonsterStatBlock';
 import { isParticipantEntry, useSessionSocket } from '../../../ws/useSessionSocket';
@@ -151,6 +154,14 @@ export function FullSheetTab({
           dispatchSetResource={dispatchSetResource}
           dispatchSpendSurge={dispatchSpendSurge}
           dispatchSpendRecovery={dispatchSpendRecovery}
+        />
+      )}
+
+      {focused.kind === 'pc' && (
+        <TargetingRelationsSection
+          focused={focused}
+          allParticipants={participants}
+          campaignId={campaignId}
         />
       )}
 
@@ -517,6 +528,61 @@ function AddHeroicResource({
 // These components mirror the sub-components in the former PlayerSheetPanel.
 // They are gated on focused.kind === 'pc' && focused.characterId !== null in
 // the parent, so they can safely assume both conditions.
+
+/**
+ * Renders the TargetingRelationsCard for Censor / Tactician / Null PCs.
+ * Returns null for any other class or when the participant has no className.
+ */
+function TargetingRelationsSection({
+  focused,
+  allParticipants,
+  campaignId,
+}: {
+  focused: Participant;
+  allParticipants: Participant[];
+  campaignId: string;
+}) {
+  const me = useMe();
+  const sock = useSessionSocket(campaignId);
+
+  const relationKind = focused.className
+    ? CLASS_RELATION_KIND[focused.className.toLowerCase()]
+    : undefined;
+
+  if (!relationKind || !me.data) return null;
+
+  // Candidates are opposing-side participants (monsters for PCs).
+  const candidates = allParticipants
+    .filter((p) => p.kind === 'monster')
+    .map((p) => ({ id: p.id, name: p.name }));
+
+  const handleToggle = (targetId: string, present: boolean) => {
+    if (!me.data) return;
+    const payload: SetTargetingRelationPayload = {
+      sourceId: focused.id,
+      relationKind,
+      targetId,
+      present,
+    };
+    sock.dispatch(
+      buildIntent({
+        campaignId,
+        type: IntentTypes.SetTargetingRelation,
+        payload,
+        actor: { userId: me.data.user.id, role: 'player' },
+      }),
+    );
+  };
+
+  return (
+    <TargetingRelationsCard
+      source={focused}
+      relationKind={relationKind}
+      candidates={candidates}
+      onToggle={handleToggle}
+    />
+  );
+}
 
 function HeroTokensSection({
   focused,

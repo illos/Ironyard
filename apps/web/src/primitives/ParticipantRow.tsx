@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Participant, StaminaState, TargetingRelationKind } from '@ironyard/shared';
 import type { Pack } from '../theme/ThemeProvider';
+import { CLASS_RELATION_KIND } from '../lib/class-relation-kind';
 import { Button } from './Button';
 import { HpBar } from './HpBar';
 import { Sigil } from './Sigil';
@@ -14,16 +15,6 @@ export type PickAffordance =
   | null;
 
 // ── Targeting-relation chip helpers (Pass 3 Slice 2b) ────────────────────────
-
-/**
- * Maps a participant's `className` (lower-cased) to its targeting relation kind.
- * Only the three classes that have persistent targeting relations are listed.
- */
-const CLASS_RELATION_KIND: Record<string, TargetingRelationKind | undefined> = {
-  censor: 'judged',
-  tactician: 'marked',
-  null: 'nullField',
-};
 
 /**
  * The inbound chip label prefix for each relation kind.

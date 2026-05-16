@@ -8,22 +8,11 @@ import {
 import { buildIntent } from '../../api/dispatch';
 import { useCharacter, useMe } from '../../api/queries';
 import { useAbilities } from '../../api/static-data';
+import { CLASS_RELATION_KIND } from '../../lib/class-relation-kind';
 import { useSessionSocket } from '../../ws/useSessionSocket';
 import { TargetingRelationsCard } from '../../components/TargetingRelationsCard';
 import { DoomsightBecomeDoomedButton } from './DoomsightBecomeDoomedButton';
 import { EssenceBlock, type Maint } from './EssenceBlock';
-
-// ── Targeting-relation helpers (mirrors ParticipantRow.tsx) ───────────────────
-
-/**
- * Maps a participant's `className` (lower-cased) to its targeting relation kind.
- * Censor → Judgment, Tactician → Mark, Null → Null Field.
- */
-const CLASS_RELATION_KIND: Record<string, TargetingRelationKind | undefined> = {
-  censor: 'judged',
-  tactician: 'marked',
-  null: 'nullField',
-};
 
 // TODO(Task 35/37): wire `./StrainedSpendModal` into the Talent ability-card
 // click flow. The modal is implemented and unit-tested but not yet hooked up
