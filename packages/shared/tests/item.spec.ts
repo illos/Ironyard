@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ItemSchema, ItemFileSchema } from '../src/data/item';
+import { ItemFileSchema, ItemSchema } from '../src/data/item';
 
 describe('ItemSchema', () => {
   it('parses an artifact', () => {
@@ -50,9 +50,7 @@ describe('ItemSchema', () => {
   });
 
   it('rejects an unknown category', () => {
-    expect(() =>
-      ItemSchema.parse({ category: 'mystery', id: 'x', name: 'y' }),
-    ).toThrow();
+    expect(() => ItemSchema.parse({ category: 'mystery', id: 'x', name: 'y' })).toThrow();
   });
 });
 

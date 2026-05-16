@@ -88,6 +88,4 @@ describe('applyKickPlayer', () => {
     );
     expect(result.errors?.[0]?.code).toBe('invalid_payload');
   });
-
 });
-

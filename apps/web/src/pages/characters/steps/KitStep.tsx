@@ -22,8 +22,8 @@ export function KitStep({
           Kit picker comes in Epic 2 — once kit data ingestion lands.
         </p>
         <p className="text-xs text-text-mute">
-          For now this step is informational. Your character will submit without a kit;
-          kit-required classes will derive at no-kit defaults until Epic 2.
+          For now this step is informational. Your character will submit without a kit; kit-required
+          classes will derive at no-kit defaults until Epic 2.
         </p>
         {draft.kitId !== null && (
           <button

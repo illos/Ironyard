@@ -1,11 +1,14 @@
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import {
   type Participant,
   StartEncounterPayloadSchema,
   type TypedResistance,
   ulid,
 } from '@ironyard/shared';
-import { participantFromMonster } from './add-monster';
 import { deriveCharacterRuntime } from '../derive-character-runtime';
 import { HEROIC_RESOURCES, resolveFloor } from '../heroic-resources';
 import { aliveHeroes, averageVictoriesAlive } from '../state-helpers';
@@ -16,6 +19,7 @@ import type {
   ReducerContext,
   StampedIntent,
 } from '../types';
+import { participantFromMonster } from './add-monster';
 
 export function applyStartEncounter(
   state: CampaignState,
@@ -42,9 +46,7 @@ export function applyStartEncounter(
     return {
       state,
       derived: [],
-      log: [
-        { kind: 'error', text: 'start a session before running combat', intentId: intent.id },
-      ],
+      log: [{ kind: 'error', text: 'start a session before running combat', intentId: intent.id }],
       errors: [{ code: 'no_active_session', message: 'start a session before running combat' }],
     };
   }
@@ -180,8 +182,7 @@ export function applyStartEncounter(
   // Use an interim state view so aliveHeroes/averageVictoriesAlive can inspect the
   // freshly materialized participants without mutating the real state yet.
   const interimState: CampaignState = { ...state, participants: allParticipants };
-  const initialMalice =
-    averageVictoriesAlive(interimState) + aliveHeroes(interimState).length + 1;
+  const initialMalice = averageVictoriesAlive(interimState) + aliveHeroes(interimState).length + 1;
 
   const encounter: EncounterPhase = {
     id: encounterId,

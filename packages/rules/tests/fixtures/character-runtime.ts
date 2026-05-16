@@ -72,7 +72,8 @@ export function buildFuryL1Fixture(overrides: Partial<Character> = {}): Characte
     inventory: [],
     campaignId: null,
     xp: 0,
-    currentStamina: overrides.currentStamina !== undefined ? (overrides.currentStamina as number | null) : null,
+    currentStamina:
+      overrides.currentStamina !== undefined ? (overrides.currentStamina as number | null) : null,
     recoveriesUsed: overrides.recoveriesUsed ?? 0,
     victories: overrides.victories ?? 0,
   };

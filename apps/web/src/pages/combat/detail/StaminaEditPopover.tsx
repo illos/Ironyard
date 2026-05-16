@@ -1,4 +1,4 @@
-import { type SetStaminaPayload } from '@ironyard/shared';
+import type { SetStaminaPayload } from '@ironyard/shared';
 import { useState } from 'react';
 import { Button } from '../../../primitives';
 
@@ -77,9 +77,7 @@ export function StaminaEditPopover({
           </Button>
         </div>
       </div>
-      {!validCurrent && (
-        <p className="mt-2 text-xs text-foe">Current must be between 0 and Max.</p>
-      )}
+      {!validCurrent && <p className="mt-2 text-xs text-foe">Current must be between 0 and Max.</p>}
       {!validMax && <p className="mt-2 text-xs text-foe">Max must be at least 1.</p>}
     </div>
   );

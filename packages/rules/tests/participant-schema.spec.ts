@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
 import { ParticipantSchema } from '@ironyard/shared';
+import { describe, expect, it } from 'vitest';
 
 describe('Pass 2b2a ParticipantSchema additions', () => {
   it('defaults the new monster-meta + PC-className fields to null/[] when omitted', () => {

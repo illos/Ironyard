@@ -81,9 +81,7 @@ export function evaluate(
   if (event.kind === 'roll-power-outcome') {
     const crit = event.naturalValues.find((v) => v === 19 || v === 20);
     if (crit === undefined) return derived;
-    const actor = state.participants
-      .filter(isParticipant)
-      .find((p) => p.id === event.actorId);
+    const actor = state.participants.filter(isParticipant).find((p) => p.id === event.actorId);
     for (const trou of troubadours) {
       derived.push({
         actor: ctx.actor,

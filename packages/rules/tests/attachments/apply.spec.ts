@@ -1,8 +1,8 @@
+import { type Character, CharacterSchema } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { applyAttachments } from '../../src/attachments/apply';
 import type { CharacterAttachment } from '../../src/attachments/types';
 import type { CharacterRuntime } from '../../src/derive-character-runtime';
-import { CharacterSchema, type Character } from '@ironyard/shared';
 
 function baseRuntime(overrides: Partial<CharacterRuntime> = {}): CharacterRuntime {
   return {
@@ -127,8 +127,14 @@ describe('applyAttachments — ordering', () => {
       source: { kind: 'ancestry-trait', id: 'b' },
       effect: { kind: 'stat-mod', stat: 'maxStamina', delta: 6 },
     };
-    const out1 = applyAttachments(baseRuntime(), [a, b], { character: baseCharacter(), ...NOOP_CTX });
-    const out2 = applyAttachments(baseRuntime(), [b, a], { character: baseCharacter(), ...NOOP_CTX });
+    const out1 = applyAttachments(baseRuntime(), [a, b], {
+      character: baseCharacter(),
+      ...NOOP_CTX,
+    });
+    const out2 = applyAttachments(baseRuntime(), [b, a], {
+      character: baseCharacter(),
+      ...NOOP_CTX,
+    });
     expect(out1.maxStamina).toBe(out2.maxStamina);
     expect(out1.maxStamina).toBe(33);
   });

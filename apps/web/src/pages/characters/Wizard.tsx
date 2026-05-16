@@ -6,15 +6,15 @@ import { useCharacter, useMe } from '../../api/queries';
 import { useWizardStaticData } from '../../api/static-data';
 import { Button, SplitPane } from '../../primitives';
 import { LivePreviewSheet } from './LivePreviewSheet';
+import { StepStepper } from './parts/StepStepper';
 import { AncestryStep } from './steps/AncestryStep';
 import { CareerStep } from './steps/CareerStep';
 import { ClassStep } from './steps/ClassStep';
 import { ComplicationStep } from './steps/ComplicationStep';
+import { CultureStep } from './steps/CultureStep';
 import { KitStep } from './steps/KitStep';
 import { NameDetailsStep } from './steps/NameDetailsStep';
 import { ReviewStep } from './steps/ReviewStep';
-import { CultureStep } from './steps/CultureStep';
-import { StepStepper } from './parts/StepStepper';
 
 const STEP_IDS = [
   'name',
@@ -90,7 +90,9 @@ export function Wizard() {
     return <main className="mx-auto max-w-3xl p-6 text-text-dim">Loading…</main>;
   }
   if (!me.data) {
-    return <main className="mx-auto max-w-3xl p-6 text-text-dim">Sign in to create a character.</main>;
+    return (
+      <main className="mx-auto max-w-3xl p-6 text-text-dim">Sign in to create a character.</main>
+    );
   }
 
   const patch = (p: Partial<Character>) => setDraft((d) => ({ ...d, ...p }));
@@ -134,8 +136,12 @@ export function Wizard() {
   const stepIndex = visibleSteps.indexOf(step);
   const hasPrev = stepIndex > 0;
   const hasNext = stepIndex < visibleSteps.length - 1;
-  const prev = () => { if (hasPrev) setStep(visibleSteps[stepIndex - 1]!); };
-  const next = async () => { if (hasNext) await goToStep(visibleSteps[stepIndex + 1]!); };
+  const prev = () => {
+    if (hasPrev) setStep(visibleSteps[stepIndex - 1]!);
+  };
+  const next = async () => {
+    if (hasNext) await goToStep(visibleSteps[stepIndex + 1]!);
+  };
 
   return (
     <main className="mx-auto max-w-6xl p-6 flex flex-col gap-4">
@@ -154,7 +160,9 @@ export function Wizard() {
             <StepStepper
               steps={visibleSteps.map((id) => ({ id, label: STEP_LABELS[id] }))}
               current={step}
-              onJump={(id) => { void goToStep(id as StepId); }}
+              onJump={(id) => {
+                void goToStep(id as StepId);
+              }}
             />
             <section className="border border-line bg-ink-1 p-5">
               {step === 'name' && (
@@ -196,7 +204,12 @@ export function Wizard() {
                 ← Back
               </Button>
               {hasNext && (
-                <Button variant="primary" onClick={() => { void next(); }}>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    void next();
+                  }}
+                >
                   Save &amp; Continue →
                 </Button>
               )}

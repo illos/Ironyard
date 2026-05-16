@@ -81,9 +81,7 @@ export function CampaignView() {
   if (campaign.error || !campaign.data) {
     return (
       <main className="mx-auto max-w-2xl p-6 space-y-2">
-        <p className="text-foe">
-          {(campaign.error as Error)?.message ?? 'Campaign not found.'}
-        </p>
+        <p className="text-foe">{(campaign.error as Error)?.message ?? 'Campaign not found.'}</p>
         <Link to="/" className="underline text-text-dim">
           Back home
         </Link>
@@ -191,10 +189,7 @@ export function CampaignView() {
             <li className="text-sm text-text-mute">Waiting for the socket…</li>
           )}
           {members.map((m) => (
-            <li
-              key={m.userId}
-              className="flex items-center gap-3 bg-ink-1 px-3 py-2"
-            >
+            <li key={m.userId} className="flex items-center gap-3 bg-ink-1 px-3 py-2">
               <span className="inline-flex items-center justify-center w-8 h-8 bg-ink-2 font-semibold text-text">
                 {m.displayName[0]?.toUpperCase() ?? '?'}
               </span>
@@ -389,10 +384,7 @@ function SavedTemplatesPanel({ campaignId }: { campaignId: string }) {
           {items.map((t) => {
             const total = t.data.monsters.reduce((acc, m) => acc + m.quantity, 0);
             return (
-              <li
-                key={t.id}
-                className="flex items-center gap-3 bg-ink-2 px-3 py-2"
-              >
+              <li key={t.id} className="flex items-center gap-3 bg-ink-2 px-3 py-2">
                 <span className="flex-1">
                   <span className="font-medium text-text">{t.name}</span>
                   <span className="ml-2 text-xs text-text-mute">
@@ -791,18 +783,13 @@ function ApprovedRosterPanel({
       <div className="space-y-3">
         {displayed.length === 0 && (
           <p className="text-xs text-text-mute">
-            {currentSessionId !== null
-              ? 'No attending characters.'
-              : 'No approved characters yet.'}
+            {currentSessionId !== null ? 'No attending characters.' : 'No approved characters yet.'}
           </p>
         )}
         {displayed.length > 0 && (
           <ul className="space-y-1">
             {displayed.map((cr) => (
-              <li
-                key={cr.id}
-                className="flex items-center gap-3 bg-ink-2 px-3 py-2"
-              >
+              <li key={cr.id} className="flex items-center gap-3 bg-ink-2 px-3 py-2">
                 <span className="flex-1 text-sm text-text-dim">{cr.name}</span>
               </li>
             ))}
@@ -865,10 +852,7 @@ function OwnerAdminPanel({
         {(members.data ?? []).map((m: CampaignMember) => {
           const isMe = m.userId === meId;
           return (
-            <li
-              key={m.userId}
-              className="flex items-center gap-3 bg-ink-2 px-3 py-2"
-            >
+            <li key={m.userId} className="flex items-center gap-3 bg-ink-2 px-3 py-2">
               <span className="flex-1 text-sm text-text">
                 {m.displayName}
                 {isMe && <span className="text-text-mute text-xs"> (you)</span>}
@@ -1023,7 +1007,7 @@ function StartSessionPanel({
             type="number"
             min={0}
             value={tokens}
-            onChange={(e) => setTokens(Math.max(0, parseInt(e.target.value || '0', 10)))}
+            onChange={(e) => setTokens(Math.max(0, Number.parseInt(e.target.value || '0', 10)))}
             className="mt-1 w-24 bg-ink-2 border border-line text-text px-3 py-2 font-mono"
           />
           <span className="ml-2 text-xs text-text-mute">default: # attending</span>
@@ -1186,12 +1170,7 @@ function ActiveSessionBadge({
                 </li>
               ))}
             </ul>
-            <Button
-              type="button"
-              variant="primary"
-              onClick={commitAttendance}
-              className="min-h-11"
-            >
+            <Button type="button" variant="primary" onClick={commitAttendance} className="min-h-11">
               Save attendance
             </Button>
           </div>
@@ -1203,7 +1182,7 @@ function ActiveSessionBadge({
             type="number"
             min={1}
             value={bonus}
-            onChange={(e) => setBonus(Math.max(1, parseInt(e.target.value || '1', 10)))}
+            onChange={(e) => setBonus(Math.max(1, Number.parseInt(e.target.value || '1', 10)))}
             className="w-16 bg-ink-2 border border-line text-text px-2 py-1 text-sm font-mono"
           />
           <Button

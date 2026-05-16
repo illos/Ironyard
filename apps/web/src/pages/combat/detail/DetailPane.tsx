@@ -1,5 +1,6 @@
 import {
   type Ability,
+  type GainResourcePayload,
   IntentTypes,
   type MarkActionUsedPayload,
   type Monster,
@@ -7,12 +8,11 @@ import {
   type RemoveConditionPayload,
   type RollPowerPayload,
   type SetConditionPayload,
-  type SetStaminaPayload,
-  type GainResourcePayload,
-  type SpendResourcePayload,
   type SetResourcePayload,
-  type SpendSurgePayload,
+  type SetStaminaPayload,
   type SpendRecoveryPayload,
+  type SpendResourcePayload,
+  type SpendSurgePayload,
 } from '@ironyard/shared';
 import { useState } from 'react';
 import { DetailHeader } from './DetailHeader';
@@ -101,11 +101,13 @@ export function DetailPane({
     );
   }
 
-  const resolvedTarget =
-    targetParticipantId ? (participants.find((p) => p.id === targetParticipantId) ?? null) : null;
+  const resolvedTarget = targetParticipantId
+    ? (participants.find((p) => p.id === targetParticipantId) ?? null)
+    : null;
 
   // Directors can edit any participant; players can only edit their own character.
-  const canEdit = viewerRole === 'director' || (focused !== null && focused.id === selfParticipantId);
+  const canEdit =
+    viewerRole === 'director' || (focused !== null && focused.id === selfParticipantId);
 
   return (
     <div className="space-y-0">
@@ -208,7 +210,13 @@ function DetailBody({
           monsterByParticipantId={monsterByParticipantId}
           onMarkUsed={dispatchMarkActionUsed}
           onAbilityRoll={(ability, args, target) =>
-            dispatchRoll({ ability, attacker: focused, target, rolls: args.rolls, source: args.source })
+            dispatchRoll({
+              ability,
+              attacker: focused,
+              target,
+              rolls: args.rolls,
+              source: args.source,
+            })
           }
           target={resolvedTarget ?? focused}
           canRoll={canEdit}

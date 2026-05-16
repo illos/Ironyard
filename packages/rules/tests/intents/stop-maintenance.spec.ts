@@ -14,10 +14,7 @@ import {
 
 const PC_ID = 'pc:ele-1';
 
-function stateWith(
-  participants: ReturnType<typeof makeHeroParticipant>[],
-  currentRound = 1,
-) {
+function stateWith(participants: ReturnType<typeof makeHeroParticipant>[], currentRound = 1) {
   return baseState({
     currentSessionId: 'sess-1',
     participants,
@@ -56,9 +53,7 @@ describe('applyStopMaintenance', () => {
   it('is a silent no-op when the ability is not being maintained', () => {
     const ele = makeHeroParticipant(PC_ID, {
       className: 'Elementalist',
-      maintainedAbilities: [
-        { abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1 },
-      ],
+      maintainedAbilities: [{ abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1 }],
     });
     const state = stateWith([ele], 2);
     const startSeq = state.seq;

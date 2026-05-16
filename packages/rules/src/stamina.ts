@@ -54,7 +54,9 @@ function deriveOverrideState(p: Participant, override: ParticipantStateOverride)
     case 'rubble':
       // Holds at 'rubble' while currentStamina ≤ -windedValue. Above that,
       // the override releases (returns to dying-or-better).
-      return p.currentStamina <= -windedValue(p) ? 'rubble' : deriveNaturalState({ ...p, staminaOverride: null });
+      return p.currentStamina <= -windedValue(p)
+        ? 'rubble'
+        : deriveNaturalState({ ...p, staminaOverride: null });
     case 'doomed': {
       // Title Doomed has a staminaMax death threshold; Hakaan has 'none'.
       if (override.staminaDeathThreshold === 'staminaMax' && p.currentStamina <= -p.maxStamina) {

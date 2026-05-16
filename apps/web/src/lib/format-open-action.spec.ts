@@ -46,7 +46,15 @@ describe('formatOpenAction — slice 2a kinds', () => {
     'pray-to-the-gods',
     'troubadour-auto-revive',
   ])('produces a non-empty title and body for kind %s', (kind) => {
-    const oa = { id: 'x', kind, participantId: 'p', raisedAtRound: 1, raisedByIntentId: 'i', expiresAtRound: null, payload: {} } as any;
+    const oa = {
+      id: 'x',
+      kind,
+      participantId: 'p',
+      raisedAtRound: 1,
+      raisedByIntentId: 'i',
+      expiresAtRound: null,
+      payload: {},
+    } as any;
     const { title, body, claimLabel } = formatOpenAction(oa);
     expect(title).toBeTruthy();
     expect(body).toBeTruthy();

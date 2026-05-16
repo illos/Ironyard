@@ -25,15 +25,60 @@ export type HeroicResourceConfig = {
 };
 
 export const HEROIC_RESOURCES: Record<HeroicResourceName, HeroicResourceConfig> = {
-  wrath:      { name: 'wrath',      floor: 0, ceiling: null, baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'flat', amount: 2 } } },
-  piety:      { name: 'piety',      floor: 0, ceiling: null, baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'd3' } } },
-  essence:    { name: 'essence',    floor: 0, ceiling: null, baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'flat', amount: 2 } } },
-  ferocity:   { name: 'ferocity',   floor: 0, ceiling: null, baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'd3' } } },
-  discipline: { name: 'discipline', floor: 0, ceiling: null, baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'flat', amount: 2 } } },
-  insight:    { name: 'insight',    floor: 0, ceiling: null, baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'd3' } } },
-  focus:      { name: 'focus',      floor: 0, ceiling: null, baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'flat', amount: 2 } } },
-  drama:      { name: 'drama',      floor: 0, ceiling: null, baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'd3' } } },
-  clarity:    { name: 'clarity',    floor: { formula: 'negative_one_plus_reason' }, ceiling: null, baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'd3' } } },
+  wrath: {
+    name: 'wrath',
+    floor: 0,
+    ceiling: null,
+    baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'flat', amount: 2 } },
+  },
+  piety: {
+    name: 'piety',
+    floor: 0,
+    ceiling: null,
+    baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'd3' } },
+  },
+  essence: {
+    name: 'essence',
+    floor: 0,
+    ceiling: null,
+    baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'flat', amount: 2 } },
+  },
+  ferocity: {
+    name: 'ferocity',
+    floor: 0,
+    ceiling: null,
+    baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'd3' } },
+  },
+  discipline: {
+    name: 'discipline',
+    floor: 0,
+    ceiling: null,
+    baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'flat', amount: 2 } },
+  },
+  insight: {
+    name: 'insight',
+    floor: 0,
+    ceiling: null,
+    baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'd3' } },
+  },
+  focus: {
+    name: 'focus',
+    floor: 0,
+    ceiling: null,
+    baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'flat', amount: 2 } },
+  },
+  drama: {
+    name: 'drama',
+    floor: 0,
+    ceiling: null,
+    baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'd3' } },
+  },
+  clarity: {
+    name: 'clarity',
+    floor: { formula: 'negative_one_plus_reason' },
+    ceiling: null,
+    baseGain: { onEncounterStart: 'victories', onTurnStart: { kind: 'd3' } },
+  },
 };
 
 /**
@@ -41,10 +86,7 @@ export const HEROIC_RESOURCES: Record<HeroicResourceName, HeroicResourceConfig> 
  * character characteristics. Used at StartEncounter participant materialization
  * to compute Talent's per-character `-(1 + reason)` floor.
  */
-export function resolveFloor(
-  floor: ResourceFloor,
-  characteristics: { reason: number },
-): number {
+export function resolveFloor(floor: ResourceFloor, characteristics: { reason: number }): number {
   if (typeof floor === 'number') return floor;
   if (floor.formula === 'negative_one_plus_reason') {
     return -(1 + characteristics.reason);

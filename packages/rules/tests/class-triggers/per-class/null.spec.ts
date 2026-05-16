@@ -1,3 +1,4 @@
+import { IntentTypes } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import type {
   ActionEvent,
@@ -5,7 +6,6 @@ import type {
 } from '../../../src/class-triggers/action-triggers';
 import { evaluate as evaluateNull } from '../../../src/class-triggers/per-class/null';
 import type { CampaignState } from '../../../src/types';
-import { IntentTypes } from '@ironyard/shared';
 import {
   baseState,
   makeHeroParticipant,

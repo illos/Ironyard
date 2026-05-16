@@ -1,4 +1,8 @@
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
@@ -325,8 +329,8 @@ describe('applyStartTurn per-turn heroic resource gain', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
   }
@@ -520,8 +524,8 @@ describe('applyStartTurn — turnActionUsage', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
   }
@@ -559,8 +563,8 @@ describe('applyStartTurn — turnActionUsage', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
     const r = applyIntent(s, intent('StartTurn', { participantId: 'pc-1' }));
@@ -591,8 +595,8 @@ describe('applyStartTurn — turnActionUsage', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
     const r = applyIntent(s, intent('StartTurn', { participantId: 'censor' }));
@@ -629,8 +633,8 @@ describe('applyEndRound — Pass 3 Slice 1 triggeredActionUsedThisRound reset', 
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 
@@ -660,8 +664,8 @@ describe('applyEndRound — Pass 3 Slice 1 triggeredActionUsedThisRound reset', 
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 
@@ -701,8 +705,8 @@ describe('applyEndRound — Pass 3 Slice 1 triggeredActionUsedThisRound reset', 
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 

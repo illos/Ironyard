@@ -1,11 +1,11 @@
 import type { Participant, TargetingRelationKind } from '@ironyard/shared';
 import { ParticipantRow, Section } from '../../primitives';
 import { ConditionGlyphs } from './ConditionGlyph';
-import { initials, roleReadoutFor } from './rails/rail-utils';
-import { RoleReadout } from './rails/RoleReadout';
-import { HeroResourceCell } from './rails/HeroResourceCell';
-import { HeroRecoveriesCell } from './rails/HeroRecoveriesCell';
 import { derivePickAffordance } from './initiative';
+import { HeroRecoveriesCell } from './rails/HeroRecoveriesCell';
+import { HeroResourceCell } from './rails/HeroResourceCell';
+import { RoleReadout } from './rails/RoleReadout';
+import { initials, roleReadoutFor } from './rails/rail-utils';
 
 export interface PartyRailProps {
   heroes: Participant[];
@@ -91,7 +91,10 @@ export function PartyRail({
               isActed={actedThisRound.includes(h.id)}
               isSurprised={h.surprised}
               target={{
-                index: targetParticipantIds.indexOf(h.id) >= 0 ? targetParticipantIds.indexOf(h.id) + 1 : null,
+                index:
+                  targetParticipantIds.indexOf(h.id) >= 0
+                    ? targetParticipantIds.indexOf(h.id) + 1
+                    : null,
                 onToggle: () => onToggleTarget(h.id),
               }}
               pickAffordance={pickAffordance ?? undefined}

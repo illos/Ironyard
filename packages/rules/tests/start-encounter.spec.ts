@@ -1,4 +1,8 @@
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import type { HeroClass, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
@@ -9,12 +13,12 @@ import {
   emptyCampaignState,
   isParticipant,
 } from '../src/index';
+import type { StaticDataBundle } from '../src/static-data';
 import {
   buildBundleWithFury,
   buildEmptyBundle,
   buildFuryL1Fixture,
 } from './fixtures/character-runtime';
-import type { StaticDataBundle } from '../src/static-data';
 
 const T = 1_700_000_000_000;
 const CAMPAIGN = 'sess_start_enc';
@@ -33,7 +37,11 @@ function makeIntent(payload: unknown): StampedIntent {
 }
 
 function baseState(overrides: Partial<CampaignState> = {}): CampaignState {
-  return { ...emptyCampaignState(CAMPAIGN, 'user-owner'), currentSessionId: 'sess-test', ...overrides };
+  return {
+    ...emptyCampaignState(CAMPAIGN, 'user-owner'),
+    currentSessionId: 'sess-test',
+    ...overrides,
+  };
 }
 
 describe('applyStartEncounter — new atomic payload shape', () => {
@@ -240,8 +248,8 @@ describe('applyStartEncounter — new atomic payload shape', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     });
 
@@ -326,7 +334,12 @@ function buildBundleWithClass(
 
 function makePcStamped(
   characterId: string,
-  overrides: { classId?: string; victories?: number; characteristicArray?: number[]; subclassId?: string } = {},
+  overrides: {
+    classId?: string;
+    victories?: number;
+    characteristicArray?: number[];
+    subclassId?: string;
+  } = {},
 ) {
   const character = buildFuryL1Fixture({
     classId: overrides.classId ?? 'fury',
@@ -340,7 +353,7 @@ function makePcStamped(
 // ── StartEncounter heroic resource preload ────────────────────────────────────
 
 describe('StartEncounter heroic resource preload', () => {
-  it('seeds each PC\'s heroic resource pool from character.victories', () => {
+  it("seeds each PC's heroic resource pool from character.victories", () => {
     // Talent (clarity) with victories=4, Censor (wrath) with victories=2
     const talentBundle = buildBundleWithClass('talent', 'clarity', [[2, 0, 2, 0, 0]]);
     const censorBundle = buildBundleWithClass('censor', 'wrath', [[0, 1, -1, 1, 0]]);
@@ -358,7 +371,9 @@ describe('StartEncounter heroic resource preload', () => {
       makeIntent({
         characterIds: ['t1'],
         monsters: [],
-        stampedPcs: [{ characterId: 't1', name: 'Talent', ownerId: 'u-t', character: talentStamped }],
+        stampedPcs: [
+          { characterId: 't1', name: 'Talent', ownerId: 'u-t', character: talentStamped },
+        ],
         stampedMonsters: [],
       }),
       { staticData: talentBundle },
@@ -382,7 +397,9 @@ describe('StartEncounter heroic resource preload', () => {
       makeIntent({
         characterIds: ['c1'],
         monsters: [],
-        stampedPcs: [{ characterId: 'c1', name: 'Censor', ownerId: 'u-c', character: censorStamped }],
+        stampedPcs: [
+          { characterId: 'c1', name: 'Censor', ownerId: 'u-c', character: censorStamped },
+        ],
         stampedMonsters: [],
       }),
       { staticData: censorBundle },
@@ -441,7 +458,9 @@ describe('StartEncounter heroic resource preload', () => {
 
   it('gracefully yields heroicResources=[] for a PC with unknown class (no resource config)', () => {
     // Character with classId not present in staticData → runtime.heroicResource.name = 'unknown'
-    const character = buildFuryL1Fixture({ victories: 3, classId: 'unknown-class' } as Parameters<typeof buildFuryL1Fixture>[0]);
+    const character = buildFuryL1Fixture({ victories: 3, classId: 'unknown-class' } as Parameters<
+      typeof buildFuryL1Fixture
+    >[0]);
     const result = applyIntent(
       baseState(),
       makeIntent({

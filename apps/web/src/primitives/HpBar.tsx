@@ -58,10 +58,7 @@ export function HpBar({ current, max, size = 'sm', compact = false, variant }: H
   // and keeps the bar a pure presentation element; screen readers get the
   // numbers from the adjacent label.
   return (
-    <div
-      className={`w-full ${height} rounded-full bg-ink-3 overflow-hidden`}
-      aria-hidden="true"
-    >
+    <div className={`w-full ${height} rounded-full bg-ink-3 overflow-hidden`} aria-hidden="true">
       <div
         className={`${color} ${height} rounded-full transition-[width] duration-300 ease-out`}
         style={{ width: `${pct * 100}%` }}

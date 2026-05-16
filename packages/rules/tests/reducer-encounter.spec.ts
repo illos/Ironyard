@@ -1,4 +1,8 @@
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import type { Intent, Monster, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
@@ -193,7 +197,9 @@ describe('applyIntent — StartEncounter', () => {
   it('StartEncounter with stampedPcs materializes the PC into the roster', () => {
     const ctx: ReducerContext = { staticData: buildBundleWithFury() };
     const character = buildFuryL1Fixture();
-    const stampedPcs = [{ characterId: 'char-1', ownerId: 'user-player', name: 'Kaela', character }];
+    const stampedPcs = [
+      { characterId: 'char-1', ownerId: 'user-player', name: 'Kaela', character },
+    ];
     const s = { ...emptyCampaignState(campaignId, 'user-owner'), currentSessionId: 'sess-test' };
     const r = applyIntent(s, intent('StartEncounter', { stampedPcs }), ctx);
     expect(r.errors).toBeUndefined();
@@ -309,7 +315,7 @@ describe('applyIntent — RollPower', () => {
 
   it('multi-target emits one derived ApplyDamage per target', () => {
     const participants = [pc(), monster(), monster({ id: 'm_goblin_2', name: 'Goblin 2' })];
-    let s: CampaignState = {
+    const s: CampaignState = {
       ...emptyCampaignState(campaignId, 'user-owner'),
       participants,
       encounter: {
@@ -321,8 +327,8 @@ describe('applyIntent — RollPower', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
     const r = applyIntent(
@@ -358,8 +364,8 @@ describe('applyIntent — ApplyDamage', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
   }
@@ -410,8 +416,8 @@ describe('end-to-end: RollPower → derived ApplyDamage cascade', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 
@@ -571,7 +577,9 @@ describe('Pass 2b2a — monster meta + PC className stamping', () => {
     const ctx: ReducerContext = { staticData: buildBundleWithFury() };
     // buildFuryL1Fixture uses classId: 'fury'; the bundle maps 'fury' → { name: 'Fury' }
     const character = buildFuryL1Fixture();
-    const stampedPcs = [{ characterId: 'char-1', ownerId: 'user-player', name: 'Kaela', character }];
+    const stampedPcs = [
+      { characterId: 'char-1', ownerId: 'user-player', name: 'Kaela', character },
+    ];
     const s = { ...emptyCampaignState(campaignId, 'user-owner'), currentSessionId: 'sess-test' };
     const r = applyIntent(s, intent('StartEncounter', { stampedPcs }), ctx);
     expect(r.errors).toBeUndefined();

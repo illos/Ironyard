@@ -1,10 +1,7 @@
 import { RaiseOpenActionPayloadSchema, ulid } from '@ironyard/shared';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
 
-export function applyRaiseOpenAction(
-  state: CampaignState,
-  intent: StampedIntent,
-): IntentResult {
+export function applyRaiseOpenAction(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = RaiseOpenActionPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {

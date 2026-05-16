@@ -119,7 +119,7 @@ describe('applyMarkActionUsed — class-δ main-action-used trigger wiring (Task
     // Auto-applied GainResource with causedBy wired
     const gain = result.derived.find((d) => d.type === 'GainResource');
     expect(gain).toBeDefined();
-    expect((gain!.payload as { participantId: string; name: string; amount: number })).toMatchObject({
+    expect(gain!.payload as { participantId: string; name: string; amount: number }).toMatchObject({
       participantId: 'null-1',
       name: 'discipline',
       amount: 1,

@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
 import type { PendingTriggerSet } from '@ironyard/shared';
-import type { CampaignState } from '../../src/types';
+import { describe, expect, it } from 'vitest';
 import { applyResolveTriggerOrder } from '../../src/intents/resolve-trigger-order';
+import type { CampaignState } from '../../src/types';
 import {
   OWNER_ID,
   baseState,
@@ -51,11 +51,13 @@ function makePendingSet(overrides: Partial<PendingTriggerSet> = {}): PendingTrig
   };
 }
 
-function resolveIntent(opts: {
-  pendingTriggerSetId?: string;
-  order?: string[];
-  userId?: string;
-} = {}) {
+function resolveIntent(
+  opts: {
+    pendingTriggerSetId?: string;
+    order?: string[];
+    userId?: string;
+  } = {},
+) {
   return stamped({
     type: 'ResolveTriggerOrder',
     actor: { userId: opts.userId ?? OWNER_ID, role: 'director' },
@@ -75,10 +77,7 @@ describe('applyResolveTriggerOrder', () => {
 
   it('rejects when pendingTriggerSetId does not match', () => {
     const s = stateWithPendingTriggers();
-    const result = applyResolveTriggerOrder(
-      s,
-      resolveIntent({ pendingTriggerSetId: 'wrong-id' }),
-    );
+    const result = applyResolveTriggerOrder(s, resolveIntent({ pendingTriggerSetId: 'wrong-id' }));
     expect(result.errors?.[0]?.code).toBe('id_mismatch');
   });
 
@@ -101,29 +100,20 @@ describe('applyResolveTriggerOrder', () => {
   it('rejects when order has duplicates', () => {
     const s = stateWithPendingTriggers();
     // Two entries for HERO_ID, none for MONSTER_ID
-    const result = applyResolveTriggerOrder(
-      s,
-      resolveIntent({ order: [HERO_ID, HERO_ID] }),
-    );
+    const result = applyResolveTriggerOrder(s, resolveIntent({ order: [HERO_ID, HERO_ID] }));
     expect(result.errors?.[0]?.code).toBe('order_duplicates');
   });
 
   it('rejects when actor is not active director', () => {
     const s = stateWithPendingTriggers();
-    const result = applyResolveTriggerOrder(
-      s,
-      resolveIntent({ userId: 'some-player-id' }),
-    );
+    const result = applyResolveTriggerOrder(s, resolveIntent({ userId: 'some-player-id' }));
     expect(result.errors?.[0]?.code).toBe('not_authorized');
   });
 
   it('emits ExecuteTrigger derived intents in the chosen order', () => {
     const s = stateWithPendingTriggers();
     // Reverse order: monster fires first, hero second
-    const result = applyResolveTriggerOrder(
-      s,
-      resolveIntent({ order: [MONSTER_ID, HERO_ID] }),
-    );
+    const result = applyResolveTriggerOrder(s, resolveIntent({ order: [MONSTER_ID, HERO_ID] }));
     expect(result.errors ?? []).toEqual([]);
     expect(result.derived).toHaveLength(2);
 

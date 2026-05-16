@@ -25,17 +25,27 @@ export function RoleReadout({ data }: RoleReadoutProps) {
         >
           {palette.abbr}
         </span>
-        <span>L{data.level} · {data.family.toUpperCase()}</span>
+        <span>
+          L{data.level} · {data.family.toUpperCase()}
+        </span>
       </span>
     );
   }
   if (data.kind === 'monster-unranked') {
-    return <span>L{data.level} · {data.family.toUpperCase()}</span>;
+    return (
+      <span>
+        L{data.level} · {data.family.toUpperCase()}
+      </span>
+    );
   }
   if (data.kind === 'monster-fallback') {
     return <span>L{data.level} · FOE</span>;
   }
   // pc
   const label = data.className ? data.className.toUpperCase() : 'HERO';
-  return <span>L{data.level} · {label}</span>;
+  return (
+    <span>
+      L{data.level} · {label}
+    </span>
+  );
 }

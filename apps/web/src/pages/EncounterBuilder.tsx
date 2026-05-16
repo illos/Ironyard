@@ -27,8 +27,7 @@ export function EncounterBuilder() {
   const navigate = useNavigate();
   const me = useMe();
   const session = useCampaign(sessionId);
-  const { status, dispatch, currentSessionId, attendingCharacterIds } =
-    useSessionSocket(sessionId);
+  const { status, dispatch, currentSessionId, attendingCharacterIds } = useSessionSocket(sessionId);
   const templates = useEncounterTemplates(sessionId);
   const createTemplate = useCreateEncounterTemplate(sessionId);
   const deleteTemplate = useDeleteEncounterTemplate(sessionId);
@@ -74,9 +73,7 @@ export function EncounterBuilder() {
   if (session.error || !session.data) {
     return (
       <main className="mx-auto max-w-6xl p-6 space-y-2">
-        <p className="text-foe">
-          {(session.error as Error)?.message ?? 'Campaign not found.'}
-        </p>
+        <p className="text-foe">{(session.error as Error)?.message ?? 'Campaign not found.'}</p>
         <Link to="/" className="underline text-text-dim">
           Back home
         </Link>
@@ -90,11 +87,7 @@ export function EncounterBuilder() {
         <Section heading="No active session">
           <p className="text-sm text-text">
             Start a session before building an encounter.{' '}
-            <Link
-              to="/campaigns/$id"
-              params={{ id: sessionId }}
-              className="underline text-accent"
-            >
+            <Link to="/campaigns/$id" params={{ id: sessionId }} className="underline text-accent">
               Go to campaign page →
             </Link>
           </p>
@@ -218,11 +211,7 @@ export function EncounterBuilder() {
                 size="xs"
                 selected={status === 'open'}
                 className={
-                  status === 'connecting'
-                    ? 'text-accent'
-                    : status === 'closed'
-                      ? 'text-foe'
-                      : ''
+                  status === 'connecting' ? 'text-accent' : status === 'closed' ? 'text-foe' : ''
                 }
               >
                 {status}
@@ -288,8 +277,7 @@ export function EncounterBuilder() {
         }
       >
         <p className="text-xs text-text-mute mb-3">
-          Saves the {selectedMonsters.reduce((s, m) => s + m.quantity, 0)} monster(s) in the
-          draft.
+          Saves the {selectedMonsters.reduce((s, m) => s + m.quantity, 0)} monster(s) in the draft.
         </p>
         <form id="save-template-form" onSubmit={handleSaveTemplate} className="space-y-3">
           <label className="block text-sm text-text-dim">
@@ -312,11 +300,7 @@ export function EncounterBuilder() {
         <div className="lg:col-span-4">
           <Section
             heading="Monsters"
-            right={
-              monsters.data ? (
-                <span>{monsters.data.count} total</span>
-              ) : null
-            }
+            right={monsters.data ? <span>{monsters.data.count} total</span> : null}
           >
             <MonsterPicker onAdd={handleAddMonster} />
           </Section>
@@ -327,8 +311,7 @@ export function EncounterBuilder() {
             heading="Encounter Draft"
             right={
               <span>
-                {selectedCharacterIds.size +
-                  selectedMonsters.reduce((s, m) => s + m.quantity, 0)}{' '}
+                {selectedCharacterIds.size + selectedMonsters.reduce((s, m) => s + m.quantity, 0)}{' '}
                 participant
                 {selectedCharacterIds.size +
                   selectedMonsters.reduce((s, m) => s + m.quantity, 0) !==
@@ -350,9 +333,7 @@ export function EncounterBuilder() {
         <div className="lg:col-span-4 space-y-4">
           <Section heading="Characters">
             <CharacterChecklist
-              characters={approvedChars.filter((c) =>
-                attendingCharacterIds.includes(c.id),
-              )}
+              characters={approvedChars.filter((c) => attendingCharacterIds.includes(c.id))}
               isLoading={approvedLoading}
               selectedIds={selectedCharacterIds}
               onToggle={handleToggleCharacter}
@@ -407,10 +388,7 @@ function CharacterChecklist({
                 onChange={() => onToggle(cr.id)}
                 className="h-5 w-5 min-w-[20px] accent-accent"
               />
-              <label
-                htmlFor={`char-${cr.id}`}
-                className="flex-1 text-sm cursor-pointer text-text"
-              >
+              <label htmlFor={`char-${cr.id}`} className="flex-1 text-sm cursor-pointer text-text">
                 {cr.name}
               </label>
             </li>
@@ -432,8 +410,7 @@ function DraftPreview({
   monsterById: Map<string, Monster>;
   onRemoveMonster: (monsterId: string) => void;
 }) {
-  const total =
-    selectedCharacters.length + selectedMonsters.reduce((s, m) => s + m.quantity, 0);
+  const total = selectedCharacters.length + selectedMonsters.reduce((s, m) => s + m.quantity, 0);
   return (
     <div className="space-y-3">
       {total === 0 && (
@@ -475,9 +452,7 @@ function DraftPreview({
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm truncate text-text">{monster?.name ?? pick.monsterId}</p>
-                  <p className="text-xs text-text-mute font-mono tabular-nums">
-                    ×{pick.quantity}
-                  </p>
+                  <p className="text-xs text-text-mute font-mono tabular-nums">×{pick.quantity}</p>
                 </div>
                 <button
                   type="button"
@@ -575,9 +550,7 @@ function MonsterPicker({ onAdd }: { onAdd: (m: Monster) => void }) {
         className="w-full min-h-11 bg-ink-2 border border-line px-3 py-2 outline-none focus:border-accent text-text"
       />
       {monsters.isLoading && <p className="text-text-dim text-sm">Loading monsters…</p>}
-      {monsters.error && (
-        <p className="text-foe text-sm">{(monsters.error as Error).message}</p>
-      )}
+      {monsters.error && <p className="text-foe text-sm">{(monsters.error as Error).message}</p>}
       {monsters.data && (
         <>
           <p className="text-xs text-text-mute">

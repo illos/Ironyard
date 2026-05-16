@@ -1,12 +1,12 @@
 import type { Character } from '@ironyard/shared';
 import type { StaticDataBundle } from '../static-data';
-import type { CharacterAttachment } from './types';
 import { collectFromAncestry } from './collectors/ancestry';
 import { collectFromClassFeatures } from './collectors/class-features';
-import { collectFromLevelPicks } from './collectors/level-picks';
-import { collectFromKit } from './collectors/kit';
 import { collectFromItems } from './collectors/items';
+import { collectFromKit } from './collectors/kit';
+import { collectFromLevelPicks } from './collectors/level-picks';
 import { collectFromTitle } from './collectors/title';
+import type { CharacterAttachment } from './types';
 
 export function collectAttachments(
   character: Character,

@@ -3,10 +3,7 @@ import { evaluateActionTriggers } from '../class-triggers/action-triggers';
 import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
 
-export function applyMarkActionUsed(
-  state: CampaignState,
-  intent: StampedIntent,
-): IntentResult {
+export function applyMarkActionUsed(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = MarkActionUsedPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {

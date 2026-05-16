@@ -16,13 +16,7 @@ export interface TopBarProps {
   onSignOut?: () => void;
 }
 
-export function TopBar({
-  mode,
-  middle,
-  trailing,
-  activeCharacter,
-  onSignOut,
-}: TopBarProps) {
+export function TopBar({ mode, middle, trailing, activeCharacter, onSignOut }: TopBarProps) {
   return (
     <div className="h-12 flex-shrink-0 flex items-center gap-4 px-3.5 bg-ink-1 border-b border-line text-xs">
       <Link to="/" className="flex items-center gap-2 font-semibold text-sm">

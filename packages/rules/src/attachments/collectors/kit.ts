@@ -1,5 +1,5 @@
-import type { Character } from '@ironyard/shared';
 import { KIT_OVERRIDES } from '@ironyard/data';
+import type { Character } from '@ironyard/shared';
 import type { StaticDataBundle } from '../../static-data';
 import type { CharacterAttachment } from '../types';
 

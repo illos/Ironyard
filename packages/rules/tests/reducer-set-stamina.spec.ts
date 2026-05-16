@@ -1,4 +1,8 @@
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
@@ -125,8 +129,8 @@ describe('applyIntent — SetStamina', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
     const r = applyIntent(

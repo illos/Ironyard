@@ -1,5 +1,5 @@
-import matter from 'gray-matter';
 import type { Item } from '@ironyard/shared';
+import matter from 'gray-matter';
 
 const BODY_SLOTS = ['arms', 'feet', 'hands', 'head', 'neck', 'waist', 'ring'] as const;
 type BodySlot = (typeof BODY_SLOTS)[number];

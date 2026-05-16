@@ -1,5 +1,5 @@
-import matter from 'gray-matter';
 import { type Ability, AbilitySchema, type AbilityType, type Kit } from '@ironyard/shared';
+import matter from 'gray-matter';
 import { parsePowerRollFromContent } from './parse-ability';
 
 // Slugify a kit reference: "Pain for Pain" -> "pain-for-pain". Prefixed with
@@ -105,12 +105,8 @@ export function parseKitMarkdown(md: string): Kit | null {
   const bonusesText = bonusesMatch ? bonusesMatch[0] : '';
 
   // Stamina Bonus: "+9 per echelon" — extract leading number.
-  const staminaBonus = parseIntSafe(
-    /\*\*Stamina Bonus:\*\*\s*([+\-]?\d+)/.exec(bonusesText)?.[1],
-  );
-  const speedBonus = parseIntSafe(
-    /\*\*Speed Bonus:\*\*\s*([+\-]?\d+)/.exec(bonusesText)?.[1],
-  );
+  const staminaBonus = parseIntSafe(/\*\*Stamina Bonus:\*\*\s*([+\-]?\d+)/.exec(bonusesText)?.[1]);
+  const speedBonus = parseIntSafe(/\*\*Speed Bonus:\*\*\s*([+\-]?\d+)/.exec(bonusesText)?.[1]);
   const stabilityBonus = parseIntSafe(
     /\*\*Stability Bonus:\*\*\s*([+\-]?\d+)/.exec(bonusesText)?.[1],
   );
@@ -127,9 +123,7 @@ export function parseKitMarkdown(md: string): Kit | null {
 
   // Signature Ability section — extract the H6 heading right after.
   const sigMatch = content.match(/#####\s+Signature Ability[\s\S]*?######\s+([^\n]+)/);
-  const signatureAbilityId = sigMatch?.[1]
-    ? slugifyAbility(id, sigMatch[1].trim())
-    : null;
+  const signatureAbilityId = sigMatch?.[1] ? slugifyAbility(id, sigMatch[1].trim()) : null;
 
   return {
     id,
@@ -174,9 +168,7 @@ export function parseKitSignatureAbility(kitId: string, kitMarkdown: string): Ab
   // `#####` is a *prefix* of `######` (H6), so a naive `(?=#####)` lookahead
   // fires on the H6 ability heading. Anchor to a line-start H5 (newline + 5
   // hashes + space) to disambiguate from the H6 heading inside the section.
-  const sigBlockMatch = content.match(
-    /#####\s+Signature Ability\s*\n([\s\S]*?)(?=\n##### |$)/,
-  );
+  const sigBlockMatch = content.match(/#####\s+Signature Ability\s*\n([\s\S]*?)(?=\n##### |$)/);
   if (!sigBlockMatch?.[1]) return null;
   const sigBlock = sigBlockMatch[1];
 

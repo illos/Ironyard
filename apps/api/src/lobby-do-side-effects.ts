@@ -18,7 +18,13 @@ import { CharacterSchema, type RespitePayload, RespitePayloadSchema } from '@iro
 import type { Intent, Participant } from '@ironyard/shared';
 import { and, eq, inArray } from 'drizzle-orm';
 import { db } from './db';
-import { campaignCharacters, campaignMemberships, campaigns, characters, sessions } from './db/schema';
+import {
+  campaignCharacters,
+  campaignMemberships,
+  campaigns,
+  characters,
+  sessions,
+} from './db/schema';
 import type { Bindings } from './types';
 
 type MutablePayload = { [key: string]: unknown };
@@ -453,8 +459,7 @@ async function sideEffectEndEncounter(
   env: Bindings,
 ): Promise<void> {
   const pcParticipants = stateBefore.participants.filter(
-    (p): p is Participant & { characterId: string } =>
-      p.kind === 'pc' && p.characterId !== null,
+    (p): p is Participant & { characterId: string } => p.kind === 'pc' && p.characterId !== null,
   );
 
   if (pcParticipants.length === 0) return;
@@ -516,8 +521,7 @@ async function sideEffectRespite(
 
   const pcCharIds = stateBefore.participants
     .filter(
-      (p): p is Participant & { characterId: string } =>
-        p.kind === 'pc' && p.characterId !== null,
+      (p): p is Participant & { characterId: string } => p.kind === 'pc' && p.characterId !== null,
     )
     .map((p) => p.characterId);
   const pcCharIdSet = new Set(pcCharIds);

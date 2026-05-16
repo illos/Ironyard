@@ -3,8 +3,8 @@ import {
   PerEncounterFlagsSchema,
   PerTurnFlagKeySchema,
   defaultPerEncounterFlags,
-  defaultPerRoundFlags,
   defaultPerEncounterLatches,
+  defaultPerRoundFlags,
 } from '../src/per-encounter-flags';
 
 describe('PerEncounterFlagsSchema', () => {
@@ -21,7 +21,11 @@ describe('PerEncounterFlagsSchema', () => {
         entries: [
           { scopedToTurnOf: 'pc-fury', key: 'damageDealtThisTurn', value: true },
           { scopedToTurnOf: 'pc-fury', key: 'forcedMovementApplied', value: 1 },
-          { scopedToTurnOf: 'pc-shadow', key: 'teleportedAdjacentToThisTurn', value: ['enemy-1', 'enemy-2'] },
+          {
+            scopedToTurnOf: 'pc-shadow',
+            key: 'teleportedAdjacentToThisTurn',
+            value: ['enemy-1', 'enemy-2'],
+          },
         ],
       },
       perRound: defaultPerRoundFlags(),
@@ -97,9 +101,7 @@ describe('PerEncounterFlagsSchema', () => {
   });
 
   it('rejects unknown perTurn key', () => {
-    expect(() =>
-      PerTurnFlagKeySchema.parse('nonsense'),
-    ).toThrow();
+    expect(() => PerTurnFlagKeySchema.parse('nonsense')).toThrow();
   });
 
   it('accepts all 8 canon perTurn keys', () => {

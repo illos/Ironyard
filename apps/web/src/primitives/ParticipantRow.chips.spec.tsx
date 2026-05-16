@@ -9,17 +9,19 @@
  *   a toggle button per (source, kind) pair where source.id !== thisRow's id.
  */
 
+import type { Participant } from '@ironyard/shared';
+import { defaultTargetingRelations } from '@ironyard/shared';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ParticipantRow } from './ParticipantRow';
-import type { Participant } from '@ironyard/shared';
-import { defaultTargetingRelations } from '@ironyard/shared';
 
 afterEach(cleanup);
 
 // ── Minimal participant factory ───────────────────────────────────────────────
 
-function makeParticipant(overrides: Partial<Participant> & { id: string; name: string }): Participant {
+function makeParticipant(
+  overrides: Partial<Participant> & { id: string; name: string },
+): Participant {
   // Provide required fields with defaults; callers supply only what's under test.
   // Cast to Participant at the end — the Zod schema may add additional optional
   // fields (psionFlags, perEncounterFlags, etc.) that we let default to undefined
@@ -105,7 +107,6 @@ const BASE = {
 // ── describe block ─────────────────────────────────────────────────────────────
 
 describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
-
   // ── Inbound chips ──────────────────────────────────────────────────────────
 
   it('renders inbound chips for ALL viewers (non-owner, non-director)', () => {
@@ -178,9 +179,7 @@ describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
         isActingAsDirector={false}
       />,
     );
-    expect(
-      screen.queryByLabelText(/toggle (judged|marked|nullField)/i),
-    ).toBeNull();
+    expect(screen.queryByLabelText(/toggle (judged|marked|nullField)/i)).toBeNull();
   });
 
   it('renders an outbound toggle chip for the source owner (Censor judging)', () => {
@@ -318,9 +317,7 @@ describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
         isActingAsDirector={false}
       />,
     );
-    expect(
-      screen.queryByLabelText(/toggle judged/i),
-    ).toBeNull();
+    expect(screen.queryByLabelText(/toggle judged/i)).toBeNull();
   });
 
   it('renders no chips at all when allParticipants is undefined', () => {

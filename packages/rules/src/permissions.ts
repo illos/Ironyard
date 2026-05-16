@@ -16,14 +16,10 @@
 //
 // See docs/intent-protocol.md §3 for the wider trust model.
 
-import { IntentTypes, type Actor, type Intent } from '@ironyard/shared';
+import { type Actor, type Intent, IntentTypes } from '@ironyard/shared';
 import type { CampaignState } from './types';
 
-export function canDispatch(
-  intent: Intent,
-  actor: Actor,
-  state: CampaignState,
-): boolean {
+export function canDispatch(intent: Intent, actor: Actor, state: CampaignState): boolean {
   switch (intent.type) {
     case IntentTypes.StartMaintenance:
     case IntentTypes.StopMaintenance: {
@@ -37,8 +33,7 @@ export function canDispatch(
       if (!participantId) return false;
       const participant = state.participants.find((p) => p.id === participantId);
       if (!participant) return false;
-      const isOwner =
-        participant.kind === 'pc' && actor.userId === participant.ownerId;
+      const isOwner = participant.kind === 'pc' && actor.userId === participant.ownerId;
       const isDirector = actor.userId === state.activeDirectorId;
       return isOwner || isDirector;
     }

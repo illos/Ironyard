@@ -1,7 +1,7 @@
 import { TroubadourAutoRevivePayloadSchema } from '@ironyard/shared';
+import { recomputeStaminaState } from '../stamina';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
-import { recomputeStaminaState } from '../stamina';
 
 // Pass 3 Slice 2a — Troubadour posthumous Drama auto-revive.
 //
@@ -52,9 +52,7 @@ export function applyTroubadourAutoRevive(
           intentId: intent.id,
         },
       ],
-      errors: [
-        { code: 'participant_not_found', message: `No PC with id ${participantId}` },
-      ],
+      errors: [{ code: 'participant_not_found', message: `No PC with id ${participantId}` }],
     };
   }
 

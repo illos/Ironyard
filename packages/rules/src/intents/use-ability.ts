@@ -4,8 +4,8 @@ import {
   type Participant,
   UseAbilityPayloadSchema,
 } from '@ironyard/shared';
-import { type AbilityCategory, evaluateActionTriggers } from '../class-triggers/action-triggers';
 import { ABILITY_TARGETING_EFFECTS } from '../class-triggers/ability-targeting-effects';
+import { type AbilityCategory, evaluateActionTriggers } from '../class-triggers/action-triggers';
 import { resolveParticipantClass } from '../class-triggers/helpers';
 import { participantSide } from '../state-helpers';
 import type {

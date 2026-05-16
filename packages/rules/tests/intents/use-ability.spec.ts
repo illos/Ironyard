@@ -1,7 +1,7 @@
 import { IntentTypes } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
-import { applyIntent } from '../../src/reducer';
 import { applyUseAbility } from '../../src/intents/use-ability';
+import { applyIntent } from '../../src/reducer';
 import {
   baseState,
   makeHeroParticipant,
@@ -461,9 +461,7 @@ describe('applyUseAbility — slice 2a additions', () => {
 
 // ── Slice 2b: ABILITY_TARGETING_EFFECTS derivation ──────────────────────────
 
-function makeUseAbilityState(
-  participants: ReturnType<typeof makeHeroParticipant>[],
-) {
+function makeUseAbilityState(participants: ReturnType<typeof makeHeroParticipant>[]) {
   return baseState({
     participants,
     encounter: makeRunningEncounterPhase(ENCOUNTER_ID),
@@ -476,18 +474,21 @@ describe('applyUseAbility — ABILITY_TARGETING_EFFECTS derivation', () => {
       makeHeroParticipant('censor-1', { className: 'censor', ownerId: 'u-aldric' }),
       makeMonsterParticipant('goblin-a'),
     ]);
-    const res = applyUseAbility(state, stamped({
-      id: 'i-1',
-      actor: ownerActor,
-      type: IntentTypes.UseAbility,
-      payload: {
-        participantId: 'censor-1',
-        abilityId: 'censor-judgment-t1',
-        source: 'class',
-        duration: { kind: 'end_of_encounter' },
-        targetIds: ['goblin-a'],
-      },
-    }));
+    const res = applyUseAbility(
+      state,
+      stamped({
+        id: 'i-1',
+        actor: ownerActor,
+        type: IntentTypes.UseAbility,
+        payload: {
+          participantId: 'censor-1',
+          abilityId: 'censor-judgment-t1',
+          source: 'class',
+          duration: { kind: 'end_of_encounter' },
+          targetIds: ['goblin-a'],
+        },
+      }),
+    );
     const setRel = res.derived.filter((d) => d.type === IntentTypes.SetTargetingRelation);
     expect(setRel).toHaveLength(1);
     expect(setRel[0]!.payload).toEqual({
@@ -509,18 +510,21 @@ describe('applyUseAbility — ABILITY_TARGETING_EFFECTS derivation', () => {
       makeMonsterParticipant('goblin-b'),
       makeMonsterParticipant('goblin-c'),
     ]);
-    const res = applyUseAbility(state, stamped({
-      id: 'i-1',
-      actor: ownerActor,
-      type: IntentTypes.UseAbility,
-      payload: {
-        participantId: 'censor-1',
-        abilityId: 'censor-judgment-t1',
-        source: 'class',
-        duration: { kind: 'end_of_encounter' },
-        targetIds: ['goblin-b'],
-      },
-    }));
+    const res = applyUseAbility(
+      state,
+      stamped({
+        id: 'i-1',
+        actor: ownerActor,
+        type: IntentTypes.UseAbility,
+        payload: {
+          participantId: 'censor-1',
+          abilityId: 'censor-judgment-t1',
+          source: 'class',
+          duration: { kind: 'end_of_encounter' },
+          targetIds: ['goblin-b'],
+        },
+      }),
+    );
     const setRel = res.derived.filter((d) => d.type === IntentTypes.SetTargetingRelation);
     expect(setRel).toHaveLength(3);
     expect(setRel[0]!.payload).toMatchObject({ targetId: 'goblin-a', present: false });
@@ -533,18 +537,21 @@ describe('applyUseAbility — ABILITY_TARGETING_EFFECTS derivation', () => {
       makeHeroParticipant('censor-1', { className: 'censor', ownerId: 'u-aldric' }),
       makeMonsterParticipant('goblin-a'),
     ]);
-    const res = applyUseAbility(state, stamped({
-      id: 'i-1',
-      actor: ownerActor,
-      type: IntentTypes.UseAbility,
-      payload: {
-        participantId: 'censor-1',
-        abilityId: 'some-other-ability',
-        source: 'class',
-        duration: { kind: 'EoT' },
-        targetIds: ['goblin-a'],
-      },
-    }));
+    const res = applyUseAbility(
+      state,
+      stamped({
+        id: 'i-1',
+        actor: ownerActor,
+        type: IntentTypes.UseAbility,
+        payload: {
+          participantId: 'censor-1',
+          abilityId: 'some-other-ability',
+          source: 'class',
+          duration: { kind: 'EoT' },
+          targetIds: ['goblin-a'],
+        },
+      }),
+    );
     const setRel = res.derived.filter((d) => d.type === IntentTypes.SetTargetingRelation);
     expect(setRel).toHaveLength(0);
   });
@@ -553,18 +560,21 @@ describe('applyUseAbility — ABILITY_TARGETING_EFFECTS derivation', () => {
     const state = makeUseAbilityState([
       makeHeroParticipant('censor-1', { className: 'censor', ownerId: 'u-aldric' }),
     ]);
-    const res = applyUseAbility(state, stamped({
-      id: 'i-1',
-      actor: ownerActor,
-      type: IntentTypes.UseAbility,
-      payload: {
-        participantId: 'censor-1',
-        abilityId: 'censor-judgment-t1',
-        source: 'class',
-        duration: { kind: 'end_of_encounter' },
-        targetIds: [],
-      },
-    }));
+    const res = applyUseAbility(
+      state,
+      stamped({
+        id: 'i-1',
+        actor: ownerActor,
+        type: IntentTypes.UseAbility,
+        payload: {
+          participantId: 'censor-1',
+          abilityId: 'censor-judgment-t1',
+          source: 'class',
+          duration: { kind: 'end_of_encounter' },
+          targetIds: [],
+        },
+      }),
+    );
     const setRel = res.derived.filter((d) => d.type === IntentTypes.SetTargetingRelation);
     expect(setRel).toHaveLength(0);
   });
@@ -579,18 +589,21 @@ describe('applyUseAbility — ABILITY_TARGETING_EFFECTS derivation', () => {
       makeMonsterParticipant('goblin-a'),
       makeMonsterParticipant('goblin-b'),
     ]);
-    const res = applyUseAbility(state, stamped({
-      id: 'i-1',
-      actor: ownerActor,
-      type: IntentTypes.UseAbility,
-      payload: {
-        participantId: 'tactician-1',
-        abilityId: 'tactician-mark-t1',
-        source: 'class',
-        duration: { kind: 'end_of_encounter' },
-        targetIds: ['goblin-b'],
-      },
-    }));
+    const res = applyUseAbility(
+      state,
+      stamped({
+        id: 'i-1',
+        actor: ownerActor,
+        type: IntentTypes.UseAbility,
+        payload: {
+          participantId: 'tactician-1',
+          abilityId: 'tactician-mark-t1',
+          source: 'class',
+          duration: { kind: 'end_of_encounter' },
+          targetIds: ['goblin-b'],
+        },
+      }),
+    );
     const setRel = res.derived.filter((d) => d.type === IntentTypes.SetTargetingRelation);
     expect(setRel).toHaveLength(2);
     expect(setRel[0]!.payload).toMatchObject({

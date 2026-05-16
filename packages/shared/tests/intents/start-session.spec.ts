@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { StartSessionPayloadSchema } from '../../src/intents/start-session';
 import { EndSessionPayloadSchema } from '../../src/intents/end-session';
+import { StartSessionPayloadSchema } from '../../src/intents/start-session';
 
 describe('StartSessionPayloadSchema', () => {
   it('parses a minimal valid payload', () => {
@@ -31,9 +31,7 @@ describe('StartSessionPayloadSchema', () => {
   });
 
   it('rejects empty attending list', () => {
-    expect(() =>
-      StartSessionPayloadSchema.parse({ attendingCharacterIds: [] }),
-    ).toThrow();
+    expect(() => StartSessionPayloadSchema.parse({ attendingCharacterIds: [] })).toThrow();
   });
 
   it('rejects negative heroTokens override', () => {

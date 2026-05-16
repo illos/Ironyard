@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { defaultPerEncounterFlags } from '@ironyard/shared';
+import { describe, expect, it } from 'vitest';
 import { applyGainResource } from '../../src/intents/gain-resource';
 import {
   baseState,
@@ -22,9 +22,7 @@ import {
 
 const PC_ID = 'pc:troub-1';
 
-function makeDeadTroubadour(
-  overrides: Partial<ReturnType<typeof makeHeroParticipant>> = {},
-) {
+function makeDeadTroubadour(overrides: Partial<ReturnType<typeof makeHeroParticipant>> = {}) {
   return makeHeroParticipant(PC_ID, {
     className: 'Troubadour',
     currentStamina: -15,
@@ -73,9 +71,7 @@ describe('applyGainResource — troubadour drama cross-30 auto-revive', () => {
     expect(raise!.source).toBe('server');
     expect(raise!.actor).toEqual(intent.actor);
 
-    const latch = result.derived.find(
-      (d) => d.type === 'SetParticipantPerEncounterLatch',
-    );
+    const latch = result.derived.find((d) => d.type === 'SetParticipantPerEncounterLatch');
     expect(latch).toBeDefined();
     const latchPayload = latch!.payload as {
       participantId: string;

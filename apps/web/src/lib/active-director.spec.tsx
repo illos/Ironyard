@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { useIsActingAsDirector } from './active-director';
 
 vi.mock('../api/queries', () => ({
@@ -7,9 +7,23 @@ vi.mock('../api/queries', () => ({
   useCampaign: (id: string | undefined) => ({
     data:
       id === 'camp-1'
-        ? { id: 'camp-1', name: 'C1', inviteCode: 'X', isOwner: true, isDirector: true, activeDirectorId: 'u-mira' }
+        ? {
+            id: 'camp-1',
+            name: 'C1',
+            inviteCode: 'X',
+            isOwner: true,
+            isDirector: true,
+            activeDirectorId: 'u-mira',
+          }
         : id === 'camp-2'
-          ? { id: 'camp-2', name: 'C2', inviteCode: 'Y', isOwner: false, isDirector: false, activeDirectorId: 'u-someone-else' }
+          ? {
+              id: 'camp-2',
+              name: 'C2',
+              inviteCode: 'Y',
+              isOwner: false,
+              isDirector: false,
+              activeDirectorId: 'u-someone-else',
+            }
           : undefined,
   }),
 }));

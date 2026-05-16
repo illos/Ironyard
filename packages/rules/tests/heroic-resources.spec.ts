@@ -1,28 +1,28 @@
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import type { Intent, Participant } from '@ironyard/shared';
 import { HEROIC_RESOURCE_NAMES } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
+import {
+  HEROIC_RESOURCES,
+  getResourceConfigForParticipant,
+  resolveFloor,
+} from '../src/heroic-resources';
 import {
   type CampaignState,
   type StampedIntent,
   applyIntent,
   emptyCampaignState,
 } from '../src/index';
-import {
-  HEROIC_RESOURCES,
-  getResourceConfigForParticipant,
-  resolveFloor,
-} from '../src/heroic-resources';
 import { isParticipant } from '../src/types';
 
 const T = 1_700_000_000_000;
 const campaignId = 'sess_heroic_int';
 
-function intent(
-  type: string,
-  payload: unknown,
-  overrides: Partial<Intent> = {},
-): StampedIntent {
+function intent(type: string, payload: unknown, overrides: Partial<Intent> = {}): StampedIntent {
   return {
     id: overrides.id ?? `i_${Math.random().toString(36).slice(2)}`,
     campaignId: overrides.campaignId ?? campaignId,
@@ -55,9 +55,7 @@ function pcWithResource(opts: {
     immunities: [],
     weaknesses: [],
     conditions: [],
-    heroicResources: [
-      { name: opts.resourceName, value: opts.startValue, floor: opts.floor ?? 0 },
-    ],
+    heroicResources: [{ name: opts.resourceName, value: opts.startValue, floor: opts.floor ?? 0 }],
     extras: [],
     surges: 0,
     recoveries: { current: 0, max: 0 },
@@ -132,21 +130,11 @@ describe('resolveFloor', () => {
   });
 
   it('returns -(1 + reason) for the clarity formula', () => {
-    expect(
-      resolveFloor(
-        { formula: 'negative_one_plus_reason' },
-        { reason: 2 },
-      ),
-    ).toBe(-3);
+    expect(resolveFloor({ formula: 'negative_one_plus_reason' }, { reason: 2 })).toBe(-3);
   });
 
   it('returns -1 when reason is 0', () => {
-    expect(
-      resolveFloor(
-        { formula: 'negative_one_plus_reason' },
-        { reason: 0 },
-      ),
-    ).toBe(-1);
+    expect(resolveFloor({ formula: 'negative_one_plus_reason' }, { reason: 0 })).toBe(-1);
   });
 });
 
@@ -236,11 +224,17 @@ describe('full encounter resource generation cycle (canon § 5 integration)', ()
     // path is covered by start-encounter.spec.ts integration cases). Each PC
     // is preloaded as if encounter-start had already run with avg victories = 3.
     const pcs: Participant[] = [
-      pcWithResource({ id: 'censor',    resourceName: 'wrath',    startValue: 3, victories: 3 }),
-      pcWithResource({ id: 'conduit',   resourceName: 'piety',    startValue: 3, victories: 3 }),
-      pcWithResource({ id: 'tactician', resourceName: 'focus',    startValue: 3, victories: 3 }),
-      pcWithResource({ id: 'fury',      resourceName: 'ferocity', startValue: 3, victories: 3 }),
-      pcWithResource({ id: 'talent',    resourceName: 'clarity',  startValue: 3, victories: 3, floor: -1 }),
+      pcWithResource({ id: 'censor', resourceName: 'wrath', startValue: 3, victories: 3 }),
+      pcWithResource({ id: 'conduit', resourceName: 'piety', startValue: 3, victories: 3 }),
+      pcWithResource({ id: 'tactician', resourceName: 'focus', startValue: 3, victories: 3 }),
+      pcWithResource({ id: 'fury', resourceName: 'ferocity', startValue: 3, victories: 3 }),
+      pcWithResource({
+        id: 'talent',
+        resourceName: 'clarity',
+        startValue: 3,
+        victories: 3,
+        floor: -1,
+      }),
     ];
 
     let s: CampaignState = {
@@ -255,8 +249,8 @@ describe('full encounter resource generation cycle (canon § 5 integration)', ()
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 
@@ -267,16 +261,14 @@ describe('full encounter resource generation cycle (canon § 5 integration)', ()
 
     // Per-turn gains for each PC. d3-classes pin to 2 for determinism.
     const turns: Array<{ id: string; rolls?: { d3: number } }> = [
-      { id: 'censor' },                          // flat +2
-      { id: 'conduit',   rolls: { d3: 2 } },     // +2
-      { id: 'tactician' },                       // flat +2
-      { id: 'fury',      rolls: { d3: 2 } },     // +2
-      { id: 'talent',    rolls: { d3: 2 } },     // +2
+      { id: 'censor' }, // flat +2
+      { id: 'conduit', rolls: { d3: 2 } }, // +2
+      { id: 'tactician' }, // flat +2
+      { id: 'fury', rolls: { d3: 2 } }, // +2
+      { id: 'talent', rolls: { d3: 2 } }, // +2
     ];
     for (const t of turns) {
-      const payload = t.rolls
-        ? { participantId: t.id, rolls: t.rolls }
-        : { participantId: t.id };
+      const payload = t.rolls ? { participantId: t.id, rolls: t.rolls } : { participantId: t.id };
       s = applyIntent(s, intent('StartTurn', payload)).state;
       s = applyIntent(s, intent('EndTurn', {})).state;
     }

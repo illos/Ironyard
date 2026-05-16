@@ -84,7 +84,9 @@ describe('applyRollPower — GrantExtraMainAction (§4.10 crit)', () => {
     // the extra action even though Dazed limits them to one of {main, maneuver,
     // move} per turn.
     const s = stateWithBoth({
-      conditions: [{ name: 'Dazed', duration: 'end-of-turn', source: { kind: 'ability', id: 'x' } }],
+      conditions: [
+        { name: 'Dazed', duration: 'end-of-turn', source: { kind: 'ability', id: 'x' } },
+      ],
     });
     const r = applyIntent(s, rollPowerIntent({ d10: [10, 9], abilityType: 'action' }));
 
@@ -186,9 +188,7 @@ describe('applyRollPower — Pass 3 Slice 2a action-trigger evaluation', () => {
 
     expect(r.errors).toBeUndefined();
     const insightGain = r.derived.find(
-      (d) =>
-        d.type === 'GainResource' &&
-        (d.payload as { name: string }).name === 'insight',
+      (d) => d.type === 'GainResource' && (d.payload as { name: string }).name === 'insight',
     );
     expect(insightGain).toBeUndefined();
   });
@@ -210,9 +210,7 @@ describe('applyRollPower — Pass 3 Slice 2a action-trigger evaluation', () => {
 
     expect(r.errors).toBeUndefined();
     const insightGain = r.derived.find(
-      (d) =>
-        d.type === 'GainResource' &&
-        (d.payload as { name: string }).name === 'insight',
+      (d) => d.type === 'GainResource' && (d.payload as { name: string }).name === 'insight',
     );
     expect(insightGain).toBeUndefined();
   });
@@ -274,9 +272,7 @@ describe('applyRollPower — Pass 3 Slice 2a action-trigger evaluation', () => {
         (d.payload as { kind: string }).kind === 'spatial-trigger-troubadour-line-of-effect',
     );
     expect(oa).toBeDefined();
-    expect(
-      (oa?.payload as { payload: { naturalValue: number } }).payload.naturalValue,
-    ).toBe(19);
+    expect((oa?.payload as { payload: { naturalValue: number } }).payload.naturalValue).toBe(19);
   });
 
   it('No Troubadour + natural 20 → no OA raised', () => {

@@ -19,7 +19,7 @@
  * skip-when-unaffordable semantics in turn.ts §StartTurn.
  */
 
-import { defaultPerEncounterFlags, type Participant } from '@ironyard/shared';
+import { type Participant, defaultPerEncounterFlags } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { applyIntent } from '../src/reducer';
 import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../src/types';
@@ -482,9 +482,7 @@ describe('slice-2a integration F — EndEncounter resets slice-2a state', () => 
 
     const ele = makeHeroParticipant(ELE_ID, {
       className: 'Elementalist',
-      maintainedAbilities: [
-        { abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1 },
-      ],
+      maintainedAbilities: [{ abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1 }],
     });
 
     const deadTrou = makeHeroParticipant(DEAD_TROU_ID, {
@@ -515,14 +513,10 @@ describe('slice-2a integration F — EndEncounter resets slice-2a state', () => 
 
     const fury = getPc(after, FURY_ID);
     // Per-encounter latches reset to defaults.
-    expect(fury.perEncounterFlags.perEncounter).toEqual(
-      defaultPerEncounterFlags().perEncounter,
-    );
+    expect(fury.perEncounterFlags.perEncounter).toEqual(defaultPerEncounterFlags().perEncounter);
 
     const trou = getPc(after, TROU_ID);
-    expect(trou.perEncounterFlags.perEncounter).toEqual(
-      defaultPerEncounterFlags().perEncounter,
-    );
+    expect(trou.perEncounterFlags.perEncounter).toEqual(defaultPerEncounterFlags().perEncounter);
 
     const ele = getPc(after, ELE_ID);
     expect(ele.maintainedAbilities).toEqual([]);
@@ -561,7 +555,11 @@ describe('slice-2a integration G — Maintenance auto-drop chain on StartTurn', 
 
     const state = withEncounter([ele]);
 
-    const { state: after, allDerived, result } = applyWithCascade(
+    const {
+      state: after,
+      allDerived,
+      result,
+    } = applyWithCascade(
       state,
       stamped({
         type: 'StartTurn',

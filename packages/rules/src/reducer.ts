@@ -36,8 +36,8 @@ import {
   applyRemoveApprovedCharacter,
   applyRemoveCondition,
   applyRemoveParticipant,
-  applyRespite,
   applyResolveTriggerOrder,
+  applyRespite,
   applyRollInitiative,
   applyRollPower,
   applyRollResistance,
@@ -220,11 +220,22 @@ export function applyIntent(
       // emit-site reducer (apply-damage, apply-heal, etc.) already mutated state.
       // This case exists so the dispatch is exhaustive and the log captures the
       // transition for slice-2 consumers + UI subscribers.
-      const p = intent.payload as { participantId: string; from: string; to: string; cause: string };
+      const p = intent.payload as {
+        participantId: string;
+        from: string;
+        to: string;
+        cause: string;
+      };
       return {
         state,
         derived: [],
-        log: [{ kind: 'info', text: `stamina: ${p.participantId} ${p.from} → ${p.to} (${p.cause})`, intentId: intent.id }],
+        log: [
+          {
+            kind: 'info',
+            text: `stamina: ${p.participantId} ${p.from} → ${p.to} (${p.cause})`,
+            intentId: intent.id,
+          },
+        ],
       };
     }
     case IntentTypes.SubmitCharacter:

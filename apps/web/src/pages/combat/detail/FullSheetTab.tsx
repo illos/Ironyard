@@ -19,17 +19,17 @@ import { useEffect, useMemo, useState } from 'react';
 import { buildIntent } from '../../../api/dispatch';
 import { useCharacter, useMe } from '../../../api/queries';
 import { useItems, useKits, useWizardStaticData } from '../../../api/static-data';
+import { TargetingRelationsCard } from '../../../components/TargetingRelationsCard';
 import { pcFreeStrike } from '../../../data/monsterAbilities';
 import { CLASS_RELATION_KIND } from '../../../lib/class-relation-kind';
 import { useLongPress } from '../../../lib/longPress';
 import { Button, Section } from '../../../primitives';
-import { TargetingRelationsCard } from '../../../components/TargetingRelationsCard';
-import { AbilityCard } from '../AbilityCard';
-import { MonsterStatBlock } from './MonsterStatBlock';
 import { isParticipantEntry, useSessionSocket } from '../../../ws/useSessionSocket';
+import { AbilityCard } from '../AbilityCard';
 import { InventoryPanel } from '../inventory/InventoryPanel';
 import { SwapKitModal } from '../inventory/SwapKitModal';
 import { capitalize } from '../rails/rail-utils';
+import { MonsterStatBlock } from './MonsterStatBlock';
 
 export interface FullSheetTabProps {
   focused: Participant;
@@ -224,29 +224,15 @@ export function FullSheetTab({
           ))}
         </div>
         {candidates.length === 0 && (
-          <p className="mt-2 text-xs text-text-mute">
-            No valid target — add another participant.
-          </p>
+          <p className="mt-2 text-xs text-text-mute">No valid target — add another participant.</p>
         )}
       </Section>
 
       {focused.kind === 'pc' && focused.characterId !== null && (
         <>
-          <HeroTokensSection
-            focused={focused}
-            campaignId={campaignId}
-            disabled={disabled}
-          />
-          <KitSection
-            focused={focused}
-            campaignId={campaignId}
-            disabled={disabled}
-          />
-          <InventorySection
-            focused={focused}
-            participants={participants}
-            campaignId={campaignId}
-          />
+          <HeroTokensSection focused={focused} campaignId={campaignId} disabled={disabled} />
+          <KitSection focused={focused} campaignId={campaignId} disabled={disabled} />
+          <InventorySection focused={focused} participants={participants} campaignId={campaignId} />
         </>
       )}
     </>

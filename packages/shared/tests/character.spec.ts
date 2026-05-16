@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { InventoryEntrySchema } from '../src';
 import {
   CharacterSchema,
   CompleteCharacterSchema,
   CreateCharacterRequestSchema,
 } from '../src/character';
-import { InventoryEntrySchema } from '../src';
 
 describe('CharacterSchema (draft)', () => {
   it('accepts an empty default character', () => {
@@ -135,10 +135,7 @@ describe('CompleteCharacterSchema — per-ancestry refinements', () => {
       ancestryChoices: { traitIds: [], freeSkillId: null },
     });
     expect(r.success).toBe(false);
-    if (!r.success)
-      expect(
-        r.error.issues.some((i) => i.path.includes('freeSkillId')),
-      ).toBe(true);
+    if (!r.success) expect(r.error.issues.some((i) => i.path.includes('freeSkillId'))).toBe(true);
   });
 
   it('accepts devil with freeSkillId', () => {
@@ -159,10 +156,7 @@ describe('CompleteCharacterSchema — per-ancestry refinements', () => {
       ancestryChoices: { traitIds: [], wyrmplateType: null },
     });
     expect(r.success).toBe(false);
-    if (!r.success)
-      expect(
-        r.error.issues.some((i) => i.path.includes('wyrmplateType')),
-      ).toBe(true);
+    if (!r.success) expect(r.error.issues.some((i) => i.path.includes('wyrmplateType'))).toBe(true);
   });
 
   it('accepts dragon-knight with wyrmplateType', () => {
@@ -186,9 +180,7 @@ describe('CompleteCharacterSchema — per-ancestry refinements', () => {
     });
     expect(r.success).toBe(false);
     if (!r.success)
-      expect(
-        r.error.issues.some((i) => i.path.includes('prismaticScalesType')),
-      ).toBe(true);
+      expect(r.error.issues.some((i) => i.path.includes('prismaticScalesType'))).toBe(true);
   });
 
   it('accepts dragon-knight + prismatic-scales with both types chosen', () => {
@@ -214,9 +206,7 @@ describe('CompleteCharacterSchema — per-ancestry refinements', () => {
     });
     expect(r.success).toBe(false);
     if (!r.success)
-      expect(
-        r.error.issues.some((i) => i.path.includes('formerAncestryId')),
-      ).toBe(true);
+      expect(r.error.issues.some((i) => i.path.includes('formerAncestryId'))).toBe(true);
   });
 
   it('accepts revenant with formerAncestryId and no previous-life slots', () => {
@@ -244,9 +234,7 @@ describe('CompleteCharacterSchema — per-ancestry refinements', () => {
     });
     expect(r.success).toBe(false);
     if (!r.success)
-      expect(
-        r.error.issues.some((i) => i.path.includes('previousLifeTraitIds')),
-      ).toBe(true);
+      expect(r.error.issues.some((i) => i.path.includes('previousLifeTraitIds'))).toBe(true);
   });
 
   it('accepts revenant with matching slots and resolved trait ids', () => {

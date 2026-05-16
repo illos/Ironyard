@@ -1,6 +1,6 @@
-import matter from 'gray-matter';
 import type { Ability, AbilityType, PowerRoll } from '@ironyard/shared';
 import { AbilitySchema } from '@ironyard/shared';
+import matter from 'gray-matter';
 import { parseTierOutcome } from './parse-monster';
 import { slugify } from './util/slug';
 
@@ -17,10 +17,7 @@ const ACTION_TYPE_MAP: Record<string, AbilityType> = {
 };
 
 // Derive AbilityType from the frontmatter `action_type` string.
-function parseAbilityType(
-  actionType: string | undefined,
-  typeField: string,
-): AbilityType {
+function parseAbilityType(actionType: string | undefined, typeField: string): AbilityType {
   if (actionType) {
     const key = actionType.trim().toLowerCase();
     const mapped = ACTION_TYPE_MAP[key];
@@ -46,10 +43,7 @@ function parseCost(fm: Record<string, unknown>): number | null {
   if (typeof fm.cost_amount === 'number') return fm.cost_amount;
 
   // Signature abilities: `ability_type: Signature` (no cost — they're free)
-  if (
-    typeof fm.ability_type === 'string' &&
-    fm.ability_type.toLowerCase().includes('signature')
-  ) {
+  if (typeof fm.ability_type === 'string' && fm.ability_type.toLowerCase().includes('signature')) {
     return 0;
   }
 
@@ -177,9 +171,7 @@ export function parsePowerRollFromContent(content: string): PowerRoll | undefine
 // bold power-roll header line (e.g. "**Power Roll + Might vs Stamina:**").
 // Returns null when the ability has no standard power-roll header with a "vs X"
 // clause.
-function extractTargetCharacteristic(
-  content: string,
-): 'Stamina' | 'Reason' | 'Reflexes' | null {
+function extractTargetCharacteristic(content: string): 'Stamina' | 'Reason' | 'Reflexes' | null {
   const lines = content.split(/\r?\n/);
   for (const rawLine of lines) {
     const line = rawLine.replace(/^>\s*/, '').trim();
@@ -237,17 +229,17 @@ export function parseAbilityMarkdown(md: string, filePath = ''): Ability | null 
         : null;
   if (!name) return null;
 
-  const actionType =
-    typeof fm.action_type === 'string' ? fm.action_type : undefined;
+  const actionType = typeof fm.action_type === 'string' ? fm.action_type : undefined;
   const type = parseAbilityType(actionType, typeField);
   const cost = parseCost(fm);
   const tier = parseLevel(fm);
   const sourceClassId = parseSourceClassId(fm, filePath, typeField);
   const isSubclass = parseIsSubclass(filePath, typeField);
 
-  const id = tier !== null
-    ? `${sourceClassId ?? 'unknown'}-${slugify(name)}-t${tier}`
-    : `${sourceClassId ?? 'unknown'}-${slugify(name)}`;
+  const id =
+    tier !== null
+      ? `${sourceClassId ?? 'unknown'}-${slugify(name)}-t${tier}`
+      : `${sourceClassId ?? 'unknown'}-${slugify(name)}`;
 
   const distance = typeof fm.distance === 'string' ? fm.distance : undefined;
   const target = typeof fm.target === 'string' ? fm.target : undefined;

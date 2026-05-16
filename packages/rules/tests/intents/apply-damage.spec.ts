@@ -99,7 +99,9 @@ describe('applyApplyDamage — PC hero → dying', () => {
     expect(updated.currentStamina).toBe(-5);
     // Non-removable Bleeding applied
     expect(
-      updated.conditions.some((c) => c.type === 'Bleeding' && c.source.id === 'dying-state' && !c.removable),
+      updated.conditions.some(
+        (c) => c.type === 'Bleeding' && c.source.id === 'dying-state' && !c.removable,
+      ),
     ).toBe(true);
     // StaminaTransitioned derived intent
     const st = result.derived.find((d) => d.type === 'StaminaTransitioned');
@@ -475,7 +477,9 @@ describe('applyApplyDamage — class-δ stamina-transition trigger wiring (Task 
     expect(result.errors ?? []).toEqual([]);
     // Only StaminaTransitioned should be present — no GainResource, no latch
     expect(result.derived.find((d) => d.type === 'GainResource')).toBeUndefined();
-    expect(result.derived.find((d) => d.type === 'SetParticipantPerEncounterLatch')).toBeUndefined();
+    expect(
+      result.derived.find((d) => d.type === 'SetParticipantPerEncounterLatch'),
+    ).toBeUndefined();
     expect(result.derived.find((d) => d.type === 'StaminaTransitioned')).toBeDefined();
   });
 
@@ -635,9 +639,7 @@ describe('applyApplyDamage — slice 2a flag writes', () => {
     const result = applyApplyDamage(s, applyDamageIntent({ amount: 10 }));
     const entries = result.derived.filter((d) => d.type === 'SetParticipantPerTurnEntry');
     expect(entries).toHaveLength(2);
-    const dealt = entries.find(
-      (d) => (d.payload as { key: string }).key === 'damageDealtThisTurn',
-    );
+    const dealt = entries.find((d) => (d.payload as { key: string }).key === 'damageDealtThisTurn');
     expect(dealt).toBeDefined();
     expect(dealt!.payload).toEqual({
       participantId: 'pc:dealer-1',
@@ -645,9 +647,7 @@ describe('applyApplyDamage — slice 2a flag writes', () => {
       key: 'damageDealtThisTurn',
       value: true,
     });
-    const taken = entries.find(
-      (d) => (d.payload as { key: string }).key === 'damageTakenThisTurn',
-    );
+    const taken = entries.find((d) => (d.payload as { key: string }).key === 'damageTakenThisTurn');
     expect(taken).toBeDefined();
     expect(taken!.payload).toEqual({
       participantId: TARGET_ID,
@@ -739,10 +739,7 @@ describe('applyApplyDamage — slice 2a flag writes', () => {
       participants: [dealer, monsterTarget],
       encounter: makeRunningEncounterPhase('enc-1', { activeParticipantId: 'pc:dealer-1' }),
     });
-    const result = applyApplyDamage(
-      s,
-      applyDamageIntent({ targetId: 'mon:goblin-1', amount: 10 }),
-    );
+    const result = applyApplyDamage(s, applyDamageIntent({ targetId: 'mon:goblin-1', amount: 10 }));
     const entries = result.derived.filter((d) => d.type === 'SetParticipantPerTurnEntry');
     // Only damageDealtThisTurn on PC dealer.
     expect(entries).toHaveLength(1);

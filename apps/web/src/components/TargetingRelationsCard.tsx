@@ -6,8 +6,8 @@
 //
 // Pure presentational — callers own intent dispatch via the onToggle callback.
 
-import { useState } from 'react';
 import type { TargetingRelationKind, TargetingRelations } from '@ironyard/shared';
+import { useState } from 'react';
 import { Button } from '../primitives';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -77,10 +77,7 @@ export function TargetingRelationsCard({
   const isEmpty = currentIds.length === 0;
 
   return (
-    <section
-      aria-label={label}
-      className="border border-line bg-ink-1 p-3 space-y-2"
-    >
+    <section aria-label={label} className="border border-line bg-ink-1 p-3 space-y-2">
       {/* Header — always rendered so the section label is visible even when empty. */}
       <header className="flex items-baseline justify-between gap-2">
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-text-mute">
@@ -96,10 +93,7 @@ export function TargetingRelationsCard({
           {currentIds.map((targetId) => {
             const name = candidateMap.get(targetId) ?? targetId;
             return (
-              <li
-                key={targetId}
-                className="flex items-center justify-between gap-2 min-h-11"
-              >
+              <li key={targetId} className="flex items-center justify-between gap-2 min-h-11">
                 <span className="flex-1 min-w-0 text-sm text-text">{name}</span>
                 <Button
                   type="button"

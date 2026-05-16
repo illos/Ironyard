@@ -1,13 +1,14 @@
 import {
   IntentTypes,
-  defaultPerEncounterFlags,
-  defaultPsionFlags, defaultTargetingRelations,
   SERVER_ONLY_INTENTS,
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
 } from '@ironyard/shared';
 import type { Actor, Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
-import { canDispatch } from '../src/permissions';
 import { type CampaignState, emptyCampaignState } from '../src/index';
+import { canDispatch } from '../src/permissions';
 
 const T = 1_700_000_000_000;
 const campaignId = 'sess_test';
@@ -63,7 +64,10 @@ function pc(over: Partial<Participant> = {}): Participant {
   };
 }
 
-function stateWith(participants: Participant[], activeDirectorId = DIRECTOR_USER_ID): CampaignState {
+function stateWith(
+  participants: Participant[],
+  activeDirectorId = DIRECTOR_USER_ID,
+): CampaignState {
   const s = emptyCampaignState(campaignId, DIRECTOR_USER_ID);
   return {
     ...s,

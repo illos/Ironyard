@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { defaultPerEncounterFlags } from '@ironyard/shared';
+import { describe, expect, it } from 'vitest';
 import { applyTroubadourAutoRevive } from '../../src/intents/troubadour-auto-revive';
 import {
   baseState,
@@ -17,10 +17,7 @@ import {
 
 const PC_ID = 'pc:troub-1';
 
-function stateWith(
-  participants: ReturnType<typeof makeHeroParticipant>[],
-  currentRound = 1,
-) {
+function stateWith(participants: ReturnType<typeof makeHeroParticipant>[], currentRound = 1) {
   return baseState({
     currentSessionId: 'sess-1',
     participants,

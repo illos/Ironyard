@@ -67,10 +67,7 @@ export function ConditionGlyphSvg({ type }: { type: ConditionType }) {
       // Exclamation mark — bold vertical bar over a separated dot.
       return (
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
-          <path
-            d="M 6.75 2 L 9.25 2 L 8.85 9.5 L 7.15 9.5 Z"
-            fill="currentColor"
-          />
+          <path d="M 6.75 2 L 9.25 2 L 8.85 9.5 L 7.15 9.5 Z" fill="currentColor" />
           <circle cx="8" cy="12.5" r="1.4" fill="currentColor" />
         </svg>
       );
@@ -98,12 +95,7 @@ export function ConditionGlyphSvg({ type }: { type: ConditionType }) {
       return (
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
           <circle cx="4" cy="8" r="1.5" fill="currentColor" />
-          <path
-            d="M 5.5 8 L 12.5 8"
-            stroke={stroke}
-            strokeWidth={sw + 0.5}
-            strokeLinecap="round"
-          />
+          <path d="M 5.5 8 L 12.5 8" stroke={stroke} strokeWidth={sw + 0.5} strokeLinecap="round" />
           <path
             d="M 2 12 L 14 12"
             stroke={stroke}
@@ -144,19 +136,9 @@ export function ConditionGlyphSvg({ type }: { type: ConditionType }) {
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
           <circle cx="8" cy="8" r="5.5" fill="none" stroke={stroke} strokeWidth={sw} />
           {/* Hour hand — up */}
-          <path
-            d="M 8 8 L 8 4.5"
-            stroke={stroke}
-            strokeWidth={sw + 0.25}
-            strokeLinecap="round"
-          />
+          <path d="M 8 8 L 8 4.5" stroke={stroke} strokeWidth={sw + 0.25} strokeLinecap="round" />
           {/* Minute hand — right */}
-          <path
-            d="M 8 8 L 11 8"
-            stroke={stroke}
-            strokeWidth={sw}
-            strokeLinecap="round"
-          />
+          <path d="M 8 8 L 11 8" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
           {/* Center pivot */}
           <circle cx="8" cy="8" r="0.9" fill="currentColor" />
         </svg>

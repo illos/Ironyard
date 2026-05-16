@@ -1,4 +1,5 @@
 import type { Character } from '@ironyard/shared';
+import type { WizardStaticData } from '../../api/static-data';
 import {
   CharacteristicCell,
   Chip,
@@ -6,7 +7,6 @@ import {
   SkillChipGroup,
   type SkillItem,
 } from '../../primitives';
-import type { WizardStaticData } from '../../api/static-data';
 
 const CHARACTERISTIC_ORDER = ['might', 'agility', 'reason', 'intuition', 'presence'] as const;
 const CHARACTERISTIC_LABELS: Record<(typeof CHARACTERISTIC_ORDER)[number], string> = {

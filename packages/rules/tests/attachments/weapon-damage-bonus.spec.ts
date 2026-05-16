@@ -8,6 +8,11 @@
 //      ability has Weapon + Melee/Ranged keywords, and skips it otherwise.
 
 import { type Character, CharacterSchema, IntentTypes, type Participant } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { applyAttachments } from '../../src/attachments/apply';
 import { collectFromKit } from '../../src/attachments/collectors/kit';
@@ -17,7 +22,6 @@ import { applyRollPower } from '../../src/intents/roll-power';
 import type { ResolvedKit, StaticDataBundle } from '../../src/static-data';
 import type { CampaignState, StampedIntent } from '../../src/types';
 import { emptyCampaignState } from '../../src/types';
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

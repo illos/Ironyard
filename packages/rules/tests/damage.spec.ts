@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
 import type { Participant } from '@ironyard/shared';
-import { applyDamageStep } from '../src/damage';
 import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
+import { describe, expect, it } from 'vitest';
+import { applyDamageStep } from '../src/damage';
 
 function hero(overrides: Partial<Participant> = {}): Participant {
   return {
@@ -105,7 +105,12 @@ describe('applyDamageStep — KO interception', () => {
   it("intent='knock-out' at non-killing blow applies damage normally", () => {
     // 20 stamina - 10 damage = 10; windedValue(30) = 15; 10 ≤ 15 → winded.
     // wouldHitDead: 10 > -15 → false → KO interception does NOT fire.
-    const r = applyDamageStep(hero({ currentStamina: 20, maxStamina: 30 }), 10, 'fire', 'knock-out');
+    const r = applyDamageStep(
+      hero({ currentStamina: 20, maxStamina: 30 }),
+      10,
+      'fire',
+      'knock-out',
+    );
     expect(r.delivered).toBe(10);
     expect(r.knockedOut).toBe(false);
     expect(r.newParticipant.staminaState).toBe('winded');
@@ -172,7 +177,10 @@ describe('applyDamageStep — bypassDamageReduction (slice 2a)', () => {
     // must honor weakness/immunity.
     const rDefault = applyDamageStep(target, 7, 'fire');
     expect(rDefault.delivered).toBe(5); // 7 + 3 - 5
-    const rOpts = applyDamageStep(target, 7, 'fire', { intent: 'kill', bypassDamageReduction: false });
+    const rOpts = applyDamageStep(target, 7, 'fire', {
+      intent: 'kill',
+      bypassDamageReduction: false,
+    });
     expect(rOpts.delivered).toBe(5);
   });
 });

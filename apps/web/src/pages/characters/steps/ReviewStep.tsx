@@ -1,8 +1,8 @@
 import { type Character, IntentTypes } from '@ironyard/shared';
-import { useSessionSocket } from '../../../ws/useSessionSocket';
-import { useMe } from '../../../api/queries';
 import { buildIntent } from '../../../api/dispatch';
-import { type WizardStaticData } from '../../../api/static-data';
+import { useMe } from '../../../api/queries';
+import type { WizardStaticData } from '../../../api/static-data';
+import { useSessionSocket } from '../../../ws/useSessionSocket';
 import { RuntimeReadout, checkSubmitGate } from '../parts/RuntimeReadout';
 
 export function ReviewStep({
@@ -63,7 +63,8 @@ export function ReviewStep({
         ) : (
           <>
             <p className="text-sm text-text-dim mb-3">
-              Standalone character — not yet attached to a campaign. You can attach later from the sheet.
+              Standalone character — not yet attached to a campaign. You can attach later from the
+              sheet.
             </p>
             <button
               type="button"

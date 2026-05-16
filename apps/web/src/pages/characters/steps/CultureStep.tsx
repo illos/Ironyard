@@ -1,15 +1,15 @@
-import { useState } from 'react';
 import type { Character, CharacterCulture } from '@ironyard/shared';
 import {
   ARCHETYPICAL_CULTURES,
-  CULTURE_ASPECT_DESCRIPTIONS,
-  TYPICAL_ANCESTRY_CULTURES,
   type ArchetypicalCulture,
+  CULTURE_ASPECT_DESCRIPTIONS,
   type CultureEnvironment,
   type CultureOrganization,
   type CultureUpbringing,
+  TYPICAL_ANCESTRY_CULTURES,
   type TypicalAncestryCulture,
 } from '@ironyard/shared';
+import { useState } from 'react';
 
 type CulturePath = 'typical' | 'archetypical' | 'scratch';
 
@@ -25,14 +25,21 @@ const ORGANIZATIONS = ['bureaucratic', 'communal'] as const;
 const UPBRINGINGS = ['academic', 'creative', 'labor', 'lawless', 'martial', 'noble'] as const;
 
 function ancestryLabel(id: string) {
-  return id.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  return id
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 }
 
 // ── Main step ─────────────────────────────────────────────────────────────────
 
-export function CultureStep({ draft, onPatch }: { draft: Character; onPatch: (p: Partial<Character>) => void }) {
+export function CultureStep({
+  draft,
+  onPatch,
+}: { draft: Character; onPatch: (p: Partial<Character>) => void }) {
   const culture = draft.culture;
-  const hasData = culture.environment !== null || culture.organization !== null || culture.upbringing !== null;
+  const hasData =
+    culture.environment !== null || culture.organization !== null || culture.upbringing !== null;
   // When reloading an existing draft we can't know the original path; default to scratch.
   const [path, setPath] = useState<CulturePath | null>(hasData ? 'scratch' : null);
 
@@ -72,8 +79,11 @@ export function CultureStep({ draft, onPatch }: { draft: Character; onPatch: (p:
 
   return (
     <div className="space-y-5">
-      <button type="button" onClick={changePath}
-        className="text-sm text-text-dim hover:text-text underline underline-offset-2">
+      <button
+        type="button"
+        onClick={changePath}
+        className="text-sm text-text-dim hover:text-text underline underline-offset-2"
+      >
         ← Change path
       </button>
       {path === 'typical' && (
@@ -87,10 +97,17 @@ export function CultureStep({ draft, onPatch }: { draft: Character; onPatch: (p:
 
 // ── Path card ─────────────────────────────────────────────────────────────────
 
-function PathCard({ title, description, onClick }: { title: string; description: string; onClick: () => void }) {
+function PathCard({
+  title,
+  description,
+  onClick,
+}: { title: string; description: string; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick}
-      className="w-full text-left border border-line bg-ink-1 hover:border-accent px-4 py-3 space-y-1 transition-colors">
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full text-left border border-line bg-ink-1 hover:border-accent px-4 py-3 space-y-1 transition-colors"
+    >
       <div className="text-sm font-medium text-text">{title}</div>
       <div className="text-xs text-text-dim">{description}</div>
     </button>
@@ -99,7 +116,11 @@ function PathCard({ title, description, onClick }: { title: string; description:
 
 // ── Typical path ──────────────────────────────────────────────────────────────
 
-function TypicalPath({ culture, suggestedAncestryId, set }: {
+function TypicalPath({
+  culture,
+  suggestedAncestryId,
+  set,
+}: {
   culture: CharacterCulture;
   suggestedAncestryId: string | null;
   set: (p: Partial<CharacterCulture>) => void;
@@ -136,7 +157,10 @@ function TypicalPath({ culture, suggestedAncestryId, set }: {
             const isSelected = selected?.ancestryId === p.ancestryId;
             const isSuggested = !selected && p.ancestryId === suggestedAncestryId;
             return (
-              <button key={p.ancestryId} type="button" onClick={() => pick(p)}
+              <button
+                key={p.ancestryId}
+                type="button"
+                onClick={() => pick(p)}
                 className={
                   'min-h-11 px-3 py-2 border text-sm text-left transition-colors ' +
                   (isSelected
@@ -144,11 +168,10 @@ function TypicalPath({ culture, suggestedAncestryId, set }: {
                     : isSuggested
                       ? 'bg-ink-1 text-text-dim border-accent hover:border-accent-strong'
                       : 'bg-ink-1 text-text-dim border-line hover:border-accent')
-                }>
+                }
+              >
                 <div className="font-medium">{ancestryLabel(p.ancestryId)}</div>
-                {isSuggested && (
-                  <div className="text-xs text-accent mt-0.5">Your ancestry</div>
-                )}
+                {isSuggested && <div className="text-xs text-accent mt-0.5">Your ancestry</div>}
               </button>
             );
           })}
@@ -156,24 +179,26 @@ function TypicalPath({ culture, suggestedAncestryId, set }: {
       </div>
       {selected && (
         <>
-          <PresetSummary rows={[
-            { label: 'Language', value: selected.language },
-            {
-              label: 'Environment',
-              value: selected.environment,
-              description: CULTURE_ASPECT_DESCRIPTIONS.environment[selected.environment],
-            },
-            {
-              label: 'Organization',
-              value: selected.organization,
-              description: CULTURE_ASPECT_DESCRIPTIONS.organization[selected.organization],
-            },
-            {
-              label: 'Upbringing',
-              value: selected.upbringing,
-              description: CULTURE_ASPECT_DESCRIPTIONS.upbringing[selected.upbringing],
-            },
-          ]} />
+          <PresetSummary
+            rows={[
+              { label: 'Language', value: selected.language },
+              {
+                label: 'Environment',
+                value: selected.environment,
+                description: CULTURE_ASPECT_DESCRIPTIONS.environment[selected.environment],
+              },
+              {
+                label: 'Organization',
+                value: selected.organization,
+                description: CULTURE_ASPECT_DESCRIPTIONS.organization[selected.organization],
+              },
+              {
+                label: 'Upbringing',
+                value: selected.upbringing,
+                description: CULTURE_ASPECT_DESCRIPTIONS.upbringing[selected.upbringing],
+              },
+            ]}
+          />
           <SkillPickers culture={culture} set={set} />
         </>
       )}
@@ -183,7 +208,10 @@ function TypicalPath({ culture, suggestedAncestryId, set }: {
 
 // ── Archetypical path ─────────────────────────────────────────────────────────
 
-function ArchetypicalPath({ culture, set }: {
+function ArchetypicalPath({
+  culture,
+  set,
+}: {
   culture: CharacterCulture;
   set: (p: Partial<CharacterCulture>) => void;
 }) {
@@ -200,13 +228,17 @@ function ArchetypicalPath({ culture, set }: {
         <h3 className="text-sm text-text-dim mb-2">Choose a community</h3>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {ARCHETYPICAL_CULTURES.map((c) => (
-            <button key={c.id} type="button" onClick={() => pick(c)}
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => pick(c)}
               className={
                 'min-h-11 px-3 py-2 border text-sm text-left transition-colors ' +
                 (selected?.id === c.id
                   ? 'bg-accent text-ink-0 border-accent'
                   : 'bg-ink-1 text-text-dim border-line hover:border-accent')
-              }>
+              }
+            >
               {c.name}
             </button>
           ))}
@@ -214,25 +246,31 @@ function ArchetypicalPath({ culture, set }: {
       </div>
       {selected && (
         <>
-          <PresetSummary rows={[
-            {
-              label: 'Environment',
-              value: selected.environment,
-              description: CULTURE_ASPECT_DESCRIPTIONS.environment[selected.environment],
-            },
-            {
-              label: 'Organization',
-              value: selected.organization,
-              description: CULTURE_ASPECT_DESCRIPTIONS.organization[selected.organization],
-            },
-            {
-              label: 'Upbringing',
-              value: selected.upbringing,
-              description: CULTURE_ASPECT_DESCRIPTIONS.upbringing[selected.upbringing],
-            },
-          ]} />
-          <SkillPicker label="Language" options={LANGUAGE_POOL} value={culture.language}
-            onChange={(v) => set({ language: v })} />
+          <PresetSummary
+            rows={[
+              {
+                label: 'Environment',
+                value: selected.environment,
+                description: CULTURE_ASPECT_DESCRIPTIONS.environment[selected.environment],
+              },
+              {
+                label: 'Organization',
+                value: selected.organization,
+                description: CULTURE_ASPECT_DESCRIPTIONS.organization[selected.organization],
+              },
+              {
+                label: 'Upbringing',
+                value: selected.upbringing,
+                description: CULTURE_ASPECT_DESCRIPTIONS.upbringing[selected.upbringing],
+              },
+            ]}
+          />
+          <SkillPicker
+            label="Language"
+            options={LANGUAGE_POOL}
+            value={culture.language}
+            onChange={(v) => set({ language: v })}
+          />
           <SkillPickers culture={culture} set={set} />
         </>
       )}
@@ -242,23 +280,42 @@ function ArchetypicalPath({ culture, set }: {
 
 // ── Scratch path ──────────────────────────────────────────────────────────────
 
-function ScratchPath({ culture, set }: {
+function ScratchPath({
+  culture,
+  set,
+}: {
   culture: CharacterCulture;
   set: (p: Partial<CharacterCulture>) => void;
 }) {
   return (
     <div className="space-y-5">
-      <Picker label="Environment" options={ENVIRONMENTS} value={culture.environment}
+      <Picker
+        label="Environment"
+        options={ENVIRONMENTS}
+        value={culture.environment}
         onChange={(v) => set({ environment: v as CultureEnvironment })}
-        descriptions={CULTURE_ASPECT_DESCRIPTIONS.environment} />
-      <Picker label="Organization" options={ORGANIZATIONS} value={culture.organization}
+        descriptions={CULTURE_ASPECT_DESCRIPTIONS.environment}
+      />
+      <Picker
+        label="Organization"
+        options={ORGANIZATIONS}
+        value={culture.organization}
         onChange={(v) => set({ organization: v as CultureOrganization })}
-        descriptions={CULTURE_ASPECT_DESCRIPTIONS.organization} />
-      <Picker label="Upbringing" options={UPBRINGINGS} value={culture.upbringing}
+        descriptions={CULTURE_ASPECT_DESCRIPTIONS.organization}
+      />
+      <Picker
+        label="Upbringing"
+        options={UPBRINGINGS}
+        value={culture.upbringing}
         onChange={(v) => set({ upbringing: v as CultureUpbringing })}
-        descriptions={CULTURE_ASPECT_DESCRIPTIONS.upbringing} />
-      <SkillPicker label="Language" options={LANGUAGE_POOL} value={culture.language}
-        onChange={(v) => set({ language: v })} />
+        descriptions={CULTURE_ASPECT_DESCRIPTIONS.upbringing}
+      />
+      <SkillPicker
+        label="Language"
+        options={LANGUAGE_POOL}
+        value={culture.language}
+        onChange={(v) => set({ language: v })}
+      />
       <SkillPickers culture={culture} set={set} />
     </div>
   );
@@ -289,23 +346,44 @@ function PresetSummary({
   );
 }
 
-function SkillPickers({ culture, set }: {
+function SkillPickers({
+  culture,
+  set,
+}: {
   culture: CharacterCulture;
   set: (p: Partial<CharacterCulture>) => void;
 }) {
   return (
     <>
-      <SkillPicker label="Environment skill" options={SKILL_POOL_BY_ASPECT['environment'] ?? []}
-        value={culture.environmentSkill} onChange={(v) => set({ environmentSkill: v })} />
-      <SkillPicker label="Organization skill" options={SKILL_POOL_BY_ASPECT['organization'] ?? []}
-        value={culture.organizationSkill} onChange={(v) => set({ organizationSkill: v })} />
-      <SkillPicker label="Upbringing skill" options={SKILL_POOL_BY_ASPECT['upbringing'] ?? []}
-        value={culture.upbringingSkill} onChange={(v) => set({ upbringingSkill: v })} />
+      <SkillPicker
+        label="Environment skill"
+        options={SKILL_POOL_BY_ASPECT['environment'] ?? []}
+        value={culture.environmentSkill}
+        onChange={(v) => set({ environmentSkill: v })}
+      />
+      <SkillPicker
+        label="Organization skill"
+        options={SKILL_POOL_BY_ASPECT['organization'] ?? []}
+        value={culture.organizationSkill}
+        onChange={(v) => set({ organizationSkill: v })}
+      />
+      <SkillPicker
+        label="Upbringing skill"
+        options={SKILL_POOL_BY_ASPECT['upbringing'] ?? []}
+        value={culture.upbringingSkill}
+        onChange={(v) => set({ upbringingSkill: v })}
+      />
     </>
   );
 }
 
-function Picker<T extends string>({ label, options, value, onChange, descriptions }: {
+function Picker<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+  descriptions,
+}: {
   label: string;
   options: readonly T[];
   value: T | null;
@@ -317,27 +395,34 @@ function Picker<T extends string>({ label, options, value, onChange, description
       <h3 className="text-sm text-text-dim mb-1">{label}</h3>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
-          <button key={o} type="button" onClick={() => onChange(o)}
+          <button
+            key={o}
+            type="button"
+            onClick={() => onChange(o)}
             className={
               'min-h-11 px-3 py-2 border text-sm capitalize ' +
               (value === o
                 ? 'bg-accent text-ink-0 border-accent'
                 : 'bg-ink-1 text-text-dim border-line hover:border-accent')
-            }>
+            }
+          >
             {o}
           </button>
         ))}
       </div>
       {descriptions && value && descriptions[value] && (
-        <p className="mt-2 text-xs text-text-mute leading-relaxed">
-          {descriptions[value]}
-        </p>
+        <p className="mt-2 text-xs text-text-mute leading-relaxed">{descriptions[value]}</p>
       )}
     </div>
   );
 }
 
-function SkillPicker({ label, options, value, onChange }: {
+function SkillPicker({
+  label,
+  options,
+  value,
+  onChange,
+}: {
   label: string;
   options: string[];
   value: string | null;

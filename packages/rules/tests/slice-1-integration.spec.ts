@@ -251,9 +251,9 @@ describe('slice-1 integration — Hakaan doomed via BecomeDoomed, dies at EndEnc
 
     // Verify override has dieAtEncounterEnd=true (Hakaan-Doomsight path)
     const doomedPc = state.participants.find((p) => p.id === PC_ID)!;
-    expect(
-      (doomedPc.staminaOverride as { dieAtEncounterEnd: boolean }).dieAtEncounterEnd,
-    ).toBe(true);
+    expect((doomedPc.staminaOverride as { dieAtEncounterEnd: boolean }).dieAtEncounterEnd).toBe(
+      true,
+    );
 
     // End the encounter
     const encounterId = state.encounter?.id ?? '';

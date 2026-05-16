@@ -35,7 +35,11 @@ export function applySetTargetingRelation(
       state,
       derived: [],
       log: [
-        { kind: 'error', text: 'SetTargetingRelation rejected: self-targeting', intentId: intent.id },
+        {
+          kind: 'error',
+          text: 'SetTargetingRelation rejected: self-targeting',
+          intentId: intent.id,
+        },
       ],
       errors: [{ code: 'self_targeting', message: 'source and target must differ' }],
     };

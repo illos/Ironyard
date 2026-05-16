@@ -1,11 +1,14 @@
-import { cleanup, render, screen } from '@testing-library/react';
 import type { ConditionInstance } from '@ironyard/shared';
+import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { ConditionGlyph, ConditionGlyphs } from './ConditionGlyph';
 
 afterEach(cleanup);
 
-function mk(type: ConditionInstance['type'], duration: ConditionInstance['duration'] = { kind: 'manual' }): ConditionInstance {
+function mk(
+  type: ConditionInstance['type'],
+  duration: ConditionInstance['duration'] = { kind: 'manual' },
+): ConditionInstance {
   return {
     type,
     source: { kind: 'effect', id: 'test' },
@@ -18,8 +21,16 @@ function mk(type: ConditionInstance['type'], duration: ConditionInstance['durati
 describe('ConditionGlyph', () => {
   it('renders a glyph for each condition type with the per-condition hue class', () => {
     const types = [
-      'Bleeding', 'Dazed', 'Frightened', 'Grabbed', 'Prone',
-      'Restrained', 'Slowed', 'Taunted', 'Unconscious', 'Weakened',
+      'Bleeding',
+      'Dazed',
+      'Frightened',
+      'Grabbed',
+      'Prone',
+      'Restrained',
+      'Slowed',
+      'Taunted',
+      'Unconscious',
+      'Weakened',
     ] as const;
     for (const t of types) {
       const { container, unmount } = render(<ConditionGlyph condition={mk(t)} />);
@@ -71,9 +82,7 @@ describe('ConditionGlyphs cluster', () => {
 
   it('renders one glyph per condition', () => {
     render(
-      <ConditionGlyphs
-        conditions={[mk('Bleeding'), mk('Dazed', { kind: 'EoT' }), mk('Slowed')]}
-      />,
+      <ConditionGlyphs conditions={[mk('Bleeding'), mk('Dazed', { kind: 'EoT' }), mk('Slowed')]} />,
     );
     expect(screen.getByTitle('Bleeding')).toBeInTheDocument();
     expect(screen.getByTitle('Dazed · EoT')).toBeInTheDocument();

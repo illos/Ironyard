@@ -5,10 +5,10 @@ import { ConditionInstanceSchema } from './condition';
 import { TypedResistanceSchema } from './damage';
 import { MaintainedAbilitySchema } from './maintained-ability';
 import { PerEncounterFlagsSchema, defaultPerEncounterFlags } from './per-encounter-flags';
-import { TargetingRelationsSchema, defaultTargetingRelations } from './targeting-relations';
 import { PsionFlagsSchema, defaultPsionFlags } from './psion-flags';
 import { ExtraResourceInstanceSchema, HeroicResourceInstanceSchema } from './resource';
 import { ParticipantStateOverrideSchema } from './stamina-override';
+import { TargetingRelationsSchema, defaultTargetingRelations } from './targeting-relations';
 
 // Quick stat block. Phase 1 ships PCs as form-built blocks; later phases swap
 // PCs in by character id from the D1 `characters` table, but the in-encounter

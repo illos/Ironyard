@@ -1,9 +1,9 @@
 import type { Participant, TargetingRelationKind } from '@ironyard/shared';
 import { ParticipantRow, Section } from '../../primitives';
 import { ConditionGlyphs } from './ConditionGlyph';
-import { initials, roleReadoutFor } from './rails/rail-utils';
-import { RoleReadout } from './rails/RoleReadout';
 import { derivePickAffordance } from './initiative';
+import { RoleReadout } from './rails/RoleReadout';
+import { initials, roleReadoutFor } from './rails/rail-utils';
 
 export interface EncounterRailProps {
   foes: Participant[];
@@ -86,7 +86,10 @@ export function EncounterRail({
               isActed={actedThisRound.includes(f.id)}
               isSurprised={f.surprised}
               target={{
-                index: targetParticipantIds.indexOf(f.id) >= 0 ? targetParticipantIds.indexOf(f.id) + 1 : null,
+                index:
+                  targetParticipantIds.indexOf(f.id) >= 0
+                    ? targetParticipantIds.indexOf(f.id) + 1
+                    : null,
                 onToggle: () => onToggleTarget(f.id),
               }}
               pickAffordance={pickAffordance ?? undefined}

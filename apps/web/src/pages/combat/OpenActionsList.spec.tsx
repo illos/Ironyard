@@ -45,14 +45,16 @@ describe('OpenActionsList', () => {
     expect(html).toContain('Embrace your doom?');
   });
 
-  it('renders the Claim button enabled for the targeted PC\'s owner', () => {
+  it("renders the Claim button enabled for the targeted PC's owner", () => {
     const html = renderToStaticMarkup(
       <OpenActionsList
         openActions={[fakeOA({ participantId: 'pc-1' })]}
         currentUserId="alice"
         activeDirectorId="gm"
         currentRound={1}
-        participantDisplayLookup={(pid) => (pid === 'pc-1' ? { ownerId: 'alice', name: 'Alice' } : { ownerId: null, name: null })}
+        participantDisplayLookup={(pid) =>
+          pid === 'pc-1' ? { ownerId: 'alice', name: 'Alice' } : { ownerId: null, name: null }
+        }
         onClaim={() => {}}
       />,
     );
@@ -68,7 +70,9 @@ describe('OpenActionsList', () => {
         currentUserId="gm"
         activeDirectorId="gm"
         currentRound={1}
-        participantDisplayLookup={(pid) => (pid === 'pc-1' ? { ownerId: 'alice', name: 'Alice' } : { ownerId: null, name: null })}
+        participantDisplayLookup={(pid) =>
+          pid === 'pc-1' ? { ownerId: 'alice', name: 'Alice' } : { ownerId: null, name: null }
+        }
         onClaim={() => {}}
       />,
     );
@@ -82,7 +86,9 @@ describe('OpenActionsList', () => {
         currentUserId="bob"
         activeDirectorId="gm"
         currentRound={1}
-        participantDisplayLookup={(pid) => (pid === 'pc-1' ? { ownerId: 'alice', name: 'Alice' } : { ownerId: null, name: null })}
+        participantDisplayLookup={(pid) =>
+          pid === 'pc-1' ? { ownerId: 'alice', name: 'Alice' } : { ownerId: null, name: null }
+        }
         onClaim={() => {}}
       />,
     );

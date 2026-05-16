@@ -222,7 +222,10 @@ describe('Sessions lifecycle (WS flow)', () => {
       // 'start a session before running combat' (error code no_active_session).
       const msg = await waitForMsg(
         nextMsg,
-        (m) => m.kind === 'rejected' || (m.kind === 'applied' && (m.intent as { type?: string } | undefined)?.type === 'StartEncounter'),
+        (m) =>
+          m.kind === 'rejected' ||
+          (m.kind === 'applied' &&
+            (m.intent as { type?: string } | undefined)?.type === 'StartEncounter'),
       );
       expect(msg.kind).toBe('rejected');
       // Verify the rejection is about the missing session (message text).
@@ -271,11 +274,7 @@ describe('Sessions lifecycle (WS flow)', () => {
   });
 
   it('UpdateSessionAttendance changes the attending character list', async () => {
-    const { cookie } = await devLogin(
-      worker,
-      'sess-attendance@test.local',
-      'SessAttendance',
-    );
+    const { cookie } = await devLogin(worker, 'sess-attendance@test.local', 'SessAttendance');
     const campaign = await createCampaign(worker, cookie, 'Attendance Campaign');
 
     const { ws, nextMsg, close } = await connectLobby(campaign.id, cookie);
@@ -283,13 +282,7 @@ describe('Sessions lifecycle (WS flow)', () => {
       await waitForMsg(nextMsg, (m) => m.kind === 'applied'); // JoinLobby
 
       // Set up two approved characters.
-      const charA = await setupApprovedCharacter(
-        worker,
-        cookie,
-        campaign.inviteCode,
-        ws,
-        nextMsg,
-      );
+      const charA = await setupApprovedCharacter(worker, cookie, campaign.inviteCode, ws, nextMsg);
       const charB = await createPendingCharacter(worker, cookie, campaign.inviteCode);
       dispatch(ws, 'ApproveCharacter', { characterId: charB });
       const approveB = await waitForMsg(nextMsg, appliedOf('ApproveCharacter'));

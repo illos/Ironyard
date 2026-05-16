@@ -18,19 +18,19 @@ import type {
   MonsterFile,
   Title,
 } from '@ironyard/shared';
+import { ABILITY_OVERRIDES } from './overrides/abilities';
 import { ANCESTRY_OVERRIDES } from './overrides/ancestries';
 import { ITEM_OVERRIDES } from './overrides/items';
 import { KIT_OVERRIDES } from './overrides/kits';
-import { ABILITY_OVERRIDES } from './overrides/abilities';
 import { SYNTHETIC_ABILITIES } from './overrides/synthetic-abilities';
 import { TITLE_OVERRIDES } from './overrides/titles';
+import { parseAbilityMarkdown } from './src/parse-ability';
 import { parseAncestryMarkdown } from './src/parse-ancestry';
 import { parseCareerMarkdown } from './src/parse-career';
 import { parseClassMarkdown } from './src/parse-class';
 import { parseComplicationMarkdown } from './src/parse-complication';
 import { parseItemMarkdown } from './src/parse-item';
 import { parseKitMarkdown, parseKitSignatureAbility } from './src/parse-kit';
-import { parseAbilityMarkdown } from './src/parse-ability';
 import { parseMonsterMarkdown } from './src/parse-monster';
 import { parseTitleMarkdown } from './src/parse-title';
 
@@ -324,7 +324,10 @@ function buildAncestries(version: string): void {
       defaultSize: o.defaultSize ?? a.defaultSize ?? '1M',
       defaultSpeed: o.defaultSpeed ?? a.defaultSpeed ?? 5,
       grantedImmunities: o.grantedImmunities ?? a.grantedImmunities ?? [],
-      signatureTraitAbilityId: o.signatureTraitAbilityId !== undefined ? o.signatureTraitAbilityId : (a.signatureTraitAbilityId ?? null),
+      signatureTraitAbilityId:
+        o.signatureTraitAbilityId !== undefined
+          ? o.signatureTraitAbilityId
+          : (a.signatureTraitAbilityId ?? null),
     };
   });
 
@@ -562,8 +565,7 @@ function buildAbilities(): void {
 
   abilities.sort(
     (a, b) =>
-      (a.sourceClassId ?? '').localeCompare(b.sourceClassId ?? '') ||
-      a.name.localeCompare(b.name),
+      (a.sourceClassId ?? '').localeCompare(b.sourceClassId ?? '') || a.name.localeCompare(b.name),
   );
 
   const abilitiesFile = {
@@ -585,11 +587,20 @@ function buildAbilities(): void {
     `build:data — wrote ${abilities.length} abilities to apps/web/public/data/abilities.json`,
   );
   console.log('             mirrored to apps/api/src/data/abilities.json');
-  console.log(`  abilities with structured powerRoll: ${structuredCount}/${abilities.length} (${structuredPct}%)`);
+  console.log(
+    `  abilities with structured powerRoll: ${structuredCount}/${abilities.length} (${structuredPct}%)`,
+  );
 
   if (abilityFailures.length > 0) {
-    console.log(`  abilities.json: ${abilityFailures.length} files yielded null (non-ability stubs or unrecognised type)`);
-    console.log(`  failures (first 10):\n${abilityFailures.slice(0, 10).map((p) => `    ${p.replace(REPO_ROOT, '.')}`).join('\n')}`);
+    console.log(
+      `  abilities.json: ${abilityFailures.length} files yielded null (non-ability stubs or unrecognised type)`,
+    );
+    console.log(
+      `  failures (first 10):\n${abilityFailures
+        .slice(0, 10)
+        .map((p) => `    ${p.replace(REPO_ROOT, '.')}`)
+        .join('\n')}`,
+    );
   }
 }
 
@@ -656,7 +667,11 @@ function buildClasses(version: string): void {
 }
 
 // Override maps imported for future 2B wiring. No-op in 2A.
-void ITEM_OVERRIDES; void KIT_OVERRIDES; void ABILITY_OVERRIDES; void TITLE_OVERRIDES; void SYNTHETIC_ABILITIES;
+void ITEM_OVERRIDES;
+void KIT_OVERRIDES;
+void ABILITY_OVERRIDES;
+void TITLE_OVERRIDES;
+void SYNTHETIC_ABILITIES;
 
 // ── Title build ───────────────────────────────────────────────────────────────
 

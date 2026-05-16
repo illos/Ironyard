@@ -6,33 +6,33 @@
 
 :root {
   /* Surface elevation — warm charcoal */
-  --ink-0: oklch(0.20 0.003 80);
+  --ink-0: oklch(0.2 0.003 80);
   --ink-1: oklch(0.235 0.003 80);
   --ink-2: oklch(0.275 0.003 80);
   --ink-3: oklch(0.32 0.003 80);
-  --ink-4: oklch(0.40 0.003 80);
+  --ink-4: oklch(0.4 0.003 80);
   --line: oklch(0.44 0.003 80 / 0.7);
   --line-soft: oklch(0.44 0.003 80 / 0.35);
 
   /* Text */
-  --text: oklch(0.90 0.003 80);
-  --text-dim: oklch(0.70 0.004 80);
+  --text: oklch(0.9 0.003 80);
+  --text-dim: oklch(0.7 0.004 80);
   --text-mute: oklch(0.54 0.004 80);
 
   /* Side tones */
   --hero: oklch(0.78 0.04 220);
-  --foe:  oklch(0.62 0.16 25);
-  --victory: oklch(0.82 0.17 85);  /* gold — Pill dot for Victories */
+  --foe: oklch(0.62 0.16 25);
+  --victory: oklch(0.82 0.17 85); /* gold — Pill dot for Victories */
 
   /* Stamina states */
   --hp-good: oklch(0.76 0.16 150);
   --hp-warn: oklch(0.82 0.18 80);
-  --hp-bad:  oklch(0.66 0.22 25);
+  --hp-bad: oklch(0.66 0.22 25);
 
   /* Accent — default = Lightning. Overridden by [data-pack=...] below. */
-  --accent:        oklch(0.82 0.16 230);
-  --accent-strong: oklch(0.90 0.18 220);
-  --accent-glow:   oklch(0.78 0.18 230 / 0.5);
+  --accent: oklch(0.82 0.16 230);
+  --accent-strong: oklch(0.9 0.18 220);
+  --accent-glow: oklch(0.78 0.18 230 / 0.5);
 
   /* Spacing (4px base — canonical steps from spec) */
   --space-1: 4px;
@@ -54,28 +54,28 @@
   --shadow-card: none;
 
   /* Pass 2b2a — monster rank palette (categorical) */
-  --rank-min: oklch(0.74 0.004 80);            /* neutral gray */
-  --rank-hor: oklch(0.72 0.10 150);            /* green */
-  --rank-pla: oklch(0.74 0.10 200);            /* teal */
-  --rank-eli: oklch(0.78 0.12 280);            /* violet */
-  --rank-led: oklch(0.78 0.14 60);             /* amber */
-  --rank-sol: oklch(0.66 0.22 25);             /* foe-red */
+  --rank-min: oklch(0.74 0.004 80); /* neutral gray */
+  --rank-hor: oklch(0.72 0.1 150); /* green */
+  --rank-pla: oklch(0.74 0.1 200); /* teal */
+  --rank-eli: oklch(0.78 0.12 280); /* violet */
+  --rank-led: oklch(0.78 0.14 60); /* amber */
+  --rank-sol: oklch(0.66 0.22 25); /* foe-red */
 
   /* Pass 2b2a — per-condition palette (nine distinct hues) */
-  --cond-bleed:  oklch(0.66 0.22 25);          /* red       — DoT */
-  --cond-daze:   oklch(0.74 0.14 290);         /* violet    — mental */
-  --cond-fright: oklch(0.74 0.14 330);         /* magenta   — fear */
-  --cond-grab:   oklch(0.78 0.14 60);          /* amber     — physical hold */
-  --cond-prone:  oklch(0.74 0.10 90);          /* olive     — physical */
-  --cond-restr:  oklch(0.70 0.14 40);          /* orange    — physical hold */
-  --cond-slow:   oklch(0.55 0.20 290);         /* deep purple — mobility (eye-test 2026-05-15) */
-  --cond-taunt:  oklch(0.78 0.14 250);         /* blue      — mental */
-  --cond-weak:   oklch(0.72 0.06 240);         /* gray-blue — debuff */
+  --cond-bleed: oklch(0.66 0.22 25); /* red       — DoT */
+  --cond-daze: oklch(0.74 0.14 290); /* violet    — mental */
+  --cond-fright: oklch(0.74 0.14 330); /* magenta   — fear */
+  --cond-grab: oklch(0.78 0.14 60); /* amber     — physical hold */
+  --cond-prone: oklch(0.74 0.1 90); /* olive     — physical */
+  --cond-restr: oklch(0.7 0.14 40); /* orange    — physical hold */
+  --cond-slow: oklch(0.55 0.2 290); /* deep purple — mobility (eye-test 2026-05-15) */
+  --cond-taunt: oklch(0.78 0.14 250); /* blue      — mental */
+  --cond-weak: oklch(0.72 0.06 240); /* gray-blue — debuff */
 
   /* Pass 2b2a — desaturated HP zone pairs for the inline-variant stamina bar */
-  --hp-good-dim: oklch(0.50 0.12 150);
+  --hp-good-dim: oklch(0.5 0.12 150);
   --hp-warn-dim: oklch(0.55 0.14 60);
-  --hp-bad-dim:  oklch(0.42 0.18 25);
+  --hp-bad-dim: oklch(0.42 0.18 25);
 }
 
 :root[data-theme="light"] {
@@ -85,36 +85,36 @@
   --ink-0: oklch(0.985 0.002 80);
   --ink-1: oklch(0.965 0.003 80);
   --ink-2: oklch(0.94 0.004 80);
-  --ink-3: oklch(0.90 0.005 80);
+  --ink-3: oklch(0.9 0.005 80);
   --ink-4: oklch(0.84 0.006 80);
   --line: oklch(0.78 0.006 80 / 0.7);
   --line-soft: oklch(0.78 0.006 80 / 0.35);
   --text: oklch(0.22 0.005 80);
   --text-dim: oklch(0.42 0.005 80);
   --text-mute: oklch(0.58 0.005 80);
-  --hero: oklch(0.50 0.08 230);
+  --hero: oklch(0.5 0.08 230);
   --foe: oklch(0.52 0.18 28);
 }
 
 :root[data-pack="lightning"] {
   --accent: oklch(0.82 0.16 230);
-  --accent-strong: oklch(0.90 0.18 220);
+  --accent-strong: oklch(0.9 0.18 220);
   --accent-glow: oklch(0.78 0.18 230 / 0.5);
 }
 :root[data-pack="shadow"] {
-  --accent: oklch(0.62 0.20 305);
+  --accent: oklch(0.62 0.2 305);
   --accent-strong: oklch(0.72 0.24 305);
   --accent-glow: oklch(0.55 0.22 305 / 0.5);
 }
 :root[data-pack="fireball"] {
-  --accent: oklch(0.74 0.20 50);
+  --accent: oklch(0.74 0.2 50);
   --accent-strong: oklch(0.84 0.22 55);
-  --accent-glow: oklch(0.70 0.22 45 / 0.5);
+  --accent-glow: oklch(0.7 0.22 45 / 0.5);
 }
 :root[data-pack="chrome"] {
   --accent: oklch(0.84 0.025 240);
   --accent-strong: oklch(0.92 0.04 240);
-  --accent-glow: oklch(0.78 0.10 240 / 0.4);
+  --accent-glow: oklch(0.78 0.1 240 / 0.4);
 }
 
 /* Per-element pack scoping — used inside the combat tracker so each row
@@ -125,10 +125,26 @@
  *
  * The OKLCH triples below MUST be kept in sync with the :root[data-pack="..."] rules above.
  */
-.pack-lightning { --pk: oklch(0.82 0.16 230); --pk-strong: oklch(0.90 0.18 220); --pk-glow: oklch(0.78 0.18 230 / 0.5); }
-.pack-shadow    { --pk: oklch(0.62 0.20 305); --pk-strong: oklch(0.72 0.24 305); --pk-glow: oklch(0.55 0.22 305 / 0.5); }
-.pack-fireball  { --pk: oklch(0.74 0.20 50);  --pk-strong: oklch(0.84 0.22 55);  --pk-glow: oklch(0.70 0.22 45 / 0.5); }
-.pack-chrome    { --pk: oklch(0.84 0.025 240); --pk-strong: oklch(0.92 0.04 240); --pk-glow: oklch(0.78 0.10 240 / 0.4); }
+.pack-lightning {
+  --pk: oklch(0.82 0.16 230);
+  --pk-strong: oklch(0.9 0.18 220);
+  --pk-glow: oklch(0.78 0.18 230 / 0.5);
+}
+.pack-shadow {
+  --pk: oklch(0.62 0.2 305);
+  --pk-strong: oklch(0.72 0.24 305);
+  --pk-glow: oklch(0.55 0.22 305 / 0.5);
+}
+.pack-fireball {
+  --pk: oklch(0.74 0.2 50);
+  --pk-strong: oklch(0.84 0.22 55);
+  --pk-glow: oklch(0.7 0.22 45 / 0.5);
+}
+.pack-chrome {
+  --pk: oklch(0.84 0.025 240);
+  --pk-strong: oklch(0.92 0.04 240);
+  --pk-glow: oklch(0.78 0.1 240 / 0.4);
+}
 
 /* Tailwind v4 theme — expose the CSS variables as theme tokens so utility
  * classes like bg-ink-1 / text-text-dim / border-line work. The defaults
@@ -168,15 +184,15 @@
   --color-rank-led: var(--rank-led);
   --color-rank-sol: var(--rank-sol);
 
-  --color-cond-bleed:  var(--cond-bleed);
-  --color-cond-daze:   var(--cond-daze);
+  --color-cond-bleed: var(--cond-bleed);
+  --color-cond-daze: var(--cond-daze);
   --color-cond-fright: var(--cond-fright);
-  --color-cond-grab:   var(--cond-grab);
-  --color-cond-prone:  var(--cond-prone);
-  --color-cond-restr:  var(--cond-restr);
-  --color-cond-slow:   var(--cond-slow);
-  --color-cond-taunt:  var(--cond-taunt);
-  --color-cond-weak:   var(--cond-weak);
+  --color-cond-grab: var(--cond-grab);
+  --color-cond-prone: var(--cond-prone);
+  --color-cond-restr: var(--cond-restr);
+  --color-cond-slow: var(--cond-slow);
+  --color-cond-taunt: var(--cond-taunt);
+  --color-cond-weak: var(--cond-weak);
 
   --font-sans: "Geist", system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
@@ -198,7 +214,8 @@
   --shadow-card: var(--shadow-card);
 }
 
-html, body {
+html,
+body {
   background: var(--ink-0);
   color: var(--text);
   font-family: var(--font-sans);
@@ -206,4 +223,6 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-.tabular { font-variant-numeric: tabular-nums; }
+.tabular {
+  font-variant-numeric: tabular-nums;
+}

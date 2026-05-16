@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AbilitySchema, AbilityFileSchema } from '../src/data/ability';
+import { AbilityFileSchema, AbilitySchema } from '../src/data/ability';
 
 describe('AbilitySchema — PC extensions', () => {
   it('still parses a monster ability (no PC fields)', () => {

@@ -3,11 +3,7 @@ import type { CanonSlug } from '../canon-status.generated';
 import type { CharacterRuntime } from '../derive-character-runtime';
 import { requireCanon } from '../require-canon';
 import type { ResolvedKit } from '../static-data';
-import type {
-  AttachmentCondition,
-  AttachmentEffect,
-  CharacterAttachment,
-} from './types';
+import type { AttachmentCondition, AttachmentEffect, CharacterAttachment } from './types';
 
 export type ApplyCtx = {
   character: Character;
@@ -28,10 +24,7 @@ export function applyAttachments(
     // requireCanonSlug is a plain string at the type level (carried by data
     // collectors) but the engine gate expects a CanonSlug. The runtime check
     // returns false for unknown slugs, so the cast is safe.
-    if (
-      att.source.requireCanonSlug &&
-      !requireCanon(att.source.requireCanonSlug as CanonSlug)
-    )
+    if (att.source.requireCanonSlug && !requireCanon(att.source.requireCanonSlug as CanonSlug))
       continue;
     if (att.condition && !evaluateCondition(att.condition, ctx)) continue;
     if (att.effect.kind === 'stat-mod' && att.effect.stat === 'recoveryValue') {

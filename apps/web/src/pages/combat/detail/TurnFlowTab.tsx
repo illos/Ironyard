@@ -104,7 +104,10 @@ export function TurnFlowTab({
 
   const rollDisabled = !canRoll;
 
-  const handleRoll = (ability: Ability, args: { rolls: [number, number]; source: 'manual' | 'auto' }) => {
+  const handleRoll = (
+    ability: Ability,
+    args: { rolls: [number, number]; source: 'manual' | 'auto' },
+  ) => {
     onAbilityRoll(ability, args, target);
   };
 

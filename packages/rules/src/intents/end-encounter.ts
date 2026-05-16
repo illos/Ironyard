@@ -1,9 +1,9 @@
 import {
   EndEncounterPayloadSchema,
   IntentTypes,
+  type Participant,
   defaultPerEncounterLatches,
   defaultTargetingRelations,
-  type Participant,
 } from '@ironyard/shared';
 import { requireCanon } from '../require-canon';
 import type {

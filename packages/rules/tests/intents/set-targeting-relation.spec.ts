@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
 import { IntentTypes } from '@ironyard/shared';
+import { describe, expect, it } from 'vitest';
 import { applySetTargetingRelation } from '../../src/intents/set-targeting-relation';
 import type { CampaignState, StampedIntent } from '../../src/types';
 
@@ -48,7 +48,11 @@ function fixtureState(overrides?: Partial<CampaignState>): CampaignState {
         staminaOverride: null,
         bodyIntact: true,
         triggeredActionUsedThisRound: false,
-        perEncounterFlags: { perTurn: { entries: [], heroesActedThisTurn: [] }, perRound: {}, perEncounter: {} } as any,
+        perEncounterFlags: {
+          perTurn: { entries: [], heroesActedThisTurn: [] },
+          perRound: {},
+          perEncounter: {},
+        } as any,
         posthumousDramaEligible: false,
         psionFlags: { clarityDamageOptOutThisTurn: false },
         maintainedAbilities: [],
@@ -92,7 +96,11 @@ function fixtureState(overrides?: Partial<CampaignState>): CampaignState {
         staminaOverride: null,
         bodyIntact: true,
         triggeredActionUsedThisRound: false,
-        perEncounterFlags: { perTurn: { entries: [], heroesActedThisTurn: [] }, perRound: {}, perEncounter: {} } as any,
+        perEncounterFlags: {
+          perTurn: { entries: [], heroesActedThisTurn: [] },
+          perRound: {},
+          perEncounter: {},
+        } as any,
         posthumousDramaEligible: false,
         psionFlags: { clarityDamageOptOutThisTurn: false },
         maintainedAbilities: [],
@@ -107,7 +115,13 @@ function fixtureState(overrides?: Partial<CampaignState>): CampaignState {
   } as unknown as CampaignState;
 }
 
-function intent(payload: any, actor: { userId: string; role: 'player' | 'director' } = { userId: 'user-aldric', role: 'player' }): StampedIntent {
+function intent(
+  payload: any,
+  actor: { userId: string; role: 'player' | 'director' } = {
+    userId: 'user-aldric',
+    role: 'player',
+  },
+): StampedIntent {
   return {
     id: 'i-1',
     campaignId: 'c1',
@@ -144,7 +158,12 @@ describe('applySetTargetingRelation', () => {
     (state.participants[0] as any).targetingRelations.marked = ['goblin-a'];
     const res = applySetTargetingRelation(
       state,
-      intent({ sourceId: 'censor-1', relationKind: 'marked', targetId: 'goblin-a', present: false }),
+      intent({
+        sourceId: 'censor-1',
+        relationKind: 'marked',
+        targetId: 'goblin-a',
+        present: false,
+      }),
     );
     const updated = res.state.participants.find((p: any) => p.id === 'censor-1') as any;
     expect(updated.targetingRelations.marked).toEqual([]);
@@ -153,7 +172,12 @@ describe('applySetTargetingRelation', () => {
     const state = fixtureState();
     const res = applySetTargetingRelation(
       state,
-      intent({ sourceId: 'censor-1', relationKind: 'judged', targetId: 'goblin-a', present: false }),
+      intent({
+        sourceId: 'censor-1',
+        relationKind: 'judged',
+        targetId: 'goblin-a',
+        present: false,
+      }),
     );
     expect(res.errors).toBeUndefined();
     const updated = res.state.participants.find((p: any) => p.id === 'censor-1') as any;

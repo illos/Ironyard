@@ -7,20 +7,10 @@
     "staminaBonus": 0,
     "speedBonus": 1,
     "stabilityBonus": 0,
-    "meleeDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
-    "rangedDamageBonusPerTier": [
-      2,
-      2,
-      2
-    ],
+    "meleeDamageBonusPerTier": [0, 0, 0],
+    "rangedDamageBonusPerTier": [2, 2, 2],
     "signatureAbilityId": "arcane-archer-exploding-arrow",
-    "keywords": [
-      "bow"
-    ]
+    "keywords": ["bow"]
   },
   {
     "id": "battlemind",
@@ -30,21 +20,10 @@
     "staminaBonus": 3,
     "speedBonus": 2,
     "stabilityBonus": 1,
-    "meleeDamageBonusPerTier": [
-      2,
-      2,
-      2
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [2, 2, 2],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "battlemind-unmooring",
-    "keywords": [
-      "light-armor",
-      "medium-weapon"
-    ]
+    "keywords": ["light-armor", "medium-weapon"]
   },
   {
     "id": "cloak-and-dagger",
@@ -54,20 +33,10 @@
     "staminaBonus": 3,
     "speedBonus": 2,
     "stabilityBonus": 0,
-    "meleeDamageBonusPerTier": [
-      1,
-      1,
-      1
-    ],
-    "rangedDamageBonusPerTier": [
-      1,
-      1,
-      1
-    ],
+    "meleeDamageBonusPerTier": [1, 1, 1],
+    "rangedDamageBonusPerTier": [1, 1, 1],
     "signatureAbilityId": "cloak-and-dagger-fade",
-    "keywords": [
-      "light-armor"
-    ]
+    "keywords": ["light-armor"]
   },
   {
     "id": "dual-wielder",
@@ -77,22 +46,10 @@
     "staminaBonus": 6,
     "speedBonus": 2,
     "stabilityBonus": 0,
-    "meleeDamageBonusPerTier": [
-      2,
-      2,
-      2
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [2, 2, 2],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "dual-wielder-double-strike",
-    "keywords": [
-      "medium-armor",
-      "medium-weapon",
-      "light-weapon"
-    ]
+    "keywords": ["medium-armor", "medium-weapon", "light-weapon"]
   },
   {
     "id": "guisarmier",
@@ -102,21 +59,10 @@
     "staminaBonus": 6,
     "speedBonus": 0,
     "stabilityBonus": 1,
-    "meleeDamageBonusPerTier": [
-      2,
-      2,
-      2
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [2, 2, 2],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "guisarmier-forward-thrust-backward-smash",
-    "keywords": [
-      "medium-armor",
-      "polearm"
-    ]
+    "keywords": ["medium-armor", "polearm"]
   },
   {
     "id": "martial-artist",
@@ -126,20 +72,10 @@
     "staminaBonus": 3,
     "speedBonus": 3,
     "stabilityBonus": 0,
-    "meleeDamageBonusPerTier": [
-      2,
-      2,
-      2
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [2, 2, 2],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "martial-artist-battle-grace",
-    "keywords": [
-      "unarmed-strike"
-    ]
+    "keywords": ["unarmed-strike"]
   },
   {
     "id": "mountain",
@@ -149,21 +85,10 @@
     "staminaBonus": 9,
     "speedBonus": 0,
     "stabilityBonus": 2,
-    "meleeDamageBonusPerTier": [
-      0,
-      0,
-      4
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [0, 0, 4],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "mountain-pain-for-pain",
-    "keywords": [
-      "heavy-armor",
-      "heavy-weapon"
-    ]
+    "keywords": ["heavy-armor", "heavy-weapon"]
   },
   {
     "id": "panther",
@@ -173,20 +98,10 @@
     "staminaBonus": 6,
     "speedBonus": 1,
     "stabilityBonus": 1,
-    "meleeDamageBonusPerTier": [
-      0,
-      0,
-      4
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [0, 0, 4],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "panther-devastating-rush",
-    "keywords": [
-      "heavy-weapon"
-    ]
+    "keywords": ["heavy-weapon"]
   },
   {
     "id": "pugilist",
@@ -196,20 +111,10 @@
     "staminaBonus": 6,
     "speedBonus": 2,
     "stabilityBonus": 1,
-    "meleeDamageBonusPerTier": [
-      1,
-      1,
-      1
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [1, 1, 1],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "pugilist-let-s-dance",
-    "keywords": [
-      "unarmed-strike"
-    ]
+    "keywords": ["unarmed-strike"]
   },
   {
     "id": "raider",
@@ -219,22 +124,10 @@
     "staminaBonus": 6,
     "speedBonus": 1,
     "stabilityBonus": 0,
-    "meleeDamageBonusPerTier": [
-      1,
-      1,
-      1
-    ],
-    "rangedDamageBonusPerTier": [
-      1,
-      1,
-      1
-    ],
+    "meleeDamageBonusPerTier": [1, 1, 1],
+    "rangedDamageBonusPerTier": [1, 1, 1],
     "signatureAbilityId": "raider-raider-s-awe",
-    "keywords": [
-      "light-armor",
-      "shield",
-      "light-weapon"
-    ]
+    "keywords": ["light-armor", "shield", "light-weapon"]
   },
   {
     "id": "ranger",
@@ -244,22 +137,10 @@
     "staminaBonus": 6,
     "speedBonus": 1,
     "stabilityBonus": 0,
-    "meleeDamageBonusPerTier": [
-      1,
-      1,
-      1
-    ],
-    "rangedDamageBonusPerTier": [
-      1,
-      1,
-      1
-    ],
+    "meleeDamageBonusPerTier": [1, 1, 1],
+    "rangedDamageBonusPerTier": [1, 1, 1],
     "signatureAbilityId": "ranger-hamstring-shot",
-    "keywords": [
-      "medium-armor",
-      "medium-weapon",
-      "bow"
-    ]
+    "keywords": ["medium-armor", "medium-weapon", "bow"]
   },
   {
     "id": "rapid-fire",
@@ -269,21 +150,10 @@
     "staminaBonus": 3,
     "speedBonus": 1,
     "stabilityBonus": 0,
-    "meleeDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
-    "rangedDamageBonusPerTier": [
-      2,
-      2,
-      2
-    ],
+    "meleeDamageBonusPerTier": [0, 0, 0],
+    "rangedDamageBonusPerTier": [2, 2, 2],
     "signatureAbilityId": "rapid-fire-two-shot",
-    "keywords": [
-      "light-armor",
-      "bow"
-    ]
+    "keywords": ["light-armor", "bow"]
   },
   {
     "id": "retiarius",
@@ -293,22 +163,10 @@
     "staminaBonus": 3,
     "speedBonus": 1,
     "stabilityBonus": 0,
-    "meleeDamageBonusPerTier": [
-      2,
-      2,
-      2
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [2, 2, 2],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "retiarius-net-and-stab",
-    "keywords": [
-      "light-armor",
-      "polearm",
-      "ensnaring"
-    ]
+    "keywords": ["light-armor", "polearm", "ensnaring"]
   },
   {
     "id": "shining-armor",
@@ -318,22 +176,10 @@
     "staminaBonus": 12,
     "speedBonus": 0,
     "stabilityBonus": 1,
-    "meleeDamageBonusPerTier": [
-      2,
-      2,
-      2
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [2, 2, 2],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "shining-armor-protective-attack",
-    "keywords": [
-      "heavy-armor",
-      "shield",
-      "medium-weapon"
-    ]
+    "keywords": ["heavy-armor", "shield", "medium-weapon"]
   },
   {
     "id": "sniper",
@@ -343,20 +189,10 @@
     "staminaBonus": 0,
     "speedBonus": 1,
     "stabilityBonus": 0,
-    "meleeDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      4
-    ],
+    "meleeDamageBonusPerTier": [0, 0, 0],
+    "rangedDamageBonusPerTier": [0, 0, 4],
     "signatureAbilityId": "sniper-patient-shot",
-    "keywords": [
-      "bow"
-    ]
+    "keywords": ["bow"]
   },
   {
     "id": "spellsword",
@@ -366,22 +202,10 @@
     "staminaBonus": 6,
     "speedBonus": 1,
     "stabilityBonus": 1,
-    "meleeDamageBonusPerTier": [
-      2,
-      2,
-      2
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [2, 2, 2],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "spellsword-leaping-lightning",
-    "keywords": [
-      "light-armor",
-      "shield",
-      "medium-weapon"
-    ]
+    "keywords": ["light-armor", "shield", "medium-weapon"]
   },
   {
     "id": "stick-and-robe",
@@ -391,21 +215,10 @@
     "staminaBonus": 3,
     "speedBonus": 2,
     "stabilityBonus": 0,
-    "meleeDamageBonusPerTier": [
-      1,
-      1,
-      1
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [1, 1, 1],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "stick-and-robe-where-i-want-you",
-    "keywords": [
-      "light-armor",
-      "polearm"
-    ]
+    "keywords": ["light-armor", "polearm"]
   },
   {
     "id": "swashbuckler",
@@ -415,21 +228,10 @@
     "staminaBonus": 3,
     "speedBonus": 3,
     "stabilityBonus": 0,
-    "meleeDamageBonusPerTier": [
-      2,
-      2,
-      2
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [2, 2, 2],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "swashbuckler-fancy-footwork",
-    "keywords": [
-      "light-armor",
-      "medium-weapon"
-    ]
+    "keywords": ["light-armor", "medium-weapon"]
   },
   {
     "id": "sword-and-board",
@@ -439,22 +241,10 @@
     "staminaBonus": 9,
     "speedBonus": 0,
     "stabilityBonus": 1,
-    "meleeDamageBonusPerTier": [
-      2,
-      2,
-      2
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [2, 2, 2],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "sword-and-board-shield-bash",
-    "keywords": [
-      "medium-armor",
-      "shield",
-      "medium-weapon"
-    ]
+    "keywords": ["medium-armor", "shield", "medium-weapon"]
   },
   {
     "id": "warrior-priest",
@@ -464,21 +254,10 @@
     "staminaBonus": 9,
     "speedBonus": 1,
     "stabilityBonus": 1,
-    "meleeDamageBonusPerTier": [
-      1,
-      1,
-      1
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [1, 1, 1],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "warrior-priest-weakening-brand",
-    "keywords": [
-      "heavy-armor",
-      "light-weapon"
-    ]
+    "keywords": ["heavy-armor", "light-weapon"]
   },
   {
     "id": "whirlwind",
@@ -488,19 +267,9 @@
     "staminaBonus": 0,
     "speedBonus": 3,
     "stabilityBonus": 0,
-    "meleeDamageBonusPerTier": [
-      1,
-      1,
-      1
-    ],
-    "rangedDamageBonusPerTier": [
-      0,
-      0,
-      0
-    ],
+    "meleeDamageBonusPerTier": [1, 1, 1],
+    "rangedDamageBonusPerTier": [0, 0, 0],
     "signatureAbilityId": "whirlwind-extension-of-my-arm",
-    "keywords": [
-      "whip"
-    ]
+    "keywords": ["whip"]
   }
 ]

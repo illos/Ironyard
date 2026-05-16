@@ -1,0 +1,852 @@
+/* Character Wizard — extends director-combat + character-sheet styles.
+   Two-pane: left = form, right = live preview of the sheet. */
+
+/* ===== Stage / Layout ===== */
+.cw-stage {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--ink-0);
+}
+
+.cw-left,
+.cw-right {
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.cw-left {
+  border-right: 1px solid var(--line);
+}
+.cw-right {
+  background: var(--ink-0);
+}
+
+/* ===== Header & step rail (left pane) ===== */
+.cw-head {
+  flex-shrink: 0;
+  padding: 22px 28px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--ink-0);
+}
+.cw-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 8px;
+}
+.cw-crumb b {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+.cw-crumb .sep {
+  opacity: 0.5;
+}
+.cw-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.cw-title .progress {
+  font-family: "Geist Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  font-weight: 500;
+}
+
+/* Step rail — numbered chips */
+.cw-rail {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.cw-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px 6px 6px;
+  background: transparent;
+  border: 1px solid var(--line-soft);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+.cw-step .num {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink-2);
+  border: 1px solid var(--line-soft);
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0;
+  color: var(--text-mute);
+  font-weight: 600;
+}
+.cw-step:hover {
+  color: var(--text);
+  border-color: var(--line);
+}
+.cw-step:hover .num {
+  color: var(--text-dim);
+  border-color: var(--line);
+}
+.cw-step.on {
+  background: var(--ink-2);
+  border-color: var(--line);
+  color: var(--text);
+}
+.cw-step.on .num {
+  background: var(--accent);
+  color: var(--ink-0);
+  border-color: var(--accent-strong);
+}
+.cw-step.done .num {
+  background: var(--ink-3);
+  color: var(--text);
+  border-color: var(--line);
+}
+.cw-step.done .num::before {
+  content: "✓";
+  font-family: "Geist", sans-serif;
+}
+.cw-step.done .num span {
+  display: none;
+}
+
+/* ===== Form body (scrolls) ===== */
+.cw-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px 28px 110px;
+  min-height: 0;
+}
+
+/* Footer action bar — sticky bottom of left pane */
+.cw-foot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 28px;
+  background: var(--ink-1);
+  border-top: 1px solid var(--line);
+}
+.cw-foot .status {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cw-foot .status .dot {
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  display: inline-block;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+.cw-foot .actions {
+  display: flex;
+  gap: 8px;
+}
+.cw-foot .tb-btn.primary {
+  padding: 8px 16px;
+}
+.cw-foot .tb-btn {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+/* ===== Section labels in the form ===== */
+.cw-section {
+  margin-bottom: 28px;
+}
+.cw-section:last-child {
+  margin-bottom: 0;
+}
+.cw-lbl {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.cw-lbl .k {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  font-weight: 600;
+}
+.cw-lbl .help {
+  font-size: 11px;
+  color: var(--text-mute);
+  letter-spacing: -0.005em;
+}
+
+/* Choice cards — used by ancestry/career/class/kit/complication */
+.cw-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.cw-card {
+  text-align: left;
+  background: var(--ink-1);
+  border: 1px solid var(--line-soft);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  position: relative;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+.cw-card:hover {
+  border-color: var(--line);
+  background: var(--ink-2);
+}
+.cw-card.on {
+  background: var(--ink-2);
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+  padding-left: 17px;
+}
+.cw-card .nm {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.cw-card .tag {
+  font-family: "Geist Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  font-weight: 500;
+}
+.cw-card.on .tag {
+  color: var(--accent);
+}
+.cw-card .blurb {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+.cw-card .meta {
+  display: flex;
+  gap: 10px;
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+.cw-card .meta b {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* Skill / language chips */
+.cw-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.cw-chip {
+  font-size: 11px;
+  padding: 3px 8px;
+  background: var(--ink-2);
+  border: 1px solid var(--line-soft);
+  color: var(--text-dim);
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  font: inherit;
+}
+.cw-chip:hover {
+  color: var(--text);
+  border-color: var(--line);
+}
+.cw-chip.on {
+  background: var(--ink-3);
+  color: var(--text);
+  border-color: var(--line);
+  font-weight: 500;
+}
+.cw-chip.on::before {
+  content: "◆ ";
+  color: var(--accent);
+  font-family: "Geist Mono", monospace;
+  font-size: 9px;
+}
+
+/* Inputs */
+.cw-input,
+.cw-textarea {
+  width: 100%;
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  padding: 9px 12px;
+  letter-spacing: -0.01em;
+}
+.cw-textarea {
+  resize: vertical;
+  min-height: 70px;
+  line-height: 1.5;
+  font-size: 13px;
+}
+.cw-input:focus,
+.cw-textarea:focus {
+  outline: 1px solid var(--accent);
+  border-color: var(--accent);
+}
+.cw-input::placeholder,
+.cw-textarea::placeholder {
+  color: var(--text-mute);
+}
+
+.cw-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.cw-row:last-child {
+  margin-bottom: 0;
+}
+.cw-row .k {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  font-weight: 600;
+}
+
+/* Pack swatches */
+.cw-swatch-row {
+  display: flex;
+  gap: 6px;
+}
+.cw-swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 7px;
+  background: var(--ink-1);
+  border: 1px solid var(--line-soft);
+  font-size: 11px;
+  font-family: "Geist Mono", monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.cw-swatch i {
+  width: 12px;
+  height: 12px;
+  background: var(--sw);
+  border: 1px solid oklch(0 0 0 / 0.2);
+  display: inline-block;
+}
+.cw-swatch:hover {
+  color: var(--text);
+  border-color: var(--line);
+}
+.cw-swatch.on {
+  background: var(--ink-2);
+  border-color: var(--line);
+  color: var(--text);
+}
+
+/* ===== Class-specific bits ===== */
+.cw-locked {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--ink-2);
+  border: 1px dashed var(--line);
+  font-family: "Geist Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  text-transform: uppercase;
+}
+.cw-locked b {
+  font-family: "Geist", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: -0.005em;
+}
+.cw-locked .v {
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 13px;
+}
+.cw-locked .lock {
+  font-family: "Geist Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--text-mute);
+}
+
+/* Characteristic array picker (segmented) */
+.cw-arrays {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.cw-array {
+  background: var(--ink-1);
+  border: 1px solid var(--line-soft);
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--text-dim);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cw-array:hover {
+  color: var(--text);
+  border-color: var(--line);
+  background: var(--ink-2);
+}
+.cw-array .vals {
+  font-family: "Geist Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  font-weight: 500;
+}
+.cw-array.on {
+  border-color: var(--accent);
+  background: var(--ink-2);
+  color: var(--text);
+}
+.cw-array.on .vals {
+  color: var(--accent);
+}
+.cw-array .note {
+  font-family: "Geist Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+/* Assign tokens */
+.cw-tokens {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  margin-bottom: 14px;
+}
+.cw-token {
+  width: 44px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  font-family: "Geist Mono", monospace;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  cursor: grab;
+}
+.cw-token.placed {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.cw-assign-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cw-assign-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+.cw-assign-row .k {
+  font-family: "Geist", sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+.cw-drop {
+  height: 36px;
+  background: transparent;
+  border: 1px dashed var(--line-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Geist Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  cursor: pointer;
+  position: relative;
+  transition: all 120ms ease;
+}
+.cw-drop:hover {
+  border-color: var(--line);
+  color: var(--text-dim);
+}
+.cw-drop.filled {
+  background: var(--ink-2);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 16px;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+
+/* Subclass tabs */
+.cw-sub-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--ink-2);
+  border: 1px solid var(--line-soft);
+  width: fit-content;
+}
+.cw-sub-tabs button {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 11px;
+  font-family: "Geist Mono", monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.cw-sub-tabs button.on {
+  background: var(--ink-0);
+  color: var(--text);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+/* ===== Right pane preview ===== */
+.cw-preview-head {
+  flex-shrink: 0;
+  padding: 22px 28px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cw-preview-head .k {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  font-weight: 600;
+}
+.cw-preview-head .name {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.cw-preview-head .live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.cw-preview-head .live::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: oklch(0.76 0.16 150);
+  display: inline-block;
+  box-shadow: 0 0 8px oklch(0.76 0.16 150 / 0.6);
+  animation: pulse-live 1.8s ease-in-out infinite;
+}
+@keyframes pulse-live {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.cw-preview-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 28px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+/* Preview-only compact identity card */
+.cw-id {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 14px;
+  align-items: center;
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--pk, var(--accent));
+  padding: 14px 16px;
+}
+.cw-id .sig {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink-3);
+  border: 1px solid var(--line);
+  font-family: "Geist Mono", monospace;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+.cw-id h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+.cw-id .pron {
+  font-family: "Geist Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-left: 6px;
+  font-weight: 400;
+}
+.cw-id .line {
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.cw-id .line b {
+  color: var(--text);
+  font-weight: 500;
+}
+.cw-id .line .sep {
+  color: var(--text-mute);
+}
+.cw-id .line .ghost {
+  color: var(--text-mute);
+  font-style: italic;
+}
+
+/* Preview "missing" marker for things not yet picked */
+.cw-ghost {
+  font-style: italic;
+  color: var(--text-mute);
+}
+
+/* The preview reuses the sheet's .sec, .cs-chargrid, .cs-char, .kit, .skill, etc. */
+.cw-preview-body .sec {
+  background: var(--ink-1);
+  flex: 0 0 auto;
+  min-height: 0;
+  overflow: visible;
+}
+.cw-preview-body .sec-body {
+  overflow: visible;
+  flex: 0 0 auto;
+}
+.cw-preview-body .cs-chargrid {
+  gap: 3px;
+}
+.cw-preview-body .cs-char {
+  padding: 10px 6px;
+}
+.cw-preview-body .cs-char .v {
+  font-size: 26px;
+}
+
+/* Subtle tone on "currently editing" section in preview */
+.cw-preview-body .sec.editing {
+  box-shadow: 0 0 0 1px var(--accent), 0 0 22px oklch(from var(--accent) l c h / 0.18);
+  border-color: var(--accent);
+}
+.cw-preview-body .sec.editing .sec-head h3 {
+  color: var(--accent);
+}
+
+/* Step-specific helper text under title */
+.cw-sub {
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 6px 0 0;
+  max-width: 560px;
+}
+
+/* Small inline kbd for keyboard hint */
+.cw-kbd {
+  display: inline-block;
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  padding: 1px 5px;
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+}
+
+/* Review summary list (step 8) */
+.cw-review {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--line);
+  background: var(--ink-1);
+}
+.cw-review .cell {
+  padding: 12px 14px;
+  border-right: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+.cw-review .cell:nth-child(2n) {
+  border-right: none;
+}
+.cw-review .cell .k {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.cw-review .cell .v {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  line-height: 1.4;
+}
+.cw-review .cell.full {
+  grid-column: 1 / -1;
+  border-right: none;
+}
+
+/* Cards-with-stats variant (career, complication) */
+.cw-card .twobody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px dashed var(--line-soft);
+}
+.cw-card .twobody div .lbl {
+  font-family: "Geist Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 3px;
+}
+.cw-card .twobody div .txt {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
+/* When list of cards is single-column (review, etc.) */
+.cw-cards.one {
+  grid-template-columns: 1fr;
+}
+.cw-cards.three {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+/* Inline note */
+.cw-note {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--ink-1);
+  border-left: 2px solid var(--accent);
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+.cw-note .lbl {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+  flex-shrink: 0;
+}

@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
-import { AbilityCard } from './AbilityCard';
 import type { Ability } from '@ironyard/shared';
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { AbilityCard } from './AbilityCard';
 
 afterEach(cleanup);
 
@@ -16,9 +16,27 @@ function makeAbility(overrides: Partial<Ability> = {}): Ability {
     target: 'One creature',
     powerRoll: {
       bonus: '+5',
-      tier1: { raw: '5 damage', damage: 5, damageType: 'untyped', effect: undefined, conditions: [] },
-      tier2: { raw: '9 damage; bleed', damage: 9, damageType: 'untyped', effect: undefined, conditions: [{ condition: 'Bleeding', duration: { kind: 'EoT' }, scope: 'target' }] },
-      tier3: { raw: '13 damage; bleed, push 1', damage: 13, damageType: 'untyped', effect: 'push 1', conditions: [{ condition: 'Bleeding', duration: { kind: 'EoT' }, scope: 'target' }] },
+      tier1: {
+        raw: '5 damage',
+        damage: 5,
+        damageType: 'untyped',
+        effect: undefined,
+        conditions: [],
+      },
+      tier2: {
+        raw: '9 damage; bleed',
+        damage: 9,
+        damageType: 'untyped',
+        effect: undefined,
+        conditions: [{ condition: 'Bleeding', duration: { kind: 'EoT' }, scope: 'target' }],
+      },
+      tier3: {
+        raw: '13 damage; bleed, push 1',
+        damage: 13,
+        damageType: 'untyped',
+        effect: 'push 1',
+        conditions: [{ condition: 'Bleeding', duration: { kind: 'EoT' }, scope: 'target' }],
+      },
     },
     effect: 'If this attack reduces the target to 0 stamina, you may make a free strike.',
     raw: '',
@@ -58,9 +76,27 @@ describe('AbilityCard structure', () => {
     const ability = makeAbility({
       powerRoll: {
         bonus: '+3',
-        tier1: { raw: '3 fire damage', damage: 3, damageType: 'fire', effect: undefined, conditions: [] },
-        tier2: { raw: '5 fire damage', damage: 5, damageType: 'fire', effect: undefined, conditions: [] },
-        tier3: { raw: '8 fire damage', damage: 8, damageType: 'fire', effect: undefined, conditions: [] },
+        tier1: {
+          raw: '3 fire damage',
+          damage: 3,
+          damageType: 'fire',
+          effect: undefined,
+          conditions: [],
+        },
+        tier2: {
+          raw: '5 fire damage',
+          damage: 5,
+          damageType: 'fire',
+          effect: undefined,
+          conditions: [],
+        },
+        tier3: {
+          raw: '8 fire damage',
+          damage: 8,
+          damageType: 'fire',
+          effect: undefined,
+          conditions: [],
+        },
       },
     });
     render(<AbilityCard ability={ability} disabled={false} onRoll={vi.fn()} />);
@@ -78,7 +114,13 @@ describe('AbilityCard structure', () => {
   });
 
   it('omits "vs X" from the formula line when targetCharacteristic is null', () => {
-    render(<AbilityCard ability={makeAbility({ targetCharacteristic: null })} disabled={false} onRoll={vi.fn()} />);
+    render(
+      <AbilityCard
+        ability={makeAbility({ targetCharacteristic: null })}
+        disabled={false}
+        onRoll={vi.fn()}
+      />,
+    );
     expect(screen.queryByText(/vs Stamina/i)).not.toBeInTheDocument();
     expect(screen.getByText(/2d10/)).toBeInTheDocument();
   });

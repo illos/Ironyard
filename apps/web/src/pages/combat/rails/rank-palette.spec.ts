@@ -1,14 +1,23 @@
-import { describe, it, expect } from 'vitest';
-import { RANK_PALETTE, parseMonsterRole, type RankKey } from './rank-palette';
+import { describe, expect, it } from 'vitest';
+import { RANK_PALETTE, type RankKey, parseMonsterRole } from './rank-palette';
 
 describe('RANK_PALETTE', () => {
   it('exposes six canonical ranks with 3-letter abbreviations', () => {
-    expect(Object.keys(RANK_PALETTE).sort()).toEqual(
-      ['Elite', 'Horde', 'Leader', 'Minion', 'Platoon', 'Solo']
-    );
+    expect(Object.keys(RANK_PALETTE).sort()).toEqual([
+      'Elite',
+      'Horde',
+      'Leader',
+      'Minion',
+      'Platoon',
+      'Solo',
+    ]);
     const expectedAbbrs: Record<RankKey, string> = {
-      Minion: 'MIN', Horde: 'HOR', Platoon: 'PLA',
-      Elite: 'ELI', Leader: 'LED', Solo: 'SOL',
+      Minion: 'MIN',
+      Horde: 'HOR',
+      Platoon: 'PLA',
+      Elite: 'ELI',
+      Leader: 'LED',
+      Solo: 'SOL',
     };
     for (const [rank, expected] of Object.entries(expectedAbbrs)) {
       expect(RANK_PALETTE[rank as RankKey].abbr).toBe(expected);

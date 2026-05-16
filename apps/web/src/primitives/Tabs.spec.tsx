@@ -13,14 +13,8 @@ const items = [
 describe('Tabs', () => {
   it('renders the active tab as selected', () => {
     render(<Tabs items={items} value="abilities" onChange={() => {}} />);
-    expect(screen.getByRole('tab', { name: 'Abilities' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
-    expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute(
-      'aria-selected',
-      'false',
-    );
+    expect(screen.getByRole('tab', { name: 'Abilities' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'false');
   });
 
   it('calls onChange when a tab is clicked', () => {

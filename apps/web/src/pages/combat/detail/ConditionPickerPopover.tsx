@@ -1,8 +1,8 @@
-import {
-  type ConditionInstance,
-  type ConditionType,
-  type RemoveConditionPayload,
-  type SetConditionPayload,
+import type {
+  ConditionInstance,
+  ConditionType,
+  RemoveConditionPayload,
+  SetConditionPayload,
 } from '@ironyard/shared';
 import { useState } from 'react';
 import { Button } from '../../../primitives';
@@ -54,17 +54,13 @@ export function ConditionPickerPopover({
         </Button>
       </div>
       <div className="flex flex-wrap gap-2 mt-2">
-        {conditions.length === 0 && (
-          <span className="text-sm text-text-mute">None.</span>
-        )}
+        {conditions.length === 0 && <span className="text-sm text-text-mute">None.</span>}
         {conditions.map((c: ConditionInstance, idx) => (
           <ConditionChip
             key={`${c.type}-${c.source.id}-${idx}`}
             condition={c}
             removable={canRemoveConditions}
-            onRemove={() =>
-              dispatchRemoveCondition({ targetId: participantId, condition: c.type })
-            }
+            onRemove={() => dispatchRemoveCondition({ targetId: participantId, condition: c.type })}
           />
         ))}
       </div>

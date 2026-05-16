@@ -1,7 +1,7 @@
 import { Outlet, useLocation } from '@tanstack/react-router';
-import { type ReactNode } from 'react';
-import { useIsActingAsDirector } from '../lib/active-director';
+import type { ReactNode } from 'react';
 import { useActiveContext } from '../lib/active-context';
+import { useIsActingAsDirector } from '../lib/active-director';
 import { ThemeProvider } from '../theme';
 import { TopBar, type TopBarMode } from './TopBar';
 

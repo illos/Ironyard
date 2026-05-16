@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
 import { ABILITY_TARGETING_EFFECTS } from '../../src/class-triggers/ability-targeting-effects';
 
 describe('ABILITY_TARGETING_EFFECTS', () => {

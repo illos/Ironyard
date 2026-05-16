@@ -32,13 +32,8 @@ export function AncestryStep({
 
   // Compute trait budget with Revenant +1 adjustment for Size 1S former life.
   let traitBudget = selected ? getAncestryTraitPointBudget(selected.id) : null;
-  if (
-    draft.ancestryId === 'revenant' &&
-    draft.ancestryChoices.formerAncestryId
-  ) {
-    const formerAncestry = staticData.ancestries.get(
-      draft.ancestryChoices.formerAncestryId,
-    );
+  if (draft.ancestryId === 'revenant' && draft.ancestryChoices.formerAncestryId) {
+    const formerAncestry = staticData.ancestries.get(draft.ancestryChoices.formerAncestryId);
     if (formerAncestry?.defaultSize === '1S') {
       traitBudget = (traitBudget ?? 0) + 1; // 2 + 1 = 3
     }
@@ -57,9 +52,7 @@ export function AncestryStep({
             <button
               key={a.id}
               type="button"
-              onClick={() =>
-                onPatch({ ancestryId: a.id, ancestryChoices: EMPTY_ANCESTRY_CHOICES })
-              }
+              onClick={() => onPatch({ ancestryId: a.id, ancestryChoices: EMPTY_ANCESTRY_CHOICES })}
               className={`text-left border px-4 py-3 min-h-11 ${isSelected ? 'bg-accent text-ink-0 border-accent' : 'bg-ink-1 text-text-dim border-line hover:border-accent'}`}
             >
               <div className="font-medium">{a.name}</div>
@@ -186,9 +179,7 @@ function DragonKnightSubPicker({
       {hasPrismaticScales && (
         <div className="space-y-2 border-t border-line pt-4">
           <h3 className="font-medium">Prismatic Scales</h3>
-          <p className="text-sm text-text-dim">
-            Choose a second permanent damage immunity.
-          </p>
+          <p className="text-sm text-text-dim">Choose a second permanent damage immunity.</p>
           <div className="flex flex-wrap gap-2">
             {WYRMPLATE_TYPES.map((type) => (
               <button
@@ -232,9 +223,7 @@ function RevenantSubPicker({
     : null;
 
   // Slots: one entry per previous-life-* purchase in traitIds.
-  const previousLifeSlots = choices.traitIds.filter((id) =>
-    id.startsWith('previous-life-'),
-  );
+  const previousLifeSlots = choices.traitIds.filter((id) => id.startsWith('previous-life-'));
 
   const handleFormerAncestryPick = (id: string) => {
     onPatchChoices({
@@ -254,9 +243,7 @@ function RevenantSubPicker({
       {/* Former Life ancestry picker */}
       <div className="space-y-2">
         <h3 className="font-medium">Former Life</h3>
-        <p className="text-sm text-text-dim">
-          Choose the ancestry you were before you died.
-        </p>
+        <p className="text-sm text-text-dim">Choose the ancestry you were before you died.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {nonRevenantAncestries.map((a) => {
             const isSelected = a.id === choices.formerAncestryId;
@@ -282,11 +269,7 @@ function RevenantSubPicker({
         <div className="space-y-4 border-t border-line pt-4">
           <h3 className="font-medium">Previous Life Traits</h3>
           {previousLifeSlots.map((slotId, slotIdx) => {
-            const cost = slotId.includes('1-point')
-              ? 1
-              : slotId.includes('2-points')
-                ? 2
-                : null;
+            const cost = slotId.includes('1-point') ? 1 : slotId.includes('2-points') ? 2 : null;
             const eligibleTraits = (formerAncestry.purchasedTraits ?? []).filter(
               (t) => cost === null || t.cost === cost,
             );
@@ -383,8 +366,7 @@ function TraitsPicker({
       <ul className="space-y-2">
         {traits.map((t) => {
           const isSelected = selected.includes(t.id);
-          const wouldExceed =
-            !isSelected && budget !== null && spent + t.cost > budget;
+          const wouldExceed = !isSelected && budget !== null && spent + t.cost > budget;
           return (
             <li key={t.id}>
               <button

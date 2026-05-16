@@ -246,7 +246,9 @@ export async function createPendingCharacter(
     body: JSON.stringify({ name: 'TestHero', data: buildCompleteCharacterFixture() }),
   });
   if (!createRes.ok) {
-    throw new Error(`createPendingCharacter (create) failed: ${createRes.status} ${await createRes.text()}`);
+    throw new Error(
+      `createPendingCharacter (create) failed: ${createRes.status} ${await createRes.text()}`,
+    );
   }
   const created = (await createRes.json()) as { id: string };
 
@@ -257,11 +259,15 @@ export async function createPendingCharacter(
     body: JSON.stringify({ campaignCode: campaignInviteCode }),
   });
   if (!attachRes.ok) {
-    throw new Error(`createPendingCharacter (attach) failed: ${attachRes.status} ${await attachRes.text()}`);
+    throw new Error(
+      `createPendingCharacter (attach) failed: ${attachRes.status} ${await attachRes.text()}`,
+    );
   }
   const attached = (await attachRes.json()) as { autoSubmitted?: boolean };
   if (!attached.autoSubmitted) {
-    throw new Error('createPendingCharacter: auto-submit did not happen — character data may be incomplete');
+    throw new Error(
+      'createPendingCharacter: auto-submit did not happen — character data may be incomplete',
+    );
   }
 
   return created.id;

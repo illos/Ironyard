@@ -48,12 +48,7 @@ describe('TopBar', () => {
   });
 
   it('renders Mode C without Foes; shows active-character chip when provided', () => {
-    render(
-      <TopBar
-        mode="C"
-        activeCharacter={{ username: 'mike', characterName: 'Ash Vey' }}
-      />,
-    );
+    render(<TopBar mode="C" activeCharacter={{ username: 'mike', characterName: 'Ash Vey' }} />);
     expect(screen.queryByText('Foes')).not.toBeInTheDocument();
     expect(screen.getByText('Ash Vey')).toBeInTheDocument();
   });

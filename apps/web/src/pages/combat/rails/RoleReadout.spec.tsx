@@ -1,6 +1,6 @@
-import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
 import type { Participant } from '@ironyard/shared';
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
 
 afterEach(cleanup);
 import { RoleReadout } from './RoleReadout';
@@ -8,26 +8,48 @@ import { roleReadoutFor } from './rail-utils';
 
 function makeMonster(overrides: Partial<Participant> = {}): Participant {
   return {
-    id: 'm1', name: 'Test Monster', kind: 'monster',
-    ownerId: null, characterId: null, level: 1,
-    currentStamina: 20, maxStamina: 20,
+    id: 'm1',
+    name: 'Test Monster',
+    kind: 'monster',
+    ownerId: null,
+    characterId: null,
+    level: 1,
+    currentStamina: 20,
+    maxStamina: 20,
     characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
-    immunities: [], weaknesses: [], conditions: [],
-    heroicResources: [], extras: [], surges: 0,
-    recoveries: { current: 0, max: 0 }, recoveryValue: 0,
+    immunities: [],
+    weaknesses: [],
+    conditions: [],
+    heroicResources: [],
+    extras: [],
+    surges: 0,
+    recoveries: { current: 0, max: 0 },
+    recoveryValue: 0,
     weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
-    activeAbilities: [], victories: 0,
-    turnActionUsage: { main: false, maneuver: false, move: false }, surprised: false,
-    role: 'Elite Defender', ancestry: [],
-    size: null, speed: null, stability: null, freeStrike: null, ev: null,
-    withCaptain: null, className: null,
+    activeAbilities: [],
+    victories: 0,
+    turnActionUsage: { main: false, maneuver: false, move: false },
+    surprised: false,
+    role: 'Elite Defender',
+    ancestry: [],
+    size: null,
+    speed: null,
+    stability: null,
+    freeStrike: null,
+    ev: null,
+    withCaptain: null,
+    className: null,
     ...overrides,
   } as Participant;
 }
 
 describe('RoleReadout', () => {
   it('renders a rank pill + family when role parses cleanly', () => {
-    render(<RoleReadout data={{ kind: 'monster-ranked', level: 5, rank: 'Elite', family: 'Defender' }} />);
+    render(
+      <RoleReadout
+        data={{ kind: 'monster-ranked', level: 5, rank: 'Elite', family: 'Defender' }}
+      />,
+    );
     expect(screen.getByText('ELI')).toBeInTheDocument();
     expect(screen.getByText(/L5 · DEFENDER/i)).toBeInTheDocument();
   });

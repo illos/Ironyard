@@ -5,8 +5,12 @@
 
 import type { CampaignState } from '@ironyard/rules';
 import type { Intent } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import { describe, expect, it, vi } from 'vitest';
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 
 // ── Mock data/index (monsters + items lookup) ──────────────────────────────
 vi.mock('../src/data/index', () => ({
@@ -617,10 +621,7 @@ describe('stampStartSession', () => {
     // Set the mock to return approved-character rows for the first query (.all()).
     // The second query (.get() for session count) receives the same mockDbResult
     // which is an array — countRow?.count is undefined → falls back to 0 → "Session 1".
-    mockDbResult = [
-      { characterId: 'c1' },
-      { characterId: 'c2' },
-    ];
+    mockDbResult = [{ characterId: 'c1' }, { characterId: 'c2' }];
     const intent = makeIntent('StartSession', {
       attendingCharacterIds: ['c1', 'c2'],
     });

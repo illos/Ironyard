@@ -5,7 +5,7 @@ import { TriggerEventDescSchema } from './trigger-event';
 // the engine has emitted the original event but the triggered-action responses
 // are queued waiting for the director to pick an order via ResolveTriggerOrder.
 export const PendingTriggerSetSchema = z.object({
-  id: z.string().min(1),                  // ulid; matches ResolveTriggerOrder.pendingTriggerSetId
+  id: z.string().min(1), // ulid; matches ResolveTriggerOrder.pendingTriggerSetId
   triggerEvent: TriggerEventDescSchema,
   candidates: z.array(
     z.object({

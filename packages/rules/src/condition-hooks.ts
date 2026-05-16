@@ -165,8 +165,8 @@ export function removeTriggerEndedConditions(
 export type BleedingTrigger =
   | { kind: 'main_action' }
   | { kind: 'triggered_action' }
-  | { kind: 'might_or_agility_test' }      // renamed from might_or_agility_roll for canon precision
-  | { kind: 'ability_roll' };               // new: any ability roll regardless of characteristic
+  | { kind: 'might_or_agility_test' } // renamed from might_or_agility_roll for canon precision
+  | { kind: 'ability_roll' }; // new: any ability roll regardless of characteristic
 
 export type BleedingDamageSpec = {
   // The amount to deal. Computed as `bleedingD6 + actor.level` per canon

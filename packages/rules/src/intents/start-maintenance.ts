@@ -1,7 +1,7 @@
 import { StartMaintenancePayloadSchema } from '@ironyard/shared';
+import { resolveParticipantClass } from '../class-triggers/helpers';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
-import { resolveParticipantClass } from '../class-triggers/helpers';
 
 // Pass 3 Slice 2a — Elementalist Maintenance state machine.
 //
@@ -14,10 +14,7 @@ import { resolveParticipantClass } from '../class-triggers/helpers';
 // Player-trust: dispatched by the Elementalist's owner (UI-gated by
 // StartMaintenanceModal). Server-only validation: target must be the
 // Elementalist class, and the same ability cannot be doubly-maintained.
-export function applyStartMaintenance(
-  state: CampaignState,
-  intent: StampedIntent,
-): IntentResult {
+export function applyStartMaintenance(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = StartMaintenancePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -46,9 +43,7 @@ export function applyStartMaintenance(
           intentId: intent.id,
         },
       ],
-      errors: [
-        { code: 'participant_not_found', message: `No PC with id ${participantId}` },
-      ],
+      errors: [{ code: 'participant_not_found', message: `No PC with id ${participantId}` }],
     };
   }
   if (resolveParticipantClass(state, target) !== 'elementalist') {
@@ -62,9 +57,7 @@ export function applyStartMaintenance(
           intentId: intent.id,
         },
       ],
-      errors: [
-        { code: 'not_elementalist', message: 'Only Elementalists can start maintenance' },
-      ],
+      errors: [{ code: 'not_elementalist', message: 'Only Elementalists can start maintenance' }],
     };
   }
   if (target.maintainedAbilities.some((m) => m.abilityId === abilityId)) {

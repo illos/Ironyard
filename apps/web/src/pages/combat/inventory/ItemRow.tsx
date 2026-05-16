@@ -50,11 +50,7 @@ export function ItemRow({
       <div>
         <span className="font-medium">{item.name}</span>
         {qtyLabel && <span className="text-text-dim">{qtyLabel}</span>}
-        {isEquipped && (
-          <span className="ml-2 bg-accent text-ink-0 px-1 text-xs">
-            Equipped
-          </span>
-        )}
+        {isEquipped && <span className="ml-2 bg-accent text-ink-0 px-1 text-xs">Equipped</span>}
         {isTrinket && <BodySlotConflictChip conflicting={isConflicting} slot={trinketSlot ?? ''} />}
       </div>
       {isConsumable ? (

@@ -1,4 +1,8 @@
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
@@ -26,17 +30,37 @@ function intent(type: string, payload: unknown, overrides: Partial<Intent> = {})
 
 function pc(id: string): Participant {
   return {
-    id, name: id, kind: 'pc', level: 1, currentStamina: 30, maxStamina: 30,
+    id,
+    name: id,
+    kind: 'pc',
+    level: 1,
+    currentStamina: 30,
+    maxStamina: 30,
     characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
-    immunities: [], weaknesses: [], conditions: [], heroicResources: [],
-    extras: [], surges: 0, recoveries: { current: 0, max: 0 }, recoveryValue: 0,
-    ownerId: null, characterId: null,
-    weaponDamageBonus: { melee: [0,0,0], ranged: [0,0,0] },
-    activeAbilities: [], victories: 0,
+    immunities: [],
+    weaknesses: [],
+    conditions: [],
+    heroicResources: [],
+    extras: [],
+    surges: 0,
+    recoveries: { current: 0, max: 0 },
+    recoveryValue: 0,
+    ownerId: null,
+    characterId: null,
+    weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
+    activeAbilities: [],
+    victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
     surprised: false,
-    role: null, ancestry: [], size: null, speed: null, stability: null,
-    freeStrike: null, ev: null, withCaptain: null, className: null,
+    role: null,
+    ancestry: [],
+    size: null,
+    speed: null,
+    stability: null,
+    freeStrike: null,
+    ev: null,
+    withCaptain: null,
+    className: null,
     staminaState: 'healthy',
     staminaOverride: null,
     bodyIntact: true,
@@ -61,10 +85,14 @@ function readyState(parts: Participant[]): CampaignState {
     ...s,
     participants: parts,
     encounter: {
-      id: 'e1', currentRound: 1,
-      firstSide: null, currentPickingSide: null, actedThisRound: [],
+      id: 'e1',
+      currentRound: 1,
+      firstSide: null,
+      currentPickingSide: null,
+      actedThisRound: [],
       activeParticipantId: null,
-      turnState: {}, malice: { current: 0, lastMaliciousStrikeRound: null },
+      turnState: {},
+      malice: { current: 0, lastMaliciousStrikeRound: null },
       pendingTriggers: null,
       perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
     },
@@ -74,7 +102,10 @@ function readyState(parts: Participant[]): CampaignState {
 describe('RollInitiative', () => {
   it('stamps firstSide and currentPickingSide to the winner', () => {
     const s = readyState([pc('alice'), monster('goblin')]);
-    const r = applyIntent(s, intent('RollInitiative', { winner: 'heroes', surprised: [], rolledD10: 7 }));
+    const r = applyIntent(
+      s,
+      intent('RollInitiative', { winner: 'heroes', surprised: [], rolledD10: 7 }),
+    );
     expect(r.errors).toBeUndefined();
     expect(r.state.encounter?.firstSide).toBe('heroes');
     expect(r.state.encounter?.currentPickingSide).toBe('heroes');

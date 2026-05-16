@@ -1,7 +1,7 @@
 // apps/web/src/pages/combat/rails/rail-utils.ts
 import type { Participant } from '@ironyard/shared';
-import { parseMonsterRole } from './rank-palette';
 import type { RoleReadoutData } from './RoleReadout';
+import { parseMonsterRole } from './rank-palette';
 
 export function initials(name: string): string {
   return name

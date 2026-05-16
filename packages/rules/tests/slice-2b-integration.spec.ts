@@ -18,6 +18,7 @@
  *   9. EndEncounter → all targetingRelations reset to empty
  */
 
+import type { Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { applyIntent } from '../src/reducer';
 import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../src/types';
@@ -30,7 +31,6 @@ import {
   makeRunningEncounterPhase,
   stamped,
 } from './intents/test-utils';
-import type { Participant } from '@ironyard/shared';
 
 // ---------------------------------------------------------------------------
 // Shared helpers (mirror slice-2a-integration.spec.ts pattern)

@@ -1,7 +1,11 @@
 import type { Participant } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { applyDamageStep } from '../src/damage';
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 
 function makeTarget(over: Partial<Participant> = {}): Participant {
   return {

@@ -1,8 +1,8 @@
-import {
-  type Participant,
-  type RemoveConditionPayload,
-  type SetConditionPayload,
-  type SetStaminaPayload,
+import type {
+  Participant,
+  RemoveConditionPayload,
+  SetConditionPayload,
+  SetStaminaPayload,
 } from '@ironyard/shared';
 import { useState } from 'react';
 import { HpBar, Section } from '../../../primitives';

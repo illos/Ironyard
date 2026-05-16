@@ -1,8 +1,8 @@
 import { ApplyHealPayloadSchema, IntentTypes } from '@ironyard/shared';
+import { evaluateStaminaTransitionTriggers } from '../class-triggers';
+import { applyTransitionSideEffects, recomputeStaminaState } from '../stamina';
 import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
-import { applyTransitionSideEffects, recomputeStaminaState } from '../stamina';
-import { evaluateStaminaTransitionTriggers } from '../class-triggers';
 
 // Slice 7: restore HP up to maxStamina. Used as the derived intent emitted by
 // SpendRecovery; future heal abilities reuse this dispatch path. A
@@ -65,18 +65,20 @@ export function applyApplyHeal(state: CampaignState, intent: StampedIntent): Int
 
   // Emit derived StaminaTransitioned when state changes.
   const derived: DerivedIntent[] = transitioned
-    ? [{
-        type: IntentTypes.StaminaTransitioned,
-        actor: intent.actor,
-        payload: {
-          participantId: targetId,
-          from: target.staminaState,
-          to: finalTarget.staminaState,
-          cause: 'heal',
+    ? [
+        {
+          type: IntentTypes.StaminaTransitioned,
+          actor: intent.actor,
+          payload: {
+            participantId: targetId,
+            from: target.staminaState,
+            to: finalTarget.staminaState,
+            cause: 'heal',
+          },
+          source: 'server' as const,
+          causedBy: intent.id,
         },
-        source: 'server' as const,
-        causedBy: intent.id,
-      }]
+      ]
     : [];
 
   // Pass 3 Slice 2a — class-δ stamina-transition triggers. Heal only ever

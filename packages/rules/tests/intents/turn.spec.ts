@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { IntentTypes, type Participant } from '@ironyard/shared';
+import { describe, expect, it } from 'vitest';
 import { applyIntent } from '../../src/reducer';
 import type { CampaignState } from '../../src/types';
 import { isParticipant } from '../../src/types';
@@ -50,11 +50,7 @@ describe('applyStartTurn — Slice 2a additions', () => {
       heroicResources: [{ name: 'wrath', value: 0, floor: 0 }],
     });
     const state = stateWith([pc]);
-    state.encounter!.perEncounterFlags.perTurn.heroesActedThisTurn = [
-      'pc-1',
-      'pc-2',
-      'pc-3',
-    ];
+    state.encounter!.perEncounterFlags.perTurn.heroesActedThisTurn = ['pc-1', 'pc-2', 'pc-3'];
 
     const r = applyIntent(
       state,
@@ -89,9 +85,7 @@ describe('applyStartTurn — Slice 2a additions', () => {
     // The pray OA is emitted as a derived RaiseOpenAction intent — the DO
     // recursively applies derived intents to land it in state.openActions.
     // Inspect r.derived rather than r.state.openActions in this unit test.
-    const raiseDerived = r.derived.filter(
-      (d) => d.type === IntentTypes.RaiseOpenAction,
-    );
+    const raiseDerived = r.derived.filter((d) => d.type === IntentTypes.RaiseOpenAction);
     expect(raiseDerived).toHaveLength(1);
     const payload = raiseDerived[0]!.payload as {
       kind: string;
@@ -151,7 +145,9 @@ describe('applyStartTurn — Slice 2a additions', () => {
     expect(r.errors ?? []).toEqual([]);
     // essence: 3 → +2 (per-turn) = 5 → -2 (storm-aegis) → -1 (flame-shroud) = 2
     const after = getPc(r.state, 'pc-ele');
-    const essence = after.heroicResources.find((res: { name: string; value: number }) => res.name === 'essence');
+    const essence = after.heroicResources.find(
+      (res: { name: string; value: number }) => res.name === 'essence',
+    );
     expect(essence?.value).toBe(2);
     // No StopMaintenance derived (everyone affordable).
     const stopDerived = r.derived.filter((d) => d.type === IntentTypes.StopMaintenance);
@@ -181,7 +177,9 @@ describe('applyStartTurn — Slice 2a additions', () => {
     );
     expect(r.errors ?? []).toEqual([]);
     const after = getPc(r.state, 'pc-ele');
-    const essence = after.heroicResources.find((res: { name: string; value: number }) => res.name === 'essence');
+    const essence = after.heroicResources.find(
+      (res: { name: string; value: number }) => res.name === 'essence',
+    );
     // 1 + 2 (gain) - 1 (flame-shroud only — storm-aegis auto-dropped) = 2
     expect(essence?.value).toBe(2);
     // storm-aegis is dropped via a derived StopMaintenance.
@@ -214,7 +212,9 @@ describe('applyStartTurn — Slice 2a additions', () => {
     );
     expect(r.errors ?? []).toEqual([]);
     const after = getPc(r.state, 'pc-psion');
-    const clarity = after.heroicResources.find((res: { name: string; value: number }) => res.name === 'clarity');
+    const clarity = after.heroicResources.find(
+      (res: { name: string; value: number }) => res.name === 'clarity',
+    );
     // d3=2 + bonus=2 = 4
     expect(clarity?.value).toBe(4);
   });
@@ -245,9 +245,7 @@ describe('applyStartTurn — Slice 2a additions', () => {
     const censor = makeHeroParticipant('pc-censor', {
       className: 'Censor',
       heroicResources: [{ name: 'wrath', value: 5, floor: 0 }],
-      maintainedAbilities: [
-        { abilityId: 'mystery-ability', costPerTurn: 10, startedAtRound: 1 },
-      ],
+      maintainedAbilities: [{ abilityId: 'mystery-ability', costPerTurn: 10, startedAtRound: 1 }],
     });
     const state = stateWith([censor]);
 
@@ -286,9 +284,7 @@ describe('applyEndTurn — Slice 2a additions', () => {
     pcB.perEncounterFlags = {
       ...pcB.perEncounterFlags,
       perTurn: {
-        entries: [
-          { scopedToTurnOf: 'pc-A', key: 'damageTakenThisTurn', value: 6 },
-        ],
+        entries: [{ scopedToTurnOf: 'pc-A', key: 'damageTakenThisTurn', value: 6 }],
       },
     };
     const state = stateWith([pcA, pcB], { activeParticipantId: 'pc-A' });
@@ -481,9 +477,7 @@ describe('applyEndRound — Slice 2a perRound reset', () => {
     const pc = makeHeroParticipant('pc-A');
     pc.perEncounterFlags = {
       perTurn: {
-        entries: [
-          { scopedToTurnOf: 'pc-A', key: 'damageDealtThisTurn', value: 4 },
-        ],
+        entries: [{ scopedToTurnOf: 'pc-A', key: 'damageDealtThisTurn', value: 4 }],
       },
       perRound: { ...pc.perEncounterFlags.perRound, tookDamage: true },
       perEncounter: {

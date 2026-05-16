@@ -1,12 +1,7 @@
-import { describe, expect, it } from 'vitest';
 import type { OpenAction, OpenActionKind } from '@ironyard/shared';
+import { describe, expect, it } from 'vitest';
 import { applyClaimOpenAction } from '../../src/intents/claim-open-action';
-import {
-  baseState,
-  makeHeroParticipant,
-  makeRunningEncounterPhase,
-  stamped,
-} from './test-utils';
+import { baseState, makeHeroParticipant, makeRunningEncounterPhase, stamped } from './test-utils';
 
 function stateWithOA(opts: {
   participantId: string;
@@ -133,8 +128,7 @@ describe('applyClaimOpenAction', () => {
   ];
 
   it.each(spatialCases)(
-    '$kind → emits GainResource($resource, $amount)' +
-      ' (and per-round latch if applicable)',
+    '$kind → emits GainResource($resource, $amount)' + ' (and per-round latch if applicable)',
     ({ kind, resource, amount, flagKey }) => {
       const s = stateWithOA({ participantId: 'pc-1', ownerId: 'alice', kind });
       const intent = stamped({

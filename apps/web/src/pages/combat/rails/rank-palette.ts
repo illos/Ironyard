@@ -12,12 +12,36 @@
  */
 
 export const RANK_PALETTE = {
-  Minion:  { abbr: 'MIN', cssVar: '--rank-min', tailwindClass: 'text-rank-min bg-rank-min/12 border-rank-min/40' },
-  Horde:   { abbr: 'HOR', cssVar: '--rank-hor', tailwindClass: 'text-rank-hor bg-rank-hor/12 border-rank-hor/45' },
-  Platoon: { abbr: 'PLA', cssVar: '--rank-pla', tailwindClass: 'text-rank-pla bg-rank-pla/12 border-rank-pla/45' },
-  Elite:   { abbr: 'ELI', cssVar: '--rank-eli', tailwindClass: 'text-rank-eli bg-rank-eli/12 border-rank-eli/45' },
-  Leader:  { abbr: 'LED', cssVar: '--rank-led', tailwindClass: 'text-rank-led bg-rank-led/14 border-rank-led/50' },
-  Solo:    { abbr: 'SOL', cssVar: '--rank-sol', tailwindClass: 'text-rank-sol bg-rank-sol/16 border-rank-sol/55' },
+  Minion: {
+    abbr: 'MIN',
+    cssVar: '--rank-min',
+    tailwindClass: 'text-rank-min bg-rank-min/12 border-rank-min/40',
+  },
+  Horde: {
+    abbr: 'HOR',
+    cssVar: '--rank-hor',
+    tailwindClass: 'text-rank-hor bg-rank-hor/12 border-rank-hor/45',
+  },
+  Platoon: {
+    abbr: 'PLA',
+    cssVar: '--rank-pla',
+    tailwindClass: 'text-rank-pla bg-rank-pla/12 border-rank-pla/45',
+  },
+  Elite: {
+    abbr: 'ELI',
+    cssVar: '--rank-eli',
+    tailwindClass: 'text-rank-eli bg-rank-eli/12 border-rank-eli/45',
+  },
+  Leader: {
+    abbr: 'LED',
+    cssVar: '--rank-led',
+    tailwindClass: 'text-rank-led bg-rank-led/14 border-rank-led/50',
+  },
+  Solo: {
+    abbr: 'SOL',
+    cssVar: '--rank-sol',
+    tailwindClass: 'text-rank-sol bg-rank-sol/16 border-rank-sol/55',
+  },
 } as const;
 
 export type RankKey = keyof typeof RANK_PALETTE;

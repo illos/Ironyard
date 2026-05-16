@@ -31,13 +31,20 @@ type Props = {
   targetMissing?: boolean;
 };
 
-export function AbilityCard({ ability, disabled, readOnly = false, onRoll, targetMissing = false }: Props) {
+export function AbilityCard({
+  ability,
+  disabled,
+  readOnly = false,
+  onRoll,
+  targetMissing = false,
+}: Props) {
   if (!ability.powerRoll) return null;
   const pr = ability.powerRoll;
 
   const handleAuto = () => onRoll(ability, { rolls: roll2d10(), source: 'auto' });
   const handleManual = (tier: 1 | 2 | 3) => {
-    const rolls = tier === 1 ? TIER_RIGGED_ROLLS.t1 : tier === 2 ? TIER_RIGGED_ROLLS.t2 : TIER_RIGGED_ROLLS.t3;
+    const rolls =
+      tier === 1 ? TIER_RIGGED_ROLLS.t1 : tier === 2 ? TIER_RIGGED_ROLLS.t2 : TIER_RIGGED_ROLLS.t3;
     onRoll(ability, { rolls, source: 'manual' });
   };
 
@@ -74,7 +81,8 @@ export function AbilityCard({ ability, disabled, readOnly = false, onRoll, targe
           2d10 <span className="font-bold">{pr.bonus}</span>
           {ability.targetCharacteristic && (
             <>
-              {' '}<span className="text-text-mute">·</span>{' '}
+              {' '}
+              <span className="text-text-mute">·</span>{' '}
               <span className="text-text-dim">vs {ability.targetCharacteristic}</span>
             </>
           )}
@@ -103,7 +111,9 @@ export function AbilityCard({ ability, disabled, readOnly = false, onRoll, targe
 
       {ability.effect && (
         <p className="text-xs text-text-dim leading-relaxed">
-          <span className="font-mono text-[9px] uppercase tracking-[0.06em] text-text-mute mr-1">Effect</span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.06em] text-text-mute mr-1">
+            Effect
+          </span>
           {ability.effect}
         </p>
       )}
@@ -124,7 +134,12 @@ function renderTierProse(tier: TierOutcome): React.ReactNode {
   const parts: React.ReactNode[] = [];
   if (tier.damage !== null) {
     const typed = tier.damageType && tier.damageType !== 'untyped' ? ` ${tier.damageType}` : '';
-    parts.push(<span key="dmg">{tier.damage}{typed} damage</span>);
+    parts.push(
+      <span key="dmg">
+        {tier.damage}
+        {typed} damage
+      </span>,
+    );
   }
   for (const c of tier.conditions) {
     const dur = describeDuration(c.duration);
@@ -133,7 +148,14 @@ function renderTierProse(tier: TierOutcome): React.ReactNode {
       c.scope === 'target' ? (
         <span key={`c-${c.condition}-${c.scope}`}> · {text}</span>
       ) : (
-        <span key={`c-${c.condition}-${c.scope}`} className="italic text-text-dim" title="Not auto-applied"> · {text}</span>
+        <span
+          key={`c-${c.condition}-${c.scope}`}
+          className="italic text-text-dim"
+          title="Not auto-applied"
+        >
+          {' '}
+          · {text}
+        </span>
       ),
     );
   }
@@ -148,11 +170,17 @@ function renderTierProse(tier: TierOutcome): React.ReactNode {
 
 function describeDuration(d: TierOutcome['conditions'][number]['duration']): string {
   switch (d.kind) {
-    case 'save_ends': return 'save';
-    case 'EoT': return 'EoT';
-    case 'until_start_next_turn': return 'SoT';
-    case 'end_of_encounter': return 'EoE';
-    case 'manual': return 'manual';
-    case 'trigger': return 'trig';
+    case 'save_ends':
+      return 'save';
+    case 'EoT':
+      return 'EoT';
+    case 'until_start_next_turn':
+      return 'SoT';
+    case 'end_of_encounter':
+      return 'EoE';
+    case 'manual':
+      return 'manual';
+    case 'trigger':
+      return 'trig';
   }
 }

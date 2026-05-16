@@ -2,10 +2,7 @@ import { AdjustVictoriesPayloadSchema } from '@ironyard/shared';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
 
-export function applyAdjustVictories(
-  state: CampaignState,
-  intent: StampedIntent,
-): IntentResult {
+export function applyAdjustVictories(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = AdjustVictoriesPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -42,9 +39,7 @@ export function applyAdjustVictories(
 
   const { delta } = parsed.data;
   const updated = state.participants.map((p) =>
-    isParticipant(p) && p.kind === 'pc'
-      ? { ...p, victories: Math.max(0, p.victories + delta) }
-      : p,
+    isParticipant(p) && p.kind === 'pc' ? { ...p, victories: Math.max(0, p.victories + delta) } : p,
   );
 
   return {

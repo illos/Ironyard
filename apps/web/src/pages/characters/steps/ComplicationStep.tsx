@@ -13,7 +13,9 @@ export function ComplicationStep({
   const complications = Array.from(staticData.complications.values());
   return (
     <div className="space-y-3">
-      <p className="text-sm text-text-dim">Complications are optional. Skip if you don't want one.</p>
+      <p className="text-sm text-text-dim">
+        Complications are optional. Skip if you don't want one.
+      </p>
       <button
         type="button"
         onClick={() => onPatch({ complicationId: null })}

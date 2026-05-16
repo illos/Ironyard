@@ -8,9 +8,9 @@ import {
 import { buildIntent } from '../../api/dispatch';
 import { useCharacter, useMe } from '../../api/queries';
 import { useAbilities } from '../../api/static-data';
+import { TargetingRelationsCard } from '../../components/TargetingRelationsCard';
 import { CLASS_RELATION_KIND } from '../../lib/class-relation-kind';
 import { useSessionSocket } from '../../ws/useSessionSocket';
-import { TargetingRelationsCard } from '../../components/TargetingRelationsCard';
 import { DoomsightBecomeDoomedButton } from './DoomsightBecomeDoomedButton';
 import { EssenceBlock, type Maint } from './EssenceBlock';
 

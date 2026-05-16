@@ -19,7 +19,8 @@ export function CharacteristicCell({
       className={`flex flex-col items-center justify-center gap-1 p-3 bg-ink-2 border border-line ${className}`}
     >
       <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-text-mute">
-        {label}{locked && ' · locked'}
+        {label}
+        {locked && ' · locked'}
       </span>
       <span className="text-2xl font-semibold tabular text-text">
         {value >= 0 ? `+${value}` : value}

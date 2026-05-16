@@ -3,13 +3,7 @@ import { Link, useParams } from '@tanstack/react-router';
 import { useMonsters } from '../api/queries';
 import { Chip, Section } from '../primitives';
 
-const CHARACTERISTIC_ORDER = [
-  'might',
-  'agility',
-  'reason',
-  'intuition',
-  'presence',
-] as const;
+const CHARACTERISTIC_ORDER = ['might', 'agility', 'reason', 'intuition', 'presence'] as const;
 
 export function MonsterDetail() {
   const { id } = useParams({ from: '/foes/$id' });
@@ -20,9 +14,7 @@ export function MonsterDetail() {
   }
   if (monsters.error) {
     return (
-      <main className="mx-auto max-w-4xl p-6 text-foe">
-        {(monsters.error as Error).message}
-      </main>
+      <main className="mx-auto max-w-4xl p-6 text-foe">{(monsters.error as Error).message}</main>
     );
   }
   const monster = monsters.data?.monsters.find((m) => m.id === id);
@@ -198,15 +190,14 @@ function AbilityRow({ ability: a }: { ability: Ability }) {
       <header className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="font-medium text-text">
           {a.name}
-          {bonus && (
-            <span className="ml-2 font-mono text-xs text-text-dim">2d10 {bonus}</span>
-          )}
+          {bonus && <span className="ml-2 font-mono text-xs text-text-dim">2d10 {bonus}</span>}
         </h3>
         <span className="text-xs text-text-dim uppercase tracking-wider">{rightLabel}</span>
       </header>
       {(a.keywords && a.keywords.length > 0) || a.distance || a.target ? (
         <p className="text-xs text-text-mute flex flex-wrap items-center gap-1.5">
-          {a.keywords && a.keywords.length > 0 &&
+          {a.keywords &&
+            a.keywords.length > 0 &&
             a.keywords.map((k) => (
               <Chip key={k} size="xs">
                 {k}

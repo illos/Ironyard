@@ -18,14 +18,19 @@ export interface OpenActionRowProps {
 }
 
 export function OpenActionRow({
-  oa, title, body, claimLabel, currentRound,
-  viewerOwnerForRow, canClaim, ownerName, onClaim,
+  oa,
+  title,
+  body,
+  claimLabel,
+  currentRound,
+  viewerOwnerForRow,
+  canClaim,
+  ownerName,
+  onClaim,
 }: OpenActionRowProps) {
   const isSelf = viewerOwnerForRow === 'self';
   const rowBg = isSelf ? 'bg-hero/6' : 'bg-ink-2';
-  const dotClass = isSelf
-    ? 'bg-hero shadow-[0_0_6px_oklch(0.78_0.04_220/0.5)]'
-    : 'bg-ink-4';
+  const dotClass = isSelf ? 'bg-hero shadow-[0_0_6px_oklch(0.78_0.04_220/0.5)]' : 'bg-ink-4';
   const metaLabel = isSelf ? 'FOR YOU' : `FOR ${ownerName.toUpperCase()}`;
   const expiryText = formatExpiry(oa, currentRound);
 
@@ -45,7 +50,9 @@ export function OpenActionRow({
   }
 
   return (
-    <div className={`grid grid-cols-[20px_1fr_auto] gap-3 items-start px-3 py-2.5 border border-line ${rowBg}`}>
+    <div
+      className={`grid grid-cols-[20px_1fr_auto] gap-3 items-start px-3 py-2.5 border border-line ${rowBg}`}
+    >
       <span className={`mt-1.5 h-2 w-2 rounded-full ${dotClass}`} aria-hidden="true" />
       <div className="min-w-0">
         <div className="text-sm font-semibold text-text">{title}</div>

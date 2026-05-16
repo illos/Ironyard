@@ -9,10 +9,7 @@ import { isParticipant } from '../types';
 // silent no-op when the participant is missing, not a PC, or wasn't
 // maintaining the named ability — these are not error conditions because the
 // state-of-the-world the caller intended is already true.
-export function applyStopMaintenance(
-  state: CampaignState,
-  intent: StampedIntent,
-): IntentResult {
+export function applyStopMaintenance(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = StopMaintenancePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {

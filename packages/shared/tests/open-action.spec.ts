@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { OpenActionKindSchema, OpenActionSchema } from '../src/open-action';
 import { OPEN_ACTION_COPY } from '../src';
+import { OpenActionKindSchema, OpenActionSchema } from '../src/open-action';
 
 describe('OpenActionKindSchema', () => {
   it('rejects unknown kinds', () => {

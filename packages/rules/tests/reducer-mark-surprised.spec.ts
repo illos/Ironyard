@@ -1,4 +1,8 @@
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
@@ -18,24 +22,45 @@ function intent(type: string, payload: unknown, overrides: Partial<Intent> = {})
     actor: overrides.actor ?? { userId: 'director-user', role: 'director' },
     timestamp: overrides.timestamp ?? T,
     source: overrides.source ?? 'manual',
-    type, payload,
+    type,
+    payload,
     causedBy: overrides.causedBy,
   };
 }
 
 function pc(id: string): Participant {
   return {
-    id, name: id, kind: 'pc', level: 1, currentStamina: 30, maxStamina: 30,
+    id,
+    name: id,
+    kind: 'pc',
+    level: 1,
+    currentStamina: 30,
+    maxStamina: 30,
     characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
-    immunities: [], weaknesses: [], conditions: [], heroicResources: [],
-    extras: [], surges: 0, recoveries: { current: 0, max: 0 }, recoveryValue: 0,
-    ownerId: id, characterId: null,
-    weaponDamageBonus: { melee: [0,0,0], ranged: [0,0,0] },
-    activeAbilities: [], victories: 0,
+    immunities: [],
+    weaknesses: [],
+    conditions: [],
+    heroicResources: [],
+    extras: [],
+    surges: 0,
+    recoveries: { current: 0, max: 0 },
+    recoveryValue: 0,
+    ownerId: id,
+    characterId: null,
+    weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
+    activeAbilities: [],
+    victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
     surprised: false,
-    role: null, ancestry: [], size: null, speed: null, stability: null,
-    freeStrike: null, ev: null, withCaptain: null, className: null,
+    role: null,
+    ancestry: [],
+    size: null,
+    speed: null,
+    stability: null,
+    freeStrike: null,
+    ev: null,
+    withCaptain: null,
+    className: null,
     staminaState: 'healthy',
     staminaOverride: null,
     bodyIntact: true,
@@ -57,10 +82,14 @@ function readyState(round: number | null = 1): CampaignState {
     activeDirectorId: 'director-user',
     participants: [pc('alice')],
     encounter: {
-      id: 'e1', currentRound: round,
-      firstSide: null, currentPickingSide: null, actedThisRound: [],
+      id: 'e1',
+      currentRound: round,
+      firstSide: null,
+      currentPickingSide: null,
+      actedThisRound: [],
       activeParticipantId: null,
-      turnState: {}, malice: { current: 0, lastMaliciousStrikeRound: null },
+      turnState: {},
+      malice: { current: 0, lastMaliciousStrikeRound: null },
       pendingTriggers: null,
       perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
     },
@@ -87,7 +116,11 @@ describe('MarkSurprised', () => {
     const s = readyState();
     const r = applyIntent(
       s,
-      intent('MarkSurprised', { participantId: 'alice', surprised: true }, { actor: { userId: 'alice', role: 'player' } }),
+      intent(
+        'MarkSurprised',
+        { participantId: 'alice', surprised: true },
+        { actor: { userId: 'alice', role: 'player' } },
+      ),
     );
     expect(r.errors?.[0]?.code).toBe('not_permitted');
   });

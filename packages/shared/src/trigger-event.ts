@@ -16,7 +16,16 @@ export const TriggerEventDescSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('stamina-transition'),
     participantId: z.string().min(1),
-    from: z.enum(['healthy', 'winded', 'dying', 'dead', 'unconscious', 'inert', 'rubble', 'doomed']),
+    from: z.enum([
+      'healthy',
+      'winded',
+      'dying',
+      'dead',
+      'unconscious',
+      'inert',
+      'rubble',
+      'doomed',
+    ]),
     to: z.enum(['healthy', 'winded', 'dying', 'dead', 'unconscious', 'inert', 'rubble', 'doomed']),
   }),
   z.object({

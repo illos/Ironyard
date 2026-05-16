@@ -3,19 +3,10 @@ import {
   ClaimOpenActionPayloadSchema,
   IntentTypes,
 } from '@ironyard/shared';
-import type {
-  CampaignState,
-  DerivedIntent,
-  IntentResult,
-  LogEntry,
-  StampedIntent,
-} from '../types';
+import type { CampaignState, DerivedIntent, IntentResult, LogEntry, StampedIntent } from '../types';
 import { isParticipant } from '../types';
 
-export function applyClaimOpenAction(
-  state: CampaignState,
-  intent: StampedIntent,
-): IntentResult {
+export function applyClaimOpenAction(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = ClaimOpenActionPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
@@ -44,16 +35,12 @@ export function applyClaimOpenAction(
           intentId: intent.id,
         },
       ],
-      errors: [
-        { code: 'not_found', message: `openAction ${parsed.data.openActionId} not found` },
-      ],
+      errors: [{ code: 'not_found', message: `openAction ${parsed.data.openActionId} not found` }],
     };
   }
 
   // Authorization: targeted participant's owner OR active director.
-  const target = state.participants.find(
-    (p) => isParticipant(p) && p.id === oa.participantId,
-  );
+  const target = state.participants.find((p) => isParticipant(p) && p.id === oa.participantId);
   const targetParticipant = target && isParticipant(target) ? target : null;
   const targetOwnerId = targetParticipant ? targetParticipant.ownerId : null;
   const actorId = intent.actor.userId;
@@ -88,10 +75,7 @@ export function applyClaimOpenAction(
   // Decorate every derived intent with the standard envelope fields. The
   // reducer cascades each one as a fresh dispatch, so the actor / source /
   // causedBy chain must mirror Task 21–25's pattern.
-  const decorate = (
-    type: string,
-    payload: Record<string, unknown>,
-  ): DerivedIntent => ({
+  const decorate = (type: string, payload: Record<string, unknown>): DerivedIntent => ({
     actor: intent.actor,
     source: 'server' as const,
     type,
@@ -225,17 +209,15 @@ export function applyClaimOpenAction(
             errors: [
               {
                 code: 'missing_pray_damage',
-                message:
-                  'pray-to-the-gods claim with prayD3=1 requires choice.prayDamage.d6',
+                message: 'pray-to-the-gods claim with prayD3=1 requires choice.prayDamage.d6',
               },
             ],
           };
         }
         // Conduit level: stamped on the participant at StartEncounter. Default
         // to 1 if 0/null (defensive — should never happen in practice).
-        const conduitLevel = targetParticipant?.level && targetParticipant.level > 0
-          ? targetParticipant.level
-          : 1;
+        const conduitLevel =
+          targetParticipant?.level && targetParticipant.level > 0 ? targetParticipant.level : 1;
         derived.push(
           decorate(IntentTypes.GainResource, {
             participantId: oa.participantId,

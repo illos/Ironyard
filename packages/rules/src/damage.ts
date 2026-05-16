@@ -40,14 +40,18 @@ export function applyDamageStep(
   target: Participant,
   amount: number,
   damageType: DamageType,
-  intentOrOpts: 'kill' | 'knock-out' | {
-    intent?: 'kill' | 'knock-out';
-    bypassDamageReduction?: boolean;
-  } = 'kill',
+  intentOrOpts:
+    | 'kill'
+    | 'knock-out'
+    | {
+        intent?: 'kill' | 'knock-out';
+        bypassDamageReduction?: boolean;
+      } = 'kill',
 ): DamageStepResult {
-  const opts = typeof intentOrOpts === 'string'
-    ? { intent: intentOrOpts, bypassDamageReduction: false }
-    : intentOrOpts;
+  const opts =
+    typeof intentOrOpts === 'string'
+      ? { intent: intentOrOpts, bypassDamageReduction: false }
+      : intentOrOpts;
   const intent = opts.intent ?? 'kill';
   const bypassDamageReduction = opts.bypassDamageReduction ?? false;
 

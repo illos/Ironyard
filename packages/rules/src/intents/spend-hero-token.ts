@@ -1,10 +1,5 @@
 import { IntentTypes, SpendHeroTokenPayloadSchema } from '@ironyard/shared';
-import type {
-  CampaignState,
-  DerivedIntent,
-  IntentResult,
-  StampedIntent,
-} from '../types';
+import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
 
 export function applySpendHeroToken(state: CampaignState, intent: StampedIntent): IntentResult {
@@ -14,7 +9,11 @@ export function applySpendHeroToken(state: CampaignState, intent: StampedIntent)
       state,
       derived: [],
       log: [
-        { kind: 'error', text: `SpendHeroToken rejected: ${parsed.error.message}`, intentId: intent.id },
+        {
+          kind: 'error',
+          text: `SpendHeroToken rejected: ${parsed.error.message}`,
+          intentId: intent.id,
+        },
       ],
       errors: [{ code: 'invalid_payload', message: parsed.error.message }],
     };
@@ -37,9 +36,7 @@ export function applySpendHeroToken(state: CampaignState, intent: StampedIntent)
       state,
       derived: [],
       log: [{ kind: 'error', text: 'surge_burst requires amount 1', intentId: intent.id }],
-      errors: [
-        { code: 'invalid_spend_reason', message: 'surge_burst requires amount 1' },
-      ],
+      errors: [{ code: 'invalid_spend_reason', message: 'surge_burst requires amount 1' }],
     };
   }
   if (reason === 'regain_stamina' && amount !== 2) {
@@ -47,9 +44,7 @@ export function applySpendHeroToken(state: CampaignState, intent: StampedIntent)
       state,
       derived: [],
       log: [{ kind: 'error', text: 'regain_stamina requires amount 2', intentId: intent.id }],
-      errors: [
-        { code: 'invalid_spend_reason', message: 'regain_stamina requires amount 2' },
-      ],
+      errors: [{ code: 'invalid_spend_reason', message: 'regain_stamina requires amount 2' }],
     };
   }
 

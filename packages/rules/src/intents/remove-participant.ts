@@ -58,9 +58,7 @@ export function applyRemoveParticipant(state: CampaignState, intent: StampedInte
     };
   }
 
-  const survivors = state.participants.filter(
-    (p) => !isParticipant(p) || p.id !== participantId,
-  );
+  const survivors = state.participants.filter((p) => !isParticipant(p) || p.id !== participantId);
   // Pass 3 Slice 2b — strip the removed id from every survivor's
   // targetingRelations arrays so dangling references can't outlive the
   // referenced target.

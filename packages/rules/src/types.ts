@@ -1,4 +1,11 @@
-import type { Intent, MaliceState, Member, OpenAction, Participant, PendingTriggerSet } from '@ironyard/shared';
+import type {
+  Intent,
+  MaliceState,
+  Member,
+  OpenAction,
+  Participant,
+  PendingTriggerSet,
+} from '@ironyard/shared';
 import type { StaticDataBundle } from './static-data';
 
 // The lobby roster is a flat list of fully-materialized participants.
@@ -75,7 +82,7 @@ export type EncounterPhase = {
   // StartTurn (clearing the previous turn's set).
   perEncounterFlags: {
     perTurn: {
-      heroesActedThisTurn: string[];  // serialized as array; conceptually a set
+      heroesActedThisTurn: string[]; // serialized as array; conceptually a set
     };
   };
 };

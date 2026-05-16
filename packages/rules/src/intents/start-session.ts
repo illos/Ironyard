@@ -31,9 +31,7 @@ export function applyStartSession(state: CampaignState, intent: StampedIntent): 
       state,
       derived: [],
       log: [{ kind: 'error', text: 'session already active', intentId: intent.id }],
-      errors: [
-        { code: 'session_already_active', message: 'end the active session first' },
-      ],
+      errors: [{ code: 'session_already_active', message: 'end the active session first' }],
     };
   }
 

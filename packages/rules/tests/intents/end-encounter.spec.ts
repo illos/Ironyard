@@ -1,8 +1,13 @@
-import { describe, expect, it } from 'vitest';
 import { IntentTypes } from '@ironyard/shared';
+import { describe, expect, it } from 'vitest';
 import { applyEndEncounter } from '../../src/intents/end-encounter';
-import { baseState, makeHeroParticipant, makeMonsterParticipant, makeRunningEncounterPhase } from './test-utils';
 import { isParticipant } from '../../src/types';
+import {
+  baseState,
+  makeHeroParticipant,
+  makeMonsterParticipant,
+  makeRunningEncounterPhase,
+} from './test-utils';
 
 describe('applyEndEncounter — targetingRelations', () => {
   it('clears targetingRelations on every participant', () => {

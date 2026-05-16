@@ -7,7 +7,7 @@ import { MonsterSchema } from '../data/monster';
 export const StartEncounterStampedPcSchema = z.object({
   characterId: z.string().min(1),
   ownerId: z.string().min(1),
-  name: z.string().min(1),  // from characters.name column
+  name: z.string().min(1), // from characters.name column
   character: CharacterSchema, // full blob parsed from characters.data
 });
 export type StartEncounterStampedPc = z.infer<typeof StartEncounterStampedPcSchema>;

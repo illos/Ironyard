@@ -225,9 +225,11 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
   // trait abilities do NOT consume a turn-flow slot. abilityType is optional;
   // legacy payloads without it skip the emission.
   const turnFlowSlot: 'main' | 'maneuver' | null =
-    parsed.data.abilityType === 'action' ? 'main'
-    : parsed.data.abilityType === 'maneuver' ? 'maneuver'
-    : null;
+    parsed.data.abilityType === 'action'
+      ? 'main'
+      : parsed.data.abilityType === 'maneuver'
+        ? 'maneuver'
+        : null;
   if (turnFlowSlot) {
     derived.push({
       actor: intent.actor,

@@ -9,8 +9,17 @@ describe('TYPICAL_ANCESTRY_CULTURES', () => {
   it('covers all 11 non-revenant ancestries', () => {
     const ids = Object.keys(TYPICAL_ANCESTRY_CULTURES).sort();
     expect(ids).toEqual([
-      'devil', 'dragon-knight', 'dwarf', 'hakaan', 'high-elf',
-      'human', 'memonek', 'orc', 'polder', 'time-raider', 'wode-elf',
+      'devil',
+      'dragon-knight',
+      'dwarf',
+      'hakaan',
+      'high-elf',
+      'human',
+      'memonek',
+      'orc',
+      'polder',
+      'time-raider',
+      'wode-elf',
     ]);
   });
 

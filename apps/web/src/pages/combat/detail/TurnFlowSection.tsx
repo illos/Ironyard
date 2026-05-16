@@ -1,5 +1,5 @@
 // apps/web/src/pages/combat/detail/TurnFlowSection.tsx
-import { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 export interface TurnFlowSectionProps {
   /** Display index — 1 / 2 / 3. */
@@ -38,13 +38,14 @@ export function TurnFlowSection({
       : state === 'done'
         ? 'border-l-line opacity-55'
         : 'border-l-line';
-  const numClass =
-    state === 'active' ? 'border-accent text-accent' : 'border-line text-text-dim';
+  const numClass = state === 'active' ? 'border-accent text-accent' : 'border-line text-text-dim';
   return (
     <section className={`border-l-2 ${borderClass} pl-3 py-2`}>
       <header className="flex items-center justify-between gap-3">
         <span className="flex items-center gap-2">
-          <span className={`inline-flex w-6 h-6 items-center justify-center text-xs border ${numClass}`}>
+          <span
+            className={`inline-flex w-6 h-6 items-center justify-center text-xs border ${numClass}`}
+          >
             {index}
           </span>
           <span className="font-semibold">

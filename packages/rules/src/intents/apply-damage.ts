@@ -1,13 +1,9 @@
-import {
-  ApplyDamagePayloadSchema,
-  IntentTypes,
-  type Participant,
-} from '@ironyard/shared';
+import { ApplyDamagePayloadSchema, IntentTypes, type Participant } from '@ironyard/shared';
+import { evaluateActionTriggers, evaluateStaminaTransitionTriggers } from '../class-triggers';
 import { applyDamageStep } from '../damage';
+import { applyTransitionSideEffects, recomputeStaminaState } from '../stamina';
 import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
-import { applyTransitionSideEffects, recomputeStaminaState } from '../stamina';
-import { evaluateActionTriggers, evaluateStaminaTransitionTriggers } from '../class-triggers';
 
 export function applyApplyDamage(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = ApplyDamagePayloadSchema.safeParse(intent.payload);
@@ -35,8 +31,14 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
     };
   }
 
-  const { targetId, amount, damageType, intent: damageIntent, ferocityD3, bypassDamageReduction } =
-    parsed.data;
+  const {
+    targetId,
+    amount,
+    damageType,
+    intent: damageIntent,
+    ferocityD3,
+    bypassDamageReduction,
+  } = parsed.data;
   const participants = state.participants.filter(isParticipant);
   const target = participants.find((p) => p.id === targetId);
   if (!target) {
@@ -262,11 +264,7 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
 //   - no prior override is already active
 //   - transition target is 'dying' (checked by caller)
 function shouldRevenantInterceptDying(p: Participant): boolean {
-  return (
-    p.kind === 'pc' &&
-    p.ancestry.includes('revenant') &&
-    p.staminaOverride === null
-  );
+  return p.kind === 'pc' && p.ancestry.includes('revenant') && p.staminaOverride === null;
 }
 
 function applyRevenantInert(p: Participant): Participant {

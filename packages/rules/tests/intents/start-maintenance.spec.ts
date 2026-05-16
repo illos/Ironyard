@@ -14,10 +14,7 @@ import {
 
 const PC_ID = 'pc:ele-1';
 
-function stateWith(
-  participants: ReturnType<typeof makeHeroParticipant>[],
-  currentRound = 1,
-) {
+function stateWith(participants: ReturnType<typeof makeHeroParticipant>[], currentRound = 1) {
   return baseState({
     currentSessionId: 'sess-1',
     participants,
@@ -69,9 +66,7 @@ describe('applyStartMaintenance', () => {
   it('rejects when ability is already being maintained (idempotent guard)', () => {
     const ele = makeHeroParticipant(PC_ID, {
       className: 'Elementalist',
-      maintainedAbilities: [
-        { abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1 },
-      ],
+      maintainedAbilities: [{ abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1 }],
     });
     const state = stateWith([ele], 2);
     const result = applyStartMaintenance(

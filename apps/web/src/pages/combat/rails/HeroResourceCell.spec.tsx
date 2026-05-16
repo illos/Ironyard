@@ -1,7 +1,7 @@
-import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
-import { HeroResourceCell } from './HeroResourceCell';
 import type { Participant } from '@ironyard/shared';
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
+import { HeroResourceCell } from './HeroResourceCell';
 
 afterEach(cleanup);
 
@@ -44,7 +44,11 @@ function makePc(overrides: Partial<Participant> = {}): Participant {
 
 describe('HeroResourceCell', () => {
   it('renders the resource name + filled/unfilled pip row', () => {
-    render(<HeroResourceCell participant={makePc({ heroicResources: [{ name: 'focus', value: 3, floor: 0 }] })} />);
+    render(
+      <HeroResourceCell
+        participant={makePc({ heroicResources: [{ name: 'focus', value: 3, floor: 0 }] })}
+      />,
+    );
     expect(screen.getByText('3')).toBeInTheDocument();
     const pips = screen.getAllByTestId('resource-pip');
     expect(pips).toHaveLength(8);
@@ -52,14 +56,20 @@ describe('HeroResourceCell', () => {
   });
 
   it('value > 8 fills all 8 pips and shows the full total on the label', () => {
-    render(<HeroResourceCell participant={makePc({ heroicResources: [{ name: 'ferocity', value: 10, floor: 0 }] })} />);
+    render(
+      <HeroResourceCell
+        participant={makePc({ heroicResources: [{ name: 'ferocity', value: 10, floor: 0 }] })}
+      />,
+    );
     const pips = screen.getAllByTestId('resource-pip');
     expect(pips.filter((p) => p.dataset.filled === 'true')).toHaveLength(8);
     expect(screen.getByText('10')).toBeInTheDocument();
   });
 
   it('renders nothing when the participant has no heroic resource', () => {
-    const { container } = render(<HeroResourceCell participant={makePc({ heroicResources: [] })} />);
+    const { container } = render(
+      <HeroResourceCell participant={makePc({ heroicResources: [] })} />,
+    );
     expect(container.firstChild).toBeNull();
   });
 });

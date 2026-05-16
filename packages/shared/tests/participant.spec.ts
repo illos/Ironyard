@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ParticipantSchema } from '../src/participant';
 import { defaultPerEncounterFlags, defaultPsionFlags } from '../src';
+import { ParticipantSchema } from '../src/participant';
 
 describe('ParticipantSchema.turnActionUsage', () => {
   it('defaults to all-false when omitted', () => {
@@ -135,9 +135,7 @@ describe('Participant — slice 2a additions', () => {
       ...base,
       perEncounterFlags: {
         perTurn: {
-          entries: [
-            { scopedToTurnOf: 'p1', key: 'damageDealtThisTurn', value: true },
-          ],
+          entries: [{ scopedToTurnOf: 'p1', key: 'damageDealtThisTurn', value: true }],
         },
         perRound: {
           tookDamage: true,

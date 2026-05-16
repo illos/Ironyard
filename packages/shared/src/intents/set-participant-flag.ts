@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { PerEncounterLatchesSchema, PerRoundFlagsSchema, PerTurnFlagKeySchema } from '../per-encounter-flags';
+import {
+  PerEncounterLatchesSchema,
+  PerRoundFlagsSchema,
+  PerTurnFlagKeySchema,
+} from '../per-encounter-flags';
 
 // Pass 3 Slice 2a — server-only support intents emitted by class-trigger
 // subscribers (see packages/rules/src/class-triggers). These write small,

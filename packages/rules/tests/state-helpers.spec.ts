@@ -1,8 +1,19 @@
 import type { Participant } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
-import { type CampaignState, emptyCampaignState, isParticipant, sumPartyVictories, aliveHeroes, averageVictoriesAlive } from '../src/index';
+import {
+  type CampaignState,
+  aliveHeroes,
+  averageVictoriesAlive,
+  emptyCampaignState,
+  isParticipant,
+  sumPartyVictories,
+} from '../src/index';
 import { nextPickingSide, participantSide } from '../src/state-helpers';
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 
 const campaignId = 'test_campaign';
 const ownerId = 'user_owner';
@@ -107,7 +118,7 @@ function stateWithPCs(victories: number[]): CampaignState {
   return {
     ...emptyCampaignState(campaignId, ownerId),
     participants: victories.map((v, i) =>
-      pc({ id: `pc_${i}`, victories: v, maxStamina: 20, currentStamina: 20 })
+      pc({ id: `pc_${i}`, victories: v, maxStamina: 20, currentStamina: 20 }),
     ),
   };
 }
@@ -149,9 +160,9 @@ describe('aliveHeroes', () => {
     const s = stateWithPCs([2, 2, 2]);
     // windedValue for a PC is maxStamina / 2 (floor). For maxStamina = 20,
     // windedValue = 10, so the boundary is currentStamina > -10.
-    (s.participants[0] as Participant).currentStamina = 5;       // healthy
-    (s.participants[1] as Participant).currentStamina = 0;       // dying but alive
-    (s.participants[2] as Participant).currentStamina = -11;     // past -windedValue; dead-ish
+    (s.participants[0] as Participant).currentStamina = 5; // healthy
+    (s.participants[1] as Participant).currentStamina = 0; // dying but alive
+    (s.participants[2] as Participant).currentStamina = -11; // past -windedValue; dead-ish
     expect(aliveHeroes(s)).toHaveLength(2);
   });
 
@@ -162,12 +173,12 @@ describe('aliveHeroes', () => {
 
 describe('averageVictoriesAlive', () => {
   it('floors the average across alive PCs', () => {
-    const s = stateWithPCs([2, 3, 4]);  // avg 3
+    const s = stateWithPCs([2, 3, 4]); // avg 3
     expect(averageVictoriesAlive(s)).toBe(3);
   });
 
   it('floors fractional averages', () => {
-    const s = stateWithPCs([1, 2, 4]);  // avg 7/3 = 2.33 → 2
+    const s = stateWithPCs([1, 2, 4]); // avg 7/3 = 2.33 → 2
     expect(averageVictoriesAlive(s)).toBe(2);
   });
 
@@ -178,8 +189,8 @@ describe('averageVictoriesAlive', () => {
 
   it('excludes "dead" PCs from the average', () => {
     const s = stateWithPCs([5, 5, 1]);
-    (s.participants[2] as Participant).currentStamina = -11;  // dead
-    expect(averageVictoriesAlive(s)).toBe(5);  // (5+5)/2 = 5
+    (s.participants[2] as Participant).currentStamina = -11; // dead
+    expect(averageVictoriesAlive(s)).toBe(5); // (5+5)/2 = 5
   });
 });
 
@@ -189,17 +200,37 @@ describe('averageVictoriesAlive', () => {
 
 function pcZ(id: string): Participant {
   return {
-    id, name: id, kind: 'pc', level: 1, currentStamina: 30, maxStamina: 30,
+    id,
+    name: id,
+    kind: 'pc',
+    level: 1,
+    currentStamina: 30,
+    maxStamina: 30,
     characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
-    immunities: [], weaknesses: [], conditions: [], heroicResources: [],
-    extras: [], surges: 0, recoveries: { current: 0, max: 0 }, recoveryValue: 0,
-    ownerId: null, characterId: null,
+    immunities: [],
+    weaknesses: [],
+    conditions: [],
+    heroicResources: [],
+    extras: [],
+    surges: 0,
+    recoveries: { current: 0, max: 0 },
+    recoveryValue: 0,
+    ownerId: null,
+    characterId: null,
     weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
-    activeAbilities: [], victories: 0,
+    activeAbilities: [],
+    victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
     surprised: false,
-    role: null, ancestry: [], size: null, speed: null, stability: null,
-    freeStrike: null, ev: null, withCaptain: null, className: null,
+    role: null,
+    ancestry: [],
+    size: null,
+    speed: null,
+    stability: null,
+    freeStrike: null,
+    ev: null,
+    withCaptain: null,
+    className: null,
     staminaState: 'healthy',
     staminaOverride: null,
     bodyIntact: true,

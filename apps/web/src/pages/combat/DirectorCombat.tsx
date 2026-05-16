@@ -1,3 +1,5 @@
+import { getResourceConfigForParticipant } from '@ironyard/rules';
+import type { CampaignState } from '@ironyard/rules';
 import {
   type Ability,
   type AdjustVictoriesPayload,
@@ -33,18 +35,16 @@ import { buildIntent } from '../../api/dispatch';
 import { useCampaign, useMe, useMonsters } from '../../api/queries';
 import { useIsActingAsDirector } from '../../lib/active-director';
 import { describeIntent, findLatestUndoable } from '../../lib/intentDescribe';
-import { getResourceConfigForParticipant } from '@ironyard/rules';
-import type { CampaignState } from '@ironyard/rules';
 import { Button, SplitPane } from '../../primitives';
-import { InlineHeader } from './combat-header/InlineHeader';
 import { isParticipantEntry, useSessionSocket } from '../../ws/useSessionSocket';
-import { DetailPane } from './detail';
 import { EncounterRail } from './EncounterRail';
-import { RollInitiativeOverlay } from './initiative';
 import { OpenActionsList } from './OpenActionsList';
 import { PartyRail } from './PartyRail';
-import { CrossSideTriggerModal, TriggersPendingPill } from './triggers';
 import { type Toast, ToastStack } from './ToastStack';
+import { InlineHeader } from './combat-header/InlineHeader';
+import { DetailPane } from './detail';
+import { RollInitiativeOverlay } from './initiative';
+import { CrossSideTriggerModal, TriggersPendingPill } from './triggers';
 
 const TOAST_DISMISS_MS = 6000;
 const MAX_TOASTS = 3;
@@ -66,14 +66,8 @@ export function DirectorCombat() {
   const me = useMe();
   const campaign = useCampaign(campaignId);
   const monsters = useMonsters();
-  const {
-    status,
-    activeEncounter,
-    dispatch,
-    intentLog,
-    activeDirectorId,
-    openActions,
-  } = useSessionSocket(campaignId);
+  const { status, activeEncounter, dispatch, intentLog, activeDirectorId, openActions } =
+    useSessionSocket(campaignId);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -204,7 +198,11 @@ export function DirectorCombat() {
   const selfParticipantId = useMemo(() => {
     return (
       (activeEncounter?.participants ?? []).find(
-        (p) => isParticipantEntry(p) && p.kind === 'pc' && 'ownerId' in p && p.ownerId === me.data?.user.id,
+        (p) =>
+          isParticipantEntry(p) &&
+          p.kind === 'pc' &&
+          'ownerId' in p &&
+          p.ownerId === me.data?.user.id,
       )?.id ?? null
     );
   }, [activeEncounter, me.data?.user.id]);
@@ -293,9 +291,7 @@ export function DirectorCombat() {
   if (campaign.error || !campaign.data) {
     return (
       <main className="mx-auto max-w-6xl p-6 space-y-2">
-        <p className="text-foe">
-          {(campaign.error as Error)?.message ?? 'Campaign not found.'}
-        </p>
+        <p className="text-foe">{(campaign.error as Error)?.message ?? 'Campaign not found.'}</p>
         <Link to="/" className="underline text-text-dim">
           Back home
         </Link>
@@ -644,7 +640,7 @@ export function DirectorCombat() {
           !!selfParticipantId && activeEncounter?.activeParticipantId === selfParticipantId
         }
         activeParticipantName={
-          (participants.find((p) => p.id === activeEncounter?.activeParticipantId)?.name) ?? null
+          participants.find((p) => p.id === activeEncounter?.activeParticipantId)?.name ?? null
         }
         pickingSide={currentPickingSide}
         onStartRound={handleStartRound}
@@ -749,9 +745,7 @@ export function DirectorCombat() {
               targetParticipantId={targetParticipantIds[0] ?? null}
               selfParticipantId={selfParticipantId}
               viewerRole={viewerRole}
-              isActiveTurn={
-                !!focused && activeEncounter.activeParticipantId === focused.id
-              }
+              isActiveTurn={!!focused && activeEncounter.activeParticipantId === focused.id}
               onEndTurn={handleEndTurn}
               dispatchRoll={dispatchRoll}
               dispatchSetCondition={dispatchSetCondition}

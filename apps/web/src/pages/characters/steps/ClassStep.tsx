@@ -45,9 +45,7 @@ function LockedCharacteristics({ lockedIds }: { lockedIds: string[] }) {
   return (
     <div>
       <h3 className="text-sm text-text-dim mb-1">Locked characteristics</h3>
-      <p className="text-xs text-text-mute mb-2">
-        Set by your class — these cannot be reassigned.
-      </p>
+      <p className="text-xs text-text-mute mb-2">Set by your class — these cannot be reassigned.</p>
       <div className="flex flex-wrap gap-2">
         {lockedIds.map((id) => (
           <div
@@ -539,9 +537,7 @@ function LevelPicks({
           <div key={lvl} className="border border-line bg-ink-0 p-3">
             <h4 className="text-sm font-medium text-text mb-2">Level {lvl}</h4>
             {featureNames.length > 0 && (
-              <p className="text-xs text-text-mute mb-2">
-                Features: {featureNames.join(' · ')}
-              </p>
+              <p className="text-xs text-text-mute mb-2">Features: {featureNames.join(' · ')}</p>
             )}
             <div className="space-y-2">
               {baseSlots.map((slot, idx) => (
@@ -549,10 +545,7 @@ function LevelPicks({
                   key={`base-${idx}`}
                   label={`Ability slot ${idx + 1} (${slot.cost === 0 ? 'Signature' : `Cost ${slot.cost}`})`}
                   options={allClassAbilities.filter(
-                    (a) =>
-                      a.tier === lvl &&
-                      a.cost === slot.cost &&
-                      a.isSubclass === false,
+                    (a) => a.tier === lvl && a.cost === slot.cost && a.isSubclass === false,
                   )}
                   value={choices.abilityIds[idx] ?? ''}
                   onChange={(id) => setPick(lvl, 'abilityIds', idx, id)}
@@ -563,10 +556,7 @@ function LevelPicks({
                   key={`sub-${idx}`}
                   label={`${klass.subclassLabel} ability slot ${idx + 1} (${slot.cost === 0 ? 'Signature' : `Cost ${slot.cost}`})`}
                   options={allClassAbilities.filter(
-                    (a) =>
-                      a.tier === lvl &&
-                      a.cost === slot.cost &&
-                      a.isSubclass === true,
+                    (a) => a.tier === lvl && a.cost === slot.cost && a.isSubclass === true,
                   )}
                   value={choices.subclassAbilityIds[idx] ?? ''}
                   onChange={(id) => setPick(lvl, 'subclassAbilityIds', idx, id)}

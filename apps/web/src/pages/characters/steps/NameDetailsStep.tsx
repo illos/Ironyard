@@ -68,9 +68,7 @@ export function NameDetailsStep({
 
       {/* Hero details */}
       <div className="border border-line p-5 space-y-4">
-        <h3 className="text-sm font-medium text-text-dim uppercase tracking-wider">
-          Hero details
-        </h3>
+        <h3 className="text-sm font-medium text-text-dim uppercase tracking-wider">Hero details</h3>
 
         <Field label="Pronouns">
           <input

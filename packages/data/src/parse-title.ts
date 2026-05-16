@@ -1,5 +1,5 @@
-import matter from 'gray-matter';
 import type { Title } from '@ironyard/shared';
+import matter from 'gray-matter';
 
 function parseEchelon(s: unknown): number | null {
   if (typeof s !== 'string') return null;
@@ -33,7 +33,11 @@ function firstParagraph(content: string): string {
 function parseGrantsAbilityId(content: string, titleId: string): string | null {
   const m = /######\s+([^\n(]+?)(?:\s*\([^)]*\))?\s*$/m.exec(content);
   if (!m || !m[1]) return null;
-  const slug = m[1].trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const slug = m[1]
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
   return `${titleId}-${slug}`;
 }
 
@@ -48,7 +52,9 @@ export function parseTitleMarkdown(md: string): Title | null {
   if (echelon === null) return null;
 
   return {
-    id, name, echelon,
+    id,
+    name,
+    echelon,
     description: firstParagraph(content),
     raw: content,
     grantsAbilityId: parseGrantsAbilityId(content, id),

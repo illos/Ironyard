@@ -1,7 +1,8 @@
 import {
   defaultPerEncounterFlags,
   defaultPerEncounterLatches,
-  defaultPsionFlags, defaultTargetingRelations,
+  defaultPsionFlags,
+  defaultTargetingRelations,
 } from '@ironyard/shared';
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
@@ -212,8 +213,8 @@ describe('applyIntent — EndEncounter', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
     const r = endEncounter(s);
@@ -253,8 +254,8 @@ describe('applyIntent — EndEncounter', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 
@@ -296,8 +297,8 @@ describe('applyIntent — EndEncounter', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 
@@ -320,8 +321,8 @@ describe('applyIntent — EndEncounter', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 
@@ -348,8 +349,8 @@ describe('applyIntent — EndEncounter', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
 
@@ -398,8 +399,8 @@ describe('applyIntent — EndEncounter', () => {
         firstSide: null,
         currentPickingSide: null,
         actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
       },
     };
     const r = endEncounter(s);
@@ -469,8 +470,8 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+          pendingTriggers: null,
+          perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
         },
       };
 
@@ -505,8 +506,8 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+          pendingTriggers: null,
+          perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
         },
       };
 
@@ -538,8 +539,8 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+          pendingTriggers: null,
+          perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
         },
       };
 
@@ -575,8 +576,8 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+          pendingTriggers: null,
+          perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
         },
       };
 
@@ -624,8 +625,8 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+          pendingTriggers: null,
+          perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
         },
       };
 
@@ -752,8 +753,8 @@ describe('applyIntent — EndEncounter', () => {
           firstSide: null,
           currentPickingSide: null,
           actedThisRound: [],
-      pendingTriggers: null,
-      perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+          pendingTriggers: null,
+          perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
         },
       };
 

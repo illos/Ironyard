@@ -8,16 +8,18 @@ export type EndRoundPayload = z.infer<typeof EndRoundPayloadSchema>;
 
 export const StartTurnPayloadSchema = z.object({
   participantId: z.string().min(1),
-  rolls: z.object({
-    d3: z.number().int().min(1).max(3),
-    // Slice 2a: Conduit Pray-to-the-Gods OA claim. When `prayToTheGods` is
-    // true, the reducer uses `prayD3` (instead of the standard `d3`) for
-    // piety gain (1→+1, 2→+1, 3→+2), and on a `prayD3 === 1` outcome
-    // applies `prayDamage.d6` + level psychic damage with damage-reduction
-    // bypassed.
-    prayD3: z.number().int().min(1).max(3).optional(),
-    prayDamage: z.object({ d6: z.number().int().min(1).max(6) }).optional(),
-  }).optional(),
+  rolls: z
+    .object({
+      d3: z.number().int().min(1).max(3),
+      // Slice 2a: Conduit Pray-to-the-Gods OA claim. When `prayToTheGods` is
+      // true, the reducer uses `prayD3` (instead of the standard `d3`) for
+      // piety gain (1→+1, 2→+1, 3→+2), and on a `prayD3 === 1` outcome
+      // applies `prayDamage.d6` + level psychic damage with damage-reduction
+      // bypassed.
+      prayD3: z.number().int().min(1).max(3).optional(),
+      prayDamage: z.object({ d6: z.number().int().min(1).max(6) }).optional(),
+    })
+    .optional(),
   // Slice 2a: top-level toggle indicating this StartTurn is the Conduit
   // Pray-to-the-Gods OA-claim StartTurn rather than the standard piety gain.
   prayToTheGods: z.boolean().optional(),
@@ -35,4 +37,3 @@ export const EndTurnPayloadSchema = z
   })
   .strict();
 export type EndTurnPayload = z.infer<typeof EndTurnPayloadSchema>;
-

@@ -4,8 +4,12 @@
 
 import type { CampaignState } from '@ironyard/rules';
 import type { Intent } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 
 // ── Mock DB layer ──────────────────────────────────────────────────────────
 //

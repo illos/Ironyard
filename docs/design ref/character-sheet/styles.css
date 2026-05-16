@@ -1,0 +1,754 @@
+/* Character Page — additions on top of director-combat/styles.css.
+   Inherits all variables, typography, .sec, .ability, .chargrid, chips, etc. */
+
+/* Top nav (replaces director's breadcrumb pattern) */
+.cs-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+}
+.cs-nav a {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 6px 10px;
+  letter-spacing: -0.005em;
+  transition: color 140ms ease, background 140ms ease;
+  border-radius: 0;
+}
+.cs-nav a:hover {
+  color: var(--text);
+  background: var(--ink-2);
+}
+.cs-nav a.on {
+  color: var(--text);
+  background: var(--ink-2);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+/* Identity card — page header */
+.id-card {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--pk, var(--accent));
+  padding: 16px 18px;
+  position: relative;
+}
+.id-sigil {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink-3);
+  border: 1px solid var(--line);
+  font-family: "Geist Mono", monospace;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+.id-info {
+  min-width: 0;
+}
+.id-name {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  margin: 0;
+}
+.id-pron {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-left: 8px;
+  font-weight: 400;
+}
+.id-line {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.id-line span {
+  display: inline-flex;
+  gap: 4px;
+}
+.id-line span b {
+  color: var(--text);
+  font-weight: 500;
+}
+.id-line .sep {
+  color: var(--text-mute);
+}
+
+.id-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+.id-status {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.id-status b {
+  font-family: "Geist", sans-serif;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+/* Vitals — key/value 2-col grid */
+.vital-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 24px;
+  row-gap: 10px;
+}
+.vital-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 10px;
+  align-items: baseline;
+}
+.vital-row .k {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.vital-row .v {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.vital-row .v .tab {
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 600;
+}
+.vital-row .v .sep {
+  color: var(--text-mute);
+  font-family: "Geist Mono", monospace;
+  font-size: 12px;
+}
+.vital-row .v .hint {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-mute);
+  font-weight: 400;
+}
+
+/* Stamina visual — small bar + dying band */
+.stam-meter {
+  height: 6px;
+  background: var(--ink-3);
+  position: relative;
+  margin-top: 6px;
+}
+.stam-meter i {
+  display: block;
+  height: 100%;
+  background: var(--hp-good);
+}
+.stam-meter .winded {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  border-left: 1px dashed oklch(0.82 0.18 80 / 0.7);
+}
+
+/* Resource pips — heroic resource */
+.res-pips {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 4px;
+}
+.res-pips i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  border: 1px solid var(--line);
+}
+.res-pips i.on {
+  background: var(--pk, var(--accent));
+  border-color: var(--pk-strong, var(--accent-strong));
+}
+
+/* Characteristic grid — reuse chargrid but bigger */
+.cs-chargrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+.cs-char {
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  padding: 12px 8px;
+  text-align: center;
+  position: relative;
+  cursor: default;
+}
+.cs-char.locked::after {
+  content: "LOCKED";
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-family: "Geist Mono", monospace;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: var(--text-mute);
+  opacity: 0.7;
+}
+.cs-char .k {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.cs-char .v {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  margin-top: 4px;
+  line-height: 1;
+  color: var(--text);
+}
+.cs-char.locked .v {
+  color: var(--text-dim);
+}
+.cs-char .src {
+  font-family: "Geist Mono", monospace;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+/* Kit card */
+.kit {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 24px;
+}
+.kit-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 12px;
+}
+.kit-row .k {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.kit-row .v {
+  color: var(--text);
+}
+.kit-note {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  border-top: 1px dashed var(--line-soft);
+  padding-top: 10px;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Skills */
+.skill-group {
+  margin-bottom: 12px;
+}
+.skill-group:last-child {
+  margin-bottom: 0;
+}
+.skill-group h4 {
+  margin: 0 0 6px;
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  font-weight: 600;
+}
+.skill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.skill {
+  font-size: 11px;
+  padding: 3px 8px;
+  background: var(--ink-2);
+  border: 1px solid var(--line-soft);
+  color: var(--text-mute);
+  letter-spacing: -0.005em;
+}
+.skill.on {
+  background: var(--ink-3);
+  border-color: var(--line);
+  color: var(--text);
+  font-weight: 500;
+}
+.skill.on::before {
+  content: "◆ ";
+  color: var(--pk, var(--accent));
+  font-family: "Geist Mono", monospace;
+  font-size: 9px;
+}
+
+/* Resource & token strip */
+.res-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line-soft);
+  border: 1px solid var(--line);
+}
+.res-cell {
+  padding: 10px 12px;
+  background: var(--ink-1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.res-cell .k {
+  font-family: "Geist Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.res-cell .v {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  line-height: 1;
+}
+.res-cell .v .of {
+  font-size: 11px;
+  color: var(--text-mute);
+  font-weight: 400;
+}
+.res-cell .pips {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.res-cell .pips i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  border: 1px solid var(--line);
+}
+.res-cell .pips i.on {
+  background: var(--pk, var(--accent));
+  border-color: var(--pk-strong, var(--accent-strong));
+}
+.res-cell .token-row {
+  display: flex;
+  gap: 3px;
+}
+.res-cell .token-row i {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--line);
+  background: var(--ink-2);
+  position: relative;
+}
+.res-cell .token-row i.on {
+  background: var(--accent);
+  border-color: var(--accent-strong);
+}
+.res-cell .token-row i.on::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: var(--ink-0);
+  transform: rotate(45deg);
+}
+
+/* Story prose — career, complication, ancestry, inciting */
+.prose {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+.prose-block {
+  padding: 14px 16px;
+  border-top: 1px solid var(--line-soft);
+}
+.prose-block:first-child {
+  border-top: none;
+}
+.prose-block .head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.prose-block .lbl {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  font-weight: 600;
+}
+.prose-block h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.prose-block .tag {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.prose-block .sub {
+  margin-top: 10px;
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.prose-block .item {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px dashed var(--line-soft);
+}
+.prose-block .item:first-of-type {
+  border-top: none;
+}
+.prose-block .item .name {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.prose-block .item .name .cost {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  color: var(--text-mute);
+  font-weight: 400;
+  margin-left: 6px;
+  letter-spacing: 0.06em;
+}
+.prose-block .item .body {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+/* Ability category badge */
+.ab-cat {
+  font-family: "Geist Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  background: var(--ink-3);
+  color: var(--text-dim);
+}
+.ab-cat.signature {
+  color: var(--pk, var(--accent));
+  background: oklch(from var(--pk, var(--accent)) calc(l - 0.5) c h / 0.3);
+}
+.ab-cat.heroic {
+  color: oklch(0.92 0.04 80);
+  background: oklch(0.3 0.08 80);
+}
+.ab-cat.free {
+  color: var(--text-mute);
+}
+
+/* Trinkets / titles small list */
+.tiny-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tiny-list .row {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-dim);
+  align-items: baseline;
+}
+.tiny-list .row::before {
+  content: "◆";
+  color: var(--accent);
+  font-size: 9px;
+  font-family: "Geist Mono", monospace;
+  flex-shrink: 0;
+}
+.tiny-list .row b {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* Treasure card */
+.treasure {
+  border: 1px solid var(--line);
+  background: var(--ink-2);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.treasure .nm {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.treasure .slot {
+  font-family: "Geist Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.treasure .body {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* Single-column letter-width layout */
+.cs-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 24px 64px;
+  min-height: 0;
+  overflow-y: auto;
+  gap: 14px;
+}
+.cs-page {
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cs-page .sec {
+  flex: 0 0 auto;
+}
+.cs-page .sheet {
+  flex: 0 0 auto;
+}
+
+/* Active tab inherits .tabs but force fit-content */
+.cs-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--ink-2);
+  border: 1px solid var(--line-soft);
+  width: fit-content;
+}
+.cs-tabs button {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 11px;
+  font-family: "Geist Mono", monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.cs-tabs button.on {
+  background: var(--ink-0);
+  color: var(--text);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+/* Attach-to-campaign callout */
+.attach {
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.attach .head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.attach h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.attach .lbl {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.attach p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+.attach .row {
+  display: flex;
+  gap: 6px;
+}
+.attach input {
+  flex: 1;
+  background: var(--ink-0);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font: inherit;
+  font-family: "Geist Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  padding: 8px 12px;
+  text-transform: uppercase;
+}
+.attach input::placeholder {
+  color: var(--text-mute);
+}
+.attach input:focus {
+  outline: 1px solid var(--accent);
+  border-color: var(--accent);
+}
+.attach .joined {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: oklch(from var(--accent) calc(l - 0.55) c h / 0.4);
+  border: 1px solid oklch(from var(--accent) calc(l - 0.3) c h / 0.5);
+  font-size: 12px;
+}
+.attach .joined .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* Sub-section labels inside sheet body */
+.sub-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 4px 2px 2px;
+}
+.lbl-mini {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  font-weight: 600;
+}
+
+/* Sheet sits in the page flow rather than filling */
+.cs-page .sheet {
+  overflow: visible;
+}
+.cs-page .sheet-body {
+  overflow: visible;
+}
+
+/* Stamina bar inside vitals — clearer */
+.stam-track {
+  position: relative;
+  height: 8px;
+  background: var(--ink-3);
+  margin-top: 4px;
+  overflow: hidden;
+}
+.stam-track i {
+  display: block;
+  height: 100%;
+  background: var(--hp-good);
+}
+.stam-track .winded-tick {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 1px;
+  background: oklch(0.82 0.18 80);
+}
+.stam-legend {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+  font-family: "Geist Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.stam-legend span {
+  display: inline-flex;
+  gap: 4px;
+  align-items: baseline;
+}
+.stam-legend b {
+  color: var(--text-dim);
+  font-weight: 500;
+}

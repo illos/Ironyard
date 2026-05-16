@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
 import type { Participant } from '@ironyard/shared';
-import { recomputeStaminaState, wouldHitDead } from '../src/stamina';
 import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
+import { describe, expect, it } from 'vitest';
+import { recomputeStaminaState, wouldHitDead } from '../src/stamina';
 
 function pc(overrides: Partial<Participant> = {}): Participant {
   return {
@@ -51,12 +51,19 @@ function pc(overrides: Partial<Participant> = {}): Participant {
 }
 
 function foe(overrides: Partial<Participant> = {}): Participant {
-  return pc({ id: 'f1', kind: 'monster', ownerId: null, characterId: null, className: null, ...overrides });
+  return pc({
+    id: 'f1',
+    kind: 'monster',
+    ownerId: null,
+    characterId: null,
+    className: null,
+    ...overrides,
+  });
 }
 
 describe('recomputeStaminaState — heroes', () => {
   it('healthy → healthy when stamina > windedValue', () => {
-    const p = pc({ currentStamina: 20, maxStamina: 30 });   // windedValue = 15
+    const p = pc({ currentStamina: 20, maxStamina: 30 }); // windedValue = 15
     expect(recomputeStaminaState(p).newState).toBe('healthy');
   });
 
@@ -162,7 +169,7 @@ describe('recomputeStaminaState — overrides', () => {
 
   it('CoP extra-dying-trigger forces dying when recoveries exhausted', () => {
     const p = pc({
-      currentStamina: 20,        // healthy stamina, but...
+      currentStamina: 20, // healthy stamina, but...
       maxStamina: 30,
       recoveries: { current: 0, max: 8 },
       staminaOverride: {
@@ -192,7 +199,7 @@ describe('recomputeStaminaState — overrides', () => {
 describe('wouldHitDead', () => {
   it('returns true for a hero whose stamina would land below -windedValue', () => {
     const p = pc({ currentStamina: -10, maxStamina: 30 });
-    expect(wouldHitDead(p, -20)).toBe(true);   // -20 ≤ -15
+    expect(wouldHitDead(p, -20)).toBe(true); // -20 ≤ -15
   });
 
   it('returns false for a hero in dying range', () => {

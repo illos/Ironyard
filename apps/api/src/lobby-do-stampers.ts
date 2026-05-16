@@ -680,7 +680,9 @@ export async function stampStartSession(
 ): Promise<StampResult> {
   const payload = intent.payload as MutablePayload;
   const requested = Array.isArray(payload.attendingCharacterIds)
-    ? payload.attendingCharacterIds.filter((id): id is string => typeof id === 'string' && id.length > 0)
+    ? payload.attendingCharacterIds.filter(
+        (id): id is string => typeof id === 'string' && id.length > 0,
+      )
     : [];
   if (requested.length === 0) return 'invalid_payload: attendingCharacterIds required';
 

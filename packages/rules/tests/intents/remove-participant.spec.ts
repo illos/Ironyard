@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { IntentTypes } from '@ironyard/shared';
+import { describe, expect, it } from 'vitest';
 import { applyIntent, isParticipant } from '../../src/index';
 import { applyRemoveParticipant } from '../../src/intents/remove-participant';
 import {
@@ -160,14 +160,20 @@ describe('applyRemoveParticipant — targetingRelations cleanup', () => {
       timestamp: 0,
     } as any);
 
-    const censor = res.state.participants.find((p) => isParticipant(p) && p.id === 'censor-1') as any;
-    const tactician = res.state.participants.find((p) => isParticipant(p) && p.id === 'tactician-1') as any;
+    const censor = res.state.participants.find(
+      (p) => isParticipant(p) && p.id === 'censor-1',
+    ) as any;
+    const tactician = res.state.participants.find(
+      (p) => isParticipant(p) && p.id === 'tactician-1',
+    ) as any;
     const nullPc = res.state.participants.find((p) => isParticipant(p) && p.id === 'null-1') as any;
 
     expect(censor.targetingRelations.judged).toEqual(['goblin-b']);
     expect(tactician.targetingRelations.marked).toEqual([]);
     expect(nullPc.targetingRelations.nullField).toEqual(['goblin-c']);
     // goblin-a is gone from the roster entirely
-    expect(res.state.participants.find((p) => isParticipant(p) && (p as any).id === 'goblin-a')).toBeUndefined();
+    expect(
+      res.state.participants.find((p) => isParticipant(p) && (p as any).id === 'goblin-a'),
+    ).toBeUndefined();
   });
 });

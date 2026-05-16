@@ -1,13 +1,22 @@
 import { IntentTypes, ResolveTriggerOrderPayloadSchema } from '@ironyard/shared';
 import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 
-export function applyResolveTriggerOrder(state: CampaignState, intent: StampedIntent): IntentResult {
+export function applyResolveTriggerOrder(
+  state: CampaignState,
+  intent: StampedIntent,
+): IntentResult {
   const parsed = ResolveTriggerOrderPayloadSchema.safeParse(intent.payload);
   if (!parsed.success) {
     return {
       state,
       derived: [],
-      log: [{ kind: 'error', text: `ResolveTriggerOrder rejected: ${parsed.error.message}`, intentId: intent.id }],
+      log: [
+        {
+          kind: 'error',
+          text: `ResolveTriggerOrder rejected: ${parsed.error.message}`,
+          intentId: intent.id,
+        },
+      ],
       errors: [{ code: 'invalid_payload', message: parsed.error.message }],
     };
   }
@@ -17,7 +26,9 @@ export function applyResolveTriggerOrder(state: CampaignState, intent: StampedIn
     return {
       state,
       derived: [],
-      log: [{ kind: 'error', text: 'ResolveTriggerOrder rejected: director only', intentId: intent.id }],
+      log: [
+        { kind: 'error', text: 'ResolveTriggerOrder rejected: director only', intentId: intent.id },
+      ],
       errors: [{ code: 'not_authorized', message: 'director only' }],
     };
   }
@@ -27,7 +38,13 @@ export function applyResolveTriggerOrder(state: CampaignState, intent: StampedIn
     return {
       state,
       derived: [],
-      log: [{ kind: 'error', text: 'ResolveTriggerOrder rejected: no pending triggers', intentId: intent.id }],
+      log: [
+        {
+          kind: 'error',
+          text: 'ResolveTriggerOrder rejected: no pending triggers',
+          intentId: intent.id,
+        },
+      ],
       errors: [{ code: 'no_pending_triggers', message: 'no pending triggers' }],
     };
   }
@@ -36,7 +53,13 @@ export function applyResolveTriggerOrder(state: CampaignState, intent: StampedIn
     return {
       state,
       derived: [],
-      log: [{ kind: 'error', text: 'ResolveTriggerOrder rejected: pendingTriggerSetId mismatch', intentId: intent.id }],
+      log: [
+        {
+          kind: 'error',
+          text: 'ResolveTriggerOrder rejected: pendingTriggerSetId mismatch',
+          intentId: intent.id,
+        },
+      ],
       errors: [{ code: 'id_mismatch', message: 'pendingTriggerSetId mismatch' }],
     };
   }
@@ -47,7 +70,13 @@ export function applyResolveTriggerOrder(state: CampaignState, intent: StampedIn
     return {
       state,
       derived: [],
-      log: [{ kind: 'error', text: 'ResolveTriggerOrder rejected: order has duplicates', intentId: intent.id }],
+      log: [
+        {
+          kind: 'error',
+          text: 'ResolveTriggerOrder rejected: order has duplicates',
+          intentId: intent.id,
+        },
+      ],
       errors: [{ code: 'order_duplicates', message: 'order has duplicates' }],
     };
   }
@@ -58,7 +87,13 @@ export function applyResolveTriggerOrder(state: CampaignState, intent: StampedIn
     return {
       state,
       derived: [],
-      log: [{ kind: 'error', text: 'ResolveTriggerOrder rejected: order set mismatch', intentId: intent.id }],
+      log: [
+        {
+          kind: 'error',
+          text: 'ResolveTriggerOrder rejected: order set mismatch',
+          intentId: intent.id,
+        },
+      ],
       errors: [{ code: 'order_mismatch', message: 'order set mismatch' }],
     };
   }

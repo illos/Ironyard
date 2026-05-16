@@ -1,8 +1,8 @@
 import type { StaminaTransitionedPayload } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
-  evaluateStaminaTransitionTriggers,
   type StaminaTransitionTriggerContext,
+  evaluateStaminaTransitionTriggers,
 } from '../../src/class-triggers/stamina-transition';
 import type { CampaignState } from '../../src/types';
 import { baseState, makeHeroParticipant, makeRunningEncounterPhase } from '../intents/test-utils';
@@ -52,7 +52,11 @@ describe('evaluateStaminaTransitionTriggers', () => {
       heroicResources: [{ name: 'ferocity', value: 0, floor: 0 }],
     });
     const state = stateWith([fury]);
-    const result = evaluateStaminaTransitionTriggers(transition('fury-1', 'winded'), state, testCtx);
+    const result = evaluateStaminaTransitionTriggers(
+      transition('fury-1', 'winded'),
+      state,
+      testCtx,
+    );
     // GainResource + SetParticipantPerEncounterLatch
     expect(result).toHaveLength(2);
     const gain = result.find((r) => r.type === 'GainResource');
@@ -83,7 +87,11 @@ describe('evaluateStaminaTransitionTriggers', () => {
     const fury = makeHeroParticipant('fury-1', { className: 'Fury' });
     fury.perEncounterFlags.perEncounter.firstTimeWindedTriggered = true;
     const state = stateWith([fury]);
-    const result = evaluateStaminaTransitionTriggers(transition('fury-1', 'winded'), state, testCtx);
+    const result = evaluateStaminaTransitionTriggers(
+      transition('fury-1', 'winded'),
+      state,
+      testCtx,
+    );
     expect(result).toEqual([]);
   });
 
@@ -154,12 +162,12 @@ describe('evaluateStaminaTransitionTriggers', () => {
     );
     expect(gain1).toBeDefined();
     expect(gain2).toBeDefined();
-    expect((gain1!.payload as { name: string; amount: number })).toEqual({
+    expect(gain1!.payload as { name: string; amount: number }).toEqual({
       participantId: 'trou-1',
       name: 'drama',
       amount: 10,
     });
-    expect((gain2!.payload as { name: string; amount: number })).toEqual({
+    expect(gain2!.payload as { name: string; amount: number }).toEqual({
       participantId: 'trou-2',
       name: 'drama',
       amount: 10,
@@ -179,7 +187,11 @@ describe('evaluateStaminaTransitionTriggers', () => {
     });
     const fury = makeHeroParticipant('fury-1', { className: 'Fury' });
     const state = stateWith([trou1, trou2, fury]);
-    const result = evaluateStaminaTransitionTriggers(transition('fury-1', 'winded'), state, testCtx);
+    const result = evaluateStaminaTransitionTriggers(
+      transition('fury-1', 'winded'),
+      state,
+      testCtx,
+    );
 
     const gain1 = result.find(
       (r) =>

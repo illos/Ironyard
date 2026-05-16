@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
 import type { Participant, StaminaState, TargetingRelationKind } from '@ironyard/shared';
-import type { Pack } from '../theme/ThemeProvider';
+import type { ReactNode } from 'react';
 import { CLASS_RELATION_KIND } from '../lib/class-relation-kind';
+import type { Pack } from '../theme/ThemeProvider';
 import { Button } from './Button';
 import { HpBar } from './HpBar';
 import { Sigil } from './Sigil';
@@ -129,9 +129,7 @@ export function ParticipantRow({
     for (const p of allParticipants) {
       // Skip the row participant itself — no self-loops
       if (p.id === thisParticipantId) continue;
-      const relationKind = p.className
-        ? CLASS_RELATION_KIND[p.className.toLowerCase()]
-        : undefined;
+      const relationKind = p.className ? CLASS_RELATION_KIND[p.className.toLowerCase()] : undefined;
 
       if (!relationKind) continue;
 
@@ -171,9 +169,7 @@ export function ParticipantRow({
   const activeClass = active && !isTurn ? 'border-pk' : '';
   // self-pick gets a subtle hero-tone outline (lower priority than isTurn)
   const selfPickClass =
-    !isTurn && pickAffordance?.kind === 'self'
-      ? 'shadow-[0_0_0_1px_var(--color-hero)]'
-      : '';
+    !isTurn && pickAffordance?.kind === 'self' ? 'shadow-[0_0_0_1px_var(--color-hero)]' : '';
   const actedClass = hasActed ? 'opacity-55' : '';
 
   // foe-tap makes the whole row clickable
@@ -212,9 +208,7 @@ export function ParticipantRow({
             {role}
           </span>
         )}
-        {staminaState !== 'healthy' && (
-          <StaminaStateTag state={staminaState} />
-        )}
+        {staminaState !== 'healthy' && <StaminaStateTag state={staminaState} />}
         {/* Inbound chips (P4) — visible to all viewers */}
         {inboundChips.length > 0 && (
           <span className="flex flex-wrap gap-0.5 mt-0.5">

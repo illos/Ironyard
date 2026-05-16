@@ -1,4 +1,8 @@
-import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPsionFlags,
+  defaultTargetingRelations,
+} from '@ironyard/shared';
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
@@ -18,24 +22,45 @@ function intent(type: string, payload: unknown, overrides: Partial<Intent> = {})
     actor: overrides.actor ?? { userId: 'alice', role: 'director' },
     timestamp: overrides.timestamp ?? T,
     source: overrides.source ?? 'manual',
-    type, payload,
+    type,
+    payload,
     causedBy: overrides.causedBy,
   };
 }
 
 function pc(id: string, ownerId: string | null = id): Participant {
   return {
-    id, name: id, kind: 'pc', level: 1, currentStamina: 30, maxStamina: 30,
+    id,
+    name: id,
+    kind: 'pc',
+    level: 1,
+    currentStamina: 30,
+    maxStamina: 30,
     characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
-    immunities: [], weaknesses: [], conditions: [], heroicResources: [],
-    extras: [], surges: 0, recoveries: { current: 0, max: 0 }, recoveryValue: 0,
-    ownerId, characterId: null,
-    weaponDamageBonus: { melee: [0,0,0], ranged: [0,0,0] },
-    activeAbilities: [], victories: 0,
+    immunities: [],
+    weaknesses: [],
+    conditions: [],
+    heroicResources: [],
+    extras: [],
+    surges: 0,
+    recoveries: { current: 0, max: 0 },
+    recoveryValue: 0,
+    ownerId,
+    characterId: null,
+    weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
+    activeAbilities: [],
+    victories: 0,
     turnActionUsage: { main: false, maneuver: false, move: false },
     surprised: false,
-    role: null, ancestry: [], size: null, speed: null, stability: null,
-    freeStrike: null, ev: null, withCaptain: null, className: null,
+    role: null,
+    ancestry: [],
+    size: null,
+    speed: null,
+    stability: null,
+    freeStrike: null,
+    ev: null,
+    withCaptain: null,
+    className: null,
     staminaState: 'healthy',
     staminaOverride: null,
     bodyIntact: true,
@@ -61,10 +86,14 @@ function readyState(parts: Participant[], picking: 'heroes' | 'foes' = 'heroes')
     activeDirectorId: 'director-user',
     participants: parts,
     encounter: {
-      id: 'e1', currentRound: 1,
-      firstSide: picking, currentPickingSide: picking, actedThisRound: [],
+      id: 'e1',
+      currentRound: 1,
+      firstSide: picking,
+      currentPickingSide: picking,
+      actedThisRound: [],
       activeParticipantId: null,
-      turnState: {}, malice: { current: 0, lastMaliciousStrikeRound: null },
+      turnState: {},
+      malice: { current: 0, lastMaliciousStrikeRound: null },
       pendingTriggers: null,
       perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
     },
@@ -76,7 +105,11 @@ describe('PickNextActor', () => {
     const s = readyState([pc('alice', 'alice-user'), monster('goblin')]);
     const r = applyIntent(
       s,
-      intent('PickNextActor', { participantId: 'alice' }, { actor: { userId: 'alice-user', role: 'player' } }),
+      intent(
+        'PickNextActor',
+        { participantId: 'alice' },
+        { actor: { userId: 'alice-user', role: 'player' } },
+      ),
     );
     expect(r.errors).toBeUndefined();
     // actedThisRound stays empty — the picked participant joins it at EndTurn,
@@ -91,7 +124,11 @@ describe('PickNextActor', () => {
     const s = readyState([pc('alice', 'alice-user'), pc('bob', 'bob-user')]);
     const r = applyIntent(
       s,
-      intent('PickNextActor', { participantId: 'bob' }, { actor: { userId: 'director-user', role: 'director' } }),
+      intent(
+        'PickNextActor',
+        { participantId: 'bob' },
+        { actor: { userId: 'director-user', role: 'director' } },
+      ),
     );
     expect(r.errors).toBeUndefined();
     expect(r.state.encounter?.activeParticipantId).toBe('bob');
@@ -101,7 +138,11 @@ describe('PickNextActor', () => {
     const s = readyState([pc('alice', 'alice-user'), pc('bob', 'bob-user')]);
     const r = applyIntent(
       s,
-      intent('PickNextActor', { participantId: 'bob' }, { actor: { userId: 'alice-user', role: 'player' } }),
+      intent(
+        'PickNextActor',
+        { participantId: 'bob' },
+        { actor: { userId: 'alice-user', role: 'player' } },
+      ),
     );
     expect(r.errors?.[0]?.code).toBe('not_permitted');
   });
@@ -110,7 +151,11 @@ describe('PickNextActor', () => {
     const s = readyState([pc('alice', 'alice-user'), monster('goblin')], 'heroes');
     const r = applyIntent(
       s,
-      intent('PickNextActor', { participantId: 'goblin' }, { actor: { userId: 'director-user', role: 'director' } }),
+      intent(
+        'PickNextActor',
+        { participantId: 'goblin' },
+        { actor: { userId: 'director-user', role: 'director' } },
+      ),
     );
     expect(r.errors?.[0]?.code).toBe('wrong_side');
   });
@@ -119,14 +164,22 @@ describe('PickNextActor', () => {
     let s = readyState([pc('alice', 'alice-user'), pc('bob', 'bob-user')]);
     s = applyIntent(
       s,
-      intent('PickNextActor', { participantId: 'alice' }, { actor: { userId: 'alice-user', role: 'player' } }),
+      intent(
+        'PickNextActor',
+        { participantId: 'alice' },
+        { actor: { userId: 'alice-user', role: 'player' } },
+      ),
     ).state;
     // After alice acts, the turn is in progress; end it so the side flips correctly.
     s = applyIntent(s, intent('EndTurn', {})).state;
     s.encounter!.currentPickingSide = 'heroes'; // force back for the test
     const r = applyIntent(
       s,
-      intent('PickNextActor', { participantId: 'alice' }, { actor: { userId: 'alice-user', role: 'player' } }),
+      intent(
+        'PickNextActor',
+        { participantId: 'alice' },
+        { actor: { userId: 'alice-user', role: 'player' } },
+      ),
     );
     expect(r.errors?.[0]?.code).toBe('already_acted');
   });
@@ -136,7 +189,11 @@ describe('PickNextActor', () => {
     s.encounter!.firstSide = null;
     const r = applyIntent(
       s,
-      intent('PickNextActor', { participantId: 'alice' }, { actor: { userId: 'alice-user', role: 'player' } }),
+      intent(
+        'PickNextActor',
+        { participantId: 'alice' },
+        { actor: { userId: 'alice-user', role: 'player' } },
+      ),
     );
     expect(r.errors?.[0]?.code).toBe('initiative_not_rolled');
   });
@@ -145,12 +202,20 @@ describe('PickNextActor', () => {
     let s = readyState([pc('alice', 'alice-user'), pc('bob', 'bob-user')]);
     s = applyIntent(
       s,
-      intent('PickNextActor', { participantId: 'alice' }, { actor: { userId: 'alice-user', role: 'player' } }),
+      intent(
+        'PickNextActor',
+        { participantId: 'alice' },
+        { actor: { userId: 'alice-user', role: 'player' } },
+      ),
     ).state;
     // alice's turn is now active. Try to pick bob before ending alice's turn.
     const r = applyIntent(
       s,
-      intent('PickNextActor', { participantId: 'bob' }, { actor: { userId: 'bob-user', role: 'player' } }),
+      intent(
+        'PickNextActor',
+        { participantId: 'bob' },
+        { actor: { userId: 'bob-user', role: 'player' } },
+      ),
     );
     expect(r.errors?.[0]?.code).toBe('turn_in_progress');
   });
