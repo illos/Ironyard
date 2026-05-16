@@ -18,10 +18,12 @@ export type { BecomeDoomedPayload } from './become-doomed';
 export {
   RaiseOpenActionPayloadSchema,
   ClaimOpenActionPayloadSchema,
+  ClaimOpenActionChoiceSchema,
 } from './raise-open-action';
 export type {
   RaiseOpenActionPayload,
   ClaimOpenActionPayload,
+  ClaimOpenActionChoice,
 } from './raise-open-action';
 export { ClearLobbyPayloadSchema } from './clear-lobby';
 export type { ClearLobbyPayload } from './clear-lobby';
