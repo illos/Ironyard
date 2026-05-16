@@ -4,7 +4,7 @@ import { isParticipant } from '../../types';
 import type { ActionEvent, ActionTriggerContext } from '../action-triggers';
 import { resolveParticipantClass } from '../helpers';
 
-// Pass 3 Slice 2a — Tactician class-δ action triggers.
+// Pass 3 Slice 2a/2b — Tactician class-δ action triggers.
 //
 // Focus (canon § 5.4.7) covers two distinct triggers off two different event
 // shapes; both are dispatched from a single evaluator that fans out by
@@ -20,25 +20,13 @@ import { resolveParticipantClass } from '../helpers';
 //   the player's claim — so we raise an OpenAction rather than auto-applying.
 //   Gated by `perRound.allyHeroicWithin10Triggered` per Tactician.
 //
-// Mark-tracking state does not yet exist in the engine (the ability resolution
-// that records who a Tactician has Marked lands in a later slice). Until then,
-// `isMarkedBy` is a permissive stub that returns true whenever the candidate
-// exists and is not the Tactician themself — generous so that the trigger
-// infrastructure can be validated end-to-end. The Focus marked-target canon
-// entry is therefore manual-override in production today (the director can
-// hand-grant focus); the auto path activates fully once the Mark ability
-// resolution lands.
-//
-// TODO Slice 2b/2c: replace the `isMarkedBy` stub with a real query against
-// the Tactician's recorded Mark target (likely a condition stamped on the
-// marked creature with `source: tactician.id` and `kind: 'mark'`, or an entry
-// in `tactician.activeAbilities`).
+// Slice 2b closure: `isMarkedBy` now reads `tactician.targetingRelations.marked`
+// (populated by UseAbility → SetTargetingRelation for the PHB "Mark" ability,
+// or by the player toggling the per-row chip). The permissive stub is retired.
 
 function isMarkedBy(_state: CampaignState, tactician: Participant, candidateId: string): boolean {
-  // Permissive stub — see header comment. Excludes self so a Tactician
-  // damaging themselves cannot self-trigger Focus.
   if (candidateId === tactician.id) return false;
-  return true;
+  return tactician.targetingRelations.marked.includes(candidateId);
 }
 
 export function evaluate(

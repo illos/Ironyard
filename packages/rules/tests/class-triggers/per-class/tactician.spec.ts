@@ -51,6 +51,7 @@ describe('class-triggers/per-class/tactician.evaluate', () => {
     const tactician = makeHeroParticipant('tac-1', {
       className: 'Tactician',
       heroicResources: [{ name: 'focus', value: 0, floor: 0 }],
+      targetingRelations: { judged: [], marked: ['mon-1'], nullField: [] },
     });
     const goblin = makeMonsterParticipant('mon-1');
     const state = stateWith([tactician, goblin]);
@@ -85,6 +86,7 @@ describe('class-triggers/per-class/tactician.evaluate', () => {
     const tactician = makeHeroParticipant('tac-1', {
       className: 'Tactician',
       heroicResources: [{ name: 'focus', value: 0, floor: 0 }],
+      targetingRelations: { judged: [], marked: ['mon-1'], nullField: [] },
     });
     tactician.perEncounterFlags.perRound.markedTargetDamagedByAnyone = true;
     const goblin = makeMonsterParticipant('mon-1');
@@ -198,5 +200,57 @@ describe('class-triggers/per-class/tactician.evaluate', () => {
       sideOfActor: 'heroes',
     };
     expect(evaluateTactician(state, event, testCtx)).toEqual([]);
+  });
+});
+
+// Pass 3 Slice 2b — Tactician isMarkedBy reads targetingRelations.marked.
+//
+// The permissive stub is replaced: `isMarkedBy` now checks
+// `tactician.targetingRelations.marked.includes(candidateId)`.
+// These tests pin the positive path and the over-fire regression.
+
+describe('Tactician isMarkedBy (slice 2b)', () => {
+  it('fires Focus +1 when damage target is in tactician.targetingRelations.marked', () => {
+    const tactician = makeHeroParticipant('tac-1', {
+      className: 'Tactician',
+      heroicResources: [{ name: 'focus', value: 0, floor: 0 }],
+      targetingRelations: { judged: [], marked: ['goblin-a'], nullField: [] },
+    });
+    const goblin = makeMonsterParticipant('goblin-a');
+    const state = stateWith([tactician, goblin]);
+    const event: ActionEvent = {
+      kind: 'damage-applied',
+      dealerId: 'tac-1',
+      targetId: 'goblin-a',
+      amount: 5,
+      type: 'fire',
+    };
+    const result = evaluateTactician(state, event, testCtx);
+    const gain = result.find((d) => d.type === 'GainResource');
+    expect(gain).toBeDefined();
+    expect(gain!.payload).toMatchObject({
+      participantId: 'tac-1',
+      name: 'focus',
+      amount: 1,
+    });
+  });
+
+  it('does NOT fire when damage target is NOT in tactician.targetingRelations.marked (slice 2a over-fire regression)', () => {
+    const tactician = makeHeroParticipant('tac-1', {
+      className: 'Tactician',
+      heroicResources: [{ name: 'focus', value: 0, floor: 0 }],
+      targetingRelations: { judged: [], marked: [], nullField: [] },
+    });
+    const goblin = makeMonsterParticipant('goblin-b');
+    const state = stateWith([tactician, goblin]);
+    const event: ActionEvent = {
+      kind: 'damage-applied',
+      dealerId: 'tac-1',
+      targetId: 'goblin-b',
+      amount: 5,
+      type: 'fire',
+    };
+    const result = evaluateTactician(state, event, testCtx);
+    expect(result.filter((d) => d.type === 'GainResource')).toHaveLength(0);
   });
 });
