@@ -207,6 +207,95 @@ describe('applyUseAbility — slice 2a additions', () => {
     ]);
   });
 
+  it('Phase 2b slice 7 — emits derived StartFlying { mode: shadow } when activating Polder Shadowmeld', () => {
+    const hero = makeHeroParticipant('pc:alice');
+    const state = baseState({
+      participants: [hero],
+      encounter: makeRunningEncounterPhase(ENCOUNTER_ID),
+    });
+
+    const result = applyIntent(
+      state,
+      stamped({
+        type: IntentTypes.UseAbility,
+        actor: ownerActor,
+        payload: {
+          participantId: hero.id,
+          abilityId: 'polder.shadowmeld',
+          source: 'ancestry',
+          duration: { kind: 'EoT' },
+        },
+      }),
+    );
+
+    expect(result.errors).toBeUndefined();
+    const startFlying = result.derived.find((d) => d.type === IntentTypes.StartFlying);
+    expect(startFlying).toBeDefined();
+    expect(startFlying?.payload).toMatchObject({ participantId: hero.id, mode: 'shadow' });
+    expect(startFlying?.source).toBe('server');
+  });
+
+  it('Phase 2b slice 7 — does NOT emit StartFlying when re-activating already-active Shadowmeld', () => {
+    const hero = makeHeroParticipant('pc:alice', {
+      activeAbilities: [
+        {
+          abilityId: 'polder.shadowmeld',
+          source: 'ancestry',
+          expiresAt: { kind: 'EoT' },
+          appliedAtSeq: 1,
+        },
+      ],
+    });
+    const state = baseState({
+      participants: [hero],
+      encounter: makeRunningEncounterPhase(ENCOUNTER_ID),
+    });
+
+    const result = applyIntent(
+      state,
+      stamped({
+        type: IntentTypes.UseAbility,
+        actor: ownerActor,
+        payload: {
+          participantId: hero.id,
+          abilityId: 'polder.shadowmeld',
+          source: 'ancestry',
+          duration: { kind: 'EoT' },
+        },
+      }),
+    );
+
+    expect(result.errors).toBeUndefined();
+    const startFlying = result.derived.find((d) => d.type === IntentTypes.StartFlying);
+    expect(startFlying).toBeUndefined();
+  });
+
+  it('Phase 2b slice 7 — does NOT emit StartFlying for non-Shadowmeld abilities', () => {
+    const hero = makeHeroParticipant('pc:alice');
+    const state = baseState({
+      participants: [hero],
+      encounter: makeRunningEncounterPhase(ENCOUNTER_ID),
+    });
+
+    const result = applyIntent(
+      state,
+      stamped({
+        type: IntentTypes.UseAbility,
+        actor: ownerActor,
+        payload: {
+          participantId: hero.id,
+          abilityId: 'human.detect-the-supernatural',
+          source: 'ancestry',
+          duration: { kind: 'EoT' },
+        },
+      }),
+    );
+
+    expect(result.errors).toBeUndefined();
+    const startFlying = result.derived.find((d) => d.type === IntentTypes.StartFlying);
+    expect(startFlying).toBeUndefined();
+  });
+
   it('does NOT append a monster to heroesActedThisTurn', () => {
     const monster = makeMonsterParticipant('mon:goblin');
     const state = baseState({

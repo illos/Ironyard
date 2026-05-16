@@ -253,6 +253,28 @@ export function applyUseAbility(state: CampaignState, intent: StampedIntent): In
     }
   }
 
+  // ── Phase 2b slice 7: Polder Shadowmeld → StartFlying { mode: 'shadow' } ──
+  // Shadowmeld is a narrative-tagged maneuver that ALSO needs to set the
+  // participant's movementMode so the rest of the engine (e.g. wings.ts
+  // onEndRound which only ticks mode === 'flying') sees it. The derived
+  // intent runs with source: 'server' to bypass the StartFlying state-gate;
+  // the action-economy gate on UseAbility itself already governs whether
+  // the Polder can take this maneuver. roundsRemaining: 0 is a sentinel
+  // meaning "no duration countdown" — Shadowmeld lasts until the Polder
+  // exits it (a separate maneuver) or the surface is destroyed; neither
+  // path is wired yet (carry-over).
+  if (abilityId === 'polder.shadowmeld' && !alreadyActive) {
+    derived.push({
+      actor: intent.actor,
+      source: 'server' as const,
+      type: IntentTypes.StartFlying,
+      payload: {
+        participantId: target.id,
+        mode: 'shadow' as const,
+      },
+    });
+  }
+
   // ── Slice 2a addition #5: action-event class-trigger evaluation ─────────
   // Pass the post-heroesActedThisTurn-write state so Troubadour sees the
   // fresh set. ferocityD3 is not needed for ability-used events — UseAbility
