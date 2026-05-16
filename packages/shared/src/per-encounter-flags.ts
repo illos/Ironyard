@@ -25,13 +25,16 @@ export const PerTurnEntrySchema = z.object({
 export type PerTurnEntry = z.infer<typeof PerTurnEntrySchema>;
 
 export const PerRoundFlagsSchema = z.object({
-  tookDamage:                  z.boolean().default(false),  // Fury Ferocity; slice-2b Bloodfire reader
-  judgedTargetDamagedMe:       z.boolean().default(false),  // Censor Wrath
-  damagedJudgedTarget:         z.boolean().default(false),  // Censor Wrath
-  markedTargetDamagedByAnyone: z.boolean().default(false),  // Tactician Focus
-  dealtSurgeDamage:            z.boolean().default(false),  // Shadow Insight
-  directorSpentMalice:         z.boolean().default(false),  // Null Discipline (per-Null latch)
-  creatureForceMoved:          z.boolean().default(false),  // Talent Clarity (per-Talent latch)
+  tookDamage:                       z.boolean().default(false),  // Fury Ferocity; slice-2b Bloodfire reader
+  judgedTargetDamagedMe:            z.boolean().default(false),  // Censor Wrath
+  damagedJudgedTarget:              z.boolean().default(false),  // Censor Wrath
+  markedTargetDamagedByAnyone:      z.boolean().default(false),  // Tactician Focus
+  dealtSurgeDamage:                 z.boolean().default(false),  // Shadow Insight
+  directorSpentMalice:              z.boolean().default(false),  // Null Discipline (per-Null latch)
+  creatureForceMoved:               z.boolean().default(false),  // Talent Clarity (per-Talent latch)
+  allyHeroicWithin10Triggered:      z.boolean().default(false),  // Tactician spatial OA (per-Tactician latch)
+  nullFieldEnemyMainTriggered:      z.boolean().default(false),  // Null spatial OA (per-Null latch)
+  elementalistDamageWithin10Triggered: z.boolean().default(false),  // Elementalist spatial OA (per-Elementalist latch)
 }).strict();
 export type PerRoundFlags = z.infer<typeof PerRoundFlagsSchema>;
 
@@ -44,6 +47,9 @@ export function defaultPerRoundFlags(): PerRoundFlags {
     dealtSurgeDamage: false,
     directorSpentMalice: false,
     creatureForceMoved: false,
+    allyHeroicWithin10Triggered: false,
+    nullFieldEnemyMainTriggered: false,
+    elementalistDamageWithin10Triggered: false,
   };
 }
 
