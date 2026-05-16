@@ -7,6 +7,7 @@ import { applyDamageStep } from '../damage';
 import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
 import { applyTransitionSideEffects, recomputeStaminaState } from '../stamina';
+import { evaluateStaminaTransitionTriggers } from '../class-triggers';
 
 export function applyApplyDamage(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = ApplyDamagePayloadSchema.safeParse(intent.payload);
@@ -34,7 +35,7 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
     };
   }
 
-  const { targetId, amount, damageType, intent: damageIntent } = parsed.data;
+  const { targetId, amount, damageType, intent: damageIntent, ferocityD3 } = parsed.data;
   const participants = state.participants.filter(isParticipant);
   const target = participants.find((p) => p.id === targetId);
   if (!target) {
@@ -111,6 +112,37 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
           payload: {},
         },
       });
+    }
+
+    // Pass 3 Slice 2a — class-δ stamina-transition triggers (Fury winded /
+    // dying, Troubadour any-hero-winded / hero-dies / posthumous-eligibility).
+    // The evaluator reads `state.participants` to find Furies/Troubadours and
+    // their unflipped latches; pass the post-damage participants so the
+    // transitioning participant's updated state is visible and latch checks
+    // see the pre-flip values. The latch flip itself happens via the derived
+    // SetParticipantPerEncounterLatch intents the evaluator emits, which the
+    // reducer cascades on top of this state.
+    const postDamageState: CampaignState = { ...state, participants: updatedParticipants };
+    const triggerDerived = evaluateStaminaTransitionTriggers(
+      {
+        participantId: targetId,
+        from: target.staminaState,
+        to: finalState,
+        cause: 'damage',
+      },
+      postDamageState,
+      {
+        actor: intent.actor,
+        // Fury Ferocity entries require a pre-rolled 1d3. Client pre-rolls
+        // and includes it on the payload (see ApplyDamagePayloadSchema
+        // docstring). If undefined here and a Fury entry fires, the
+        // evaluator throws — that's intentional surface-the-bug behavior.
+        rolls: { ferocityD3 },
+      },
+    );
+    // Class-trigger derived intents inherit the same causedBy chain.
+    for (const d of triggerDerived) {
+      derived.push({ ...d, causedBy: intent.id });
     }
   }
 

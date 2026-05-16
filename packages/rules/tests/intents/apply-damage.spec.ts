@@ -401,6 +401,127 @@ describe('applyApplyDamage — inert fire instant-death', () => {
   });
 });
 
+describe('applyApplyDamage — class-δ stamina-transition trigger wiring (Task 16)', () => {
+  it('Fury healthy → winded emits GainResource(ferocity, ferocityD3) + latch flip', () => {
+    const fury = makeHeroParticipant(TARGET_ID, {
+      maxStamina: 30,
+      currentStamina: 30,
+      className: 'Fury',
+      heroicResources: [{ name: 'ferocity', value: 0, floor: 0 }],
+    });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [fury],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    // 30 → 15 = windedValue(30) → winded. Pre-roll ferocityD3=3.
+    const intent = stamped({
+      type: 'ApplyDamage',
+      actor: ownerActor,
+      payload: {
+        targetId: TARGET_ID,
+        amount: 15,
+        damageType: 'fire',
+        sourceIntentId: 'src-1',
+        ferocityD3: 3,
+      },
+    });
+    const result = applyApplyDamage(s, intent);
+    expect(result.errors ?? []).toEqual([]);
+    // StaminaTransitioned + GainResource + SetParticipantPerEncounterLatch
+    const gain = result.derived.find((d) => d.type === 'GainResource');
+    expect(gain).toBeDefined();
+    const gainPayload = gain!.payload as { participantId: string; name: string; amount: number };
+    expect(gainPayload).toEqual({ participantId: TARGET_ID, name: 'ferocity', amount: 3 });
+    const latch = result.derived.find((d) => d.type === 'SetParticipantPerEncounterLatch');
+    expect(latch).toBeDefined();
+    const latchPayload = latch!.payload as { key: string; value: boolean };
+    expect(latchPayload.key).toBe('firstTimeWindedTriggered');
+    expect(latchPayload.value).toBe(true);
+    // Trigger derived intents inherit causedBy = the original intent id
+    expect(gain!.causedBy).toBe(intent.id);
+    expect(latch!.causedBy).toBe(intent.id);
+  });
+
+  it('non-Fury PC healthy → winded emits no class-trigger derived intents', () => {
+    const censor = makeHeroParticipant(TARGET_ID, {
+      maxStamina: 30,
+      currentStamina: 30,
+      className: 'Censor',
+    });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [censor],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 15 }));
+    expect(result.errors ?? []).toEqual([]);
+    // Only StaminaTransitioned should be present — no GainResource, no latch
+    expect(result.derived.find((d) => d.type === 'GainResource')).toBeUndefined();
+    expect(result.derived.find((d) => d.type === 'SetParticipantPerEncounterLatch')).toBeUndefined();
+    expect(result.derived.find((d) => d.type === 'StaminaTransitioned')).toBeDefined();
+  });
+
+  it('Fury healthy → winded WITHOUT ferocityD3 on payload throws (developer contract)', () => {
+    const fury = makeHeroParticipant(TARGET_ID, {
+      maxStamina: 30,
+      currentStamina: 30,
+      className: 'Fury',
+    });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [fury],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    // No ferocityD3 supplied — evaluator should throw.
+    expect(() => applyApplyDamage(s, applyDamageIntent({ amount: 15 }))).toThrow(
+      /ferocityD3 was not supplied/,
+    );
+  });
+
+  it('does not invoke trigger evaluator when no state transition occurred', () => {
+    const fury = makeHeroParticipant(TARGET_ID, {
+      maxStamina: 30,
+      currentStamina: 30,
+      className: 'Fury',
+    });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [fury],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    // 30 → 25 stays healthy. No ferocityD3 → would throw if evaluator ran.
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 5 }));
+    expect(result.errors ?? []).toEqual([]);
+    expect(result.derived).toHaveLength(0);
+  });
+
+  it('Troubadour any-hero-winded fires when a different hero is damaged into winded', () => {
+    const trou = makeHeroParticipant('trou-1', {
+      className: 'Troubadour',
+      heroicResources: [{ name: 'drama', value: 0, floor: 0 }],
+    });
+    const victim = makeHeroParticipant(TARGET_ID, {
+      maxStamina: 30,
+      currentStamina: 30,
+      className: 'Censor',
+    });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [trou, victim],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    // Damage the Censor (non-Fury) → winded → Troubadour any-hero-winded fires.
+    // No ferocityD3 needed since the transitioning participant isn't a Fury.
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 15 }));
+    expect(result.errors ?? []).toEqual([]);
+    const gain = result.derived.find((d) => d.type === 'GainResource');
+    expect(gain).toBeDefined();
+    const gainPayload = gain!.payload as { participantId: string; name: string; amount: number };
+    expect(gainPayload).toEqual({ participantId: 'trou-1', name: 'drama', amount: 2 });
+  });
+});
+
 describe('applyApplyDamage — monster', () => {
   it('monster takes damage, no PC-specific overrides apply', () => {
     const monster = makeMonsterParticipant('m1', { maxStamina: 20, currentStamina: 20 });

@@ -188,3 +188,44 @@ describe('applyApplyHeal — dying hero → healthy/winded', () => {
     expect(result.derived).toHaveLength(0);
   });
 });
+
+describe('applyApplyHeal — class-δ stamina-transition trigger wiring (Task 16)', () => {
+  it('Troubadour any-hero-winded fires when a hero heals from dying back into winded', () => {
+    // dying at -3/30 (heals 10 → winded at 7/30) is a `to: 'winded'` event that
+    // the Troubadour any-hero-winded entry matches. Latch on Troubadour unflipped.
+    const victim = makeHeroParticipant(TARGET_ID, {
+      maxStamina: 30,
+      currentStamina: -3,
+      staminaState: 'dying',
+      className: 'Censor',
+      conditions: [
+        {
+          type: 'Bleeding',
+          duration: { kind: 'manual' },
+          source: { kind: 'effect', id: 'dying-state' },
+          removable: false,
+          appliedAtSeq: 0,
+        },
+      ],
+    });
+    const trou = makeHeroParticipant('trou-1', {
+      className: 'Troubadour',
+      heroicResources: [{ name: 'drama', value: 0, floor: 0 }],
+    });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [victim, trou],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    const result = applyApplyHeal(s, applyHealIntent({ amount: 10 }));
+    expect(result.errors ?? []).toEqual([]);
+    // Slice 1 behavior intact — dying bleed cleared, state = winded.
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
+    expect(updated.staminaState).toBe('winded');
+    // Class trigger fired — +2 drama to Troubadour, causedBy chain set.
+    const gain = result.derived.find((d) => d.type === 'GainResource');
+    expect(gain).toBeDefined();
+    const gainPayload = gain!.payload as { participantId: string; name: string; amount: number };
+    expect(gainPayload).toEqual({ participantId: 'trou-1', name: 'drama', amount: 2 });
+  });
+});

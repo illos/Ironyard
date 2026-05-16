@@ -2,6 +2,7 @@ import { ApplyHealPayloadSchema, IntentTypes } from '@ironyard/shared';
 import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
 import { applyTransitionSideEffects, recomputeStaminaState } from '../stamina';
+import { evaluateStaminaTransitionTriggers } from '../class-triggers';
 
 // Slice 7: restore HP up to maxStamina. Used as the derived intent emitted by
 // SpendRecovery; future heal abilities reuse this dispatch path. A
@@ -58,6 +59,10 @@ export function applyApplyHeal(state: CampaignState, intent: StampedIntent): Int
     ? applyTransitionSideEffects(intermediate, target.staminaState, newState)
     : intermediate;
 
+  const updatedParticipants = state.participants.map((p) =>
+    isParticipant(p) && p.id === targetId ? finalTarget : p,
+  );
+
   // Emit derived StaminaTransitioned when state changes.
   const derived: DerivedIntent[] = transitioned
     ? [{
@@ -74,9 +79,31 @@ export function applyApplyHeal(state: CampaignState, intent: StampedIntent): Int
       }]
     : [];
 
-  const updatedParticipants = state.participants.map((p) =>
-    isParticipant(p) && p.id === targetId ? finalTarget : p,
-  );
+  // Pass 3 Slice 2a — class-δ stamina-transition triggers. Heal mostly drives
+  // upward transitions (dying → winded / healthy); the Troubadour any-hero-
+  // winded entry can legitimately fire when a hero is healed back up to the
+  // winded band on the first time per encounter. The Fury Ferocity entries
+  // also nominally match `to: 'winded' | 'dying'` from the upward direction,
+  // which is rules-questionable (Ferocity is intuitively a "took damage past
+  // half" trigger). ferocityD3 is intentionally undefined here — if the Fury
+  // entries do fire from a heal, the evaluator throws and we'll know.
+  // Direction-filtering on the trigger matchers is out of scope for Task 16.
+  if (transitioned) {
+    const postHealState: CampaignState = { ...state, participants: updatedParticipants };
+    const triggerDerived = evaluateStaminaTransitionTriggers(
+      {
+        participantId: targetId,
+        from: target.staminaState,
+        to: finalTarget.staminaState,
+        cause: 'heal',
+      },
+      postHealState,
+      { actor: intent.actor, rolls: { ferocityD3: undefined } },
+    );
+    for (const d of triggerDerived) {
+      derived.push({ ...d, causedBy: intent.id });
+    }
+  }
 
   return {
     state: {
