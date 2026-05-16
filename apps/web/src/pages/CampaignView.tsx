@@ -7,6 +7,7 @@ import type {
   JumpBehindScreenPayload,
   KickPlayerPayload,
   PushItemPayload,
+  RemoveApprovedCharacterPayload,
   StartSessionPayload,
   SubmitCharacterPayload,
   UpdateSessionAttendancePayload,
@@ -747,6 +748,19 @@ function ApprovedRosterPanel({
     setPushItemOpen(false);
   };
 
+  const handleRemoveApproved = (characterId: string, characterName: string) => {
+    if (!window.confirm(`Remove ${characterName} from the approved roster?`)) return;
+    const payload: RemoveApprovedCharacterPayload = { characterId };
+    dispatch(
+      buildIntent({
+        campaignId,
+        type: IntentTypes.RemoveApprovedCharacter,
+        payload,
+        actor,
+      }),
+    );
+  };
+
   const allApproved = approved.data ?? [];
   // During an active session filter the roster to attending characters only.
   const displayed =
@@ -791,6 +805,23 @@ function ApprovedRosterPanel({
             {displayed.map((cr) => (
               <li key={cr.id} className="flex items-center gap-3 bg-ink-2 px-3 py-2">
                 <span className="flex-1 text-sm text-text-dim">{cr.name}</span>
+                {isDirector && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleRemoveApproved(cr.id, cr.name)}
+                    disabled={!wsOpen || currentSessionId !== null}
+                    title={
+                      currentSessionId !== null
+                        ? 'End the session before removing characters'
+                        : 'Remove from approved roster'
+                    }
+                    className="min-h-11 disabled:opacity-50"
+                  >
+                    Remove
+                  </Button>
+                )}
               </li>
             ))}
           </ul>
