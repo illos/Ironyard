@@ -301,4 +301,33 @@ For any UI work in slice 10/11 (move-action card surface): screenshot at iPad-po
 
 Append numbered entries here as post-shipping fixes land, per memory `feedback_post_shipping_fixes_ps_section`. Each entry: symptom + fix + commit SHA. Bump acceptance criteria if user-visible flows change.
 
-(Empty at spec write time.)
+### PS#1 — Slice 3 canon correction (2026-05-16, pre-implementation)
+
+**Symptom:** Spec § "Sub-slice plan: Slice 3" and § "Schema changes" referenced Wyrmplate and Psychic Scar as sharing the per-echelon `stat-mod-echelon` shape (citing the 2026-05-16 canon audit). On verification against `.reference/data-md/Rules/Ancestries/Dragon Knight.md` and `.reference/data-md/Rules/Ancestries/Time Raider.md`, both traits are actually **level-scaling damage immunities**, not per-echelon stat-mods:
+
+- **Wyrmplate** (Dragon Knight signature): *"damage immunity equal to your level to one of the following damage types: acid, cold, corruption, fire, lightning, or poison"* — already correctly modeled in `ancestries.ts` via `collectFromAncestry`'s special-cased `ancestryChoices` path (player-chosen damage type, value = level).
+- **Psychic Scar** (Time Raider signature): *"psychic immunity equal to your level"* — already correctly modeled at `packages/data/overrides/ancestries.ts:35-37` as `grantedImmunities: [{ kind: 'psychic', value: 'level' }]`.
+
+The audit conflated *level-scaling* (monotonic with level, no echelon jumps) with *per-echelon scaling* (discrete jumps at L4/L7/L10). They are different shapes.
+
+**Fix:** Slice 3 scope narrows to **Spark Off Your Skin only** — the single Draw Steel ancestry trait that genuinely fits `stat-mod-echelon`. Wyrmplate + Psychic Scar drop from this slice (they already work via the existing immunity machinery and need no migration). The `stat-mod-echelon` schema variant is still useful — future items (per-tier leveled armor scaling, etc.) may use it — and Spark Off Your Skin alone validates the shape end-to-end.
+
+**Acceptance criteria update:** Slice 3 acceptance becomes "L1 Dwarf = +6 maxStamina; L4 = +12; L7 = +18; L10 = +24." Wyrmplate + Psychic Scar acceptance lines dropped.
+
+### PS#2 — Slice 5 canon correction + infrastructure gap (2026-05-16, pre-implementation)
+
+**Symptom:** Spec § "Sub-slice plan: Slice 5" and § A1 framing referenced Wode Elf Glamor as "edge on all skill groups" and High Elf Glamor as "edge on one player-picked skill group" (citing the 2026-05-16 canon audit). On verification:
+
+- **Wode Elf Glamor** (signature): *"You gain an edge on tests made to hide and sneak, and tests made to search for you while you are hidden take a bane."* — Two effects: (a) self-edge on Hide + Sneak; (b) others'-bane on Search targeting hidden user. Effect (b) is a **contextual / triggered debuff applied to OTHERS** — needs trigger-cascade infrastructure (Phase 2b.9 / Group E).
+- **High Elf Glamor** (signature): *"granting you an edge on Presence tests using the Flirt or Persuade skills"* — edge on **Presence-characteristic** tests specifically when using the **Flirt OR Persuade** skill. The characteristic + skill compound condition is more nuanced than a flat skill-group edge.
+
+Plus an infrastructure gap surfaced by the slice 5 dispatch attempt: **signature traits without active abilities don't fold through `packages/data/overrides/ancestry-traits.ts`** (which keys on purchased trait ids via `character.ancestryChoices.traitIds`). Signature traits are auto-granted per ancestry and need to be wired through `packages/data/overrides/ancestries.ts` (the per-ancestry override map) — either via direct field overrides like `grantedImmunities` or a new attachment-emitting path. Current Wode Elf and High Elf entries in `ancestries.ts` are empty `{}`.
+
+**Fix:** **Slice 5 is DEFERRED out of this group.** Reasoning:
+- Both Glamors involve mechanics that don't cleanly fit `grant-skill-edge { skillGroup }` as-specified (Wode Elf needs skill-name granularity + contextual bane; High Elf needs characteristic + skill compound).
+- The contextual-bane-on-others requires trigger-cascade infrastructure (Phase 2b.9 / Group E) to model correctly.
+- Wiring signature-trait `CharacterAttachment[]` emission through `ancestries.ts` is a non-trivial extension that should be designed alongside the other signature-trait gaps from 2b.8 (Polder Shadowmeld, Human Detect the Supernatural, Dwarf Runic Carving, etc.) rather than as a one-off for Glamors.
+
+The `grant-skill-edge` AttachmentEffect schema variant from slice 1 stays in place — unused for now, available when a future slice (likely in Phase 2b.9 + signature-trait-emission groundwork) revisits both Glamors plus the other signature-trait gaps.
+
+**Acceptance criteria update:** Slice 5 dropped from Group A+B acceptance. Group acceptance becomes "10 sub-slices ✅-or-deferred" instead of 11. The two affected `docs/phases.md` rows (2b.1, 2b.8) still flip to ✅ because Group A+B closes the *modelable-today* surface; the Glamors + other signature-trait-emission work moves to a new follow-up sub-epic to be created when revisited.
