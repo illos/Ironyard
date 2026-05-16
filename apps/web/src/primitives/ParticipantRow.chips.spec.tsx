@@ -69,12 +69,12 @@ const goblin = makeParticipant({
   ownerId: null,
   className: null,
   targetingRelations: defaultTargetingRelations(),
-    movementMode: null,
-    bloodfireActive: false,
-    conditionImmunities: [],
-    disengageBonus: 0,
-    meleeDistanceBonus: 0,
-    rangedDistanceBonus: 0,
+  movementMode: null,
+  bloodfireActive: false,
+  conditionImmunities: [],
+  disengageBonus: 0,
+  meleeDistanceBonus: 0,
+  rangedDistanceBonus: 0,
 });
 
 /** Aldric — Censor. Judges goblin-a. */
@@ -203,12 +203,12 @@ describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
       ownerId: 'user-aldric',
       className: 'Censor',
       targetingRelations: defaultTargetingRelations(),
-    movementMode: null,
-    bloodfireActive: false,
-    conditionImmunities: [],
-    disengageBonus: 0,
-    meleeDistanceBonus: 0,
-    rangedDistanceBonus: 0,
+      movementMode: null,
+      bloodfireActive: false,
+      conditionImmunities: [],
+      disengageBonus: 0,
+      meleeDistanceBonus: 0,
+      rangedDistanceBonus: 0,
     });
     render(
       <ParticipantRow
@@ -229,12 +229,12 @@ describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
       ownerId: 'user-aldric',
       className: 'Censor',
       targetingRelations: defaultTargetingRelations(),
-    movementMode: null,
-    bloodfireActive: false,
-    conditionImmunities: [],
-    disengageBonus: 0,
-    meleeDistanceBonus: 0,
-    rangedDistanceBonus: 0,
+      movementMode: null,
+      bloodfireActive: false,
+      conditionImmunities: [],
+      disengageBonus: 0,
+      meleeDistanceBonus: 0,
+      rangedDistanceBonus: 0,
     });
     // director is someone else (user-director), not user-aldric
     render(
@@ -269,12 +269,12 @@ describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
       ownerId: 'user-aldric',
       className: 'Censor',
       targetingRelations: defaultTargetingRelations(),
-    movementMode: null,
-    bloodfireActive: false,
-    conditionImmunities: [],
-    disengageBonus: 0,
-    meleeDistanceBonus: 0,
-    rangedDistanceBonus: 0,
+      movementMode: null,
+      bloodfireActive: false,
+      conditionImmunities: [],
+      disengageBonus: 0,
+      meleeDistanceBonus: 0,
+      rangedDistanceBonus: 0,
     });
     render(
       <ParticipantRow
@@ -297,12 +297,12 @@ describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
       ownerId: 'user-aldric',
       className: 'Censor',
       targetingRelations: defaultTargetingRelations(),
-    movementMode: null,
-    bloodfireActive: false,
-    conditionImmunities: [],
-    disengageBonus: 0,
-    meleeDistanceBonus: 0,
-    rangedDistanceBonus: 0,
+      movementMode: null,
+      bloodfireActive: false,
+      conditionImmunities: [],
+      disengageBonus: 0,
+      meleeDistanceBonus: 0,
+      rangedDistanceBonus: 0,
     });
     render(
       <ParticipantRow
@@ -344,12 +344,12 @@ describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
       ownerId: 'user-self',
       className: 'Censor',
       targetingRelations: defaultTargetingRelations(),
-    movementMode: null,
-    bloodfireActive: false,
-    conditionImmunities: [],
-    disengageBonus: 0,
-    meleeDistanceBonus: 0,
-    rangedDistanceBonus: 0,
+      movementMode: null,
+      bloodfireActive: false,
+      conditionImmunities: [],
+      disengageBonus: 0,
+      meleeDistanceBonus: 0,
+      rangedDistanceBonus: 0,
     });
     render(
       <ParticipantRow
@@ -383,12 +383,7 @@ describe('ParticipantRow — Tweak 3: reticle toggle opts', () => {
 
   it('plain click calls onToggle with additive:false', () => {
     const onToggle = vi.fn();
-    render(
-      <ParticipantRow
-        {...RETICLE_BASE}
-        target={{ index: null, onToggle }}
-      />,
-    );
+    render(<ParticipantRow {...RETICLE_BASE} target={{ index: null, onToggle }} />);
     const reticle = screen.getByRole('button', { name: /target this creature/i });
     fireEvent.click(reticle);
     expect(onToggle).toHaveBeenCalledWith({ additive: false });
@@ -396,12 +391,7 @@ describe('ParticipantRow — Tweak 3: reticle toggle opts', () => {
 
   it('ctrl+click calls onToggle with additive:true', () => {
     const onToggle = vi.fn();
-    render(
-      <ParticipantRow
-        {...RETICLE_BASE}
-        target={{ index: null, onToggle }}
-      />,
-    );
+    render(<ParticipantRow {...RETICLE_BASE} target={{ index: null, onToggle }} />);
     const reticle = screen.getByRole('button', { name: /target this creature/i });
     fireEvent.click(reticle, { ctrlKey: true });
     expect(onToggle).toHaveBeenCalledWith({ additive: true });
@@ -409,24 +399,14 @@ describe('ParticipantRow — Tweak 3: reticle toggle opts', () => {
 
   it('meta+click calls onToggle with additive:true', () => {
     const onToggle = vi.fn();
-    render(
-      <ParticipantRow
-        {...RETICLE_BASE}
-        target={{ index: null, onToggle }}
-      />,
-    );
+    render(<ParticipantRow {...RETICLE_BASE} target={{ index: null, onToggle }} />);
     const reticle = screen.getByRole('button', { name: /target this creature/i });
     fireEvent.click(reticle, { metaKey: true });
     expect(onToggle).toHaveBeenCalledWith({ additive: true });
   });
 
   it('renders reticle with active targeting index when targeted', () => {
-    render(
-      <ParticipantRow
-        {...RETICLE_BASE}
-        target={{ index: 1, onToggle: vi.fn() }}
-      />,
-    );
+    render(<ParticipantRow {...RETICLE_BASE} target={{ index: 1, onToggle: vi.fn() }} />);
     // aria-label changes when targeted
     expect(screen.getByRole('button', { name: /untarget/i })).toBeTruthy();
   });
@@ -437,11 +417,7 @@ describe('ParticipantRow — Tweak 3: reticle toggle opts', () => {
 
 describe('handleToggleTarget reducer logic', () => {
   // Mirrors the logic in DirectorCombat.handleToggleTarget
-  function toggleTarget(
-    prev: string[],
-    id: string,
-    opts?: { additive?: boolean },
-  ): string[] {
+  function toggleTarget(prev: string[], id: string, opts?: { additive?: boolean }): string[] {
     const additive = opts?.additive ?? false;
     if (!additive && prev.length <= 1) {
       if (prev.length === 1 && prev[0] === id) return prev;

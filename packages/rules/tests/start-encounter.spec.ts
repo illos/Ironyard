@@ -221,12 +221,12 @@ describe('applyStartEncounter — new atomic payload shape', () => {
       purchasedTraits: [],
       equippedTitleIds: [],
       targetingRelations: defaultTargetingRelations(),
-    movementMode: null,
-    bloodfireActive: false,
-    conditionImmunities: [],
-    disengageBonus: 0,
-    meleeDistanceBonus: 0,
-    rangedDistanceBonus: 0,
+      movementMode: null,
+      bloodfireActive: false,
+      conditionImmunities: [],
+      disengageBonus: 0,
+      meleeDistanceBonus: 0,
+      rangedDistanceBonus: 0,
     };
     const s = baseState({ participants: [oldMonster] });
 
