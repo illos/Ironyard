@@ -61,8 +61,24 @@ export function applyRollInitiative(state: CampaignState, intent: StampedIntent)
     }
   }
 
+  // Phase 2b slice 2 — Memonek Unphased gate. Filter Unphased participants
+  // out of the surprised set BEFORE the auto-pick rule runs, so an Unphased
+  // hero on a side that would otherwise be "all surprised" doesn't force the
+  // foes-must-win auto-pick. Surprised is a participant flag, not a
+  // ConditionType, so this checks purchasedTraits directly.
+  const participantById = new Map(state.participants.filter(isParticipant).map((p) => [p.id, p]));
+  const droppedUnphased: string[] = [];
+  const effectiveSurprised = surprised.filter((sid) => {
+    const p = participantById.get(sid);
+    if (p?.purchasedTraits.includes('unphased')) {
+      droppedUnphased.push(sid);
+      return false;
+    }
+    return true;
+  });
+
   // Compute the post-stamp surprised set and validate the auto-pick rule.
-  const willBeSurprised = new Set(surprised);
+  const willBeSurprised = new Set(effectiveSurprised);
   const participantsBySide = { heroes: [] as Participant[], foes: [] as Participant[] };
   for (const p of state.participants) {
     if (!isParticipant(p)) continue;
@@ -125,6 +141,15 @@ export function applyRollInitiative(state: CampaignState, intent: StampedIntent)
         ? `auto-pick: one side fully surprised → ${winner} first`
         : `manual: ${winner} first`;
 
+  const log = [{ kind: 'info' as const, text: `RollInitiative — ${reason}`, intentId: intent.id }];
+  if (droppedUnphased.length > 0) {
+    log.push({
+      kind: 'info' as const,
+      text: `Memonek Unphased — surprise filtered for ${droppedUnphased.join(', ')}`,
+      intentId: intent.id,
+    });
+  }
+
   return {
     state: {
       ...state,
@@ -138,6 +163,6 @@ export function applyRollInitiative(state: CampaignState, intent: StampedIntent)
       },
     },
     derived: [],
-    log: [{ kind: 'info', text: `RollInitiative — ${reason}`, intentId: intent.id }],
+    log,
   };
 }

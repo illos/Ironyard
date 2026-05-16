@@ -5,6 +5,7 @@ import type {
   ParticipantStateOverride,
   StaminaState,
 } from '@ironyard/shared';
+import { isImmuneToCondition } from './effective';
 
 // Canon §2.7 winded value derives from base stamina max (not effective max).
 // Q7 confirmed.
@@ -150,9 +151,12 @@ export function applyTransitionSideEffects(
   let result = { ...p, staminaState: to };
 
   // Hero → dying: apply non-removable Bleeding (canon §2.8). Suppressed for
-  // Revenant Bloodless (Revenant.md:99 — "can't be made bleeding even while
-  // dying").
-  if (to === 'dying' && p.kind === 'pc' && !hasBloodless(p)) {
+  // any participant immune to Bleeding (Revenant Bloodless, etc. —
+  // Revenant.md:99 "can't be made bleeding even while dying"). Phase 2b
+  // slice 2: generalizes the prior trait-specific check via the typed
+  // isImmuneToCondition helper, which reads participant.conditionImmunities
+  // populated from CharacterRuntime at StartEncounter.
+  if (to === 'dying' && p.kind === 'pc' && !isImmuneToCondition(p, 'Bleeding')) {
     const hasDyingBleed = result.conditions.some(
       (c) => c.type === 'Bleeding' && c.source.id === 'dying-state',
     );
@@ -217,10 +221,6 @@ export function applyTransitionSideEffects(
   }
 
   return result;
-}
-
-function hasBloodless(p: Participant): boolean {
-  return p.kind === 'pc' && p.purchasedTraits.includes('bloodless');
 }
 
 // Type-only re-export so callers can `import { StaminaState } from '../stamina'`

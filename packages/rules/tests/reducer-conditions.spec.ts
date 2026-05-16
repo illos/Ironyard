@@ -387,6 +387,144 @@ describe('applyIntent — SetCondition', () => {
   });
 });
 
+// Phase 2b slice 2 — condition-immunity gate at the SetCondition reducer.
+// Snapshots come from CharacterRuntime at StartEncounter; here we construct
+// participants with conditionImmunities pre-filled to exercise the gate in
+// isolation. The reducer bumps seq + emits an info-log line, but appends no
+// new condition instance.
+describe('applyIntent — SetCondition × condition-immunity', () => {
+  function readyImmune(immunities: string[]): CampaignState {
+    const s = emptyCampaignState(campaignId, 'user-owner');
+    return {
+      ...s,
+      participants: [
+        pc({ conditionImmunities: immunities as Participant['conditionImmunities'] }),
+        monster(),
+      ],
+      encounter: {
+        id: 'enc_test',
+        currentRound: 1,
+        activeParticipantId: null,
+        turnState: {},
+        malice: { current: 0, lastMaliciousStrikeRound: null },
+        firstSide: null,
+        currentPickingSide: null,
+        actedThisRound: [],
+        pendingTriggers: null,
+        perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+      },
+    };
+  }
+
+  it('Revenant Bloodless: SetCondition Bleeding is a no-op (immunity)', () => {
+    const s = readyImmune(['Bleeding']);
+    const r = applyIntent(
+      s,
+      intent('SetCondition', {
+        targetId: 'pc_alice',
+        condition: 'Bleeding',
+        source: { kind: 'effect', id: 'spell_1' },
+        duration: { kind: 'save_ends' },
+      }),
+    );
+    expect(r.errors).toBeUndefined();
+    expect(getConditions(r.state, 'pc_alice')).toHaveLength(0);
+    expect(r.state.seq).toBe(s.seq + 1); // still bumps seq for log attribution
+  });
+
+  it('Dwarf Great Fortitude: SetCondition Weakened is a no-op', () => {
+    const s = readyImmune(['Weakened']);
+    const r = applyIntent(
+      s,
+      intent('SetCondition', {
+        targetId: 'pc_alice',
+        condition: 'Weakened',
+        source: { kind: 'effect', id: 'spell_1' },
+        duration: { kind: 'EoT' },
+      }),
+    );
+    expect(r.errors).toBeUndefined();
+    expect(getConditions(r.state, 'pc_alice')).toHaveLength(0);
+  });
+
+  it('Polder Fearless: SetCondition Frightened is a no-op', () => {
+    const s = readyImmune(['Frightened']);
+    const r = applyIntent(
+      s,
+      intent('SetCondition', {
+        targetId: 'pc_alice',
+        condition: 'Frightened',
+        source: { kind: 'creature', id: 'm_goblin' },
+        duration: { kind: 'end_of_encounter' },
+      }),
+    );
+    expect(r.errors).toBeUndefined();
+    expect(getConditions(r.state, 'pc_alice')).toHaveLength(0);
+  });
+
+  it('Orc Nonstop: SetCondition Slowed is a no-op', () => {
+    const s = readyImmune(['Slowed']);
+    const r = applyIntent(
+      s,
+      intent('SetCondition', {
+        targetId: 'pc_alice',
+        condition: 'Slowed',
+        source: { kind: 'creature', id: 'm_goblin' },
+        duration: { kind: 'EoT' },
+      }),
+    );
+    expect(r.errors).toBeUndefined();
+    expect(getConditions(r.state, 'pc_alice')).toHaveLength(0);
+  });
+
+  it('Memonek Nonstop: SetCondition Slowed is a no-op', () => {
+    // Same condition as Orc Nonstop; covered separately for canon parity.
+    const s = readyImmune(['Slowed']);
+    const r = applyIntent(
+      s,
+      intent('SetCondition', {
+        targetId: 'pc_alice',
+        condition: 'Slowed',
+        source: { kind: 'effect', id: 'spell_1' },
+        duration: { kind: 'EoT' },
+      }),
+    );
+    expect(r.errors).toBeUndefined();
+    expect(getConditions(r.state, 'pc_alice')).toHaveLength(0);
+  });
+
+  it('High Elf Unstoppable Mind: SetCondition Dazed is a no-op', () => {
+    const s = readyImmune(['Dazed']);
+    const r = applyIntent(
+      s,
+      intent('SetCondition', {
+        targetId: 'pc_alice',
+        condition: 'Dazed',
+        source: { kind: 'effect', id: 'spell_1' },
+        duration: { kind: 'EoT' },
+      }),
+    );
+    expect(r.errors).toBeUndefined();
+    expect(getConditions(r.state, 'pc_alice')).toHaveLength(0);
+  });
+
+  it('immunity to one condition does NOT block a different condition', () => {
+    const s = readyImmune(['Bleeding']);
+    const r = applyIntent(
+      s,
+      intent('SetCondition', {
+        targetId: 'pc_alice',
+        condition: 'Dazed',
+        source: { kind: 'effect', id: 'spell_1' },
+        duration: { kind: 'EoT' },
+      }),
+    );
+    expect(r.errors).toBeUndefined();
+    expect(getConditions(r.state, 'pc_alice')).toHaveLength(1);
+    expect(getConditions(r.state, 'pc_alice')[0]?.type).toBe('Dazed');
+  });
+});
+
 describe('applyIntent — RemoveCondition', () => {
   function readyWithMultipleSources(): CampaignState {
     let s = ready();

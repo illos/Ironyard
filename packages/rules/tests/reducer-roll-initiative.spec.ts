@@ -166,4 +166,17 @@ describe('RollInitiative', () => {
     expect(r.errors).toBeUndefined();
     expect(r.state.encounter?.firstSide).toBe('heroes');
   });
+
+  // Phase 2b slice 2 — Memonek Unphased gate. The trait grants immunity to
+  // the surprised flag; the reducer silently filters Unphased participants
+  // out of the surprised set rather than rejecting the whole intent (which
+  // would block the director from rolling initiative). Drop-but-log behaviour.
+  it('filters Memonek Unphased participants out of the surprised set', () => {
+    const memonek = { ...pc('alice'), purchasedTraits: ['unphased'], ancestry: ['memonek'] };
+    const s = readyState([memonek, monster('goblin')]);
+    const r = applyIntent(s, intent('RollInitiative', { winner: 'heroes', surprised: ['alice'] }));
+    expect(r.errors).toBeUndefined();
+    const alice = r.state.participants.find((p) => 'id' in p && p.id === 'alice') as Participant;
+    expect(alice.surprised).toBe(false); // Unphased blocked the flag-flip
+  });
 });

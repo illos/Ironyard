@@ -85,8 +85,16 @@ export const ANCESTRY_TRAIT_OVERRIDES: Record<string, CharacterAttachment[]> = {
       effect: { kind: 'stat-mod-echelon', stat: 'maxStamina', perEchelon: [6, 12, 18, 24] },
     },
   ],
-  // SKIPPED-DEFERRED — Great Fortitude (immunity-to-condition, not a damage
-  //   immunity), Stand Tough (potency-resistance math, edge-on-test),
+  // "Great Fortitude": immune to the Weakened condition.
+  // Phase 2b slice 2: shipped via the condition-immunity attachment kind;
+  // engine reads via isImmuneToCondition + StartEncounter snapshot.
+  'dwarf.great-fortitude': [
+    {
+      source: { kind: 'ancestry-trait', id: 'dwarf.great-fortitude' },
+      effect: { kind: 'condition-immunity', condition: 'Weakened' },
+    },
+  ],
+  // SKIPPED-DEFERRED — Stand Tough (potency-resistance math, edge-on-test),
   //   Stone Singer (out-of-combat utility).
 
   // ── Hakaan ──────────────────────────────────────────────────────────────
@@ -96,9 +104,16 @@ export const ANCESTRY_TRAIT_OVERRIDES: Record<string, CharacterAttachment[]> = {
   //   doom effects, none flat-stat.
 
   // ── High Elf ────────────────────────────────────────────────────────────
-  // SKIPPED-DEFERRED — Glamor of Terror, Otherworldly Grace, Unstoppable
-  //   Mind: triggered-action / save-modifier / condition-immunity effects
-  //   not yet modellable.
+  // "Unstoppable Mind": immune to the Dazed condition.
+  // Phase 2b slice 2: shipped via the condition-immunity attachment kind.
+  'high-elf.unstoppable-mind': [
+    {
+      source: { kind: 'ancestry-trait', id: 'high-elf.unstoppable-mind' },
+      effect: { kind: 'condition-immunity', condition: 'Dazed' },
+    },
+  ],
+  // SKIPPED-DEFERRED — Glamor of Terror, Otherworldly Grace: triggered-action /
+  //   save-modifier effects not yet modellable.
   // SKIPPED-DEFERRED — Graceful Retreat: +1 shift distance on Disengage is
   //   a move-action-specific modifier; not a base speed change.
   // SKIPPED-DEFERRED — High Senses, Revisit Memory: edge-on-test only.
@@ -116,9 +131,21 @@ export const ANCESTRY_TRAIT_OVERRIDES: Record<string, CharacterAttachment[]> = {
   //   gain 1 surge" — surges are an encounter-time resource, not a runtime
   //   stat. The intent reducer will handle this at encounter start, not
   //   the static derivation pass.
-  // SKIPPED-DEFERRED — Keeper of Order, Nonstop, Unphased, I Am Law,
-  //   Systematic Mind: condition-immunity / triggered-reaction / edge-on-
-  //   test / "can't be moved through" effects, none flat-stat.
+  // "Nonstop": immune to the Slowed condition.
+  // Phase 2b slice 2: shipped via the condition-immunity attachment kind.
+  'memonek.nonstop': [
+    {
+      source: { kind: 'ancestry-trait', id: 'memonek.nonstop' },
+      effect: { kind: 'condition-immunity', condition: 'Slowed' },
+    },
+  ],
+  // Memonek "Unphased" (immunity to the surprised *flag*, not a ConditionType)
+  // is NOT shipped via condition-immunity. The Surprised state is a boolean on
+  // Participant (`participant.surprised`), so MarkSurprised / RollInitiative
+  // gate via a direct purchasedTraits check instead. If a typed flag-immunity
+  // helper grows in a future slice, generalize there.
+  // SKIPPED-DEFERRED — Keeper of Order, I Am Law, Systematic Mind: triggered-
+  //   reaction / edge-on-test / "can't be moved through" effects, none flat-stat.
 
   // ── Orc ─────────────────────────────────────────────────────────────────
   // "Grounded (1 Point)": +1 stability — same as Dwarf's Grounded.
@@ -130,8 +157,16 @@ export const ANCESTRY_TRAIT_OVERRIDES: Record<string, CharacterAttachment[]> = {
   ],
   // SKIPPED-DEFERRED — Bloodfire Rush (1pt): conditional (+2 speed only on
   //   the round you take damage). Not yet modellable.
-  // SKIPPED-DEFERRED — Glowing Recovery, Nonstop, Passionate Artisan:
-  //   maneuver-modifier / condition-immunity / project-roll-bonus.
+  // "Nonstop": immune to the Slowed condition.
+  // Phase 2b slice 2: shipped via the condition-immunity attachment kind.
+  'orc.nonstop': [
+    {
+      source: { kind: 'ancestry-trait', id: 'orc.nonstop' },
+      effect: { kind: 'condition-immunity', condition: 'Slowed' },
+    },
+  ],
+  // SKIPPED-DEFERRED — Glowing Recovery, Passionate Artisan:
+  //   maneuver-modifier / project-roll-bonus.
 
   // ── Polder ──────────────────────────────────────────────────────────────
   // Signature "Small!" already handled by ANCESTRY_OVERRIDES.defaultSize.
@@ -149,9 +184,17 @@ export const ANCESTRY_TRAIT_OVERRIDES: Record<string, CharacterAttachment[]> = {
       },
     },
   ],
-  // SKIPPED-DEFERRED — Fearless, Nimblestep, Polder Geist, Reactive Tumble,
-  //   Graceful Retreat: condition-immunity / movement-modifier / triggered-
-  //   reaction effects, none flat-stat.
+  // "Fearless": immune to the Frightened condition.
+  // Phase 2b slice 2: shipped via the condition-immunity attachment kind.
+  'polder.fearless': [
+    {
+      source: { kind: 'ancestry-trait', id: 'polder.fearless' },
+      effect: { kind: 'condition-immunity', condition: 'Frightened' },
+    },
+  ],
+  // SKIPPED-DEFERRED — Nimblestep, Polder Geist, Reactive Tumble,
+  //   Graceful Retreat: movement-modifier / triggered-reaction effects,
+  //   none flat-stat.
 
   // ── Revenant ────────────────────────────────────────────────────────────
   // Signature trait grants four immunities (cold/corruption/lightning/poison
@@ -166,9 +209,18 @@ export const ANCESTRY_TRAIT_OVERRIDES: Record<string, CharacterAttachment[]> = {
   // (ancestries.ts) — see follow-up edit below.
   //
   // Purchased traits:
-  // SKIPPED-DEFERRED — Bloodless, Undead Influence, Vengeance Mark:
-  //   condition-immunity / edge-on-test / ability-grant (deferred per
-  //   above policy).
+  // "Bloodless": immune to the Bleeding condition (and can't be made bleeding
+  // even while dying — see stamina.ts dying-side-effect suppression which now
+  // reads conditionImmunities via the isImmuneToCondition helper).
+  // Phase 2b slice 2: shipped via the condition-immunity attachment kind.
+  'revenant.bloodless': [
+    {
+      source: { kind: 'ancestry-trait', id: 'revenant.bloodless' },
+      effect: { kind: 'condition-immunity', condition: 'Bleeding' },
+    },
+  ],
+  // SKIPPED-DEFERRED — Undead Influence, Vengeance Mark:
+  //   edge-on-test / ability-grant (deferred per above policy).
   // Previous Life traits resolve to the FORMER ancestry's traits — handled
   // by previousLifeTraitIds in ancestryChoices, which the collector should
   // also consult. See follow-up enhancement in collectFromAncestry.

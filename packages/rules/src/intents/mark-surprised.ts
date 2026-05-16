@@ -50,10 +50,10 @@ export function applyMarkSurprised(state: CampaignState, intent: StampedIntent):
     };
   }
   const { participantId, surprised } = parsed.data;
-  const exists = state.participants.some(
+  const target = state.participants.find(
     (p): p is Participant => isParticipant(p) && p.id === participantId,
   );
-  if (!exists) {
+  if (!target) {
     return {
       state,
       derived: [],
@@ -65,6 +65,32 @@ export function applyMarkSurprised(state: CampaignState, intent: StampedIntent):
         },
       ],
       errors: [{ code: 'unknown_participant', message: `unknown participant ${participantId}` }],
+    };
+  }
+  // Phase 2b slice 2 — Memonek Unphased gate. `surprised` is a participant
+  // flag, not a ConditionType, so the typed condition-immunity helper
+  // doesn't fit; we gate at the flag-flip site via the bare purchasedTraits
+  // slug ('unphased' — Memonek is the only ancestry with this trait).
+  // If a typed flag-immunity helper grows in a future slice, generalize here.
+  // Allow flipping surprised → false (clearing) even on an immune participant
+  // so corrective edits are still possible.
+  if (surprised && target.purchasedTraits.includes('unphased')) {
+    return {
+      state,
+      derived: [],
+      log: [
+        {
+          kind: 'info',
+          text: `${target.name} is immune to surprise (Memonek Unphased)`,
+          intentId: intent.id,
+        },
+      ],
+      errors: [
+        {
+          code: 'memonek-unphased-immunity',
+          message: 'Memonek Unphased makes this participant immune to surprise',
+        },
+      ],
     };
   }
   return {

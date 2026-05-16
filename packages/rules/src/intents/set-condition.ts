@@ -3,6 +3,7 @@ import {
   type Participant,
   SetConditionPayloadSchema,
 } from '@ironyard/shared';
+import { isImmuneToCondition } from '../effective';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
 
@@ -46,6 +47,25 @@ export function applySetCondition(state: CampaignState, intent: StampedIntent): 
       derived: [],
       log: [{ kind: 'error', text: `target ${targetId} not found`, intentId: intent.id }],
       errors: [{ code: 'target_missing', message: `target ${targetId} not in encounter` }],
+    };
+  }
+
+  // Phase 2b slice 2: gate by typed condition-immunity (Bloodless, Great
+  // Fortitude, Polder Fearless, Orc/Memonek Nonstop, High Elf Unstoppable
+  // Mind, etc.). conditionImmunities is snapshotted to the participant at
+  // StartEncounter from CharacterRuntime; the log captures the attempted
+  // imposition so the director sees why nothing landed.
+  if (isImmuneToCondition(target, condition)) {
+    return {
+      state: { ...state, seq: state.seq + 1 },
+      derived: [],
+      log: [
+        {
+          kind: 'info',
+          text: `${target.name} is immune to ${condition} (no-op)`,
+          intentId: intent.id,
+        },
+      ],
     };
   }
 

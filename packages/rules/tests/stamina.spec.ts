@@ -46,6 +46,7 @@ function pc(overrides: Partial<Participant> = {}): Participant {
     maintainedAbilities: [],
     purchasedTraits: [],
     equippedTitleIds: [],
+    conditionImmunities: [],
     ...overrides,
   } as Participant;
 }
@@ -254,6 +255,10 @@ describe('applyTransitionSideEffects', () => {
   });
 
   // B3 — Revenant Bloodless: "can't be made bleeding even while dying."
+  // Phase 2b slice 2: Bloodless now flows through participant.conditionImmunities
+  // (snapshotted from runtime at StartEncounter via the condition-immunity
+  // attachment effect kind). The purchasedTraits flag is retained for
+  // attribution but no longer the source of truth for the suppression.
   it('→ dying does NOT apply dying-Bleeding to a Revenant with Bloodless', () => {
     const p = pc({
       currentStamina: -5,
@@ -261,6 +266,7 @@ describe('applyTransitionSideEffects', () => {
       staminaState: 'winded',
       ancestry: ['revenant'],
       purchasedTraits: ['bloodless'],
+      conditionImmunities: ['Bleeding'],
     });
     const result = applyTransitionSideEffects(p, 'winded', 'dying');
     expect(result.staminaState).toBe('dying');

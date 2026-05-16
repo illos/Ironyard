@@ -46,6 +46,7 @@ function hero(overrides: Partial<Participant> = {}): Participant {
     posthumousDramaEligible: false,
     psionFlags: defaultPsionFlags(),
     maintainedAbilities: [],
+    conditionImmunities: [],
     ...overrides,
   } as Participant;
 }

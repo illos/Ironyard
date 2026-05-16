@@ -142,4 +142,22 @@ describe('MarkSurprised', () => {
     const r = applyIntent(s, intent('MarkSurprised', { participantId: 'ghost', surprised: true }));
     expect(r.errors?.[0]?.code).toBe('unknown_participant');
   });
+
+  // Phase 2b slice 2 — Memonek Unphased gate. Surprised is a participant
+  // flag, not a ConditionType, so condition-immunity doesn't fit; the
+  // reducer checks purchasedTraits directly.
+  it('rejects MarkSurprised on a Memonek with Unphased', () => {
+    const s = readyState();
+    const alice = s.participants[0] as Participant;
+    const sWithUnphased: CampaignState = {
+      ...s,
+      participants: [{ ...alice, purchasedTraits: ['unphased'], ancestry: ['memonek'] }],
+    };
+    const r = applyIntent(
+      sWithUnphased,
+      intent('MarkSurprised', { participantId: 'alice', surprised: true }),
+    );
+    expect(r.errors?.[0]?.code).toBe('memonek-unphased-immunity');
+    expect((r.state.participants[0] as Participant).surprised).toBe(false);
+  });
 });
