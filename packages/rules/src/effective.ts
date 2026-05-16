@@ -37,3 +37,21 @@ export function getEffectiveWeaknesses(p: Participant, level: number): TypedResi
   }
   return base;
 }
+
+// Slice 8 — getEffectiveSpeed layers Bloodfire Rush's +2 speed over the
+// snapshot in participant.speed.
+//
+// Canon (Orc.md "Bloodfire Rush"): +2 speed until end of round, latched on
+// the first delivered damage of the round. Engine doesn't track movement
+// distances (per CLAUDE.md / project_no_movement_tracking memory), so this
+// helper is a UI / display-time read site.
+//
+// Defaults: monster participants may have null speed; treat null as 0 for
+// the addition. Bloodfire only applies to Orcs (gated by the trigger itself
+// via hasBloodfireRush); this helper trusts the latch — if bloodfireActive
+// is true, +2 applies regardless of source. Future ancestry buffs to speed
+// can layer here additively.
+export function getEffectiveSpeed(p: Participant): number {
+  const base = p.speed ?? 0;
+  return p.bloodfireActive ? base + 2 : base;
+}

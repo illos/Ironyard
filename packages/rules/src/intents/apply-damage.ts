@@ -1,5 +1,5 @@
 import { ApplyDamagePayloadSchema, IntentTypes, type Participant } from '@ironyard/shared';
-import { evaluateOnConditionApplied } from '../ancestry-triggers';
+import { evaluateOnConditionApplied, evaluateOnDamageApplied } from '../ancestry-triggers';
 import { evaluateActionTriggers, evaluateStaminaTransitionTriggers } from '../class-triggers';
 import { resolveParticipantClass } from '../class-triggers/helpers';
 import { applyDamageStep } from '../damage';
@@ -96,6 +96,23 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
       { actor: intent.actor },
     );
     for (const d of ancestryDerived) {
+      derived.push({ ...d, causedBy: intent.id });
+    }
+  }
+
+  // Phase 2b Group A+B (slice 8) — ancestry-trigger dispatch on damage
+  // delivered. Bloodfire Rush (Orc) latches `bloodfireActive` on the first
+  // delivered damage of a round. The dispatcher fans out to all per-trait
+  // onDamageApplied handlers; bloodfire.ts is the slice-8 consumer.
+  // dealerId can be null if damage has no attributed dealer (environmental,
+  // engine-emitted, etc.) — bloodfire doesn't care, only target + delivered.
+  if (result.delivered > 0) {
+    const ancestryDamageDerived = evaluateOnDamageApplied(
+      { ...state, participants: updatedParticipants },
+      { targetId, dealerId: state.encounter.activeParticipantId, delivered: result.delivered },
+      { actor: intent.actor },
+    );
+    for (const d of ancestryDamageDerived) {
       derived.push({ ...d, causedBy: intent.id });
     }
   }

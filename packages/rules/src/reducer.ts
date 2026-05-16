@@ -42,6 +42,7 @@ import {
   applyRollInitiative,
   applyRollPower,
   applyRollResistance,
+  applySetBloodfireActive,
   applySetCondition,
   applySetMovementMode,
   applySetParticipantPerEncounterLatch,
@@ -183,6 +184,8 @@ export function applyIntent(
       return applyRollPower(state, intent);
     case IntentTypes.RollResistance:
       return applyRollResistance(state, intent);
+    case IntentTypes.SetBloodfireActive:
+      return applySetBloodfireActive(state, intent);
     case IntentTypes.SetCondition:
       return applySetCondition(state, intent);
     case IntentTypes.SetMovementMode:

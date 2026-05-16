@@ -38,6 +38,7 @@ export { applyResolveTriggerOrder } from './resolve-trigger-order';
 export { applyRollInitiative } from './roll-initiative';
 export { applyRollPower } from './roll-power';
 export { applyRollResistance } from './roll-resistance';
+export { applySetBloodfireActive } from './set-bloodfire-active';
 export { applySetCondition } from './set-condition';
 export { applySetMovementMode } from './set-movement-mode';
 export {

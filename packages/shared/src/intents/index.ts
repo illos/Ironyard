@@ -95,6 +95,8 @@ export { RollPowerPayloadSchema } from './roll-power';
 export type { RollPowerPayload } from './roll-power';
 export { RollResistancePayloadSchema } from './roll-resistance';
 export type { RollResistancePayload } from './roll-resistance';
+export { SetBloodfireActivePayloadSchema } from './set-bloodfire-active';
+export type { SetBloodfireActivePayload } from './set-bloodfire-active';
 export { SetConditionPayloadSchema } from './set-condition';
 export type { SetConditionPayload } from './set-condition';
 export { SetMovementModePayloadSchema } from './set-movement-mode';
@@ -224,6 +226,7 @@ export const IntentTypes = {
   RollInitiative: 'RollInitiative',
   RollPower: 'RollPower',
   RollResistance: 'RollResistance',
+  SetBloodfireActive: 'SetBloodfireActive',
   SetCondition: 'SetCondition',
   SetMovementMode: 'SetMovementMode',
   SetParticipantPerEncounterLatch: 'SetParticipantPerEncounterLatch',
@@ -268,6 +271,7 @@ export const SERVER_ONLY_INTENTS = new Set<string>([
   IntentTypes.ExecuteTrigger,
   IntentTypes.GrantExtraMainAction,
   IntentTypes.RaiseOpenAction,
+  IntentTypes.SetBloodfireActive,
   IntentTypes.SetMovementMode,
   IntentTypes.SetParticipantPerEncounterLatch,
   IntentTypes.SetParticipantPerRoundFlag,
