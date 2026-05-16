@@ -76,16 +76,13 @@ export const ANCESTRY_TRAIT_OVERRIDES: Record<string, CharacterAttachment[]> = {
     },
   ],
   // "Spark Off Your Skin (2 Points)": +6 Stamina, +6 more at 4th, 7th, 10th.
-  // The stat-mod effect kind is a flat delta — we can't currently express
-  // level-keyed scaling in one entry. Encode the level-1 baseline +6 and
-  // SKIP the per-echelon increase until the schema grows a stat-mod-per-
-  // echelon variant (Slice 6 candidate).
+  // Canon: Dwarf.md:149 / heroes-flat.txt:2940-2943.
+  // Uses the stat-mod-echelon variant landed in Phase 2b Group A+B slice 1
+  // (tuple = [L1, L4, L7, L10]).
   'dwarf.spark-off-your-skin': [
     {
       source: { kind: 'ancestry-trait', id: 'dwarf.spark-off-your-skin' },
-      // SKIPPED-DEFERRED-PARTIAL — level scaling at 4/7/10 not yet
-      // modellable; only the 1st-echelon +6 ships today.
-      effect: { kind: 'stat-mod', stat: 'maxStamina', delta: 6 },
+      effect: { kind: 'stat-mod-echelon', stat: 'maxStamina', perEchelon: [6, 12, 18, 24] },
     },
   ],
   // SKIPPED-DEFERRED — Great Fortitude (immunity-to-condition, not a damage
@@ -139,16 +136,17 @@ export const ANCESTRY_TRAIT_OVERRIDES: Record<string, CharacterAttachment[]> = {
   // ── Polder ──────────────────────────────────────────────────────────────
   // Signature "Small!" already handled by ANCESTRY_OVERRIDES.defaultSize.
   // "Corruption Immunity (1 Point)": corruption immunity = level + 2.
-  // The `immunity.value` field is either a number or 'level' — there's no
-  // "level + N" form. Slice 6 candidate to extend the shape. For now use
-  // 'level' to capture the level-scaling baseline and note the +2 gap.
+  // Canon: Polder.md:161 / heroes-flat.txt:3919-3924.
+  // Uses the level-plus variant of immunity.value landed in Phase 2b
+  // Group A+B slice 1.
   'polder.corruption-immunity': [
     {
       source: { kind: 'ancestry-trait', id: 'polder.corruption-immunity' },
-      // SKIPPED-DEFERRED-PARTIAL — true value is level + 2; the +2 offset
-      // is not modellable in the current immunity-value shape. Engine
-      // currently underestimates by 2; Slice 6 to fix shape.
-      effect: { kind: 'immunity', damageKind: 'corruption', value: 'level' },
+      effect: {
+        kind: 'immunity',
+        damageKind: 'corruption',
+        value: { kind: 'level-plus', offset: 2 },
+      },
     },
   ],
   // SKIPPED-DEFERRED — Fearless, Nimblestep, Polder Geist, Reactive Tumble,

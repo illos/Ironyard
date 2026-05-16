@@ -404,13 +404,19 @@ describe('ancestry purchased-trait attachments (Slice 4 of Epic 2B)', () => {
     expect(r.stability).toBe(1);
   });
 
-  it('Dwarf "Spark Off Your Skin" grants +6 maxStamina (1st-echelon baseline)', () => {
+  it.each([
+    [1, 6],
+    [4, 12],
+    [7, 18],
+    [10, 24],
+  ])('Dwarf "Spark Off Your Skin" grants +%2$i maxStamina at L%i (per-echelon ramp)', (level, expectedDelta) => {
     const dwarf = buildAncestry({ id: 'dwarf' });
-    const baseChar = buildCharacter({ ancestryId: 'dwarf' });
+    const baseChar = buildCharacter({ ancestryId: 'dwarf', level });
     const baseR = deriveCharacterRuntime(baseChar, buildBundleWith([dwarf]));
 
     const withTrait = buildCharacter({
       ancestryId: 'dwarf',
+      level,
       ancestryChoices: {
         traitIds: ['spark-off-your-skin'],
         formerAncestryId: null,
@@ -421,7 +427,7 @@ describe('ancestry purchased-trait attachments (Slice 4 of Epic 2B)', () => {
       },
     });
     const r = deriveCharacterRuntime(withTrait, buildBundleWith([dwarf]));
-    expect(r.maxStamina).toBe(baseR.maxStamina + 6);
+    expect(r.maxStamina - baseR.maxStamina).toBe(expectedDelta);
   });
 
   it('Memonek "Lightning Nimbleness" grants +2 speed', () => {
@@ -458,11 +464,16 @@ describe('ancestry purchased-trait attachments (Slice 4 of Epic 2B)', () => {
     expect(r.stability).toBe(1);
   });
 
-  it('Polder "Corruption Immunity" grants corruption immunity = level', () => {
+  it.each([
+    [1, 3],
+    [5, 7],
+    [7, 9],
+    [10, 12],
+  ])('Polder "Corruption Immunity" grants corruption immunity = level + 2 at L%i = %i', (level, expected) => {
     const polder = buildAncestry({ id: 'polder' });
     const char = buildCharacter({
       ancestryId: 'polder',
-      level: 5,
+      level,
       ancestryChoices: {
         traitIds: ['corruption-immunity'],
         formerAncestryId: null,
@@ -473,8 +484,7 @@ describe('ancestry purchased-trait attachments (Slice 4 of Epic 2B)', () => {
       },
     });
     const r = deriveCharacterRuntime(char, buildBundleWith([polder]));
-    // SKIPPED-DEFERRED-PARTIAL: true value is level + 2; we only encode level.
-    expect(r.immunities).toContainEqual({ kind: 'corruption', value: 5 });
+    expect(r.immunities).toContainEqual({ kind: 'corruption', value: expected });
   });
 
   it('Wode Elf "Swift" grants +1 speed', () => {
