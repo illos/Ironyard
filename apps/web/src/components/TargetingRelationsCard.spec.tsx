@@ -81,6 +81,6 @@ describe('TargetingRelationsCard', () => {
         onToggle={vi.fn()}
       />,
     );
-    expect(screen.getByText(/null field/i)).toBeInTheDocument();
+    expect(screen.getByText(/null field: none/i)).toBeInTheDocument();
   });
 });

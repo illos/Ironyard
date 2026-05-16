@@ -36,19 +36,17 @@ export interface TargetingRelationsCardProps {
 const LABEL: Record<TargetingRelationKind, string> = {
   judged: 'Judging',
   marked: 'Marked',
-  nullField: 'In My Null Field',
+  nullField: 'Null Field',
 };
 
 /**
- * Full empty-state sentence rendered as the sole visible text when the
- * relation list is empty. This is the only element shown; the heading h3
- * is suppressed in the empty state so that getByText('/null field/i') finds
- * exactly one node (the empty-state <p>) and doesn't collide with the h3.
+ * Full empty-state sentence rendered when the relation list is empty.
+ * The h3 heading is always rendered above it (unconditionally).
  */
 const EMPTY_LABEL: Record<TargetingRelationKind, string> = {
   judged: 'Judging: none.',
   marked: 'Marked: none.',
-  nullField: 'In your Null Field: none.',
+  nullField: 'Null Field: none.',
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -83,16 +81,12 @@ export function TargetingRelationsCard({
       aria-label={label}
       className="border border-line bg-ink-1 p-3 space-y-2"
     >
-      {/* Header — only rendered when the list is non-empty so that the
-          empty-state <p> below is the sole element matching the label text
-          (avoids getByText ambiguity in tests). */}
-      {!isEmpty && (
-        <header className="flex items-baseline justify-between gap-2">
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-text-mute">
-            {label}
-          </h3>
-        </header>
-      )}
+      {/* Header — always rendered so the section label is visible even when empty. */}
+      <header className="flex items-baseline justify-between gap-2">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-text-mute">
+          {label}
+        </h3>
+      </header>
 
       {/* Entry list or empty state */}
       {isEmpty ? (
