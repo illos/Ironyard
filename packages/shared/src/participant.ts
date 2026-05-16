@@ -5,6 +5,7 @@ import { ConditionInstanceSchema } from './condition';
 import { TypedResistanceSchema } from './damage';
 import { MaintainedAbilitySchema } from './maintained-ability';
 import { PerEncounterFlagsSchema, defaultPerEncounterFlags } from './per-encounter-flags';
+import { TargetingRelationsSchema, defaultTargetingRelations } from './targeting-relations';
 import { PsionFlagsSchema, defaultPsionFlags } from './psion-flags';
 import { ExtraResourceInstanceSchema, HeroicResourceInstanceSchema } from './resource';
 import { ParticipantStateOverrideSchema } from './stamina-override';
@@ -156,5 +157,14 @@ export const ParticipantSchema = z.object({
   // up at a per-turn essence cost. StartTurn deducts costPerTurn after the
   // per-turn essence gain; auto-drops if essence would go negative.
   maintainedAbilities: z.array(MaintainedAbilitySchema).default([]),
+  // Pass 3 Slice 2b — player-managed source-to-target relations consumed by
+  // the Censor / Tactician / Null class-δ predicates. Each array is a set of
+  // participant ids the source has the relation with. Mutated via the
+  // SetTargetingRelation intent or auto-derived from UseAbility for the two
+  // PHB ability ids in ABILITY_TARGETING_EFFECTS (Judgment, Mark). Cleared
+  // for every participant at EndEncounter; stripped per-source when a
+  // referenced target is removed via RemoveParticipant. Defaults to three
+  // empty arrays so pre-slice-2b snapshots load without migration.
+  targetingRelations: TargetingRelationsSchema.default(defaultTargetingRelations()),
 });
 export type Participant = z.infer<typeof ParticipantSchema>;

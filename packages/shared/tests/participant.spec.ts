@@ -82,6 +82,35 @@ describe('ParticipantSchema slice-1 additions', () => {
   });
 });
 
+describe('ParticipantSchema — targetingRelations', () => {
+  it('defaults targetingRelations to three empty arrays when omitted', () => {
+    const base = {
+      id: 'p1',
+      name: 'Aldric',
+      kind: 'pc' as const,
+      currentStamina: 20,
+      maxStamina: 20,
+      characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
+    };
+    const parsed = ParticipantSchema.parse(base);
+    expect(parsed.targetingRelations).toEqual({ judged: [], marked: [], nullField: [] });
+  });
+  it('round-trips populated targetingRelations', () => {
+    const base = {
+      id: 'p1',
+      name: 'Aldric',
+      kind: 'pc' as const,
+      currentStamina: 20,
+      maxStamina: 20,
+      characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
+      targetingRelations: { judged: ['goblin-a'], marked: [], nullField: ['goblin-b'] },
+    };
+    const parsed = ParticipantSchema.parse(base);
+    expect(parsed.targetingRelations.judged).toEqual(['goblin-a']);
+    expect(parsed.targetingRelations.nullField).toEqual(['goblin-b']);
+  });
+});
+
 describe('Participant — slice 2a additions', () => {
   const base = {
     id: 'p1',
