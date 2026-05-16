@@ -1,4 +1,14 @@
-import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
+import {
+  applyDamageStep,
+  applyKnockOut,
+  applyTransitionSideEffects,
+  recomputeStaminaState,
+} from '@ironyard/rules';
+import {
+  defaultPerEncounterFlags,
+  defaultPerRoundFlags,
+  defaultPsionFlags,
+} from '@ironyard/shared';
 import {
   type AddMonsterPayload,
   type AdjustVictoriesPayload,
@@ -35,6 +45,10 @@ import {
   type RollPowerPayload,
   ServerMsgSchema,
   type SetConditionPayload,
+  type SetParticipantPerEncounterLatchPayload,
+  type SetParticipantPerRoundFlagPayload,
+  type SetParticipantPerTurnEntryPayload,
+  type SetParticipantPosthumousDramaEligiblePayload,
   type SetResourcePayload,
   type SetStaminaPayload,
   type SpendHeroTokenPayload,
@@ -44,12 +58,15 @@ import {
   type SpendSurgePayload,
   type StaminaTransitionedPayload,
   type StartEncounterPayload,
+  type StartMaintenancePayload,
   type StartSessionPayload,
   type StartTurnPayload,
+  type StopMaintenancePayload,
+  type TroubadourAutoRevivePayload,
   type UpdateSessionAttendancePayload,
+  type UseAbilityPayload,
   ulid,
 } from '@ironyard/shared';
-import { applyDamageStep, applyKnockOut, applyTransitionSideEffects, recomputeStaminaState } from '@ironyard/rules';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -132,7 +149,9 @@ export type MirrorIntent = {
 // extend this beyond what the combat screen needs. Server-side `snapshot`
 // envelopes (sent after Undo) replace the mirror wholesale — this function
 // only handles incremental `applied` envelopes.
-function reflect(
+//
+// Exported for unit testing (useSessionSocket.spec.ts).
+export function reflect(
   prev: ActiveEncounter | null,
   type: string,
   payload: unknown,
@@ -235,6 +254,15 @@ function reflect(
           ...p,
           // Reset per-round triggered-action usage slot (slice 1 — canon §4.10).
           triggeredActionUsedThisRound: false,
+          // Slice 2a — mirror Task 25's EndRound semantics: reset only
+          // `perEncounterFlags.perRound`. `perTurn.entries` are reset at the
+          // owning participant's EndTurn; `perEncounter` latches persist until
+          // EndEncounter. Do NOT wipe other fields here (the Task 3 surgical fix
+          // removed an over-eager clobber on this branch).
+          perEncounterFlags: {
+            ...p.perEncounterFlags,
+            perRound: defaultPerRoundFlags(),
+          },
         };
         return wasRoundOne && p.surprised ? { ...cleared, surprised: false } : cleared;
       }),
@@ -309,14 +337,25 @@ function reflect(
   }
 
   if (type === IntentTypes.ApplyDamage) {
-    const { targetId, amount, damageType, intent: damageIntent } = payload as ApplyDamagePayload;
+    const {
+      targetId,
+      amount,
+      damageType,
+      intent: damageIntent,
+      bypassDamageReduction,
+    } = payload as ApplyDamagePayload;
     return {
       ...prev,
       participants: prev.participants.map((p) => {
         if (!isParticipantEntry(p) || p.id !== targetId) return p;
         // Use shared applyDamageStep for full parity: handles KO interception,
-        // inert-fire instant death, unconscious-→-dead, and state transitions.
-        const result = applyDamageStep(p, amount, damageType, damageIntent ?? 'kill');
+        // inert-fire instant death, unconscious-→-dead, state transitions, and
+        // (slice 2a) bypassDamageReduction. The shared helper accepts an opts
+        // object so the new field rides through with no mirror-side branching.
+        const result = applyDamageStep(p, amount, damageType, {
+          intent: damageIntent,
+          bypassDamageReduction,
+        });
         return result.newParticipant;
       }),
     };
@@ -486,6 +525,174 @@ function reflect(
   }
 
   // ---- end Pass 3 Slice 1 ----
+
+  // ---- Pass 3 Slice 2a — class-δ triggers, Maintenance, posthumous Drama ----
+
+  if (type === IntentTypes.StartMaintenance) {
+    const { participantId, abilityId, costPerTurn } = payload as StartMaintenancePayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== participantId) return p;
+        // Idempotent on abilityId — match the engine's already-maintained guard.
+        if (p.maintainedAbilities.some((m) => m.abilityId === abilityId)) return p;
+        // startedAtRound is informational on the mirror; the engine stamps the
+        // canonical value from `state.encounter.currentRound`. Use prev.currentRound
+        // (fallback to 1 between rounds, matching the engine's `?? 1`).
+        const startedAtRound = prev.currentRound ?? 1;
+        return {
+          ...p,
+          maintainedAbilities: [
+            ...p.maintainedAbilities,
+            { abilityId, costPerTurn, startedAtRound },
+          ],
+        };
+      }),
+    };
+  }
+
+  if (type === IntentTypes.StopMaintenance) {
+    const { participantId, abilityId } = payload as StopMaintenancePayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== participantId) return p;
+        return {
+          ...p,
+          maintainedAbilities: p.maintainedAbilities.filter((m) => m.abilityId !== abilityId),
+        };
+      }),
+    };
+  }
+
+  if (type === IntentTypes.TroubadourAutoRevive) {
+    const { participantId } = payload as TroubadourAutoRevivePayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== participantId) return p;
+        // Mirror troubadour-auto-revive.ts: stamina → 1, drama → 0, clear the
+        // posthumous-eligible latch and the OA-raised latch, then recompute
+        // staminaState off the new currentStamina.
+        const heroicResources = p.heroicResources.map((r) =>
+          r.name === 'drama' ? { ...r, value: 0 } : r,
+        );
+        const intermediate: Participant = {
+          ...p,
+          currentStamina: 1,
+          heroicResources,
+          posthumousDramaEligible: false,
+          perEncounterFlags: {
+            ...p.perEncounterFlags,
+            perEncounter: {
+              ...p.perEncounterFlags.perEncounter,
+              troubadourReviveOARaised: false,
+            },
+          },
+        };
+        const { newState } = recomputeStaminaState(intermediate);
+        return { ...intermediate, staminaState: newState };
+      }),
+    };
+  }
+
+  if (type === IntentTypes.SetParticipantPerEncounterLatch) {
+    const { participantId, key, value } = payload as SetParticipantPerEncounterLatchPayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== participantId) return p;
+        return {
+          ...p,
+          perEncounterFlags: {
+            ...p.perEncounterFlags,
+            perEncounter: { ...p.perEncounterFlags.perEncounter, [key]: value },
+          },
+        };
+      }),
+    };
+  }
+
+  if (type === IntentTypes.SetParticipantPerRoundFlag) {
+    const { participantId, key, value } = payload as SetParticipantPerRoundFlagPayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== participantId) return p;
+        return {
+          ...p,
+          perEncounterFlags: {
+            ...p.perEncounterFlags,
+            perRound: { ...p.perEncounterFlags.perRound, [key]: value },
+          },
+        };
+      }),
+    };
+  }
+
+  if (type === IntentTypes.SetParticipantPerTurnEntry) {
+    const { participantId, scopedToTurnOf, key, value } =
+      payload as SetParticipantPerTurnEntryPayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== participantId) return p;
+        // Dedup on (scopedToTurnOf, key) — drop any prior entry sharing the
+        // pair, then append the fresh entry. Mirrors set-participant-flag.ts.
+        const filtered = p.perEncounterFlags.perTurn.entries.filter(
+          (e) => !(e.scopedToTurnOf === scopedToTurnOf && e.key === key),
+        );
+        return {
+          ...p,
+          perEncounterFlags: {
+            ...p.perEncounterFlags,
+            perTurn: {
+              ...p.perEncounterFlags.perTurn,
+              entries: [...filtered, { scopedToTurnOf, key, value }],
+            },
+          },
+        };
+      }),
+    };
+  }
+
+  if (type === IntentTypes.SetParticipantPosthumousDramaEligible) {
+    const { participantId, value } = payload as SetParticipantPosthumousDramaEligiblePayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== participantId) return p;
+        return { ...p, posthumousDramaEligible: value };
+      }),
+    };
+  }
+
+  if (type === IntentTypes.UseAbility) {
+    // Slice 2a mirror writes: (1) the active PC's psionFlags.clarityDamageOptOutThisTurn
+    // when `talentClarityDamageOptOutThisTurn` is set on the payload; (2) the
+    // active PC's id appended to encounter.perEncounterFlags.perTurn.heroesActedThisTurn
+    // (mirror of use-ability.ts Slice 2a addition #1) — but the mirror's
+    // `ActiveEncounter` does not currently carry encounter-level perEncounterFlags,
+    // so that write lands on the server-authoritative snapshot rather than here.
+    // The (much narrower) participant-side write is the visible UI signal.
+    const { participantId, talentClarityDamageOptOutThisTurn } = payload as UseAbilityPayload;
+    if (!talentClarityDamageOptOutThisTurn) {
+      void (payload as UseAbilityPayload);
+      return prev;
+    }
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== participantId || p.kind !== 'pc') return p;
+        return {
+          ...p,
+          psionFlags: { ...p.psionFlags, clarityDamageOptOutThisTurn: true },
+        };
+      }),
+    };
+  }
+
+  // ---- end Pass 3 Slice 2a ----
 
   if (type === IntentTypes.SpendRecovery) {
     const { participantId } = payload as SpendRecoveryPayload;
