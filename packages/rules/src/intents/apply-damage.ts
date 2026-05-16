@@ -1,5 +1,9 @@
 import { ApplyDamagePayloadSchema, IntentTypes, type Participant } from '@ironyard/shared';
-import { evaluateOnConditionApplied, evaluateOnDamageApplied } from '../ancestry-triggers';
+import {
+  evaluateOnConditionApplied,
+  evaluateOnDamageApplied,
+  evaluateOnStaminaTransitioned,
+} from '../ancestry-triggers';
 import { evaluateActionTriggers, evaluateStaminaTransitionTriggers } from '../class-triggers';
 import { resolveParticipantClass } from '../class-triggers/helpers';
 import { applyDamageStep } from '../damage';
@@ -190,6 +194,23 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
         rolls: { ferocityD3 },
       },
     );
+    // Phase 2b Group A+B (slice 9) — ancestry-trigger StaminaTransitioned
+    // dispatch. Mirror of the class-trigger evaluator above; orc Relentless
+    // subscribes for the dying-via-damage case and raises a free-strike OA.
+    const ancestryTransitionDerived = evaluateOnStaminaTransitioned(
+      postDamageState,
+      {
+        participantId: targetId,
+        from: target.staminaState,
+        to: finalState,
+        cause: 'damage',
+      },
+      { actor: intent.actor },
+    );
+    for (const d of ancestryTransitionDerived) {
+      derived.push({ ...d, causedBy: intent.id });
+    }
+
     // Class-trigger derived intents inherit the same causedBy chain.
     for (const d of triggerDerived) {
       derived.push({ ...d, causedBy: intent.id });

@@ -38,6 +38,34 @@ export function getEffectiveWeaknesses(p: Participant, level: number): TypedResi
   return base;
 }
 
+// Slice 9 — getSizeForForcedMove reduces a Memonek's size by one tier
+// when computing forced-movement resolution. Canon (Memonek.md
+// "Signature Trait: Lightweight"): "Whenever another creature attempts to
+// force move you, you treat your size as one size smaller than it is."
+//
+// Engine doesn't currently have a forced-move resolution path that reads
+// participant.size for opposed-size checks (no apply-force-move reducer in
+// packages/rules/src/intents/). When that lands, the consumer reads through
+// this helper. Today the helper is structurally present + tested so the
+// trait isn't silently absent; the consumer-site wiring is deferred to the
+// future force-move slice.
+//
+// Size-tier ordering follows the Draw Steel canon: tiny (1T) < small (1S)
+// < medium (1M) < large (1L) < huge (2L). The helper drops one tier; at
+// the smallest tier it returns the base unchanged (you can't get smaller).
+const SIZE_DROP_TIERS: Record<string, string> = {
+  '2L': '1L',
+  '1L': '1M',
+  '1M': '1S',
+  '1S': '1T',
+};
+
+export function getSizeForForcedMove(p: Participant): string {
+  const base = p.size ?? '1M';
+  if (!p.ancestry.includes('memonek')) return base;
+  return SIZE_DROP_TIERS[base] ?? base;
+}
+
 // Slice 8 — getEffectiveSpeed layers Bloodfire Rush's +2 speed over the
 // snapshot in participant.speed.
 //

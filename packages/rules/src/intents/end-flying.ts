@@ -80,6 +80,21 @@ export function applyEndFlying(state: CampaignState, intent: StampedIntent): Int
       ? `${target.name} lands (voluntary)`
       : `${target.name} fell from ${priorRoundsRemaining} rounds aloft (${reason})`;
 
+  const log = [{ kind: 'info' as const, text: logText, intentId: intent.id }];
+
+  // Phase 2b Group A+B (slice 9) — Memonek Fall Lightly (signature trait).
+  // Canon (Memonek.md): "Whenever you fall, you reduce the distance of the
+  // fall by 2 squares." Engine doesn't track fall distance (per
+  // project_no_movement_tracking memory), so this is a table-adjudication
+  // log entry on every fall path. Voluntary lands aren't falls.
+  if (reason !== 'voluntary' && target.ancestry.includes('memonek')) {
+    log.push({
+      kind: 'info' as const,
+      text: `${target.name} — Memonek Fall Lightly: reduce fall distance by 2 squares`,
+      intentId: intent.id,
+    });
+  }
+
   return {
     state: {
       ...state,
@@ -87,6 +102,6 @@ export function applyEndFlying(state: CampaignState, intent: StampedIntent): Int
       participants: updatedParticipants,
     },
     derived,
-    log: [{ kind: 'info', text: logText, intentId: intent.id }],
+    log,
   };
 }

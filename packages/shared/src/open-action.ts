@@ -20,6 +20,14 @@ export const OpenActionKindSchema = z.enum([
   // Slice 2a — class-internal raisers
   'pray-to-the-gods',
   'troubadour-auto-revive',
+  // Phase 2b Group A+B slice 9 — Orc Relentless. Canon (Orc.md):
+  // "Whenever a creature deals damage to you that leaves you dying, you can
+  // make a free strike against any creature. If the creature is reduced to 0
+  // Stamina by your strike, you can spend a Recovery." The raise emits the
+  // affordance; the player dispatches the free strike + (optional) Recovery
+  // spend manually via existing intents. UI prompt + claim handler land when
+  // the OA UI grows to render this kind.
+  'orc-relentless-free-strike',
 ]);
 
 export type OpenActionKind = z.infer<typeof OpenActionKindSchema>;

@@ -293,6 +293,16 @@ export function applyClaimOpenAction(state: CampaignState, intent: StampedIntent
       break;
     }
 
+    case 'orc-relentless-free-strike': {
+      // Phase 2b Group A+B slice 9 — claim is a no-op acknowledgement: the
+      // free strike is a player-dispatched action (UseAbility or ApplyDamage)
+      // and the optional Recovery spend (if the strike kills) is a separate
+      // SpendRecovery intent. Claiming the OA removes the prompt; the strike
+      // mechanics live with the player's manual dispatch. Log entry happens
+      // via the standard removal flow below.
+      break;
+    }
+
     default: {
       // Compile-time exhaustiveness — adding a new OpenActionKind without a
       // branch here surfaces as a TS error rather than a silent no-op.
