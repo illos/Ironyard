@@ -3,9 +3,17 @@ import type {
   DurableObject,
   DurableObjectState,
 } from '@cloudflare/workers-types';
-import { type CampaignState, applyIntent, emptyCampaignState } from '@ironyard/rules';
-import { ClientMsgSchema, type Intent, type Member, type ServerMsg, ulid } from '@ironyard/shared';
+import { type CampaignState, applyIntent, canDispatch, emptyCampaignState } from '@ironyard/rules';
+import {
+  ClientMsgSchema,
+  type Intent,
+  type Member,
+  SERVER_ONLY_INTENTS as SHARED_SERVER_ONLY_INTENTS,
+  type ServerMsg,
+  ulid,
+} from '@ironyard/shared';
 import { and, desc, eq, gt } from 'drizzle-orm';
+import { getStaticDataBundle } from './data';
 import { db } from './db';
 import {
   campaignMemberships,
@@ -14,7 +22,6 @@ import {
   intents as intentsTable,
   sessions,
 } from './db/schema';
-import { getStaticDataBundle } from './data';
 import { buildServerStampedIntent } from './lobby-do-build-intent';
 import { handleSideEffect } from './lobby-do-side-effects';
 import { stampIntent } from './lobby-do-stampers';
@@ -295,7 +302,9 @@ export class LobbyDO implements DurableObject {
       await this.serialize(async () => {
         if (!this.campaignState) return;
         const stateBefore = this.campaignState;
-        const result = applyIntent(this.campaignState, intent, { staticData: getStaticDataBundle() });
+        const result = applyIntent(this.campaignState, intent, {
+          staticData: getStaticDataBundle(),
+        });
         if (result.errors && result.errors.length > 0) {
           dispatchError = result.errors.map((e) => e.message).join('; ');
           return;
@@ -474,9 +483,18 @@ export class LobbyDO implements DurableObject {
   }
 
   // Intents the client can never dispatch directly. These are emitted by the
-  // DO (campaign lifecycle) or by the reducer as derived intents (apply damage).
+  // DO (campaign lifecycle: Join/Leave) or by the reducer as derived intents
+  // (engine-derived effects like ApplyDamage, StaminaTransitioned, etc.).
   // D6.4: confirmed names post-rename (JoinSession/LeaveSession → JoinLobby/LeaveLobby).
-  private readonly SERVER_ONLY_INTENTS = new Set(['JoinLobby', 'LeaveLobby', 'ApplyDamage', 'RaiseOpenAction']);
+  // The shared set (in @ironyard/shared) lists every engine-derived intent the
+  // reducer may emit; we union it with the DO-only protocol intents (JoinLobby /
+  // LeaveLobby). Both lists are write-protected against client dispatch — the
+  // lobby is the only legitimate emitter for everything in this set.
+  private readonly SERVER_ONLY_INTENTS = new Set<string>([
+    ...SHARED_SERVER_ONLY_INTENTS,
+    'JoinLobby',
+    'LeaveLobby',
+  ]);
 
   private async handleDispatch(socket: CFWebSocket, clientIntent: Intent) {
     const attached = this.sockets.get(socket);
@@ -487,6 +505,21 @@ export class LobbyDO implements DurableObject {
         kind: 'rejected',
         intentId: clientIntent.id,
         reason: `permission: ${clientIntent.type} is server-only`,
+      });
+      return;
+    }
+
+    // Per-intent authorization (e.g. StartMaintenance requires PC owner or
+    // active director). `canDispatch` is permissive by default — only intents
+    // with an explicit case in packages/rules/src/permissions.ts get gated.
+    // The attached socket's userId + role are the authoritative actor identity
+    // (derived from the session cookie + campaign membership at WS upgrade).
+    const actor = { userId: attached.userId, role: attached.role };
+    if (!canDispatch(clientIntent, actor, this.campaignState)) {
+      this.sendTo(socket, {
+        kind: 'rejected',
+        intentId: clientIntent.id,
+        reason: `permission: ${clientIntent.type} not allowed for actor`,
       });
       return;
     }
