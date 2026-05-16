@@ -1,5 +1,6 @@
 import { MarkActionUsedPayloadSchema } from '@ironyard/shared';
-import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import { evaluateActionTriggers } from '../class-triggers/action-triggers';
+import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
 
 export function applyMarkActionUsed(
@@ -58,17 +59,39 @@ export function applyMarkActionUsed(
     };
   }
 
+  const nextState: CampaignState = {
+    ...state,
+    seq: state.seq + 1,
+    participants: state.participants.map((p) =>
+      isParticipant(p) && p.id === participantId
+        ? { ...p, turnActionUsage: { ...p.turnActionUsage, [slot]: used } }
+        : p,
+    ),
+  };
+
+  // Pass 3 Slice 2a — action-event class-trigger evaluation.
+  // Null's Discipline trigger 2 (canon §5.4.5): when an enemy uses a main
+  // action while standing inside this Null's active Null Field, raise a
+  // RaiseOpenAction(spatial-trigger-null-field) for the Null to claim.
+  // Spatial — the field's footprint and the enemy's position can change
+  // between event and claim, so we don't auto-apply. Only fires for the
+  // 'main' slot on `used: true`; the 'maneuver'/'move' slots and the undo
+  // path (used: false) are out of scope for this trigger.
+  const derived: DerivedIntent[] = [];
+  if (slot === 'main' && used) {
+    const triggerDerived = evaluateActionTriggers(
+      nextState,
+      { kind: 'main-action-used', actorId: participantId },
+      { actor: intent.actor, rolls: {} },
+    );
+    for (const d of triggerDerived) {
+      derived.push({ ...d, causedBy: intent.id });
+    }
+  }
+
   return {
-    state: {
-      ...state,
-      seq: state.seq + 1,
-      participants: state.participants.map((p) =>
-        isParticipant(p) && p.id === participantId
-          ? { ...p, turnActionUsage: { ...p.turnActionUsage, [slot]: used } }
-          : p,
-      ),
-    },
-    derived: [],
+    state: nextState,
+    derived,
     log: [
       {
         kind: 'info',

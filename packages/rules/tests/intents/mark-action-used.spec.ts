@@ -4,6 +4,7 @@ import { applyIntent } from '../../src/reducer';
 import {
   baseState,
   makeHeroParticipant,
+  makeMonsterParticipant,
   makeRunningEncounterPhase,
   ownerActor,
   stamped,
@@ -89,5 +90,89 @@ describe('applyMarkActionUsed', () => {
     );
     expect(result.errors).toBeDefined();
     expect(result.errors![0]!.code).toBe('participant_not_found');
+  });
+});
+
+describe('applyMarkActionUsed — class-δ main-action-used trigger wiring (Task 24)', () => {
+  it('director marks main on an enemy monster → Null hero gets a spatial Null Field OA raised with causedBy', () => {
+    const nullPc = makeHeroParticipant('null-1', { className: 'Null' });
+    const enemy = makeMonsterParticipant('mon-1', { name: 'Goblin' });
+    const state = baseState({
+      participants: [nullPc, enemy],
+      encounter: makeRunningEncounterPhase('enc-1'),
+      activeDirectorId: ownerActor.userId,
+    });
+    const intent = stamped({
+      type: IntentTypes.MarkActionUsed,
+      actor: ownerActor,
+      payload: { participantId: 'mon-1', slot: 'main', used: true },
+    });
+    const result = applyIntent(state, intent);
+    expect(result.errors).toBeUndefined();
+    const oa = result.derived.find((d) => d.type === 'RaiseOpenAction');
+    expect(oa).toBeDefined();
+    const oaPayload = oa!.payload as {
+      kind: string;
+      participantId: string;
+      payload: { actorId: string; actorName: string };
+    };
+    expect(oaPayload.kind).toBe('spatial-trigger-null-field');
+    expect(oaPayload.participantId).toBe('null-1');
+    expect(oaPayload.payload.actorId).toBe('mon-1');
+    expect(oa!.causedBy).toBe(intent.id);
+  });
+
+  it('main action used on a PC ally (not a monster) → no Null OA emitted', () => {
+    const nullPc = makeHeroParticipant('null-1', { className: 'Null' });
+    const ally = makeHeroParticipant('pc-ally', {
+      ownerId: 'u-ally',
+      className: 'Censor',
+    });
+    const state = baseState({
+      participants: [nullPc, ally],
+      encounter: makeRunningEncounterPhase('enc-1'),
+      activeDirectorId: ownerActor.userId,
+    });
+    const result = applyIntent(
+      state,
+      stamped({
+        type: IntentTypes.MarkActionUsed,
+        actor: { userId: 'u-ally', role: 'player' },
+        payload: { participantId: 'pc-ally', slot: 'main', used: true },
+      }),
+    );
+    expect(result.errors).toBeUndefined();
+    expect(result.derived.find((d) => d.type === 'RaiseOpenAction')).toBeUndefined();
+  });
+
+  it('slot=maneuver or slot=move on an enemy → no Null Field OA (only main triggers)', () => {
+    const nullPc = makeHeroParticipant('null-1', { className: 'Null' });
+    const enemy = makeMonsterParticipant('mon-1', { name: 'Goblin' });
+    const state = baseState({
+      participants: [nullPc, enemy],
+      encounter: makeRunningEncounterPhase('enc-1'),
+      activeDirectorId: ownerActor.userId,
+    });
+    const maneuverResult = applyIntent(
+      state,
+      stamped({
+        type: IntentTypes.MarkActionUsed,
+        actor: ownerActor,
+        payload: { participantId: 'mon-1', slot: 'maneuver', used: true },
+      }),
+    );
+    expect(maneuverResult.errors).toBeUndefined();
+    expect(maneuverResult.derived.find((d) => d.type === 'RaiseOpenAction')).toBeUndefined();
+
+    const moveResult = applyIntent(
+      state,
+      stamped({
+        type: IntentTypes.MarkActionUsed,
+        actor: ownerActor,
+        payload: { participantId: 'mon-1', slot: 'move', used: true },
+      }),
+    );
+    expect(moveResult.errors).toBeUndefined();
+    expect(moveResult.derived.find((d) => d.type === 'RaiseOpenAction')).toBeUndefined();
   });
 });
