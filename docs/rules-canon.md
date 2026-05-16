@@ -750,6 +750,8 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 ### 5.3 Talent — Clarity ✅
 
+> 🚧 Slice 2a will close this when reviewed — see [Pass 3 Slice 2a spec](superpowers/specs/2026-05-15-pass-3-slice-2a-class-delta-and-open-actions-design.md). Engine code has shipped per the spec; awaiting manual two-gate review.
+
 > **Source:** `Classes/Talent.md` lines 82–104, plus 10th-level Psion feature at lines 1453–1457. Heroes PDF p. 187 (Clarity in Combat), p. 201 (Psion).
 
 - **Floor:** `-(1 + Reason)`. The character can spend Clarity they don't have, going into negative numbers.
@@ -783,6 +785,8 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 #### 5.4.1 Censor — Wrath
 
+> 🚧 Slice 2a will close this when reviewed — see [Pass 3 Slice 2a spec](superpowers/specs/2026-05-15-pass-3-slice-2a-class-delta-and-open-actions-design.md). Engine code has shipped per the spec; awaiting manual two-gate review. **Manual-override only** until slice 2b/2c provides real Judgment-target tracking — `isJudgedBy` is a permissive stub that over-fires.
+
 > **Source:** `Classes/Censor.md` lines 87–99. Heroes PDF p. 79 (Wrath in Combat).
 
 - **Per-turn gain:** **2** wrath.
@@ -792,6 +796,8 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 - **Epic secondary — Virtue** (10th-level, `Censor.md:1367–1372`): gained at each respite equal to XP gained at that respite. **Persists until spent**. Spendable in place of wrath. Also: spend 3 virtue to access a non-default deity domain until next respite. Phase 1 surface area: low (a 10th-level feature); engine just needs to model the persistent pool and the spend-as-wrath substitution.
 
 #### 5.4.2 Conduit — Piety (+ Divine Power)
+
+> 🚧 Slice 2a will close this when reviewed — see [Pass 3 Slice 2a spec](superpowers/specs/2026-05-15-pass-3-slice-2a-class-delta-and-open-actions-design.md). Engine code has shipped per the spec; awaiting manual two-gate review.
 
 > **Source:** `Classes/Conduit.md` lines 74–96. Heroes PDF p. 95 (Piety in Combat).
 
@@ -804,6 +810,8 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 #### 5.4.3 Elementalist — Essence
 
+> 🚧 Slice 2a will close this when reviewed — see [Pass 3 Slice 2a spec](superpowers/specs/2026-05-15-pass-3-slice-2a-class-delta-and-open-actions-design.md). Engine code has shipped per the spec; awaiting manual two-gate review.
+
 > **Source:** `Classes/Elementalist.md` lines 98–110, plus maintenance rule line 143. Heroes PDF p. 113 (Essence in Combat).
 
 - **Per-turn gain:** **2** essence.
@@ -813,6 +821,8 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 #### 5.4.4 Fury — Ferocity
 
+> 🚧 Slice 2a will close this when reviewed — see [Pass 3 Slice 2a spec](superpowers/specs/2026-05-15-pass-3-slice-2a-class-delta-and-open-actions-design.md). Engine code has shipped per the spec; awaiting manual two-gate review.
+
 > **Source:** `Classes/Fury.md` lines 77–94. Heroes PDF p. 131 (Ferocity in Combat).
 
 - **Per-turn gain:** roll **1d3** ferocity.
@@ -821,6 +831,8 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
   - First time per encounter that you become **winded** (§ 2.7) or are **dying** (§ 2.8): **+1d3 ferocity**.
 
 #### 5.4.5 Null — Discipline
+
+> 🚧 Slice 2a will close this when reviewed — see [Pass 3 Slice 2a spec](superpowers/specs/2026-05-15-pass-3-slice-2a-class-delta-and-open-actions-design.md). Engine code has shipped per the spec; awaiting manual two-gate review. **Manual-override only** for the Null Field gain trigger until slice 2b/2c provides active-ability lookup — `hasActiveNullField` is a permissive stub that over-fires.
 
 > **Source:** `Classes/Null.md` lines 77–89. Heroes PDF p. 147 (Discipline in Combat).
 
@@ -833,6 +845,8 @@ Engine note for the second trigger: requires the engine to log Malice spends and
 
 #### 5.4.6 Shadow — Insight
 
+> 🚧 Slice 2a will close this when reviewed — see [Pass 3 Slice 2a spec](superpowers/specs/2026-05-15-pass-3-slice-2a-class-delta-and-open-actions-design.md). Engine code has shipped per the spec; awaiting manual two-gate review.
+
 > **Source:** `Classes/Shadow.md` lines 77–91. Heroes PDF p. 161 (Insight in Combat).
 
 - **Per-turn gain:** roll **1d3** insight.
@@ -840,6 +854,8 @@ Engine note for the second trigger: requires the engine to log Malice spends and
 - **Spend modifier (passive ability cost reduction):** when you use a heroic ability that uses a power roll, the ability costs **1 fewer insight** if you have an edge or double edge on the roll. If the ability has multiple targets, the cost reduction applies even if only one target gives you the edge. Engine: cost is computed at spend time, after edge/bane gathering, with a minimum cost of 0.
 
 #### 5.4.7 Tactician — Focus
+
+> 🚧 Slice 2a will close this when reviewed — see [Pass 3 Slice 2a spec](superpowers/specs/2026-05-15-pass-3-slice-2a-class-delta-and-open-actions-design.md). Engine code has shipped per the spec; awaiting manual two-gate review. **Manual-override only** for the Mark gain trigger until slice 2b/2c provides real Mark-target tracking — `isMarkedBy` is a permissive stub that over-fires.
 
 > **Source:** `Classes/Tactician.md` lines 77–89. Heroes PDF p. 175 (Focus in Combat).
 
@@ -849,6 +865,8 @@ Engine note for the second trigger: requires the engine to log Malice spends and
   - First time per combat round that any ally within 10 squares uses a heroic ability: **+1 focus**.
 
 #### 5.4.8 Troubadour — Drama
+
+> 🚧 Slice 2a will close this when reviewed — see [Pass 3 Slice 2a spec](superpowers/specs/2026-05-15-pass-3-slice-2a-class-delta-and-open-actions-design.md). Engine code has shipped per the spec (including posthumous drama, auto-revive at 30, and the OA raiser); awaiting manual two-gate review.
 
 > **Source:** `Classes/Troubadour.md` lines 76–101. Heroes PDF p. 203 (Drama in Combat).
 
@@ -884,6 +902,8 @@ type HeroicResourceConfig = {
 The reducer instantiates one of these per character based on their class. Per-ability spend costs come from the ability data (parsed from SteelCompendium per `data-pipeline.md`); the reducer validates `current >= cost` and applies the § 7.7.3 refund rule when applicable.
 
 ### 5.5 Director's Malice ✅
+
+> 🚧 Slice 2a will close this when reviewed — see [Pass 3 Slice 2a spec](superpowers/specs/2026-05-15-pass-3-slice-2a-class-delta-and-open-actions-design.md). Engine code has shipped per the spec (Malice spend now fires the Null discipline gain trigger); awaiting manual two-gate review.
 
 > **Source:** `.reference/data-md/Bestiary/Monsters/Chapters/Monster Basics.md` lines 331–372 (Malice, Earning Malice, Spending Malice, Basic Malice Features). Monsters PDF p. 6.
 

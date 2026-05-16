@@ -633,8 +633,42 @@ Slice 2a is done when:
 - Phase 2b non-tracker engine work (2b.1, 2b.2, 2b.3, 2b.7, 2b.8 — outside Pass 3 umbrella).
 - Off-turn-crit-action holding mechanism (slice 1 PS deferral).
 
-## PS — post-shipping fixes
+## PS — Execution-Time Corrections
 
 Future post-shipping fixes to Slice 2a layer the same way slice 1's did: append a numbered entry to this PS section with a one-line symptom, a one-paragraph fix, and the relevant commit SHA. Once a follow-up entry has shipped *and* been verified in real use, leave it in place — the doc is the historical record, not a TODO list.
 
-(No entries yet — slice 2a hasn't shipped.)
+### Plan-time corrections (from plan self-review)
+
+1. **EncounterPhase location.** `EncounterPhase` is a TS type in `packages/rules/src/types.ts`, NOT a Zod schema in `packages/shared/src/encounter.ts`. Task 4 corrected in the plan before execution.
+2. **Server-only flag-write intents.** Enumerated as concrete intents: `SetParticipantPerRoundFlag`, `SetParticipantPerTurnEntry`, `SetParticipantPerEncounterLatch`, `SetParticipantPosthumousDramaEligible`.
+3. **New per-round latches** added to `PerRoundFlagsSchema`: `allyHeroicWithin10Triggered`, `nullFieldEnemyMainTriggered`, `elementalistDamageWithin10Triggered`.
+
+### Execution-time findings (per `feedback_post_shipping_fixes_ps_section`)
+
+1. **`Math.random` purity contract restoration.** Task 10's initial implementation called `Math.random()` inside `packages/rules/src/class-triggers/stamina-transition.ts`, violating the engine's purity contract. Fixed in commit `8a779b1`: removed `rollFerocityD3` helper; added `StaminaTransitionTriggerContext { actor; rolls: { ferocityD3? } }` parameter to `evaluateStaminaTransitionTriggers`. Mirrored for the action-triggers evaluator in Task 11 fix (commit `101c993`).
+
+2. **`actor: ctx.actor` propagation in trigger emitters.** Task 10's initial emitters synthesized `actor: { userId: 'server', role: 'director' }` literals — lied about attribution and synthesized director authority. Same commit `8a779b1` fixed by threading `ctx.actor` through emissions. All slice-2a class triggers now correctly attribute derived intents to the originating intent's actor.
+
+3. **EndRound wipe over-reach.** Task 3's fixture-fixup commit (`fc651c8`) added 4 lines to `apps/web/src/ws/useSessionSocket.ts:238-241` that wiped slice-2a fields on EndRound. Fixed in commit `74eeca7`: those fields (`posthumousDramaEligible`, `psionFlags`, `maintainedAbilities`, `perEncounterFlags`) have their own reset scopes (revive / EndTurn / per-encounter); EndRound should only reset `perEncounterFlags.perRound`. Task 34 (WS-mirror) confirmed Task 25's authoritative EndRound semantics.
+
+4. **Fury Ferocity damage-only filter.** Task 16's initial wiring would throw on heal-into-winded for a Fury (latch unflipped + apply-heal supplies no `ferocityD3`). Fixed in commit `0549f80`: added `event.cause !== 'damage'` filter to both Fury Ferocity matchers in `stamina-transition.ts`. Also defensively applied to Troubadour any-hero-winded matcher (heal-into-winded shouldn't reward drama; canon "becomes winded" reads as a threat-pressure event). Troubadour hero-dies and posthumous-flag matchers remain unfiltered (death has multiple legitimate causes).
+
+5. **Pray-to-the-Gods "undo standard d3" deferred to slice 2c.** Task 27 (`claim-open-action.ts`) currently implements pray as an ADDITIVE piety gain on top of the standard StartTurn d3 — over-counts by 1-2 piety per pray claim. Proper "instead of" semantics requires either persisting StartTurn `rolls.d3` outcome in encounter state or deferring the standard gain until pray-OA expiry. Deferred to slice 2c; documented TODO in `claim-open-action.ts`.
+
+6. **`Participant.side` doesn't exist (plan typo).** Plan source at lines 2125/2181 referenced `p.side` / `actor.side` for ally / enemy checks. The codebase derives side via `participantSide(p)` helper (`packages/rules/src/state-helpers.ts:53`), which returns 'heroes' for `kind === 'pc'`, 'foes' for monsters. Tasks 13, 15 used the correct derivation; Tasks 11/22 use `event.sideOfActor` from the ActionEvent payload.
+
+7. **Permissive helper stubs for Slice 2b/2c follow-up:**
+   - `isJudgedBy` (Censor) — TODO Slice 2b/2c — Judgment target tracking
+   - `isMarkedBy` (Tactician) — TODO Slice 2b/2c — Mark target tracking
+   - `hasActiveNullField` (Null) — TODO Slice 2b/2c — active-ability lookup
+   - Until these land, the 3 affected triggers over-fire and the canon entries are flagged manual-override.
+
+8. **`hasPsionFeature` heuristic.** Task 17 used `participant.level >= 10` as the interim Psion-feature gate (since Q18 class-feature-choice schema isn't shipped). Over-includes 10th-level Talents who choose non-Psion features. Rewire when Q18 lands.
+
+9. **`apps/api/src/lobby-do.ts` SERVER_ONLY_INTENTS hard-code.** Pre-existing tech debt unrelated to slice 2a — lobby-do.ts has its own hardcoded `SERVER_ONLY_INTENTS` set of 4 intents that doesn't consume the engine's `SERVER_ONLY_INTENTS` from `@ironyard/shared`. Task 29 added the engine-level `canDispatch` but the lobby boundary doesn't yet use it. Server-only intents Task 6/10/12/21 added are not enforced at the lobby boundary today. Follow-up task to wire `lobby-do.ts` to consume `canDispatch` + the shared SERVER_ONLY_INTENTS.
+
+10. **`StrainedSpendModal` integration deferred.** Task 31's modal was shipped with comprehensive tests but not wired to PlayerSheetPanel. The player-side ability-card click currently routes to RollPower (not UseAbility); wiring requires building a new UseAbility dispatch surface (Talent detection + clarity cost metadata + Psion check). Out-of-scope for slice 2a. TODO in PlayerSheetPanel.tsx.
+
+11. **`OpenActionsList.tsx` fallback duplication.** Task 33 created `apps/web/src/lib/format-open-action.ts` but the inline fallback logic in `OpenActionsList.tsx` was left in place. Follow-up: replace inline logic with `formatOpenAction()` call.
+
+12. **`DirectorCombat.tsx` stub state.** Task 25 + 17 coordination updated DirectorCombat to call `getResourceConfigForParticipant` with a synthesized stub state. Stub is sufficient today (helper only reads `p.className` and `p.level`) but brittle if future heroic-resource variants read other state fields. Follow-up: thread the real CampaignState from useSessionSocket.

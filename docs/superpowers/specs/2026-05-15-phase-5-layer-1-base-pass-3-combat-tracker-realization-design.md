@@ -102,16 +102,16 @@ Added by slice 1 (damage-state opt-in):
 Note: Hakaan-Doomsight does NOT use the OA framework. Per slice 1 brainstorm decision, the Hakaan PC's `Become Doomed` is a direct player intent (`BecomeDoomed { participantId, source: 'hakaan-doomsight' }`) dispatched from a button on the player sheet, available any time during an encounter. Director/player collaboration about *when* to press the button happens at the table, outside the app.
 
 Added by slice 2 (class-δ raisers and class-internal affordances):
-- `pray-to-the-gods` — Conduit class-internal raise
 - `spatial-trigger-elementalist-essence`
 - `spatial-trigger-tactician-ally-heroic`
 - `spatial-trigger-null-field`
 - `spatial-trigger-troubadour-line-of-effect`
-- `talent-strained-spend-confirm` — player-side modal trigger
-- `psion-strained-opt-in`
-- `psion-clarity-damage-opt-out`
+- `pray-to-the-gods` — Conduit class-internal raise
+- `troubadour-auto-revive`
 
 Each gets a copy-registry entry. The 2b2a chrome (already shipped) starts having content the first time slice 1 lands (doomed opt-ins), with the bulk arriving in slice 2.
+
+Originally three additional kinds were planned (`talent-strained-spend-confirm`, `psion-strained-opt-in`, `psion-clarity-damage-opt-out`) and were dropped in slice 2a brainstorm — see PS 1 below.
 
 ### New intents
 
@@ -361,3 +361,17 @@ Slice specs land at:
 - `docs/superpowers/specs/2026-MM-DD-pass-3-slice-5-action-effects-design.md`
 
 Each slice's `Parent:` field links back to this umbrella spec.
+
+## PS — post-shipping patches
+
+### PS 1. Slice 2a brainstorm drop — strained / Psion OA kinds
+
+Slice 2a brainstorm 2026-05-15 reframed the Talent strained-spend and Psion
+toggle flows as client-side modals (`StrainedSpendModal`) rather than OAs.
+The OA framework is the wrong primitive for synchronous single-actor self-
+spends; the player is the dispatcher and already knows the state. Dropped
+kinds: `talent-strained-spend-confirm`, `psion-strained-opt-in`,
+`psion-clarity-damage-opt-out`. The 10th-level Psion toggles ride in the
+`UseAbility` payload (`talentStrainedOptInRider`,
+`talentClarityDamageOptOutThisTurn`); the strained-spend confirmation is a
+client-side `StrainedSpendModal`.
