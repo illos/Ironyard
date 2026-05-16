@@ -40,14 +40,6 @@ export const OPEN_ACTION_COPY: Partial<Record<OpenActionKind, OpenActionCopy>> =
     },
     claimLabel: () => 'Gain 1 focus',
   },
-  'spatial-trigger-null-field': {
-    title: () => 'Was the enemy in your Null Field?',
-    body: (oa) => {
-      const payload = oa.payload as { actorName?: string };
-      return `${payload.actorName ?? 'An enemy'} used a main action. If they were in the area of your Null Field, claim for +1 discipline.`;
-    },
-    claimLabel: () => 'Gain 1 discipline',
-  },
   'spatial-trigger-troubadour-line-of-effect': {
     title: () => 'Was that in your line of effect?',
     body: (oa) => {

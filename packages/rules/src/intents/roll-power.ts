@@ -280,7 +280,24 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
   // ctx carries the originating actor for attribution; no random rolls are
   // needed for these two event kinds.
   const triggerCtx = { actor: intent.actor, rolls: {} };
-  if (parsed.data.surgesSpent > 0 && finalDamage > 0) {
+  // Phase 2b 2b.16 B19 — Shadow Insight should only fire when damage was
+  // delivered, not just computed. Check each defender's typed weakness +
+  // immunity against the tier's damage type; the trigger fires when at least
+  // one target would actually take >0 damage post-reduction.
+  const sumTyped = (
+    list: readonly { type: string; value: number }[],
+    type: string,
+  ): number => {
+    let total = 0;
+    for (const r of list) if (r.type === type) total += r.value;
+    return total;
+  };
+  const anyDelivered = defenders.some((d) => {
+    const weakness = sumTyped(d.weaknesses, tierEffect.damageType);
+    const immunity = sumTyped(d.immunities, tierEffect.damageType);
+    return Math.max(0, finalDamage + weakness - immunity) > 0;
+  });
+  if (parsed.data.surgesSpent > 0 && anyDelivered) {
     const surgeDerived = evaluateActionTriggers(
       state,
       {

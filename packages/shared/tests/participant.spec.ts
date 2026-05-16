@@ -169,7 +169,7 @@ describe('Participant — slice 2a additions', () => {
     expect(populated.posthumousDramaEligible).toBe(true);
     expect(populated.psionFlags).toEqual({ clarityDamageOptOutThisTurn: true });
     expect(populated.maintainedAbilities).toEqual([
-      { abilityId: 'elementalist-storm-aegis', costPerTurn: 2, startedAtRound: 2 },
+      { abilityId: 'elementalist-storm-aegis', costPerTurn: 2, startedAtRound: 2, targetId: null },
     ]);
   });
 });

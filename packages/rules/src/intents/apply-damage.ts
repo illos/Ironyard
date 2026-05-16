@@ -1,5 +1,6 @@
 import { ApplyDamagePayloadSchema, IntentTypes, type Participant } from '@ironyard/shared';
 import { evaluateActionTriggers, evaluateStaminaTransitionTriggers } from '../class-triggers';
+import { resolveParticipantClass } from '../class-triggers/helpers';
 import { applyDamageStep } from '../damage';
 import { applyTransitionSideEffects, recomputeStaminaState } from '../stamina';
 import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
@@ -215,8 +216,17 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
         },
       });
     }
-    // damageTakenThisTurn on target (PC), scoped to active turn
+    // Phase 2b 2b.16 B13 — damageTakenThisTurn accumulates the total damage
+    // delivered (was: boolean "took damage"). Elementalist Persistent Magic
+    // (Elementalist.md:147) drops all maintenances when this hits 5×Reason in
+    // a single turn. New value is prior + this delivery; the per-turn entry
+    // resets at EndTurn alongside every other perTurn entry.
     if (target.kind === 'pc') {
+      const priorEntry = target.perEncounterFlags.perTurn.entries.find(
+        (e) => e.scopedToTurnOf === activeTurnId && e.key === 'damageTakenThisTurn',
+      );
+      const priorAmount = typeof priorEntry?.value === 'number' ? priorEntry.value : 0;
+      const nextAmount = priorAmount + result.delivered;
       derived.push({
         actor: intent.actor,
         source: 'server' as const,
@@ -226,9 +236,33 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
           participantId: targetId,
           scopedToTurnOf: activeTurnId,
           key: 'damageTakenThisTurn',
-          value: true,
+          value: nextAmount,
         },
       });
+
+      // Elementalist Persistent Magic auto-drop: if the post-delivery total
+      // crosses 5×Reason, every active maintained ability is stopped.
+      const reason = target.characteristics.reason;
+      const threshold = 5 * reason;
+      if (
+        resolveParticipantClass(state, target) === 'elementalist' &&
+        reason > 0 &&
+        priorAmount < threshold &&
+        nextAmount >= threshold
+      ) {
+        for (const maint of target.maintainedAbilities) {
+          derived.push({
+            actor: intent.actor,
+            source: 'server' as const,
+            type: IntentTypes.StopMaintenance,
+            causedBy: intent.id,
+            payload: {
+              participantId: targetId,
+              abilityId: maint.abilityId,
+            },
+          });
+        }
+      }
     }
   }
 

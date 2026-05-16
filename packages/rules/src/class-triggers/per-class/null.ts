@@ -1,4 +1,5 @@
 import type { Participant } from '@ironyard/shared';
+import { participantSide } from '../../state-helpers';
 import type { CampaignState, DerivedIntent } from '../../types';
 import { isParticipant } from '../../types';
 import type { ActionEvent, ActionTriggerContext } from '../action-triggers';
@@ -8,8 +9,8 @@ import { resolveParticipantClass } from '../helpers';
 // Pass 3 Slice 2b — hasActiveNullFieldOver closure: reads targetingRelations.nullField
 //   instead of the permissive stub; main-action-used branch now auto-applies
 //   GainResource + latch directly (matching Censor / Tactician pattern), dropping
-//   the OA detour. The `spatial-trigger-null-field` OA kind in the registry is
-//   kept as harmless dead code for back-compat; it is not removed by this slice.
+//   the OA detour. Phase 2b 2b.16 B20 removed the `spatial-trigger-null-field`
+//   OA kind from the registry (never raised; claim was dead code).
 //
 // Discipline (canon § 5.4.5) covers two distinct triggers off two different
 // event shapes; both are dispatched from a single evaluator that fans out by
@@ -71,14 +72,14 @@ export function evaluate(
   }
 
   if (event.kind === 'main-action-used') {
-    // Find the actor; only enemies (foes) trigger this. Without a side stamp
-    // on the participant we treat `kind: 'monster'` as the enemy side relative
-    // to a PC Null. This matches the slice-2a convention (heroes = PCs, foes
-    // = monsters).
+    // Find the actor; only enemies (opposite-side participants) trigger this.
+    // Phase 2b 2b.16 B17 — use participantSide so neutral / summoned creatures
+    // and PC-allied minions can be classified correctly later. A Null is
+    // always on the 'heroes' side (PC), so the actor must be on 'foes'.
     const actor = state.participants.filter(isParticipant).find((p) => p.id === event.actorId);
     if (!actor) return derived;
-    if (actor.kind !== 'monster') return derived;
     for (const nullPc of nulls) {
+      if (participantSide(actor) === participantSide(nullPc)) continue;
       if (nullPc.perEncounterFlags.perRound.nullFieldEnemyMainTriggered) continue;
       if (!hasActiveNullFieldOver(state, nullPc, actor.id)) continue;
       derived.push(

@@ -96,7 +96,10 @@ describe('applyMarkActionUsed', () => {
 describe('applyMarkActionUsed — class-δ main-action-used trigger wiring (Task 24)', () => {
   // Slice 2b: the OA detour is gone. The trigger now auto-applies GainResource
   // directly when the enemy is in nullPc.targetingRelations.nullField[].
-  it('director marks main on an enemy in nullField → Null hero gains +1 discipline (no OA)', () => {
+  it('engine-derived MarkActionUsed on enemy in nullField → Null hero gains +1 discipline (no OA)', () => {
+    // Phase 2b 2b.16 B18 — only engine-source MarkActionUsed (`'auto'` from
+    // RollPower or `'server'` from the DO) fires the main-action-used trigger.
+    // Manual director toggles must NOT mint Discipline.
     const nullPc = makeHeroParticipant('null-1', {
       className: 'Null',
       targetingRelations: { judged: [], marked: [], nullField: ['mon-1'] },
@@ -110,6 +113,7 @@ describe('applyMarkActionUsed — class-δ main-action-used trigger wiring (Task
     const intent = stamped({
       type: IntentTypes.MarkActionUsed,
       actor: ownerActor,
+      source: 'auto',
       payload: { participantId: 'mon-1', slot: 'main', used: true },
     });
     const result = applyIntent(state, intent);
@@ -125,6 +129,28 @@ describe('applyMarkActionUsed — class-δ main-action-used trigger wiring (Task
       amount: 1,
     });
     expect(gain!.causedBy).toBe(intent.id);
+  });
+
+  it('B18 — manual MarkActionUsed (director toggle) does NOT mint Discipline', () => {
+    const nullPc = makeHeroParticipant('null-1', {
+      className: 'Null',
+      targetingRelations: { judged: [], marked: [], nullField: ['mon-1'] },
+    });
+    const enemy = makeMonsterParticipant('mon-1', { name: 'Goblin' });
+    const state = baseState({
+      participants: [nullPc, enemy],
+      encounter: makeRunningEncounterPhase('enc-1'),
+      activeDirectorId: ownerActor.userId,
+    });
+    // Default source is 'manual' from the stamped helper.
+    const intent = stamped({
+      type: IntentTypes.MarkActionUsed,
+      actor: ownerActor,
+      payload: { participantId: 'mon-1', slot: 'main', used: true },
+    });
+    const result = applyIntent(state, intent);
+    expect(result.errors).toBeUndefined();
+    expect(result.derived.find((d) => d.type === 'GainResource')).toBeUndefined();
   });
 
   it('director marks main on enemy NOT in nullField → no discipline gain (regression)', () => {

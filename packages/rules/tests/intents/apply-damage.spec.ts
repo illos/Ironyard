@@ -668,12 +668,106 @@ describe('applyApplyDamage — slice 2a flag writes', () => {
     });
     const taken = entries.find((d) => (d.payload as { key: string }).key === 'damageTakenThisTurn');
     expect(taken).toBeDefined();
+    // Phase 2b 2b.16 B13 — damageTakenThisTurn accumulates delivered damage.
     expect(taken!.payload).toEqual({
       participantId: TARGET_ID,
       scopedToTurnOf: 'pc:dealer-1',
       key: 'damageTakenThisTurn',
-      value: true,
+      value: 10,
     });
+  });
+
+  // Phase 2b 2b.16 B13 — Elementalist Persistent Magic (Elementalist.md:147):
+  // "If you take damage equal to or greater than 5 times your Reason score in
+  // one turn, you stop maintaining any persistent abilities."
+  it('emits StopMaintenance for every maintained ability when 5×Reason damage crossed', () => {
+    const ele = makeHeroParticipant(TARGET_ID, {
+      maxStamina: 50,
+      currentStamina: 50,
+      className: 'Elementalist',
+      characteristics: { might: 0, agility: 0, reason: 3, intuition: 0, presence: 0 },
+      maintainedAbilities: [
+        { abilityId: 'instantaneous-excavation', costPerTurn: 1, startedAtRound: 1, targetId: null },
+        { abilityId: 'wall-of-fire', costPerTurn: 2, startedAtRound: 1, targetId: null },
+      ],
+    });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [ele],
+      encounter: makeRunningEncounterPhase('enc-1', { activeParticipantId: TARGET_ID }),
+    });
+    // 5 * reason(3) = 15. Apply 15 damage in one shot crosses the threshold.
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 15 }));
+    const stops = result.derived.filter((d) => d.type === 'StopMaintenance');
+    expect(stops).toHaveLength(2);
+    const abilityIds = stops.map((d) => (d.payload as { abilityId: string }).abilityId).sort();
+    expect(abilityIds).toEqual(['instantaneous-excavation', 'wall-of-fire']);
+  });
+
+  it('does NOT emit StopMaintenance when 5×Reason not crossed', () => {
+    const ele = makeHeroParticipant(TARGET_ID, {
+      maxStamina: 50,
+      currentStamina: 50,
+      className: 'Elementalist',
+      characteristics: { might: 0, agility: 0, reason: 3, intuition: 0, presence: 0 },
+      maintainedAbilities: [
+        { abilityId: 'instantaneous-excavation', costPerTurn: 1, startedAtRound: 1, targetId: null },
+      ],
+    });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [ele],
+      encounter: makeRunningEncounterPhase('enc-1', { activeParticipantId: TARGET_ID }),
+    });
+    // 5 * reason(3) = 15. 14 damage stays below.
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 14 }));
+    expect(result.derived.filter((d) => d.type === 'StopMaintenance')).toHaveLength(0);
+  });
+
+  it('does NOT fire a second StopMaintenance when prior accumulator is already past 5×Reason', () => {
+    // After the first hit crossed the threshold, the perTurn entry is at 10+.
+    // A subsequent ApplyDamage in the same turn must NOT re-emit StopMaintenance.
+    const ele = makeHeroParticipant(TARGET_ID, {
+      maxStamina: 50,
+      currentStamina: 40,
+      className: 'Elementalist',
+      characteristics: { might: 0, agility: 0, reason: 2, intuition: 0, presence: 0 },
+      maintainedAbilities: [
+        { abilityId: 'wall-of-fire', costPerTurn: 1, startedAtRound: 1, targetId: null },
+      ],
+      // Prior cumulative already at threshold (10).
+      perEncounterFlags: {
+        perTurn: {
+          entries: [{ scopedToTurnOf: TARGET_ID, key: 'damageTakenThisTurn', value: 10 }],
+        },
+        perRound: {
+          tookDamage: true,
+          judgedTargetDamagedMe: false,
+          damagedJudgedTarget: false,
+          markedTargetDamagedByAnyone: false,
+          dealtSurgeDamage: false,
+          directorSpentMalice: false,
+          creatureForceMoved: false,
+          allyHeroicWithin10Triggered: false,
+          nullFieldEnemyMainTriggered: false,
+          elementalistDamageWithin10Triggered: false,
+        },
+        perEncounter: {
+          firstTimeWindedTriggered: false,
+          firstTimeDyingTriggered: false,
+          troubadourThreeHeroesTriggered: false,
+          troubadourAnyHeroWindedTriggered: false,
+          troubadourReviveOARaised: false,
+        },
+      },
+    });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [ele],
+      encounter: makeRunningEncounterPhase('enc-1', { activeParticipantId: TARGET_ID }),
+    });
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 5 }));
+    expect(result.derived.filter((d) => d.type === 'StopMaintenance')).toHaveLength(0);
   });
 
   it('writes tookDamage perRound flag on target (PC) when not already set', () => {

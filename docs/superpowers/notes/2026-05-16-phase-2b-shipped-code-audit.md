@@ -87,23 +87,25 @@ Plus minor: KO-resurrects-corpses edge case (KO on `dead` state target flips to 
 
 **Fix shipped via Phase 2b sub-epic 2b.14** (canon-audit cleanup; TDD): (a) new `StaminaTransitioned → dying` triggers for Tactician + Null in `stamina-transition.ts` emit per-target `SetTargetingRelation { present: false }` for the source's `marked` / `nullField` arrays (Censor `judged` deliberately excluded — canon Judgment has no dying end-clause); (b) cross-PC sweep added to `use-ability.ts` ABILITY_TARGETING_EFFECTS cascade — for `mode: 'replace'`, every other participant's same-kind array gets the new target stripped. Required a small permission bypass: `SetTargetingRelation` reducer now also accepts `intent.source === 'server'` (clients can't forge this; server-source intents come from validated cascades whose actor may not be the source owner). 9 new tests across stamina-transition (5), use-ability (3), set-targeting-relation (1). Repo-wide test count: 1736 (+8).
 
-### Cluster 6 — Other class-trigger bugs (13 mixed items)
+### Cluster 6 — Other class-trigger bugs (13 mixed items) ✅ FIXED 2026-05-16
 
-| # | Severity | Where | Bug | Source |
-|---|---|---|---|---|
-| B13 | P1 | Elementalist Persistent Magic; no code path | "5×Reason damage in one turn → drop all maintenances" never fires | Elementalist.md:147; G-cluster |
-| B14 | P1 | `maintained-ability.ts` schema + `start-maintenance.ts:63` | Maintenance schema can't represent same ability on multiple targets (canon-allowed but reducer rejects duplicate `abilityId`) | Elementalist.md:145; G-cluster |
-| B15 | P1 | `claim-open-action.ts:93-108` (Elementalist spatial OA) + cross-cutting pattern | Spatial-OA over-fire: multiple qualifying damage events queue multiple OAs before any claim; latch checked at raise time only, not at claim time | G-cluster; cross-cutting (Tactician ally-heroic + Troubadour LoE may have same shape — verify) |
-| B17 | P2 | `null.ts:80` | Null side-check uses `actor.kind !== 'monster'` instead of "side ≠ Null's side"; brittle once neutral/summoned creatures land | H-cluster |
-| B18 | P1 | `mark-action-used.ts:75-83` | `main-action-used` event fires on any `MarkActionUsed { slot: 'main', used: true }` — including director-toggled slot flips with no ability use. Mints Discipline on toggles | H-cluster |
-| B19 | P1 | `roll-power.ts:282` | Shadow Insight fires on tier-damage-computed not damage-delivered; full-resist still grants gain | H-cluster |
-| B20 | P3 | `claim-open-action.ts:129-145` | Dead-code OA branch `spatial-trigger-null-field` (replaced by direct auto-apply); raise-side never used but claim handler still grants discipline + flips latch | H-cluster |
-| B21 | P2 | `stamina-transition.ts:138-209` | Troubadour winded/dies triggers lack `bodyIntact` / eligibility filter (state-transition path differs from action-trigger path which has `canGainDrama`) | I-cluster; latent until ablation events ship |
-| B23 | P2 | `stamina-transition.ts:140` | Troubadour any-hero-winded trigger has `cause === 'damage'` filter; canon "any hero is *made* winded" reads cause-agnostic | I-cluster; verify against canon nuance |
-| B25 | P1 | Tactician marked-damage trigger | Fires on ANY dealer; canon "you or any ally" excludes enemy-dealt damage | I-cluster |
-| B26 | P1 | `talentClarityDamageOptOutThisTurn` + `talentStrainedOptInRider` toggles | Accepted from any PC without Psion-feature check; trust-model violation | I-cluster |
-| B29 | P3 | `useSessionSocket.ts:705-728` | WS-mirror missing optimistic `SetTargetingRelation` cascade reflect from `UseAbility` | J-cluster; functional convergence works via broadcast, brief desync |
-| B32 | P2 | `gain-resource.ts:119` + nowhere writes-false | `bodyIntact` never flipped to false (no ablation hooks); `canGainDrama` check effectively constant-true | K-cluster; deferred per slice 1 spec line 88 |
+| # | Severity | Where | Bug | Source | Status |
+|---|---|---|---|---|---|
+| B13 | P1 | Elementalist Persistent Magic; no code path | "5×Reason damage in one turn → drop all maintenances" never fires | Elementalist.md:147; G-cluster | ✅ fixed |
+| B14 | P1 | `maintained-ability.ts` schema + `start-maintenance.ts:63` | Maintenance schema can't represent same ability on multiple targets (canon-allowed but reducer rejects duplicate `abilityId`) | Elementalist.md:145; G-cluster | ✅ fixed |
+| B15 | P1 | `claim-open-action.ts:93-108` (Elementalist spatial OA) + cross-cutting pattern | Spatial-OA over-fire: multiple qualifying damage events queue multiple OAs before any claim; latch checked at raise time only, not at claim time | G-cluster | ✅ fixed for Elementalist + Tactician; Troubadour LoE has no latch (canon: every nat 19/20 fires fresh, by design) |
+| B17 | P2 | `null.ts:80` | Null side-check uses `actor.kind !== 'monster'` instead of "side ≠ Null's side"; brittle once neutral/summoned creatures land | H-cluster | ✅ fixed via `participantSide` |
+| B18 | P1 | `mark-action-used.ts:75-83` | `main-action-used` event fires on any `MarkActionUsed { slot: 'main', used: true }` — including director-toggled slot flips with no ability use. Mints Discipline on toggles | H-cluster | ✅ fixed (gated on `intent.source !== 'manual'`) |
+| B19 | P1 | `roll-power.ts:282` | Shadow Insight fires on tier-damage-computed not damage-delivered; full-resist still grants gain | H-cluster | ✅ fixed (checks delivered damage post-weakness/immunity) |
+| B20 | P3 | `claim-open-action.ts:129-145` | Dead-code OA branch `spatial-trigger-null-field` (replaced by direct auto-apply); raise-side never used but claim handler still grants discipline + flips latch | H-cluster | ✅ fixed (kind removed from registry + claim case dropped + tests updated) |
+| B21 | P2 | `stamina-transition.ts:138-209` | Troubadour winded/dies triggers lack `bodyIntact` / eligibility filter (state-transition path differs from action-trigger path which has `canGainDrama`) | I-cluster | ✅ fixed (canGainDrama imported and gated) |
+| B23 | P2 | `stamina-transition.ts:140` | Troubadour any-hero-winded trigger has `cause === 'damage'` filter; canon "any hero is *made* winded" reads cause-agnostic | I-cluster | ✅ fixed (widened to `damage` + `override-applied`) |
+| B25 | P1 | Tactician marked-damage trigger | Fires on ANY dealer; canon "you or any ally" excludes enemy-dealt damage | I-cluster | ✅ fixed (dealer must be `kind === 'pc'`) |
+| B26 | P1 | `talentClarityDamageOptOutThisTurn` + `talentStrainedOptInRider` toggles | Accepted from any PC without Psion-feature check; trust-model violation | I-cluster | ✅ fixed (gate: `className === 'Talent' && level >= 10`) |
+| B29 | P3 | `useSessionSocket.ts:705-728` | WS-mirror missing optimistic `SetTargetingRelation` cascade reflect from `UseAbility` | J-cluster | ✅ fixed (mirror cascades own targetingRelations + cross-PC sweep) |
+| B32 | P2 | `gain-resource.ts:119` + nowhere writes-false | `bodyIntact` never flipped to false (no ablation hooks); `canGainDrama` check effectively constant-true | K-cluster | 🟡 deferred — no flip site exists yet (per slice-1 spec line 88) |
+
+**Fix shipped via Phase 2b sub-epic 2b.16** (canon-audit cleanup; TDD): 10+ new tests; repo-wide test count 1765 → 1774. Cross-cutting B15 spatial-OA latch-at-claim-time check fixed for Elementalist + Tactician (Troubadour LoE has no latch by canon design). B20 removed the dead `spatial-trigger-null-field` kind from the registry entirely (Null Discipline auto-applies via MarkActionUsed in slice 2b). B13 introduced numeric `damageTakenThisTurn` accumulator + StopMaintenance derived intents in apply-damage.ts when 5×Reason crosses (canon Elementalist.md:147). B14 extended `MaintainedAbilitySchema` with optional `targetId` for parallel maintenances of the same ability on different targets. B29 hoisted `ABILITY_TARGETING_EFFECTS` to `@ironyard/rules` index so the WS mirror can cascade the targeting changes without server roundtrip. B32 documented as deferred (depends on ablation events not yet shipped).
 
 ## Patterns and recommended fix shape
 

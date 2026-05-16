@@ -53,3 +53,6 @@ export type { HeroicResourceConfig, TurnStartGain } from './heroic-resources';
 // (e.g. the API Worker, which only depends on `@ironyard/rules` + `@ironyard/shared`)
 // still need at intent-stamping time.
 export { CONSUMABLE_HEAL_AMOUNTS } from '@ironyard/data';
+
+export { ABILITY_TARGETING_EFFECTS } from './class-triggers/ability-targeting-effects';
+export type { AbilityTargetingEffect } from './class-triggers/ability-targeting-effects';

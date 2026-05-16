@@ -193,6 +193,56 @@ describe('applyRollPower — Pass 3 Slice 2a action-trigger evaluation', () => {
     expect(insightGain).toBeUndefined();
   });
 
+  // Phase 2b 2b.16 B19 — Shadow Insight must check delivered damage, not
+  // tier-computed damage. A fully fire-immune target absorbs the whole tier.
+  it('Shadow + surge-spent + fully fire-immune target → NO insight emission', () => {
+    const hero = makeHeroParticipant(PC_ID, {
+      ownerId: OWNER_ID,
+      className: 'Shadow',
+      heroicResources: [{ name: 'insight', value: 0, floor: 0 }],
+    });
+    // d10 [5,4] → nat 9, +2 might → total 11 → tier 1 → 2 fire damage.
+    // Immunity 2 reduces delivered to 0.
+    const goblin = makeMonsterParticipant(MONSTER_ID, {
+      immunities: [{ type: 'fire', value: 2 }],
+    });
+    const s = baseState({
+      participants: [hero, goblin],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+
+    const r = applyIntent(s, rollPowerIntent({ d10: [5, 4], surgesSpent: 1 }));
+
+    expect(r.errors).toBeUndefined();
+    const insightGain = r.derived.find(
+      (d) => d.type === 'GainResource' && (d.payload as { name: string }).name === 'insight',
+    );
+    expect(insightGain).toBeUndefined();
+  });
+
+  it('Shadow + surge-spent + partially fire-immune target → insight DOES emit', () => {
+    const hero = makeHeroParticipant(PC_ID, {
+      ownerId: OWNER_ID,
+      className: 'Shadow',
+      heroicResources: [{ name: 'insight', value: 0, floor: 0 }],
+    });
+    // d10 [5,4] → tier 1 → 2 fire damage; immunity 1 → delivered 1.
+    const goblin = makeMonsterParticipant(MONSTER_ID, {
+      immunities: [{ type: 'fire', value: 1 }],
+    });
+    const s = baseState({
+      participants: [hero, goblin],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+
+    const r = applyIntent(s, rollPowerIntent({ d10: [5, 4], surgesSpent: 1 }));
+
+    const insightGain = r.derived.find(
+      (d) => d.type === 'GainResource' && (d.payload as { name: string }).name === 'insight',
+    );
+    expect(insightGain).toBeDefined();
+  });
+
   it('Non-Shadow + surge-spent → no insight emission', () => {
     // Fury actor still spends a surge, but the Shadow trigger gates on class.
     const hero = makeHeroParticipant(PC_ID, {

@@ -66,7 +66,7 @@ describe('applyStartMaintenance', () => {
   it('rejects when ability is already being maintained (idempotent guard)', () => {
     const ele = makeHeroParticipant(PC_ID, {
       className: 'Elementalist',
-      maintainedAbilities: [{ abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1 }],
+      maintainedAbilities: [{ abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1, targetId: null }],
     });
     const state = stateWith([ele], 2);
     const result = applyStartMaintenance(
@@ -81,5 +81,59 @@ describe('applyStartMaintenance', () => {
     expect(result.state.seq).toBe(state.seq);
     const unchanged = result.state.participants.find((p) => p.id === PC_ID)!;
     expect(unchanged.maintainedAbilities).toHaveLength(1);
+  });
+
+  // Phase 2b 2b.16 B14 — Elementalist.md:145 allows the same ability on
+  // multiple targets simultaneously. Dedup is (abilityId, targetId) — different
+  // targetIds are independent entries.
+  it('allows the same abilityId on different targetIds', () => {
+    const ele = makeHeroParticipant(PC_ID, {
+      className: 'Elementalist',
+      maintainedAbilities: [
+        { abilityId: 'mind-sting', costPerTurn: 1, startedAtRound: 1, targetId: 'mon-1' },
+      ],
+    });
+    const state = stateWith([ele], 2);
+    const result = applyStartMaintenance(
+      state,
+      stamped({
+        type: 'StartMaintenance',
+        actor: ownerActor,
+        payload: {
+          participantId: PC_ID,
+          abilityId: 'mind-sting',
+          targetId: 'mon-2',
+          costPerTurn: 1,
+        },
+      }),
+    );
+    expect(result.errors).toBeUndefined();
+    const updated = result.state.participants.find((p) => p.id === PC_ID)!;
+    expect(updated.maintainedAbilities).toHaveLength(2);
+    expect(updated.maintainedAbilities.map((m) => m.targetId).sort()).toEqual(['mon-1', 'mon-2']);
+  });
+
+  it('rejects re-maintaining the same (abilityId, targetId) pair', () => {
+    const ele = makeHeroParticipant(PC_ID, {
+      className: 'Elementalist',
+      maintainedAbilities: [
+        { abilityId: 'mind-sting', costPerTurn: 1, startedAtRound: 1, targetId: 'mon-1' },
+      ],
+    });
+    const state = stateWith([ele], 2);
+    const result = applyStartMaintenance(
+      state,
+      stamped({
+        type: 'StartMaintenance',
+        actor: ownerActor,
+        payload: {
+          participantId: PC_ID,
+          abilityId: 'mind-sting',
+          targetId: 'mon-1',
+          costPerTurn: 1,
+        },
+      }),
+    );
+    expect(result.errors?.[0]?.code).toBe('already_maintained');
   });
 });

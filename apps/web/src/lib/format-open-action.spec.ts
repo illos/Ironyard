@@ -38,10 +38,10 @@ describe('formatOpenAction', () => {
 });
 
 describe('formatOpenAction — slice 2a kinds', () => {
+  // Phase 2b 2b.16 B20 — `spatial-trigger-null-field` removed.
   it.each([
     'spatial-trigger-elementalist-essence',
     'spatial-trigger-tactician-ally-heroic',
-    'spatial-trigger-null-field',
     'spatial-trigger-troubadour-line-of-effect',
     'pray-to-the-gods',
     'troubadour-auto-revive',

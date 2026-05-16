@@ -27,8 +27,8 @@ describe('applyStopMaintenance', () => {
     const ele = makeHeroParticipant(PC_ID, {
       className: 'Elementalist',
       maintainedAbilities: [
-        { abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1 },
-        { abilityId: 'flame-shroud', costPerTurn: 1, startedAtRound: 1 },
+        { abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1, targetId: null },
+        { abilityId: 'flame-shroud', costPerTurn: 1, startedAtRound: 1, targetId: null },
       ],
     });
     const state = stateWith([ele], 2);
@@ -53,7 +53,7 @@ describe('applyStopMaintenance', () => {
   it('is a silent no-op when the ability is not being maintained', () => {
     const ele = makeHeroParticipant(PC_ID, {
       className: 'Elementalist',
-      maintainedAbilities: [{ abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1 }],
+      maintainedAbilities: [{ abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1, targetId: null }],
     });
     const state = stateWith([ele], 2);
     const startSeq = state.seq;

@@ -47,14 +47,15 @@ describe('class-triggers/per-class/tactician.evaluate', () => {
     expect(evaluateTactician(state, event, testCtx)).toEqual([]);
   });
 
-  it('emits +1 focus + latch when a marked target takes damage (first time per round)', () => {
+  it('emits +1 focus + latch when a marked target takes damage from an ally (first time per round)', () => {
     const tactician = makeHeroParticipant('tac-1', {
       className: 'Tactician',
       heroicResources: [{ name: 'focus', value: 0, floor: 0 }],
       targetingRelations: { judged: [], marked: ['mon-1'], nullField: [] },
     });
+    const fury = makeHeroParticipant('fury-1', { className: 'Fury' });
     const goblin = makeMonsterParticipant('mon-1');
-    const state = stateWith([tactician, goblin]);
+    const state = stateWith([tactician, fury, goblin]);
     const event: ActionEvent = {
       kind: 'damage-applied',
       dealerId: 'fury-1',
@@ -82,6 +83,26 @@ describe('class-triggers/per-class/tactician.evaluate', () => {
     });
   });
 
+  // Phase 2b 2b.16 B25 — canon "you or any ally" excludes enemy-dealt damage.
+  it('does NOT emit focus when the dealer is an enemy', () => {
+    const tactician = makeHeroParticipant('tac-1', {
+      className: 'Tactician',
+      heroicResources: [{ name: 'focus', value: 0, floor: 0 }],
+      targetingRelations: { judged: [], marked: ['mon-1'], nullField: [] },
+    });
+    const dealer = makeMonsterParticipant('mon-2', { name: 'Orc' });
+    const target = makeMonsterParticipant('mon-1');
+    const state = stateWith([tactician, dealer, target]);
+    const event: ActionEvent = {
+      kind: 'damage-applied',
+      dealerId: 'mon-2',
+      targetId: 'mon-1',
+      amount: 5,
+      type: 'fire',
+    };
+    expect(evaluateTactician(state, event, testCtx)).toEqual([]);
+  });
+
   it('does NOT emit focus when markedTargetDamagedByAnyone latch already flipped', () => {
     const tactician = makeHeroParticipant('tac-1', {
       className: 'Tactician',
@@ -89,8 +110,9 @@ describe('class-triggers/per-class/tactician.evaluate', () => {
       targetingRelations: { judged: [], marked: ['mon-1'], nullField: [] },
     });
     tactician.perEncounterFlags.perRound.markedTargetDamagedByAnyone = true;
+    const fury = makeHeroParticipant('fury-1', { className: 'Fury' });
     const goblin = makeMonsterParticipant('mon-1');
-    const state = stateWith([tactician, goblin]);
+    const state = stateWith([tactician, fury, goblin]);
     const event: ActionEvent = {
       kind: 'damage-applied',
       dealerId: 'fury-1',

@@ -41,6 +41,14 @@ export function evaluate(
   if (tacticians.length === 0) return derived;
 
   if (event.kind === 'damage-applied') {
+    // Phase 2b 2b.16 B25 — canon Tactician.md:229 reads "When you or any ally
+    // deals damage to a creature you have marked." Restrict the dealer to a
+    // hero-side participant; enemy-dealt damage does NOT mint focus.
+    const dealer =
+      event.dealerId !== null
+        ? state.participants.filter(isParticipant).find((p) => p.id === event.dealerId)
+        : null;
+    if (!dealer || dealer.kind !== 'pc') return derived;
     for (const tactician of tacticians) {
       if (tactician.perEncounterFlags.perRound.markedTargetDamagedByAnyone) continue;
       if (!isMarkedBy(state, tactician, event.targetId)) continue;

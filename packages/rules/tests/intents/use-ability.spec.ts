@@ -297,7 +297,8 @@ describe('applyUseAbility — slice 2a additions', () => {
   });
 
   it('sets psionFlags.clarityDamageOptOutThisTurn when talentClarityDamageOptOutThisTurn: true', () => {
-    const talent = makeHeroParticipant('pc:talent', { className: 'Talent' });
+    // B26 — requires a 10th-level Psion Talent (canon Talent.md:1453-1457).
+    const talent = makeHeroParticipant('pc:talent', { className: 'Talent', level: 10 });
     const state = baseState({
       participants: [talent],
       encounter: makeRunningEncounterPhase(ENCOUNTER_ID),
@@ -325,7 +326,7 @@ describe('applyUseAbility — slice 2a additions', () => {
   });
 
   it('logs an info entry when talentStrainedOptInRider: true (no-op since rider lives in RollPower)', () => {
-    const talent = makeHeroParticipant('pc:talent', { className: 'Talent' });
+    const talent = makeHeroParticipant('pc:talent', { className: 'Talent', level: 10 });
     const state = baseState({
       participants: [talent],
       encounter: makeRunningEncounterPhase(ENCOUNTER_ID),
@@ -350,6 +351,53 @@ describe('applyUseAbility — slice 2a additions', () => {
     expect(result.log.some((l) => l.kind === 'info' && l.text.includes('Strained: rider'))).toBe(
       true,
     );
+  });
+
+  // Phase 2b 2b.16 B26 — Psion toggles are trust-gated to 10th-level Talents.
+  it('rejects talentClarityDamageOptOutThisTurn when actor is not a Talent', () => {
+    const fury = makeHeroParticipant('pc:fury', { className: 'Fury', level: 10 });
+    const state = baseState({
+      participants: [fury],
+      encounter: makeRunningEncounterPhase(ENCOUNTER_ID),
+    });
+    const result = applyIntent(
+      state,
+      stamped({
+        type: IntentTypes.UseAbility,
+        actor: ownerActor,
+        payload: {
+          participantId: fury.id,
+          abilityId: 'cleave',
+          source: 'class',
+          duration: { kind: 'EoT' },
+          talentClarityDamageOptOutThisTurn: true,
+        },
+      }),
+    );
+    expect(result.errors?.[0]?.code).toBe('not_psion_talent');
+  });
+
+  it('rejects talentStrainedOptInRider when actor is below level 10', () => {
+    const talent = makeHeroParticipant('pc:talent', { className: 'Talent', level: 9 });
+    const state = baseState({
+      participants: [talent],
+      encounter: makeRunningEncounterPhase(ENCOUNTER_ID),
+    });
+    const result = applyIntent(
+      state,
+      stamped({
+        type: IntentTypes.UseAbility,
+        actor: ownerActor,
+        payload: {
+          participantId: talent.id,
+          abilityId: 'mind-spike',
+          source: 'class',
+          duration: { kind: 'EoT' },
+          talentStrainedOptInRider: true,
+        },
+      }),
+    );
+    expect(result.errors?.[0]?.code).toBe('not_psion_talent');
   });
 
   it('emits Tactician spatial OA when an ally PC uses a heroic ability', () => {

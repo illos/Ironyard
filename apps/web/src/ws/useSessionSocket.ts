@@ -1,4 +1,5 @@
 import {
+  ABILITY_TARGETING_EFFECTS,
   applyDamageStep,
   applyKnockOut,
   applyTransitionSideEffects,
@@ -531,22 +532,27 @@ export function reflect(
   // ---- Pass 3 Slice 2a — class-δ triggers, Maintenance, posthumous Drama ----
 
   if (type === IntentTypes.StartMaintenance) {
-    const { participantId, abilityId, costPerTurn } = payload as StartMaintenancePayload;
+    const { participantId, abilityId, targetId, costPerTurn } =
+      payload as StartMaintenancePayload;
     return {
       ...prev,
       participants: prev.participants.map((p) => {
         if (!isParticipantEntry(p) || p.id !== participantId) return p;
-        // Idempotent on abilityId — match the engine's already-maintained guard.
-        if (p.maintainedAbilities.some((m) => m.abilityId === abilityId)) return p;
-        // startedAtRound is informational on the mirror; the engine stamps the
-        // canonical value from `state.encounter.currentRound`. Use prev.currentRound
-        // (fallback to 1 between rounds, matching the engine's `?? 1`).
+        // Phase 2b 2b.16 B14 — dedup on (abilityId, targetId) so the same
+        // ability can be maintained on multiple targets simultaneously.
+        if (
+          p.maintainedAbilities.some(
+            (m) => m.abilityId === abilityId && (m.targetId ?? null) === (targetId ?? null),
+          )
+        ) {
+          return p;
+        }
         const startedAtRound = prev.currentRound ?? 1;
         return {
           ...p,
           maintainedAbilities: [
             ...p.maintainedAbilities,
-            { abilityId, costPerTurn, startedAtRound },
+            { abilityId, targetId: targetId ?? null, costPerTurn, startedAtRound },
           ],
         };
       }),
@@ -710,19 +716,71 @@ export function reflect(
     // `ActiveEncounter` does not currently carry encounter-level perEncounterFlags,
     // so that write lands on the server-authoritative snapshot rather than here.
     // The (much narrower) participant-side write is the visible UI signal.
-    const { participantId, talentClarityDamageOptOutThisTurn } = payload as UseAbilityPayload;
-    if (!talentClarityDamageOptOutThisTurn) {
-      void (payload as UseAbilityPayload);
+    //
+    // Phase 2b 2b.16 B29 — also mirror the SetTargetingRelation cascade for
+    // abilities registered in ABILITY_TARGETING_EFFECTS (Judgment, Mark).
+    // Without this, the targeting badge UI desyncs briefly between the
+    // optimistic UseAbility echo and the cascaded SetTargetingRelation
+    // broadcasts (functional convergence is fine; this avoids the flicker).
+    const useAbilityPayload = payload as UseAbilityPayload;
+    const { participantId, abilityId, targetIds, talentClarityDamageOptOutThisTurn } =
+      useAbilityPayload;
+    const targetingEffect = ABILITY_TARGETING_EFFECTS[abilityId];
+    const targetingApplies =
+      targetingEffect !== undefined && Array.isArray(targetIds) && targetIds.length > 0;
+
+    if (!talentClarityDamageOptOutThisTurn && !targetingApplies) {
       return prev;
     }
+
     return {
       ...prev,
       participants: prev.participants.map((p) => {
-        if (!isParticipantEntry(p) || p.id !== participantId || p.kind !== 'pc') return p;
-        return {
-          ...p,
-          psionFlags: { ...p.psionFlags, clarityDamageOptOutThisTurn: true },
-        };
+        if (!isParticipantEntry(p)) return p;
+
+        // Actor-side updates: psionFlags + own targetingRelations cascade.
+        if (p.id === participantId && p.kind === 'pc') {
+          let next = p;
+          if (talentClarityDamageOptOutThisTurn) {
+            next = {
+              ...next,
+              psionFlags: { ...next.psionFlags, clarityDamageOptOutThisTurn: true },
+            };
+          }
+          if (targetingApplies) {
+            const { relationKind, mode } = targetingEffect;
+            const existing = next.targetingRelations[relationKind] ?? [];
+            const cleared = mode === 'replace' ? [] : existing;
+            const merged = Array.from(new Set([...cleared, ...targetIds]));
+            next = {
+              ...next,
+              targetingRelations: {
+                ...next.targetingRelations,
+                [relationKind]: merged,
+              },
+            };
+          }
+          return next;
+        }
+
+        // Cross-PC sweep for mode: 'replace' — strip the new target from every
+        // other participant's same-kind array (matches the server reducer in
+        // packages/rules/src/intents/use-ability.ts).
+        if (targetingApplies && targetingEffect.mode === 'replace') {
+          const { relationKind } = targetingEffect;
+          const arr = p.targetingRelations[relationKind] ?? [];
+          const filtered = arr.filter((id) => !targetIds.includes(id));
+          if (filtered.length === arr.length) return p;
+          return {
+            ...p,
+            targetingRelations: {
+              ...p.targetingRelations,
+              [relationKind]: filtered,
+            },
+          };
+        }
+
+        return p;
       }),
     };
   }

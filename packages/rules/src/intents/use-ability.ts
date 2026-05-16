@@ -132,6 +132,39 @@ export function applyUseAbility(state: CampaignState, intent: StampedIntent): In
     });
   }
 
+  // Phase 2b 2b.16 B26 — Psion-only toggles. Per canon Talent.md:1453-1457 the
+  // `talentClarityDamageOptOutThisTurn` (skip negative-clarity damage) and
+  // `talentStrainedOptInRider` (volunteer for the Strained rider) require the
+  // 10th-level Psion Talent feature. Reject the toggles when the actor doesn't
+  // meet that gate — the rest of the UseAbility intent still applies.
+  const isPsionTalent =
+    target.kind === 'pc' &&
+    resolveParticipantClass(state, target) === 'talent' &&
+    target.level >= 10;
+  if (
+    (parsed.data.talentClarityDamageOptOutThisTurn || parsed.data.talentStrainedOptInRider) &&
+    !isPsionTalent
+  ) {
+    return {
+      state,
+      derived: [],
+      log: [
+        {
+          kind: 'error',
+          text: `UseAbility rejected: Psion-only toggle on non-Psion-Talent ${target.name}`,
+          intentId: intent.id,
+        },
+      ],
+      errors: [
+        {
+          code: 'not_psion_talent',
+          message:
+            'talentClarityDamageOptOutThisTurn / talentStrainedOptInRider require a 10th-level Psion Talent',
+        },
+      ],
+    };
+  }
+
   // ── Slice 2a addition #3: Psion clarity-damage opt-out ──────────────────
   if (parsed.data.talentClarityDamageOptOutThisTurn && target.kind === 'pc') {
     updatedTarget = {

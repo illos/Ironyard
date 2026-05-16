@@ -9,10 +9,11 @@ describe('OpenActionKindSchema', () => {
 });
 
 describe('OpenActionKindSchema — slice 2a additions', () => {
+  // Phase 2b 2b.16 B20 — `spatial-trigger-null-field` removed (Null's
+  // Discipline trigger 2 auto-applies via MarkActionUsed instead).
   const newKinds = [
     'spatial-trigger-elementalist-essence',
     'spatial-trigger-tactician-ally-heroic',
-    'spatial-trigger-null-field',
     'spatial-trigger-troubadour-line-of-effect',
     'pray-to-the-gods',
     'troubadour-auto-revive',

@@ -110,7 +110,7 @@ describe('reflect — Pass 3 Slice 2a intents', () => {
   it('StartMaintenance is idempotent on abilityId', () => {
     const prev = makeEncounter([
       makePc('p1', {
-        maintainedAbilities: [{ abilityId: 'fire-elemental', costPerTurn: 2, startedAtRound: 1 }],
+        maintainedAbilities: [{ abilityId: 'fire-elemental', costPerTurn: 2, startedAtRound: 1, targetId: null }],
       }),
     ]);
     const next = reflect(prev, IntentTypes.StartMaintenance, {
@@ -127,8 +127,8 @@ describe('reflect — Pass 3 Slice 2a intents', () => {
     const prev = makeEncounter([
       makePc('p1', {
         maintainedAbilities: [
-          { abilityId: 'fire-elemental', costPerTurn: 2, startedAtRound: 1 },
-          { abilityId: 'water-shield', costPerTurn: 1, startedAtRound: 2 },
+          { abilityId: 'fire-elemental', costPerTurn: 2, startedAtRound: 1, targetId: null },
+          { abilityId: 'water-shield', costPerTurn: 1, startedAtRound: 2, targetId: null },
         ],
       }),
     ]);
@@ -320,7 +320,7 @@ describe('reflect — EndRound resets perRound only (Task 25 / Task 3 PS)', () =
       makePc('p1', {
         posthumousDramaEligible: true,
         psionFlags: { clarityDamageOptOutThisTurn: true },
-        maintainedAbilities: [{ abilityId: 'fire-elemental', costPerTurn: 2, startedAtRound: 1 }],
+        maintainedAbilities: [{ abilityId: 'fire-elemental', costPerTurn: 2, startedAtRound: 1, targetId: null }],
       }),
     ]);
     const next = reflect(prev, IntentTypes.EndRound, {});

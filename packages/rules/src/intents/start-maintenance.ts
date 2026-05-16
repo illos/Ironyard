@@ -30,7 +30,7 @@ export function applyStartMaintenance(state: CampaignState, intent: StampedInten
       errors: [{ code: 'invalid_payload', message: parsed.error.message }],
     };
   }
-  const { participantId, abilityId, costPerTurn } = parsed.data;
+  const { participantId, abilityId, targetId, costPerTurn } = parsed.data;
   const target = state.participants.filter(isParticipant).find((p) => p.id === participantId);
   if (!target || target.kind !== 'pc') {
     return {
@@ -60,14 +60,18 @@ export function applyStartMaintenance(state: CampaignState, intent: StampedInten
       errors: [{ code: 'not_elementalist', message: 'Only Elementalists can start maintenance' }],
     };
   }
-  if (target.maintainedAbilities.some((m) => m.abilityId === abilityId)) {
+  // Phase 2b 2b.16 B14 — dedup on (abilityId, targetId). Same ability on
+  // multiple distinct targets is allowed (canon Elementalist.md:145).
+  if (
+    target.maintainedAbilities.some((m) => m.abilityId === abilityId && m.targetId === targetId)
+  ) {
     return {
       state,
       derived: [],
       log: [
         {
           kind: 'error',
-          text: `StartMaintenance: ${abilityId} already maintained by ${target.name}`,
+          text: `StartMaintenance: ${abilityId} already maintained by ${target.name}${targetId ? ` on ${targetId}` : ''}`,
           intentId: intent.id,
         },
       ],
@@ -79,7 +83,7 @@ export function applyStartMaintenance(state: CampaignState, intent: StampedInten
     ...target,
     maintainedAbilities: [
       ...target.maintainedAbilities,
-      { abilityId, costPerTurn, startedAtRound },
+      { abilityId, targetId, costPerTurn, startedAtRound },
     ],
   };
   return {

@@ -155,12 +155,8 @@ describe('applyClaimOpenAction', () => {
       amount: 1,
       flagKey: 'allyHeroicWithin10Triggered',
     },
-    {
-      kind: 'spatial-trigger-null-field',
-      resource: 'discipline',
-      amount: 1,
-      flagKey: 'nullFieldEnemyMainTriggered',
-    },
+    // Phase 2b 2b.16 B20 — `spatial-trigger-null-field` removed (Null's
+    // Discipline trigger 2 auto-applies via MarkActionUsed; OA path was dead).
     {
       kind: 'spatial-trigger-troubadour-line-of-effect',
       resource: 'drama',
@@ -205,6 +201,76 @@ describe('applyClaimOpenAction', () => {
       }
     },
   );
+
+  // --- Phase 2b 2b.16 B15 — claim-time latch check ---
+  // Multiple qualifying spatial-trigger events can queue multiple OAs before
+  // any claim lands; only the first claim grants the resource. Subsequent
+  // claims short-circuit with a log entry and no GainResource.
+  it('Elementalist Essence — second claim short-circuits when latch already flipped', () => {
+    const ele = makeHeroParticipant('pc-1', { ownerId: 'alice', className: 'Elementalist' });
+    ele.perEncounterFlags.perRound.elementalistDamageWithin10Triggered = true;
+    const pcOther = makeHeroParticipant('pc-other', { ownerId: 'other-user' });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [ele, pcOther],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    s.openActions = [
+      {
+        id: 'oa-1',
+        kind: 'spatial-trigger-elementalist-essence',
+        participantId: 'pc-1',
+        raisedAtRound: 1,
+        raisedByIntentId: 'i-prev',
+        expiresAtRound: null,
+        payload: {},
+      },
+    ];
+    const result = applyClaimOpenAction(
+      s,
+      stamped({
+        actor: { userId: 'alice', role: 'player' },
+        type: 'ClaimOpenAction',
+        payload: { openActionId: 'oa-1' },
+      }),
+    );
+    expect(result.errors ?? []).toEqual([]);
+    expect(result.derived.find((d) => d.type === 'GainResource')).toBeUndefined();
+    expect(result.state.openActions).toHaveLength(0);
+    expect(result.log.some((l) => l.kind === 'info' && l.text.includes('claim no-op'))).toBe(true);
+  });
+
+  it('Tactician ally-heroic — second claim short-circuits when latch already flipped', () => {
+    const tac = makeHeroParticipant('pc-1', { ownerId: 'alice', className: 'Tactician' });
+    tac.perEncounterFlags.perRound.allyHeroicWithin10Triggered = true;
+    const pcOther = makeHeroParticipant('pc-other', { ownerId: 'other-user' });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [tac, pcOther],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    s.openActions = [
+      {
+        id: 'oa-1',
+        kind: 'spatial-trigger-tactician-ally-heroic',
+        participantId: 'pc-1',
+        raisedAtRound: 1,
+        raisedByIntentId: 'i-prev',
+        expiresAtRound: null,
+        payload: {},
+      },
+    ];
+    const result = applyClaimOpenAction(
+      s,
+      stamped({
+        actor: { userId: 'alice', role: 'player' },
+        type: 'ClaimOpenAction',
+        payload: { openActionId: 'oa-1' },
+      }),
+    );
+    expect(result.derived.find((d) => d.type === 'GainResource')).toBeUndefined();
+    expect(result.state.openActions).toHaveLength(0);
+  });
 
   // --- Phase 2b 2b.13: Elementalist Font of Essence @L4 ---------------------
   // Canon Elementalist.md: "The first time each combat round that you or a

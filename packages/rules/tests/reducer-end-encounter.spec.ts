@@ -872,13 +872,13 @@ describe('applyIntent — EndEncounter', () => {
       const elementalist = pc({
         id: 'pc_elementalist',
         maintainedAbilities: [
-          { abilityId: 'flame-wall', costPerTurn: 1, startedAtRound: 1 },
-          { abilityId: 'storm-call', costPerTurn: 2, startedAtRound: 2 },
+          { abilityId: 'flame-wall', costPerTurn: 1, startedAtRound: 1, targetId: null },
+          { abilityId: 'storm-call', costPerTurn: 2, startedAtRound: 2, targetId: null },
         ],
       });
       const other = pc({
         id: 'pc_other',
-        maintainedAbilities: [{ abilityId: 'foo', costPerTurn: 1, startedAtRound: 3 }],
+        maintainedAbilities: [{ abilityId: 'foo', costPerTurn: 1, startedAtRound: 3, targetId: null }],
       });
 
       const s: CampaignState = {

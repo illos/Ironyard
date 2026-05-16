@@ -10,10 +10,12 @@ import { z } from 'zod';
 export const OpenActionKindSchema = z.enum([
   // Pass 3 Slice 1
   'title-doomed-opt-in',
-  // Slice 2a — class-δ spatial triggers
+  // Slice 2a — class-δ spatial triggers. Phase 2b 2b.16 B20 removed the
+  // `spatial-trigger-null-field` kind: Null's Discipline trigger 2
+  // auto-applies via MarkActionUsed (see class-triggers/per-class/null.ts)
+  // and the OA detour was never wired as a raise path.
   'spatial-trigger-elementalist-essence',
   'spatial-trigger-tactician-ally-heroic',
-  'spatial-trigger-null-field',
   'spatial-trigger-troubadour-line-of-effect',
   // Slice 2a — class-internal raisers
   'pray-to-the-gods',

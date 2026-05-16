@@ -109,6 +109,19 @@ export function applyClaimOpenAction(state: CampaignState, intent: StampedIntent
       // "The first time each combat round that you or a creature within 10
       // squares takes damage that isn't untyped or holy damage, you gain 2
       // essence instead of 1."
+      //
+      // Phase 2b 2b.16 B15 — check the per-round latch at CLAIM time too, not
+      // only at raise time. Multiple qualifying damage events can queue
+      // multiple OAs before any claim lands; only the first claim should
+      // grant. Subsequent claims short-circuit with a log line.
+      if (targetParticipant?.perEncounterFlags.perRound.elementalistDamageWithin10Triggered) {
+        log.push({
+          kind: 'info',
+          text: `${oa.kind} claim no-op: elementalistDamageWithin10Triggered already flipped this round`,
+          intentId: intent.id,
+        });
+        break;
+      }
       const essenceAmount = (targetParticipant?.level ?? 1) >= 4 ? 2 : 1;
       derived.push(
         decorate(IntentTypes.GainResource, {
@@ -128,6 +141,16 @@ export function applyClaimOpenAction(state: CampaignState, intent: StampedIntent
     }
 
     case 'spatial-trigger-tactician-ally-heroic': {
+      // Phase 2b 2b.16 B15 — claim-time latch check (same pattern as
+      // Elementalist Essence above).
+      if (targetParticipant?.perEncounterFlags.perRound.allyHeroicWithin10Triggered) {
+        log.push({
+          kind: 'info',
+          text: `${oa.kind} claim no-op: allyHeroicWithin10Triggered already flipped this round`,
+          intentId: intent.id,
+        });
+        break;
+      }
       derived.push(
         decorate(IntentTypes.GainResource, {
           participantId: oa.participantId,
@@ -139,24 +162,6 @@ export function applyClaimOpenAction(state: CampaignState, intent: StampedIntent
         decorate(IntentTypes.SetParticipantPerRoundFlag, {
           participantId: oa.participantId,
           key: 'allyHeroicWithin10Triggered',
-          value: true,
-        }),
-      );
-      break;
-    }
-
-    case 'spatial-trigger-null-field': {
-      derived.push(
-        decorate(IntentTypes.GainResource, {
-          participantId: oa.participantId,
-          name: 'discipline',
-          amount: 1,
-        }),
-      );
-      derived.push(
-        decorate(IntentTypes.SetParticipantPerRoundFlag, {
-          participantId: oa.participantId,
-          key: 'nullFieldEnemyMainTriggered',
           value: true,
         }),
       );

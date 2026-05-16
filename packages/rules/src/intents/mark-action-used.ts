@@ -71,8 +71,14 @@ export function applyMarkActionUsed(state: CampaignState, intent: StampedIntent)
   // action while in this Null's active Null Field, auto-apply GainResource
   // + SetParticipantPerRoundFlag since we now track nullField in targetingRelations.
   // Only fires for the 'main' slot on `used: true`.
+  //
+  // Phase 2b 2b.16 B18 — gate on engine-derived sources (`'auto'` from
+  // RollPower / triggered ability dispatches, or `'server'` from the DO).
+  // Manual director / player toggles of the action slot (e.g. fixing a
+  // misclick) must NOT mint Discipline since they don't represent a real
+  // action use.
   const derived: DerivedIntent[] = [];
-  if (slot === 'main' && used) {
+  if (slot === 'main' && used && intent.source !== 'manual') {
     const triggerDerived = evaluateActionTriggers(
       nextState,
       { kind: 'main-action-used', actorId: participantId },

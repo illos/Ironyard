@@ -1,8 +1,18 @@
 import { IntentTypes } from '@ironyard/shared';
-import type { Actor, StaminaTransitionedPayload } from '@ironyard/shared';
+import type { Actor, Participant, StaminaTransitionedPayload } from '@ironyard/shared';
 import type { CampaignState, DerivedIntent } from '../types';
 import { isParticipant } from '../types';
 import { resolveParticipantClass } from './helpers';
+
+// Phase 2b 2b.16 B21 — Troubadour drama-eligibility predicate. Mirrors the
+// per-class action-trigger gate in per-class/troubadour.ts. Alive Troubadours
+// always gain; a dead Troubadour can still bank drama only if their body is
+// intact AND posthumousDramaEligible is true. State-transition triggers were
+// previously missing this filter — latent until ablation events ship.
+function canGainDrama(trou: Participant): boolean {
+  if (trou.staminaState !== 'dead') return true;
+  return trou.bodyIntact === true && trou.posthumousDramaEligible === true;
+}
 
 // Pass 3 Slice 2a — Class-trigger subscribers to slice-1's StaminaTransitioned
 // derived event. Each entry says: "I match if event is X and my class is in
@@ -131,26 +141,27 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
     // Troubadour Drama — first time per encounter any hero becomes winded (+2 drama,
     // per Troubadour, per encounter).
     //
-    // Cause filter: only damage-caused transitions qualify. Healing a downed
-    // hero up to winded, or applying an override that yields a winded state,
-    // is not the "becomes winded" threat-pressure event the canon entry
-    // describes. Defensive default — if a future canon clarification asks for
-    // upward-from-dying to count, widen this filter then.
+    // Cause filter (Phase 2b 2b.16 B23): canon "any hero is *made* winded" is
+    // cause-agnostic for threat-pressure events. Damage is the dominant path;
+    // override-applied (e.g. a CoP-style override forcing a state flip) also
+    // counts. Heal-into-winded never qualifies — that's recovery, not threat.
     match: (event, state) => {
       if (event.to !== 'winded') return false;
-      if (event.cause !== 'damage') return false;
+      if (event.cause !== 'damage' && event.cause !== 'override-applied') return false;
       const winded = state.participants
         .filter(isParticipant)
         .find((x) => x.id === event.participantId);
       if (!winded || winded.kind !== 'pc') return false;
-      // Fire for every Troubadour whose latch is unflipped — return true if any exists.
+      // Fire for every Troubadour whose latch is unflipped AND eligible to gain
+      // drama (B21 — bodyIntact / posthumousDramaEligible gate).
       return state.participants
         .filter(isParticipant)
         .some(
           (p) =>
             p.kind === 'pc' &&
             resolveParticipantClass(state, p) === 'troubadour' &&
-            !p.perEncounterFlags.perEncounter.troubadourAnyHeroWindedTriggered,
+            !p.perEncounterFlags.perEncounter.troubadourAnyHeroWindedTriggered &&
+            canGainDrama(p),
         );
     },
     fire: (_event, state, ctx) => {
@@ -159,6 +170,7 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
         if (trou.kind !== 'pc') continue;
         if (resolveParticipantClass(state, trou) !== 'troubadour') continue;
         if (trou.perEncounterFlags.perEncounter.troubadourAnyHeroWindedTriggered) continue;
+        if (!canGainDrama(trou)) continue;
         derived.push(
           {
             actor: ctx.actor,
@@ -183,6 +195,7 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
   },
   {
     // Troubadour Drama — hero dies (+10 drama, no latch — every time).
+    // B21 — canGainDrama gate (bodyIntact / posthumousDramaEligible).
     match: (event, state) => {
       if (event.to !== 'dead') return false;
       const dyer = state.participants
@@ -191,13 +204,19 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
       if (!dyer || dyer.kind !== 'pc') return false;
       return state.participants
         .filter(isParticipant)
-        .some((p) => p.kind === 'pc' && resolveParticipantClass(state, p) === 'troubadour');
+        .some(
+          (p) =>
+            p.kind === 'pc' &&
+            resolveParticipantClass(state, p) === 'troubadour' &&
+            canGainDrama(p),
+        );
     },
     fire: (_event, state, ctx) => {
       const derived: DerivedIntent[] = [];
       for (const trou of state.participants.filter(isParticipant)) {
         if (trou.kind !== 'pc') continue;
         if (resolveParticipantClass(state, trou) !== 'troubadour') continue;
+        if (!canGainDrama(trou)) continue;
         derived.push({
           actor: ctx.actor,
           source: 'server',

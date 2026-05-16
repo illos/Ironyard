@@ -351,7 +351,7 @@ describe('slice-2a integration D — Elementalist Maintenance state machine', ()
 
     let ele = getPc(state, ELE_ID);
     expect(ele.maintainedAbilities).toEqual([
-      { abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1 },
+      { abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1, targetId: null },
     ]);
 
     // StartTurn: Elementalist gains +2 essence (flat) → 7, then maintenance
@@ -482,7 +482,7 @@ describe('slice-2a integration F — EndEncounter resets slice-2a state', () => 
 
     const ele = makeHeroParticipant(ELE_ID, {
       className: 'Elementalist',
-      maintainedAbilities: [{ abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1 }],
+      maintainedAbilities: [{ abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1, targetId: null }],
     });
 
     const deadTrou = makeHeroParticipant(DEAD_TROU_ID, {
@@ -548,8 +548,8 @@ describe('slice-2a integration G — Maintenance auto-drop chain on StartTurn', 
       className: 'Elementalist',
       heroicResources: [{ name: 'essence', value: 1, floor: 0 }],
       maintainedAbilities: [
-        { abilityId: 'storm-aegis', costPerTurn: 3, startedAtRound: 1 },
-        { abilityId: 'wreath-of-flame', costPerTurn: 2, startedAtRound: 1 },
+        { abilityId: 'storm-aegis', costPerTurn: 3, startedAtRound: 1, targetId: null },
+        { abilityId: 'wreath-of-flame', costPerTurn: 2, startedAtRound: 1, targetId: null },
       ],
     });
 
@@ -572,7 +572,7 @@ describe('slice-2a integration G — Maintenance auto-drop chain on StartTurn', 
     const post = getPc(after, ELE_ID);
     expect(post.heroicResources.find((r) => r.name === 'essence')?.value).toBe(0);
     expect(post.maintainedAbilities).toEqual([
-      { abilityId: 'storm-aegis', costPerTurn: 3, startedAtRound: 1 },
+      { abilityId: 'storm-aegis', costPerTurn: 3, startedAtRound: 1, targetId: null },
     ]);
 
     // Exactly one StopMaintenance derived was emitted from StartTurn for the
@@ -605,8 +605,8 @@ describe('slice-2a integration G — Maintenance auto-drop chain on StartTurn', 
       className: 'Elementalist',
       heroicResources: [{ name: 'essence', value: 4, floor: 0 }],
       maintainedAbilities: [
-        { abilityId: 'big', costPerTurn: 5, startedAtRound: 1 },
-        { abilityId: 'small', costPerTurn: 1, startedAtRound: 1 },
+        { abilityId: 'big', costPerTurn: 5, startedAtRound: 1, targetId: null },
+        { abilityId: 'small', costPerTurn: 1, startedAtRound: 1, targetId: null },
       ],
     });
     const state = withEncounter([ele]);

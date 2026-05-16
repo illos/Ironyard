@@ -127,8 +127,8 @@ describe('applyStartTurn — Slice 2a additions', () => {
       className: 'Elementalist',
       heroicResources: [{ name: 'essence', value: 3, floor: 0 }],
       maintainedAbilities: [
-        { abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1 },
-        { abilityId: 'flame-shroud', costPerTurn: 1, startedAtRound: 1 },
+        { abilityId: 'storm-aegis', costPerTurn: 2, startedAtRound: 1, targetId: null },
+        { abilityId: 'flame-shroud', costPerTurn: 1, startedAtRound: 1, targetId: null },
       ],
     });
     const state = stateWith([ele]);
@@ -160,8 +160,8 @@ describe('applyStartTurn — Slice 2a additions', () => {
       className: 'Elementalist',
       heroicResources: [{ name: 'essence', value: 1, floor: 0 }],
       maintainedAbilities: [
-        { abilityId: 'storm-aegis', costPerTurn: 4, startedAtRound: 1 },
-        { abilityId: 'flame-shroud', costPerTurn: 1, startedAtRound: 1 },
+        { abilityId: 'storm-aegis', costPerTurn: 4, startedAtRound: 1, targetId: null },
+        { abilityId: 'flame-shroud', costPerTurn: 1, startedAtRound: 1, targetId: null },
       ],
     });
     const state = stateWith([ele]);
@@ -245,7 +245,7 @@ describe('applyStartTurn — Slice 2a additions', () => {
     const censor = makeHeroParticipant('pc-censor', {
       className: 'Censor',
       heroicResources: [{ name: 'wrath', value: 5, floor: 0 }],
-      maintainedAbilities: [{ abilityId: 'mystery-ability', costPerTurn: 10, startedAtRound: 1 }],
+      maintainedAbilities: [{ abilityId: 'mystery-ability', costPerTurn: 10, startedAtRound: 1, targetId: null }],
     });
     const state = stateWith([censor]);
 
