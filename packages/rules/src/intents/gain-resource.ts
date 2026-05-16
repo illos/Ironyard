@@ -1,6 +1,6 @@
-import { GainResourcePayloadSchema, type Participant } from '@ironyard/shared';
+import { GainResourcePayloadSchema, IntentTypes, type Participant } from '@ironyard/shared';
 import { refLabel, resolveResource, updateExtra, updateHeroic } from '../resources';
-import type { CampaignState, IntentResult, StampedIntent } from '../types';
+import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
 
 // Slice 7: increment a heroic / extras resource on a participant. `amount` is
@@ -102,13 +102,56 @@ export function applyGainResource(state: CampaignState, intent: StampedIntent): 
     isParticipant(p) && p.id === participantId ? updatedTarget : p,
   );
 
+  // Pass 3 Slice 2a Task 28 — posthumous-Drama auto-revive.
+  // When a dead, body-intact, posthumous-eligible Troubadour's drama crosses
+  // 30 for the first time this encounter, raise the troubadour-auto-revive OA
+  // and flip the per-encounter latch so the OA is only ever raised once per
+  // encounter. The reducer at claim time (claim-open-action.ts) cashes this
+  // out into a TroubadourAutoRevive derived intent.
+  const derived: DerivedIntent[] = [];
+  const oldValue = resolved.instance.value;
+  const newValue = capped;
+  if (
+    name === 'drama' &&
+    oldValue < 30 &&
+    newValue >= 30 &&
+    target.staminaState === 'dead' &&
+    target.bodyIntact === true &&
+    target.posthumousDramaEligible === true &&
+    !target.perEncounterFlags.perEncounter.troubadourReviveOARaised
+  ) {
+    derived.push({
+      actor: intent.actor,
+      source: 'server' as const,
+      type: IntentTypes.RaiseOpenAction,
+      causedBy: intent.id,
+      payload: {
+        kind: 'troubadour-auto-revive',
+        participantId,
+        payload: {},
+        expiresAtRound: null,
+      },
+    });
+    derived.push({
+      actor: intent.actor,
+      source: 'server' as const,
+      type: IntentTypes.SetParticipantPerEncounterLatch,
+      causedBy: intent.id,
+      payload: {
+        participantId,
+        key: 'troubadourReviveOARaised',
+        value: true,
+      },
+    });
+  }
+
   return {
     state: {
       ...state,
       seq: state.seq + 1,
       participants: updatedParticipants,
     },
-    derived: [],
+    derived,
     log: [
       {
         kind: 'info',
