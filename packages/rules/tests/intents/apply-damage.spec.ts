@@ -409,7 +409,7 @@ describe('applyApplyDamage — inert fire instant-death', () => {
 });
 
 describe('applyApplyDamage — class-δ stamina-transition trigger wiring (Task 16)', () => {
-  it('Fury healthy → winded emits GainResource(ferocity, ferocityD3) + latch flip', () => {
+  it('Fury healthy → winded emits stamina-transition GainResource(+ferocityD3) AND action-trigger GainResource(+1) + latch flip', () => {
     const fury = makeHeroParticipant(TARGET_ID, {
       maxStamina: 30,
       currentStamina: 30,
@@ -421,7 +421,8 @@ describe('applyApplyDamage — class-δ stamina-transition trigger wiring (Task 
       participants: [fury],
       encounter: makeRunningEncounterPhase('enc-1'),
     });
-    // 30 → 15 = windedValue(30) → winded. Pre-roll ferocityD3=3.
+    // 30 → 15 = windedValue(30) → winded. Pre-roll ferocityD3=3 (used by
+    // stamina-transition trigger only; action trigger is flat +1).
     const intent = stamped({
       type: 'ApplyDamage',
       actor: ownerActor,
@@ -435,18 +436,27 @@ describe('applyApplyDamage — class-δ stamina-transition trigger wiring (Task 
     });
     const result = applyApplyDamage(s, intent);
     expect(result.errors ?? []).toEqual([]);
-    // StaminaTransitioned + GainResource + SetParticipantPerEncounterLatch
-    const gain = result.derived.find((d) => d.type === 'GainResource');
-    expect(gain).toBeDefined();
-    const gainPayload = gain!.payload as { participantId: string; name: string; amount: number };
-    expect(gainPayload).toEqual({ participantId: TARGET_ID, name: 'ferocity', amount: 3 });
+    // Two ferocity GainResource derived intents now:
+    //   - stamina-transition winded trigger: +ferocityD3 (=3)
+    //   - per-event action trigger:          +1 (canon flat)
+    const ferocityGains = result.derived.filter(
+      (d) => d.type === 'GainResource' && (d.payload as { name: string }).name === 'ferocity',
+    );
+    expect(ferocityGains).toHaveLength(2);
+    const amounts = ferocityGains
+      .map((g) => (g.payload as { amount: number }).amount)
+      .sort((a, b) => a - b);
+    expect(amounts).toEqual([1, 3]);
+    for (const g of ferocityGains) {
+      expect((g.payload as { participantId: string }).participantId).toBe(TARGET_ID);
+      expect(g.causedBy).toBe(intent.id);
+    }
     const latch = result.derived.find((d) => d.type === 'SetParticipantPerEncounterLatch');
     expect(latch).toBeDefined();
     const latchPayload = latch!.payload as { key: string; value: boolean };
     expect(latchPayload.key).toBe('firstTimeWindedTriggered');
     expect(latchPayload.value).toBe(true);
     // Trigger derived intents inherit causedBy = the original intent id
-    expect(gain!.causedBy).toBe(intent.id);
     expect(latch!.causedBy).toBe(intent.id);
   });
 
@@ -487,10 +497,10 @@ describe('applyApplyDamage — class-δ stamina-transition trigger wiring (Task 
   });
 
   it('does not invoke STAMINA-TRANSITION trigger evaluator when no state transition occurred', () => {
-    // 30 → 25 stays healthy. Stamina-transition trigger evaluator must NOT run
-    // (it would throw for missing ferocityD3 if it did). Note: post-Task-21 the
-    // *action* trigger evaluator DOES run on every ApplyDamage — so we still
-    // need to supply ferocityD3 for the Fury per-event Ferocity gain.
+    // 30 → 25 stays healthy. Stamina-transition trigger evaluator must NOT run.
+    // The *action* trigger evaluator DOES run on every ApplyDamage and grants
+    // a flat +1 ferocity (canon, post-bugfix; ferocityD3 not required for this
+    // path).
     const fury = makeHeroParticipant(TARGET_ID, {
       maxStamina: 30,
       currentStamina: 30,
@@ -510,17 +520,16 @@ describe('applyApplyDamage — class-δ stamina-transition trigger wiring (Task 
         amount: 5,
         damageType: 'fire',
         sourceIntentId: 'src-1',
-        ferocityD3: 2,
       },
     });
     const result = applyApplyDamage(s, intent);
     expect(result.errors ?? []).toEqual([]);
     // No StaminaTransitioned (state didn't change).
     expect(result.derived.find((d) => d.type === 'StaminaTransitioned')).toBeUndefined();
-    // BUT: Fury per-event Ferocity action trigger fires once per round.
+    // BUT: Fury per-event Ferocity action trigger fires once per round, +1 flat.
     const gain = result.derived.find((d) => d.type === 'GainResource');
     expect(gain).toBeDefined();
-    expect(gain!.payload).toEqual({ participantId: TARGET_ID, name: 'ferocity', amount: 2 });
+    expect(gain!.payload).toEqual({ participantId: TARGET_ID, name: 'ferocity', amount: 1 });
   });
 
   it('Troubadour any-hero-winded fires when a different hero is damaged into winded', () => {
@@ -746,7 +755,8 @@ describe('applyApplyDamage — slice 2a flag writes', () => {
 describe('applyApplyDamage — slice 2a action-trigger evaluator wiring', () => {
   it('Fury per-event Ferocity action trigger fires on damage-applied (no transition)', () => {
     // Fury at full stamina takes 5 damage → stays healthy → no stamina-transition trigger.
-    // But the action-trigger evaluator fires Fury's per-event Ferocity (1d3 once per round).
+    // But the action-trigger evaluator fires Fury's per-event Ferocity: +1 flat
+    // (canon — the 1d3 belongs only to the per-encounter winded/dying triggers).
     const fury = makeHeroParticipant(TARGET_ID, {
       maxStamina: 30,
       currentStamina: 30,
@@ -766,14 +776,13 @@ describe('applyApplyDamage — slice 2a action-trigger evaluator wiring', () => 
         amount: 5,
         damageType: 'fire',
         sourceIntentId: 'src-1',
-        ferocityD3: 2,
       },
     });
     const result = applyApplyDamage(s, intent);
     expect(result.errors ?? []).toEqual([]);
     const gain = result.derived.find((d) => d.type === 'GainResource');
     expect(gain).toBeDefined();
-    expect(gain!.payload).toEqual({ participantId: TARGET_ID, name: 'ferocity', amount: 2 });
+    expect(gain!.payload).toEqual({ participantId: TARGET_ID, name: 'ferocity', amount: 1 });
     // The action-trigger evaluator runs against the pre-write state, so its
     // emitted causedBy must point to the originating ApplyDamage intent.
     expect(gain!.causedBy).toBe(intent.id);

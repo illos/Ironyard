@@ -6,23 +6,11 @@ import { resolveParticipantClass } from '../helpers';
 // Pass 3 Slice 2a — Fury class-δ action triggers.
 //
 // Ferocity per-event (canon § 5.4.4):
-//   When this Fury takes damage, gain 1d3 ferocity, first time per round
-//   (gated by `perRound.tookDamage`).
+//   +1 ferocity per damage event taken (per-round latch). Canon: SC
+//   `Classes/Fury.md:90`, Heroes PDF p. ~10169.
 //
-// Purity contract: this module is pure. The 1d3 must be pre-rolled at the
-// impure call site (Task 21's apply-damage.ts) and passed via
-// `ctx.rolls.ferocityD3`. If a Fury entry would fire without a pre-rolled
-// value the dispatcher throws — same pattern as Task 10's stamina-transition
-// `requireFerocityD3`.
-
-function requireFerocityD3(ctx: ActionTriggerContext): number {
-  if (ctx.rolls.ferocityD3 === undefined) {
-    throw new Error(
-      'class-triggers/per-class/fury.evaluate: Fury Ferocity action trigger fired but ctx.rolls.ferocityD3 was not supplied',
-    );
-  }
-  return ctx.rolls.ferocityD3;
-}
+// The per-encounter winded/dying triggers grant 1d3 and live in
+// `class-triggers/stamina-transition.ts`; this action trigger does not.
 
 export function evaluate(
   state: CampaignState,
@@ -43,7 +31,7 @@ export function evaluate(
       payload: {
         participantId: target.id,
         name: 'ferocity',
-        amount: requireFerocityD3(ctx),
+        amount: 1,
       },
     },
     {

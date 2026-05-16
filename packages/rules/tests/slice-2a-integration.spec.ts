@@ -122,7 +122,7 @@ describe('slice-2a integration A — Fury Ferocity on damage-applied', () => {
     ]);
   }
 
-  it('ApplyDamage on Fury → +ferocityD3 ferocity + perRound.tookDamage latch flipped', () => {
+  it('ApplyDamage on Fury → +1 ferocity (flat per canon) + perRound.tookDamage latch flipped', () => {
     const state = buildState();
     const { state: next } = applyWithCascade(
       state,
@@ -135,14 +135,15 @@ describe('slice-2a integration A — Fury Ferocity on damage-applied', () => {
           damageType: 'fire',
           sourceIntentId: 'src-A',
           intent: 'kill',
-          ferocityD3: 2,
+          // Per-round action trigger is +1 flat (canon § 5.4.4); ferocityD3
+          // is only consumed by the per-encounter stamina-transition path.
         },
       }),
     );
 
     const fury = getPc(next, FURY_ID);
     const ferocity = fury.heroicResources.find((r) => r.name === 'ferocity');
-    expect(ferocity?.value).toBe(2);
+    expect(ferocity?.value).toBe(1);
     expect(fury.perEncounterFlags.perRound.tookDamage).toBe(true);
   });
 
@@ -159,7 +160,6 @@ describe('slice-2a integration A — Fury Ferocity on damage-applied', () => {
           damageType: 'fire',
           sourceIntentId: 'src-A1',
           intent: 'kill',
-          ferocityD3: 2,
         },
       }),
     ).state;
@@ -174,15 +174,14 @@ describe('slice-2a integration A — Fury Ferocity on damage-applied', () => {
           damageType: 'fire',
           sourceIntentId: 'src-A2',
           intent: 'kill',
-          // Intentionally omit ferocityD3 — if the trigger fired again it
-          // would throw. The latch must suppress it.
+          // Latch must suppress the second action trigger.
         },
       }),
     ).state;
 
     const fury = getPc(state, FURY_ID);
     const ferocity = fury.heroicResources.find((r) => r.name === 'ferocity');
-    expect(ferocity?.value).toBe(2); // unchanged from first event
+    expect(ferocity?.value).toBe(1); // unchanged from first event (+1 flat)
   });
 });
 
@@ -645,10 +644,11 @@ describe('slice-2a integration H — Mixed-class encounter walkthrough', () => {
   it('Fury Ferocity + Troubadour any-hero-winded fire from the SAME ApplyDamage cascade', () => {
     // Fury at low stamina (just above winded). One big hit crosses winded AND
     // is the first damage of the round. Expect:
-    //   - Fury: +ferocityD3 (3) → ferocity = 3, perRound.tookDamage = true
+    //   - Fury: +1 flat from per-round action trigger (canon § 5.4.4),
+    //     perRound.tookDamage = true.
     //   - Fury: stamina transitions healthy → winded, firstTimeWindedTriggered
-    //     latch flips and Fury gains another +ferocityD3 from the stamina
-    //     trigger path. Total ferocity = 6.
+    //     latch flips and Fury gains +ferocityD3 (=3) from the per-encounter
+    //     stamina-transition trigger. Total ferocity = 1 + 3 = 4.
     //   - Trou: +2 drama, troubadourAnyHeroWindedTriggered = true.
     const fury = makeHeroParticipant(FURY_ID, {
       ownerId: OWNER_ID,
@@ -694,7 +694,7 @@ describe('slice-2a integration H — Mixed-class encounter walkthrough', () => {
     expect(furyAfter.staminaState).toBe('winded');
     expect(furyAfter.perEncounterFlags.perRound.tookDamage).toBe(true);
     expect(furyAfter.perEncounterFlags.perEncounter.firstTimeWindedTriggered).toBe(true);
-    expect(furyAfter.heroicResources.find((r) => r.name === 'ferocity')?.value).toBe(6);
+    expect(furyAfter.heroicResources.find((r) => r.name === 'ferocity')?.value).toBe(4);
 
     // Trou fired any-hero-winded.
     const trouAfter = getPc(after, TROU_ID);

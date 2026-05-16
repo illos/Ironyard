@@ -13,13 +13,13 @@ import {
 
 // Pass 3 Slice 2a — Fury Ferocity (per-event) action triggers.
 //
-// Purity contract: ctx.rolls.ferocityD3 must be supplied at the impure call
-// site (Task 21 wires apply-damage.ts). Tests pin it to 2 for deterministic
-// amount assertions.
+// Canon (SC `Classes/Fury.md:90`, Heroes PDF p. ~10169): the per-round
+// took-damage trigger grants **+1 ferocity flat** (the 1d3 belongs only to
+// the per-encounter winded/dying triggers in stamina-transition.ts).
 
 const testCtx: ActionTriggerContext = {
   actor: { userId: 'test-user', role: 'director' },
-  rolls: { ferocityD3: 2 },
+  rolls: {},
 };
 
 function stateWith(participants: ReturnType<typeof makeHeroParticipant>[]): CampaignState {
@@ -31,7 +31,7 @@ function stateWith(participants: ReturnType<typeof makeHeroParticipant>[]): Camp
 }
 
 describe('class-triggers/per-class/fury.evaluate', () => {
-  it('emits GainResource(ferocity=ferocityD3) + per-round latch when Fury takes damage (first time per round)', () => {
+  it('emits GainResource(ferocity=+1) + per-round latch when Fury takes damage (first time per round)', () => {
     const fury = makeHeroParticipant('fury-1', {
       className: 'Fury',
       heroicResources: [{ name: 'ferocity', value: 0, floor: 0 }],
@@ -51,8 +51,8 @@ describe('class-triggers/per-class/fury.evaluate', () => {
     expect(gain!.payload).toEqual({
       participantId: 'fury-1',
       name: 'ferocity',
-      // Deterministic: ctx.rolls.ferocityD3 === 2.
-      amount: 2,
+      // Canon: +1 flat per damage event (not 1d3).
+      amount: 1,
     });
     expect(gain!.actor).toEqual({ userId: 'test-user', role: 'director' });
     expect(gain!.source).toBe('server');
@@ -77,22 +77,5 @@ describe('class-triggers/per-class/fury.evaluate', () => {
       type: 'fire',
     };
     expect(evaluateFury(state, event, testCtx)).toEqual([]);
-  });
-
-  it('throws a developer error if Fury fires without a pre-rolled ferocityD3', () => {
-    const fury = makeHeroParticipant('fury-1', { className: 'Fury' });
-    const state = stateWith([fury]);
-    const event: ActionEvent = {
-      kind: 'damage-applied',
-      dealerId: null,
-      targetId: 'fury-1',
-      amount: 4,
-      type: 'fire',
-    };
-    const badCtx: ActionTriggerContext = {
-      actor: { userId: 'test-user', role: 'director' },
-      rolls: {},
-    };
-    expect(() => evaluateFury(state, event, badCtx)).toThrow(/ferocityD3 was not supplied/);
   });
 });

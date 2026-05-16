@@ -672,3 +672,5 @@ Future post-shipping fixes to Slice 2a layer the same way slice 1's did: append 
 11. **`OpenActionsList.tsx` fallback duplication.** Task 33 created `apps/web/src/lib/format-open-action.ts` but the inline fallback logic in `OpenActionsList.tsx` was left in place. Follow-up: replace inline logic with `formatOpenAction()` call.
 
 12. **`DirectorCombat.tsx` stub state.** Task 25 + 17 coordination updated DirectorCombat to call `getResourceConfigForParticipant` with a synthesized stub state. Stub is sufficient today (helper only reads `p.className` and `p.level`) but brittle if future heroic-resource variants read other state fields. Follow-up: thread the real CampaignState from useSessionSocket.
+
+13. **Fury Ferocity per-round trigger corrected from 1d3 to +1 flat**: rules-canon two-gate review on 2026-05-15 caught the engine was emitting `requireFerocityD3(ctx)` for the per-round took-damage trigger, but canon (SC `Classes/Fury.md:90`, Heroes PDF p. ~10169) says +1 flat. Per-encounter stamina-transition triggers (first winded / first dying) correctly remain 1d3. Fixed in commit `<SHA>`. § 5.4.4 flipped from 🚧 back to ✅.

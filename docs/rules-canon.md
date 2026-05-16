@@ -724,7 +724,7 @@ Gates:
 | Censor | Wrath (+ Virtue epic) | `Classes/Censor.md` | 🚧 § 5.4.1 — canon verified; engine `isJudgedBy` stub over-fires |
 | Conduit | Piety (+ Divine Power epic) | `Classes/Conduit.md` | 🚧 § 5.4.2 — canon ✅, gated by § 5.4 umbrella flip |
 | Elementalist | Essence | `Classes/Elementalist.md` | 🚧 § 5.4.3 — canon ✅, gated by § 5.4 umbrella flip |
-| Fury | Ferocity | `Classes/Fury.md` | 🚧 § 5.4.4 — canon verified; engine grants 1d3 instead of canonical 1 ferocity for per-round damage trigger (real bug) |
+| Fury | Ferocity | `Classes/Fury.md` | 🚧 § 5.4.4 — canon ✅, gated by § 5.4 umbrella flip |
 | Null | Discipline | `Classes/Null.md` | 🚧 § 5.4.5 — canon verified; engine `hasActiveNullField` stub over-fires |
 | Shadow | Insight | `Classes/Shadow.md` | 🚧 § 5.4.6 — canon ✅, gated by § 5.4 umbrella flip |
 | Tactician | Focus | `Classes/Tactician.md` | 🚧 § 5.4.7 — canon verified; engine `isMarkedBy` stub over-fires |
@@ -772,9 +772,9 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 
 > 🚧 Engine deferred 2026-05-15 (umbrella). Two-gate review of the eight sub-sections found:
 > - **§ 5.4.1 Censor / § 5.4.5 Null / § 5.4.7 Tactician** — canon text verified against SteelCompendium and Heroes PDF, but the engine ships permissive stubs (`isJudgedBy`, `hasActiveNullField`, `isMarkedBy`) that over-fire because the underlying state (Judgment-target, active Null Field, Mark-target) is not yet tracked. Slice 2b/2c will replace the stubs with real predicates.
-> - **§ 5.4.4 Fury** — gates agree the per-round "took damage" trigger grants **+1 ferocity**, but `class-triggers/per-class/fury.ts` currently grants **1d3 ferocity**. Real engine bug; needs a follow-up patch (separate PS entry on the slice 2a spec).
+> - **§ 5.4.4 Fury** — engine bug fixed 2026-05-15: per-round "took damage" trigger now grants **+1 ferocity flat** (canon). The 1d3 winded/dying triggers were always correct.
 >
-> The umbrella slug `heroic-resources-and-surges.other-classes` is the only one the parser emits for this section (sub-headings are H4 and don't get their own slugs), so the badge here gates `requireCanon` for **all eight** primary heroic resources to manual-override until those four issues land. § 5.4.2 Conduit, § 5.4.3 Elementalist, § 5.4.6 Shadow, and § 5.4.8 Troubadour individually pass both gates and are noted as such in their sub-section headers; once the umbrella flips back the auto-apply path will be live for them again.
+> The umbrella slug `heroic-resources-and-surges.other-classes` is the only one the parser emits for this section (sub-headings are H4 and don't get their own slugs), so the badge here gates `requireCanon` for **all eight** primary heroic resources to manual-override until the three remaining stub issues land. § 5.4.2 Conduit, § 5.4.3 Elementalist, § 5.4.4 Fury, § 5.4.6 Shadow, and § 5.4.8 Troubadour individually pass both gates and are noted as such in their sub-section headers; once the umbrella flips back the auto-apply path will be live for them again.
 
 > **Source:** Each class's `<Resource> in Combat` and `<Resource> Outside of Combat` sub-section in `.reference/data-md/Rules/Classes/<Class>.md`. Per-class line citations below.
 
@@ -825,9 +825,9 @@ The Director's **Malice** is structurally the same shape but scoped to the encou
 - **Maintenance constraint** (Elementalist.md:143): the Elementalist may have abilities being *maintained* across turns (a class mechanic where ongoing ability effects cost essence at start of each turn). **You cannot maintain an ability that would make you earn a negative amount of essence at the start of your turn.** Engine: maintenance cost is deducted at start of turn after the per-turn gain; if the result would be negative, the ability is dropped (maintenance ends, no negative essence).
 - Director's Malice can also be driven negative by Elementalist's *Sap Strength* ability (§ 5.5).
 
-#### 5.4.4 Fury — Ferocity 🚧
+#### 5.4.4 Fury — Ferocity
 
-> 🚧 Engine bug discovered 2026-05-15. Canon text two-gate verified: SteelCompendium `Classes/Fury.md` line 90 and Heroes PDF flat-text "Ferocity in Combat" (line ~10169) both say **"the first time each combat round that you take damage, you gain 1 ferocity. The first time you become winded or are dying in an encounter, you gain 1d3 ferocity."** That is two distinct triggers: the per-round damage trigger grants **+1 ferocity** (a flat 1, NOT 1d3), and the per-encounter winded/dying trigger grants **+1d3 ferocity**. Engine `class-triggers/per-class/fury.ts:42` currently grants `requireFerocityD3(ctx)` (a 1d3) for the per-round damage trigger — wrong. `requireCanon` falls back to manual-override (via the umbrella § 5.4 flip) until the engine is corrected. Slice 2a spec PS entry: change Fury action-trigger amount from `1d3` to a flat `1`, drop the `ferocityD3` requirement at the apply-damage call site for this trigger, and keep the `1d3` only for the stamina-transition winded/dying paths.
+> ✅ Two-gate verified 2026-05-15: SteelCompendium `Classes/Fury.md` line 90 and Heroes PDF flat-text "Ferocity in Combat" (line ~10169) both say **"the first time each combat round that you take damage, you gain 1 ferocity. The first time you become winded or are dying in an encounter, you gain 1d3 ferocity."** That is two distinct triggers: the per-round damage trigger grants **+1 ferocity** (flat), and the per-encounter winded/dying trigger grants **+1d3 ferocity**. Engine matches: `class-triggers/per-class/fury.ts` emits the flat +1 on each damage event (per-round latch); `class-triggers/stamina-transition.ts` emits the +1d3 on first-time-winded / first-time-dying (per-encounter latches). (Initial slice-2a implementation emitted 1d3 for the per-round trigger — fixed as a follow-up; see slice 2a PS entry #13.) **Note:** auto-apply is currently gated by the umbrella § 5.4 🚧 flip; this sub-section will go live again when § 5.4 is restored.
 
 > **Source:** `Classes/Fury.md` lines 77–94. Heroes PDF p. 131 (Ferocity in Combat).
 
