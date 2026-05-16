@@ -64,12 +64,17 @@ export function evaluate(
       isJudgedBy(state, censor, event.targetId) &&
       !censor.perEncounterFlags.perRound.damagedJudgedTarget
     ) {
+      // Phase 2b 2b.13 — Wrath Beyond Wrath (4th-level Censor feature):
+      // "The first time each combat round that you deal damage to a
+      // creature judged by you, you gain 2 wrath instead of 1."
+      // Echelon ramp; receiver-side trigger (a) above stays at +1.
+      const wrathAmount = censor.level >= 4 ? 2 : 1;
       derived.push(
         {
           actor: ctx.actor,
           source: 'server',
           type: 'GainResource',
-          payload: { participantId: censor.id, name: 'wrath', amount: 1 },
+          payload: { participantId: censor.id, name: 'wrath', amount: wrathAmount },
         },
         {
           actor: ctx.actor,

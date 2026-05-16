@@ -164,6 +164,45 @@ describe('applyClaimOpenAction', () => {
     },
   );
 
+  // --- Phase 2b 2b.13: Elementalist Font of Essence @L4 ---------------------
+  // Canon Elementalist.md: "The first time each combat round that you or a
+  // creature within 10 squares takes damage that isn't untyped or holy
+  // damage, you gain 2 essence instead of 1."
+  it('spatial-trigger-elementalist-essence at L4+ grants +2 essence (Font of Essence)', () => {
+    const s = stateWithOA({
+      participantId: 'pc-1',
+      ownerId: 'alice',
+      kind: 'spatial-trigger-elementalist-essence',
+      participantOverrides: { level: 4, className: 'Elementalist' },
+    });
+    const intent = stamped({
+      actor: { userId: 'alice', role: 'player' },
+      type: 'ClaimOpenAction',
+      payload: { openActionId: 'oa-1' },
+    });
+    const result = applyClaimOpenAction(s, intent);
+    const gain = result.derived.find((d) => d.type === 'GainResource');
+    expect((gain!.payload as { name: string; amount: number }).name).toBe('essence');
+    expect((gain!.payload as { name: string; amount: number }).amount).toBe(2);
+  });
+
+  it('spatial-trigger-elementalist-essence at L3 grants +1 essence (baseline)', () => {
+    const s = stateWithOA({
+      participantId: 'pc-1',
+      ownerId: 'alice',
+      kind: 'spatial-trigger-elementalist-essence',
+      participantOverrides: { level: 3, className: 'Elementalist' },
+    });
+    const intent = stamped({
+      actor: { userId: 'alice', role: 'player' },
+      type: 'ClaimOpenAction',
+      payload: { openActionId: 'oa-1' },
+    });
+    const result = applyClaimOpenAction(s, intent);
+    const gain = result.derived.find((d) => d.type === 'GainResource');
+    expect((gain!.payload as { name: string; amount: number }).amount).toBe(1);
+  });
+
   // --- Slice 2a: pray-to-the-gods ------------------------------------------
 
   it('pray-to-the-gods prayD3=1 → piety+1 + bypass-reduction psychic damage', () => {

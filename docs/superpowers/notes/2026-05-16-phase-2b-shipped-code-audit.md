@@ -52,18 +52,18 @@ Plus minor: KO-resurrects-corpses edge case (KO on `dead` state target flips to 
 
 **Fix shipped via Phase 2b sub-epic 2b.12** (canon-audit cleanup; TDD): EndEncounter grants +1 victory to each PC with `staminaState !== 'dead'` after the dieAtEncounterEnd flip; Respite resets attending PCs' victories to 0 and computes per-PC XP from each PC's own pre-respite victories; side-effect handler writes per-PC `data.xp += own victories` + `data.victories = 0` to D1 (no longer reads `stateBefore.partyVictories`). Spec line 58 of 2b.0 design corrected — original wording said respite *increments*, canon says *resets*.
 
-### Cluster 3 — Level-scaling for heroic resources (6 bugs across 4 classes)
+### Cluster 3 — Level-scaling for heroic resources (6 bugs across 4 classes) ✅ FIXED 2026-05-16
 
-| # | Severity | Where | Bug | Canon |
-|---|---|---|---|---|
-| B9 | P1 | `heroic-resources.ts:32` (Censor wrath per-turn) | Hardcoded +2; canon ramps to +3 at L7 (Focused Wrath) and +4 at L10 (Wrath of the Gods) | Censor.md:1114-1116, 1374-1376 |
-| B10 | P1 | `class-triggers/per-class/censor.ts:72` | Hardcoded +1 on "you damage judged-target" branch; canon ramps to +2 at L4 (Wrath Beyond Wrath) | Censor.md:708-710 |
-| B11 | P1 | `heroic-resources.ts:44` + `claim-open-action.ts:98` (Elementalist) | Per-turn hardcoded +2; spatial-OA claim hardcoded +1. Canon: +3/+2 at L7 (Surging Essence) and +2 at L4 (Font of Essence) | Elementalist.md:925-927, 1180-1182 |
-| B12 | P1 | `heroic-resources.ts:38` (Conduit piety per-turn) | Hardcoded `d3`; canon ramps to `d3+1` at L7 (Faithful's Reward); `d3-plus` variant exists but only wired for Talent/Psion | Conduit.md:1313-1315 |
-| B22 | P1 | `class-triggers/per-class/talent.ts` (force-move broadcast) | Hardcoded +1 clarity; canon ramps to +2 at L4 (Mind Recovery), +3 at L10 (Clear Mind) | Talent.md (level-feature blocks) |
-| BONUS | P1 | `heroic-resources.ts:?` (Tactician focus per-turn) | Hardcoded +2; canon ramps to +3 at L7 (Heightened Focus), +4 at L10 (True Focus) | Tactician.md |
+| # | Severity | Where | Bug | Canon | Status |
+|---|---|---|---|---|---|
+| B9 | P1 | `heroic-resources.ts:32` (Censor wrath per-turn) | Hardcoded +2; canon ramps to +3 at L7 (Focused Wrath) and +4 at L10 (Wrath of the Gods) | Censor.md:1114-1116, 1374-1376 | ✅ fixed |
+| B10 | P1 | `class-triggers/per-class/censor.ts:72` | Hardcoded +1 on "you damage judged-target" branch; canon ramps to +2 at L4 (Wrath Beyond Wrath) | Censor.md:708-710 | ✅ fixed |
+| B11 | P1 | `heroic-resources.ts:44` + `claim-open-action.ts:98` (Elementalist) | Per-turn hardcoded +2; spatial-OA claim hardcoded +1. Canon: +3/+2 at L7 (Surging Essence) and +2 at L4 (Font of Essence) | Elementalist.md:925-927, 1180-1182 | ✅ fixed |
+| B12 | P1 | `heroic-resources.ts:38` (Conduit piety per-turn) | Hardcoded `d3`; canon ramps to `d3+1` at L7 (Faithful's Reward); `d3-plus` variant exists but only wired for Talent/Psion | Conduit.md:1313-1315 | ✅ fixed |
+| B22 | P1 | `class-triggers/per-class/talent.ts` (force-move broadcast) | Hardcoded +1 clarity; canon ramps to +2 at L4 (Mind Recovery), +3 at L10 (Clear Mind) | Talent.md (level-feature blocks) | ✅ fixed |
+| BONUS | P1 | `heroic-resources.ts:?` (Tactician focus per-turn) | Hardcoded +2; canon ramps to +3 at L7 (Heightened Focus), +4 at L10 (True Focus) | Tactician.md | ✅ fixed |
 
-Same fix surface for B9, B11, B12, BONUS (`getResourceConfigForParticipant` chokepoint for per-turn gains; level-aware factor). B10, B22 are per-trigger and need the trigger-amount to consume the same level-aware factor. One refactor closes all six.
+**Fix shipped via Phase 2b sub-epic 2b.13** (canon-audit cleanup; TDD): single per-class `PER_TURN_BUMPS` lookup table in `heroic-resources.ts` adds +1 to the per-turn gain at the indicated echelons (handles flat→flat+N, d3→d3-plus(N), d3-plus→d3-plus(existing+N) shape transitions); per-trigger handlers in `per-class/{censor,talent}.ts` and `claim-open-action.ts` (Elementalist spatial-OA) consume `participant.level` directly. All 22 new tests pass (4 per-turn classes × 2-3 echelons each + 3 Talent levels + Censor Wrath Beyond Wrath + receiver-side-stays-at-1 regression + Elementalist L4 + L3 baseline). Repo-wide test count: 1728 (+22).
 
 ### Cluster 4 — Trigger cascade substrate (in 2b.9 / Group E)
 

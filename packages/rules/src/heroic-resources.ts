@@ -124,6 +124,48 @@ function hasPsionFeature(_state: CampaignState, p: Participant): boolean {
   return p.level >= 10;
 }
 
+// Phase 2b cleanup 2b.13 — per-class level-feature ramps to the per-turn
+// heroic-resource gain. Each feature adds +1 to the per-turn amount at the
+// indicated echelon. Sources verified against the class markdowns and
+// docs/superpowers/notes/2026-05-16-phase-2b-shipped-code-audit.md cluster 3.
+//
+// Echelon thresholds for canon class features:
+//   L7  — Censor Focused Wrath, Conduit Faithful's Reward, Elementalist
+//          Surging Essence, Tactician Heightened Focus
+//   L10 — Censor Wrath of the Gods, Tactician True Focus
+//
+// Bumps stack (Censor at L10 has both Focused Wrath +1 and Wrath of the Gods
+// +1, total +2 over baseline).
+const PER_TURN_BUMPS: Record<string, { atLevel: number; bump: number }[]> = {
+  censor: [
+    { atLevel: 7, bump: 1 }, // Focused Wrath (+2 → +3)
+    { atLevel: 10, bump: 1 }, // Wrath of the Gods (+3 → +4)
+  ],
+  conduit: [
+    { atLevel: 7, bump: 1 }, // Faithful's Reward (d3 → d3+1)
+  ],
+  elementalist: [
+    { atLevel: 7, bump: 1 }, // Surging Essence (+2 → +3)
+  ],
+  tactician: [
+    { atLevel: 7, bump: 1 }, // Heightened Focus (+2 → +3)
+    { atLevel: 10, bump: 1 }, // True Focus (+3 → +4)
+  ],
+};
+
+/**
+ * Total per-turn bump for a class at a given level, summed over all qualifying
+ * level features. Returns 0 for classes with no level-feature bumps (Fury,
+ * Null, Shadow, Talent, Troubadour — none of these have per-turn-amount level
+ * features in canon today; Talent's Psion override is handled separately via
+ * the d3-plus path).
+ */
+function perTurnBump(className: string | null, level: number): number {
+  if (!className) return 0;
+  const features = PER_TURN_BUMPS[className] ?? [];
+  return features.filter((f) => level >= f.atLevel).reduce((sum, f) => sum + f.bump, 0);
+}
+
 /**
  * Resolve the active `HeroicResourceConfig` for a participant. Most participants
  * receive the static `HEROIC_RESOURCES[name]` entry verbatim; the only slice-2a
@@ -156,9 +198,11 @@ export function getResourceConfigForParticipant(
   const base = HEROIC_RESOURCES[resource.name];
   if (!base) return null;
 
+  const className = resolveParticipantClass(state, p);
+
   // Slice 2a: 10th-level Psion Talent gets d3-plus instead of d3.
   if (
-    resolveParticipantClass(state, p) === 'talent' &&
+    className === 'talent' &&
     base.baseGain.onTurnStart.kind === 'd3' &&
     hasPsionFeature(state, p)
   ) {
@@ -170,5 +214,35 @@ export function getResourceConfigForParticipant(
       },
     };
   }
+
+  // Phase 2b 2b.13: per-class level-feature bumps to the per-turn gain.
+  // Apply additively over the base shape: flat → flat+N; d3 → d3-plus(N);
+  // d3-plus → d3-plus(existing+N). Returns the original base when no bump.
+  const bump = perTurnBump(className, p.level);
+  if (bump > 0) {
+    const gain = base.baseGain.onTurnStart;
+    if (gain.kind === 'flat') {
+      return {
+        ...base,
+        baseGain: { ...base.baseGain, onTurnStart: { kind: 'flat', amount: gain.amount + bump } },
+      };
+    }
+    if (gain.kind === 'd3') {
+      return {
+        ...base,
+        baseGain: { ...base.baseGain, onTurnStart: { kind: 'd3-plus', bonus: bump } },
+      };
+    }
+    if (gain.kind === 'd3-plus') {
+      return {
+        ...base,
+        baseGain: {
+          ...base.baseGain,
+          onTurnStart: { kind: 'd3-plus', bonus: gain.bonus + bump },
+        },
+      };
+    }
+  }
+
   return base;
 }

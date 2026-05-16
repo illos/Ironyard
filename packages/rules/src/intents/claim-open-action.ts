@@ -91,11 +91,16 @@ export function applyClaimOpenAction(state: CampaignState, intent: StampedIntent
     }
 
     case 'spatial-trigger-elementalist-essence': {
+      // Phase 2b 2b.13 — Font of Essence (4th-level Elementalist):
+      // "The first time each combat round that you or a creature within 10
+      // squares takes damage that isn't untyped or holy damage, you gain 2
+      // essence instead of 1."
+      const essenceAmount = (targetParticipant?.level ?? 1) >= 4 ? 2 : 1;
       derived.push(
         decorate(IntentTypes.GainResource, {
           participantId: oa.participantId,
           name: 'essence',
-          amount: 1,
+          amount: essenceAmount,
         }),
       );
       derived.push(

@@ -112,6 +112,61 @@ describe('class-triggers/per-class/censor.evaluate', () => {
     });
   });
 
+  // Phase 2b cleanup 2b.13 — Wrath Beyond Wrath @L4 ramps the dealer-side
+  // trigger from +1 to +2. Canon Censor.md: "The first time each combat
+  // round that you deal damage to a creature judged by you, you gain 2 wrath
+  // instead of 1." Receiver-side (judged-target damages me) stays at +1.
+  it('emits +2 wrath when L4+ Censor damages a judged-target (Wrath Beyond Wrath)', () => {
+    const censor = makeHeroParticipant('censor-1', {
+      className: 'Censor',
+      level: 4,
+      heroicResources: [{ name: 'wrath', value: 0, floor: 0 }],
+      targetingRelations: { judged: ['mon-1'], marked: [], nullField: [] },
+    });
+    const goblin = makeMonsterParticipant('mon-1');
+    const state = stateWith([censor, goblin]);
+    const event: ActionEvent = {
+      kind: 'damage-applied',
+      dealerId: 'censor-1',
+      targetId: 'mon-1',
+      amount: 6,
+      type: 'fire',
+    };
+    const result = evaluateCensor(state, event, testCtx);
+    const gain = result.find((r) => r.type === 'GainResource');
+    expect(gain!.payload).toEqual({
+      participantId: 'censor-1',
+      name: 'wrath',
+      amount: 2,
+    });
+  });
+
+  it('keeps +1 wrath on receiver-side trigger (judged damages me) even at L4+', () => {
+    // Wrath Beyond Wrath only ramps the dealer-side; receiver-side stays +1
+    const censor = makeHeroParticipant('censor-1', {
+      className: 'Censor',
+      level: 7,
+      heroicResources: [{ name: 'wrath', value: 0, floor: 0 }],
+      targetingRelations: { judged: ['mon-1'], marked: [], nullField: [] },
+    });
+    const goblin = makeMonsterParticipant('mon-1');
+    const state = stateWith([censor, goblin]);
+    const event: ActionEvent = {
+      kind: 'damage-applied',
+      dealerId: 'mon-1',
+      targetId: 'censor-1',
+      amount: 5,
+      type: 'fire',
+    };
+    const result = evaluateCensor(state, event, testCtx);
+    const gain = result.find((r) => r.type === 'GainResource');
+    expect(gain!.payload).toEqual({
+      participantId: 'censor-1',
+      name: 'wrath',
+      amount: 1,
+    });
+  });
+
   it('does NOT emit when the per-round latch is already flipped', () => {
     const censor = makeHeroParticipant('censor-1', {
       className: 'Censor',

@@ -24,6 +24,82 @@ function stateWith(participants: ReturnType<typeof makeHeroParticipant>[]): Camp
   });
 }
 
+// Phase 2b cleanup 2b.13 — Talent clarity force-move level scaling:
+//   L1-L3: +1 (baseline)
+//   L4-L9: +2 (Mind Recovery — Talent.md: "the first time each combat round
+//          that a creature is force moved, you gain 2 clarity instead of 1")
+//   L10:   +3 (Clear Mind — Talent.md: "you gain 3 clarity instead of 2")
+describe('class-triggers/per-class/talent.evaluate — Phase 2b 2b.13 level scaling', () => {
+  it('emits +2 clarity for L4 Talent (Mind Recovery)', () => {
+    const talent = makeHeroParticipant('talent-1', {
+      className: 'Talent',
+      level: 4,
+      heroicResources: [{ name: 'clarity', value: 0, floor: 0 }],
+    });
+    const state = stateWith([talent]);
+    const event: ActionEvent = {
+      kind: 'creature-force-moved',
+      sourceId: 'mon-1',
+      targetId: 'pc-2',
+      subkind: 'push',
+      distance: 2,
+    };
+    const result = evaluateTalent(state, event, testCtx);
+    const gain = result.find((r) => r.type === 'GainResource');
+    expect(gain!.payload).toEqual({
+      participantId: 'talent-1',
+      name: 'clarity',
+      amount: 2,
+    });
+  });
+
+  it('emits +3 clarity for L10 Talent (Clear Mind)', () => {
+    const talent = makeHeroParticipant('talent-1', {
+      className: 'Talent',
+      level: 10,
+      heroicResources: [{ name: 'clarity', value: 0, floor: 0 }],
+    });
+    const state = stateWith([talent]);
+    const event: ActionEvent = {
+      kind: 'creature-force-moved',
+      sourceId: 'mon-1',
+      targetId: 'pc-2',
+      subkind: 'push',
+      distance: 2,
+    };
+    const result = evaluateTalent(state, event, testCtx);
+    const gain = result.find((r) => r.type === 'GainResource');
+    expect(gain!.payload).toEqual({
+      participantId: 'talent-1',
+      name: 'clarity',
+      amount: 3,
+    });
+  });
+
+  it('emits +1 clarity for L3 Talent (baseline below Mind Recovery)', () => {
+    const talent = makeHeroParticipant('talent-1', {
+      className: 'Talent',
+      level: 3,
+      heroicResources: [{ name: 'clarity', value: 0, floor: 0 }],
+    });
+    const state = stateWith([talent]);
+    const event: ActionEvent = {
+      kind: 'creature-force-moved',
+      sourceId: 'mon-1',
+      targetId: 'pc-2',
+      subkind: 'push',
+      distance: 2,
+    };
+    const result = evaluateTalent(state, event, testCtx);
+    const gain = result.find((r) => r.type === 'GainResource');
+    expect(gain!.payload).toEqual({
+      participantId: 'talent-1',
+      name: 'clarity',
+      amount: 1,
+    });
+  });
+});
+
 describe('class-triggers/per-class/talent.evaluate', () => {
   it('emits +1 clarity + per-round latch when a creature is force-moved (first time per round)', () => {
     const talent = makeHeroParticipant('talent-1', {

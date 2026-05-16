@@ -178,28 +178,21 @@ describe('getResourceConfigForParticipant — slice 2a additions', () => {
     expect(config?.baseGain.onTurnStart).toEqual({ kind: 'd3' });
   });
 
-  it('non-Talent classes are unaffected by the Psion override even at level 10+', () => {
-    const conduit = pcWithResource({
-      id: 'priest',
-      resourceName: 'piety',
+  it('non-Talent classes are unaffected by the Psion-specific d3→d3-plus(+2) override', () => {
+    // Regression for the Psion-leak path. Non-Talent classes at L10 receive
+    // their OWN level features (see 2b.13 tests below) but NOT the Psion
+    // +2 bonus that's specific to the Talent Psion 10th-level feature.
+    const fury = pcWithResource({
+      id: 'fury',
+      resourceName: 'ferocity',
       startValue: 0,
       level: 10,
-      className: 'Conduit',
+      className: 'Fury',
     });
-    const censor = pcWithResource({
-      id: 'censor',
-      resourceName: 'wrath',
-      startValue: 0,
-      level: 10,
-      className: 'Censor',
-    });
-    const state = emptyState([conduit, censor]);
-    expect(getResourceConfigForParticipant(state, conduit)?.baseGain.onTurnStart).toEqual({
+    const state = emptyState([fury]);
+    // Fury has no per-turn level scaling — plain d3 at every level.
+    expect(getResourceConfigForParticipant(state, fury)?.baseGain.onTurnStart).toEqual({
       kind: 'd3',
-    });
-    expect(getResourceConfigForParticipant(state, censor)?.baseGain.onTurnStart).toEqual({
-      kind: 'flat',
-      amount: 2,
     });
   });
 
@@ -215,6 +208,228 @@ describe('getResourceConfigForParticipant — slice 2a additions', () => {
     const noResourcePc: Participant = { ...talent, heroicResources: [] };
     const config = getResourceConfigForParticipant(emptyState([noResourcePc]), noResourcePc);
     expect(config).toBeNull();
+  });
+});
+
+// Phase 2b cleanup 2b.13 — per-turn heroic-resource level scaling. Each named
+// class level feature ramps the per-turn gain by +1. Sources verified against
+// .reference/data-md/Rules/Classes/{Censor,Conduit,Elementalist,Tactician}.md
+// and recorded in docs/superpowers/notes/2026-05-16-phase-2b-shipped-code-audit.md
+// cluster 3 (bugs B9-B12 + Tactician noticed-while-verifying).
+describe('getResourceConfigForParticipant — Phase 2b 2b.13 level-scaling', () => {
+  function emptyState(participants: Participant[]): CampaignState {
+    return {
+      ...emptyCampaignState(campaignId, 'user-owner'),
+      participants,
+    };
+  }
+
+  describe('Censor wrath per-turn (Focused Wrath L7, Wrath of the Gods L10)', () => {
+    it('L1-L6 censor gets +2 wrath per turn (baseline)', () => {
+      const censor = pcWithResource({
+        id: 'censor',
+        resourceName: 'wrath',
+        startValue: 0,
+        level: 6,
+        className: 'Censor',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([censor]), censor)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'flat', amount: 2 });
+    });
+
+    it('L7-L9 censor gets +3 wrath per turn (Focused Wrath)', () => {
+      const censor = pcWithResource({
+        id: 'censor',
+        resourceName: 'wrath',
+        startValue: 0,
+        level: 7,
+        className: 'Censor',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([censor]), censor)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'flat', amount: 3 });
+    });
+
+    it('L10 censor gets +4 wrath per turn (Wrath of the Gods)', () => {
+      const censor = pcWithResource({
+        id: 'censor',
+        resourceName: 'wrath',
+        startValue: 0,
+        level: 10,
+        className: 'Censor',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([censor]), censor)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'flat', amount: 4 });
+    });
+  });
+
+  describe('Conduit piety per-turn (Faithful\'s Reward L7)', () => {
+    it('L1-L6 conduit gets plain d3 per turn', () => {
+      const conduit = pcWithResource({
+        id: 'conduit',
+        resourceName: 'piety',
+        startValue: 0,
+        level: 6,
+        className: 'Conduit',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([conduit]), conduit)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'd3' });
+    });
+
+    it('L7+ conduit gets d3+1 per turn (Faithful\'s Reward)', () => {
+      const conduit = pcWithResource({
+        id: 'conduit',
+        resourceName: 'piety',
+        startValue: 0,
+        level: 7,
+        className: 'Conduit',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([conduit]), conduit)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'd3-plus', bonus: 1 });
+    });
+  });
+
+  describe('Elementalist essence per-turn (Surging Essence L7)', () => {
+    it('L1-L6 elementalist gets +2 essence per turn (baseline)', () => {
+      const ele = pcWithResource({
+        id: 'ele',
+        resourceName: 'essence',
+        startValue: 0,
+        level: 6,
+        className: 'Elementalist',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([ele]), ele)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'flat', amount: 2 });
+    });
+
+    it('L7+ elementalist gets +3 essence per turn (Surging Essence)', () => {
+      const ele = pcWithResource({
+        id: 'ele',
+        resourceName: 'essence',
+        startValue: 0,
+        level: 7,
+        className: 'Elementalist',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([ele]), ele)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'flat', amount: 3 });
+    });
+  });
+
+  describe('Tactician focus per-turn (Heightened Focus L7, True Focus L10)', () => {
+    it('L1-L6 tactician gets +2 focus per turn (baseline)', () => {
+      const tac = pcWithResource({
+        id: 'tac',
+        resourceName: 'focus',
+        startValue: 0,
+        level: 6,
+        className: 'Tactician',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([tac]), tac)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'flat', amount: 2 });
+    });
+
+    it('L7-L9 tactician gets +3 focus per turn (Heightened Focus)', () => {
+      const tac = pcWithResource({
+        id: 'tac',
+        resourceName: 'focus',
+        startValue: 0,
+        level: 7,
+        className: 'Tactician',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([tac]), tac)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'flat', amount: 3 });
+    });
+
+    it('L10 tactician gets +4 focus per turn (True Focus)', () => {
+      const tac = pcWithResource({
+        id: 'tac',
+        resourceName: 'focus',
+        startValue: 0,
+        level: 10,
+        className: 'Tactician',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([tac]), tac)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'flat', amount: 4 });
+    });
+  });
+
+  describe('Talent Psion d3-plus stacks with level bumps (none today; future-compat)', () => {
+    it('L10 Psion Talent: d3-plus stays at bonus 2 (no Talent per-turn level bump in canon)', () => {
+      const talent = pcWithResource({
+        id: 'psion',
+        resourceName: 'clarity',
+        startValue: 0,
+        floor: -1,
+        level: 10,
+        className: 'Talent',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([talent]), talent)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'd3-plus', bonus: 2 });
+    });
+  });
+
+  describe('Classes with no per-turn level scaling remain at baseline', () => {
+    it('L10 Fury still gains plain d3 ferocity per turn', () => {
+      const fury = pcWithResource({
+        id: 'fury',
+        resourceName: 'ferocity',
+        startValue: 0,
+        level: 10,
+        className: 'Fury',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([fury]), fury)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'd3' });
+    });
+
+    it('L10 Shadow still gains plain d3 insight per turn', () => {
+      const shadow = pcWithResource({
+        id: 'shadow',
+        resourceName: 'insight',
+        startValue: 0,
+        level: 10,
+        className: 'Shadow',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([shadow]), shadow)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'd3' });
+    });
+
+    it('L10 Null still gains flat +2 discipline per turn', () => {
+      const nul = pcWithResource({
+        id: 'null',
+        resourceName: 'discipline',
+        startValue: 0,
+        level: 10,
+        className: 'Null',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([nul]), nul)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'flat', amount: 2 });
+    });
+
+    it('L10 Troubadour still gains plain d3 drama per turn', () => {
+      const trou = pcWithResource({
+        id: 'trou',
+        resourceName: 'drama',
+        startValue: 0,
+        level: 10,
+        className: 'Troubadour',
+      });
+      expect(
+        getResourceConfigForParticipant(emptyState([trou]), trou)?.baseGain.onTurnStart,
+      ).toEqual({ kind: 'd3' });
+    });
   });
 });
 
