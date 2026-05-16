@@ -601,21 +601,25 @@ export class LobbyDO implements DurableObject {
     }
 
     // Round boundary: undo only intents since the most recent non-voided EndRound.
-    let lastEndRoundSeq = 0;
-    for (const row of allRows) {
-      if (row.voided) continue;
-      const p = JSON.parse(row.payload) as { type?: string };
-      if (p.type === 'EndRound' && row.seq > lastEndRoundSeq) {
-        lastEndRoundSeq = row.seq;
+    // Directors get unbounded undo — the clip applies only to non-directors so
+    // that if a player undo affordance is ever added, it remains constrained.
+    if (intent.actor.role !== 'director') {
+      let lastEndRoundSeq = 0;
+      for (const row of allRows) {
+        if (row.voided) continue;
+        const p = JSON.parse(row.payload) as { type?: string };
+        if (p.type === 'EndRound' && row.seq > lastEndRoundSeq) {
+          lastEndRoundSeq = row.seq;
+        }
       }
-    }
-    if (target.seq <= lastEndRoundSeq) {
-      this.sendTo(socket, {
-        kind: 'rejected',
-        intentId: intent.id,
-        reason: 'target is committed (past EndRound boundary)',
-      });
-      return;
+      if (target.seq <= lastEndRoundSeq) {
+        this.sendTo(socket, {
+          kind: 'rejected',
+          intentId: intent.id,
+          reason: 'target is committed (past EndRound boundary)',
+        });
+        return;
+      }
     }
 
     // Find derived chain.

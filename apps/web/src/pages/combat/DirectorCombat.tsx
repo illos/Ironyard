@@ -30,7 +30,7 @@ import {
   ulid,
 } from '@ironyard/shared';
 import { Link, useParams } from '@tanstack/react-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildIntent } from '../../api/dispatch';
 import { useCampaign, useMe, useMonsters } from '../../api/queries';
 import { useIsActingAsDirector } from '../../lib/active-director';
@@ -73,6 +73,27 @@ export function DirectorCombat() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [lastToastedSeq, setLastToastedSeq] = useState<number>(0);
   const [participantSnapshotBefore, setParticipantSnapshotBefore] = useState<Participant[]>([]);
+
+  // Tweak 4 — Cmd/Ctrl+Z undo keyboard shortcut.
+  // A ref holds the latest undo handler so the keyboard effect never needs to
+  // re-register. The handler ref is updated on every render (see below, after guards).
+  const undoHandlerRef = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key !== 'z') return;
+      // Skip when the focus is in an editable element.
+      const target = event.target as HTMLElement | null;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target?.isContentEditable
+      )
+        return;
+      undoHandlerRef.current?.();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []); // empty deps — the ref provides up-to-date access without re-registering
 
   // Auto-select the active participant when the round starts; pick the first
   // available participant otherwise. Same behaviour as CombatRun.handleFocus
@@ -237,14 +258,32 @@ export function DirectorCombat() {
     }
   }, [activeEncounter, activeParticipantId]);
 
+  // Tweak 2 — Director-only: auto-select the active turn-holder into the right-hand pane.
+  // Fires whenever the active participant changes; the director can still click another row
+  // to override, and the next turn-change re-syncs.
+  useEffect(() => {
+    if (!isActingAsDirector) return;
+    if (!activeParticipantId) return;
+    setSelectedId(activeParticipantId);
+  }, [isActingAsDirector, activeParticipantId]);
+
   // Row click focuses the DetailPane for both roles. Targeting is exclusively
   // via the per-row reticle button (Pass 2b1+).
   const handleFocus = useCallback((id: string) => setSelectedId(id), []);
   const handleRowClick = handleFocus;
-  const handleToggleTarget = useCallback((id: string) => {
-    setTargetParticipantIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+  const handleToggleTarget = useCallback((id: string, opts?: { additive?: boolean }) => {
+    setTargetParticipantIds((prev) => {
+      const additive = opts?.additive ?? false;
+      // Radio mode: no modifier + going from 0 or 1 selection → replace.
+      // Additive mode (modifier key / long-press) or already multi-select → add/toggle.
+      if (!additive && prev.length <= 1) {
+        // Radio: if already the sole selection, keep it (no-op); otherwise replace.
+        if (prev.length === 1 && prev[0] === id) return prev;
+        return [id];
+      }
+      // Additive / checkbox mode: toggle.
+      return prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+    });
   }, []);
 
   // Player view: DetailPane focus is render-derived from selfParticipantId so
@@ -334,7 +373,7 @@ export function DirectorCombat() {
     activeEncounter.firstSide !== null &&
     activeEncounter.activeParticipantId === null &&
     activeEncounter.currentPickingSide === null;
-  const undoable = findLatestUndoable(intentLog);
+  const undoable = findLatestUndoable(intentLog, { bypassRoundBoundary: true });
   const wsClosed = status !== 'open';
   const disabled = wsClosed;
 
@@ -369,6 +408,9 @@ export function DirectorCombat() {
     const payload: UndoPayload = { intentId: undoable.id };
     send(IntentTypes.Undo, payload);
   };
+  // Keep the undo-shortcut ref up-to-date with the latest handler (director-only).
+  // `undoHandlerRef` guards player view: handleUndoHeader already no-ops when undoable is null.
+  undoHandlerRef.current = isActingAsDirector ? handleUndoHeader : null;
   const handleToastUndo = (intentId: string) => {
     const payload: UndoPayload = { intentId };
     send(IntentTypes.Undo, payload);

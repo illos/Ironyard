@@ -222,14 +222,23 @@ export function describeIntent(args: DescribeArgs): string {
 // safe to undo from the UI — i.e. it's user-dispatched (not derived), not yet
 // voided, and lives inside the current round. Returns null if nothing in the
 // log qualifies.
-export function findLatestUndoable(log: MirrorIntent[]): MirrorIntent | null {
+//
+// opts.bypassRoundBoundary — when true, skip the EndRound clip entirely.
+// Pass this for director callers, which get unbounded undo; leave it false
+// (the default) to preserve the boundary for any future player undo path.
+export function findLatestUndoable(
+  log: MirrorIntent[],
+  opts?: { bypassRoundBoundary?: boolean },
+): MirrorIntent | null {
   // Identify the most recent EndRound; anything at or before its seq is
   // committed and can't be undone (DO enforces this anyway, but the UI
   // shouldn't tease the affordance).
   let lastEndRoundSeq = 0;
-  for (const i of log) {
-    if (i.type === IntentTypes.EndRound && !i.voided && i.seq > lastEndRoundSeq) {
-      lastEndRoundSeq = i.seq;
+  if (!opts?.bypassRoundBoundary) {
+    for (const i of log) {
+      if (i.type === IntentTypes.EndRound && !i.voided && i.seq > lastEndRoundSeq) {
+        lastEndRoundSeq = i.seq;
+      }
     }
   }
   for (let i = log.length - 1; i >= 0; i--) {
