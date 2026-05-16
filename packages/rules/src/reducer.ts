@@ -53,6 +53,7 @@ import {
   applySpendResource,
   applySpendSurge,
   applyStartEncounter,
+  applyStartMaintenance,
   applyStartRound,
   applyStartSession,
   applyStartTurn,
@@ -196,6 +197,8 @@ export function applyIntent(
       return applySpendSurge(state, intent);
     case IntentTypes.StartEncounter:
       return applyStartEncounter(state, intent, ctx);
+    case IntentTypes.StartMaintenance:
+      return applyStartMaintenance(state, intent);
     case IntentTypes.StartRound:
       return applyStartRound(state, intent);
     case IntentTypes.StartSession:
