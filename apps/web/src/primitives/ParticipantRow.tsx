@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { StaminaState } from '@ironyard/shared';
+import type { Participant, StaminaState, TargetingRelationKind } from '@ironyard/shared';
 import type { Pack } from '../theme/ThemeProvider';
 import { Button } from './Button';
 import { HpBar } from './HpBar';
@@ -12,6 +12,28 @@ export type PickAffordance =
   | { kind: 'other'; onClick: () => void; label: string }
   | { kind: 'foe-tap'; onClick: () => void }
   | null;
+
+// ── Targeting-relation chip helpers (Pass 3 Slice 2b) ────────────────────────
+
+/**
+ * Maps a participant's `className` (lower-cased) to its targeting relation kind.
+ * Only the three classes that have persistent targeting relations are listed.
+ */
+const CLASS_RELATION_KIND: Record<string, TargetingRelationKind | undefined> = {
+  censor: 'judged',
+  tactician: 'marked',
+  null: 'nullField',
+};
+
+/**
+ * The inbound chip label prefix for each relation kind.
+ * Full chip text: `${INBOUND_PHRASE[kind]} ${sourceName}`
+ */
+const INBOUND_PHRASE: Record<TargetingRelationKind, string> = {
+  judged: 'Judged by',
+  marked: 'Marked by',
+  nullField: 'In Null Field of',
+};
 
 export interface ParticipantRowProps {
   sigil: string;
@@ -44,6 +66,30 @@ export interface ParticipantRowProps {
   /** Pass 3 Slice 1 — canon §2.7-2.9 stamina state.
    *  Defaults to 'healthy' (no tag shown, no name decoration). */
   staminaState?: StaminaState;
+  // ── Pass 3 Slice 2b — targeting-relation chips ──────────────────────────────
+  /** The id of the participant this row represents.
+   *  Required for relation chips; ignored when allParticipants is not provided. */
+  thisParticipantId?: string;
+  /** Full roster of participants (for computing inbound + outbound chips).
+   *  Optional for backward compat — callers that don't pass it get no chips. */
+  allParticipants?: Participant[];
+  /** The current viewer's user id. Used to determine which sources they own. */
+  viewerUserId?: string | null;
+  /** True when the viewer is the active director (can edit any source's relations). */
+  isActingAsDirector?: boolean;
+  /**
+   * Called when the viewer taps an outbound toggle chip.
+   * Signature: (sourceId, relationKind, targetId, present)
+   *   - present=true  → add targetId to source's relation
+   *   - present=false → remove targetId from source's relation
+   * Task 16 will wire the actual dispatch; Task 15 only accepts the callback.
+   */
+  onToggleRelation?: (
+    sourceId: string,
+    relationKind: TargetingRelationKind,
+    targetId: string,
+    present: boolean,
+  ) => void;
 }
 
 export function ParticipantRow({
@@ -65,8 +111,63 @@ export function ParticipantRow({
   onSelect,
   pickAffordance,
   staminaState = 'healthy',
+  thisParticipantId,
+  allParticipants,
+  viewerUserId,
+  isActingAsDirector = false,
+  onToggleRelation,
 }: ParticipantRowProps) {
   const hasActed = acted || isActed;
+
+  // ── Targeting-relation chips (Pass 3 Slice 2b) ────────────────────────────
+  // Computed only when allParticipants + thisParticipantId are provided.
+  // No chips at all for callers that don't opt in.
+
+  /** Inbound: (source, kind) pairs where source.targetingRelations[kind] includes thisParticipantId */
+  const inboundChips: Array<{ label: string; key: string }> = [];
+  /** Outbound: (source, kind) pairs the viewer can edit (they own source OR are director) */
+  const outboundChips: Array<{
+    sourceId: string;
+    sourceName: string;
+    kind: TargetingRelationKind;
+    isSet: boolean;
+    key: string;
+  }> = [];
+
+  if (allParticipants && thisParticipantId) {
+    for (const p of allParticipants) {
+      // Skip the row participant itself — no self-loops
+      if (p.id === thisParticipantId) continue;
+      const relationKind = p.className
+        ? CLASS_RELATION_KIND[p.className.toLowerCase()]
+        : undefined;
+
+      if (!relationKind) continue;
+
+      const relationArray = p.targetingRelations[relationKind];
+      const isSet = relationArray.includes(thisParticipantId);
+
+      // Inbound: visible to everyone
+      if (isSet) {
+        inboundChips.push({
+          label: `${INBOUND_PHRASE[relationKind]} ${p.name}`,
+          key: `inbound-${p.id}-${relationKind}`,
+        });
+      }
+
+      // Outbound: only for viewer who owns source OR is active director
+      const viewerOwnsSource = viewerUserId != null && p.ownerId === viewerUserId;
+      if (viewerOwnsSource || isActingAsDirector) {
+        outboundChips.push({
+          sourceId: p.id,
+          sourceName: p.name,
+          kind: relationKind,
+          isSet,
+          key: `outbound-${p.id}-${relationKind}`,
+        });
+      }
+    }
+  }
   const isTargeted = target?.index != null;
   // Tailwind v4 JIT: static class lookups — no template interpolation (Pass 2b2a PS #2).
   const DEAD_NAME_CLASS = 'line-through opacity-60';
@@ -122,6 +223,50 @@ export function ParticipantRow({
         )}
         {staminaState !== 'healthy' && (
           <StaminaStateTag state={staminaState} />
+        )}
+        {/* Inbound chips (P4) — visible to all viewers */}
+        {inboundChips.length > 0 && (
+          <span className="flex flex-wrap gap-0.5 mt-0.5">
+            {inboundChips.map((chip) => (
+              <span
+                key={chip.key}
+                className="inline-flex items-center font-mono text-[9px] uppercase tracking-[0.1em] px-1.5 py-0.5 border border-accent text-accent bg-ink-1"
+              >
+                {chip.label}
+              </span>
+            ))}
+          </span>
+        )}
+        {/* Outbound chips (P2) — visible only to source owner or active director */}
+        {outboundChips.length > 0 && (
+          <span className="flex flex-wrap gap-0.5 mt-0.5">
+            {outboundChips.map((chip) => (
+              <button
+                key={chip.key}
+                type="button"
+                aria-label={`toggle ${chip.kind} from ${chip.sourceName}`}
+                aria-pressed={chip.isSet}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleRelation?.(chip.sourceId, chip.kind, thisParticipantId!, !chip.isSet);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onToggleRelation?.(chip.sourceId, chip.kind, thisParticipantId!, !chip.isSet);
+                  }
+                }}
+                className={`inline-flex items-center font-mono text-[9px] uppercase tracking-[0.1em] px-1.5 py-0.5 border transition-colors cursor-pointer ${
+                  chip.isSet
+                    ? 'border-hero text-hero bg-ink-3'
+                    : 'border-line text-text-mute bg-ink-1 hover:border-hero hover:text-hero'
+                }`}
+              >
+                {chip.sourceName}
+              </button>
+            ))}
+          </span>
         )}
       </span>
       <span className="flex gap-0.5">{conditions}</span>
