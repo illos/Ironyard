@@ -3,7 +3,6 @@ import type {
   EncounterTemplate,
   Monster,
   StartEncounterPayload,
-  StartRoundPayload,
 } from '@ironyard/shared';
 import { IntentTypes, ulid } from '@ironyard/shared';
 import { Link, useNavigate, useParams } from '@tanstack/react-router';
@@ -174,6 +173,10 @@ export function EncounterBuilder() {
       stampedMonsters: [],
     };
 
+    // StartEncounter already leaves currentRound === 1 with round-1 Malice
+    // applied (see start-encounter.ts:189 + the comment in turn.ts:67 — "Round
+    // 1 is applied at StartEncounter time; rounds 2+ apply here"). Dispatching
+    // a follow-up StartRound here would bump to round 2 and double-tick Malice.
     const startOk = dispatch(
       buildIntent({
         campaignId: sessionId,
@@ -182,18 +185,8 @@ export function EncounterBuilder() {
         actor,
       }),
     );
-    if (!startOk) return;
 
-    const roundOk = dispatch(
-      buildIntent({
-        campaignId: sessionId,
-        type: IntentTypes.StartRound,
-        payload: {} as StartRoundPayload,
-        actor,
-      }),
-    );
-
-    if (roundOk) {
+    if (startOk) {
       navigate({ to: '/campaigns/$id/play', params: { id: sessionId } });
     }
   };

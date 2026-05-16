@@ -505,6 +505,37 @@ describe('StartEncounter Malice generation', () => {
     expect(result.state.encounter?.malice.current).toBe(9);
   });
 
+  it('leaves currentRound at 1 — UI must NOT also dispatch StartRound (would bump to 2)', () => {
+    // Regression for the EncounterBuilder bug where StartEncounter was
+    // immediately followed by StartRound. Engine contract: StartEncounter
+    // alone leaves you at round 1 with round-1 Malice applied. A follow-up
+    // StartRound would bump to round 2 and double-tick Malice. See the
+    // comment in packages/rules/src/intents/turn.ts: "Round 1 is applied at
+    // StartEncounter time; rounds 2+ apply here."
+    const ctx: ReducerContext = { staticData: buildBundleWithFury() };
+    const stampedPcs = Array.from({ length: 5 }, (_, i) => ({
+      characterId: `c${i + 1}`,
+      name: `Hero ${i + 1}`,
+      ownerId: `u${i + 1}`,
+      character: buildFuryL1Fixture({ victories: 3 }),
+    }));
+
+    const result = applyIntent(
+      baseState(),
+      makeIntent({
+        characterIds: stampedPcs.map((p) => p.characterId),
+        monsters: [],
+        stampedPcs,
+        stampedMonsters: [],
+      }),
+      ctx,
+    );
+
+    expect(result.errors).toBeUndefined();
+    expect(result.state.encounter?.currentRound).toBe(1);
+    expect(result.state.encounter?.malice.current).toBe(9); // 3 + 5 + 1
+  });
+
   it('empty PC roster → malice 0 + 0 + 1 = 1 (formula yields, no special case)', () => {
     const monster = {
       id: 'goblin',
