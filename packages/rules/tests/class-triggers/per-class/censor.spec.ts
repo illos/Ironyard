@@ -14,10 +14,9 @@ import {
 
 // Pass 3 Slice 2a — Censor Wrath action triggers.
 //
-// `isJudgedBy` is a permissive stub for Slice 2a (Judgment-tracking state lands
-// later) — every non-self creature is treated as a Judgment target. These tests
-// pin both directions (judged-target → me, me → judged-target), the per-round
-// latch gate, and the no-fire-when-no-censor smoke case.
+// Slice 2b: `isJudgedBy` now reads from `censor.targetingRelations.judged`.
+// All slice-2a fixtures that exercise the trigger path have been updated to
+// include an explicit `judged: [<damager-id>]` entry so they still pass.
 
 const testCtx: ActionTriggerContext = {
   actor: { userId: 'test-user', role: 'director' },
@@ -51,6 +50,7 @@ describe('class-triggers/per-class/censor.evaluate', () => {
     const censor = makeHeroParticipant('censor-1', {
       className: 'Censor',
       heroicResources: [{ name: 'wrath', value: 0, floor: 0 }],
+      targetingRelations: { judged: ['mon-1'], marked: [], nullField: [] },
     });
     const goblin = makeMonsterParticipant('mon-1');
     const state = stateWith([censor, goblin]);
@@ -85,6 +85,7 @@ describe('class-triggers/per-class/censor.evaluate', () => {
     const censor = makeHeroParticipant('censor-1', {
       className: 'Censor',
       heroicResources: [{ name: 'wrath', value: 0, floor: 0 }],
+      targetingRelations: { judged: ['mon-1'], marked: [], nullField: [] },
     });
     const goblin = makeMonsterParticipant('mon-1');
     const state = stateWith([censor, goblin]);
@@ -115,6 +116,7 @@ describe('class-triggers/per-class/censor.evaluate', () => {
     const censor = makeHeroParticipant('censor-1', {
       className: 'Censor',
       heroicResources: [{ name: 'wrath', value: 0, floor: 0 }],
+      targetingRelations: { judged: ['mon-1'], marked: [], nullField: [] },
     });
     censor.perEncounterFlags.perRound.damagedJudgedTarget = true;
     const goblin = makeMonsterParticipant('mon-1');
@@ -128,5 +130,77 @@ describe('class-triggers/per-class/censor.evaluate', () => {
     };
     const result = evaluateCensor(state, event, testCtx);
     expect(result).toEqual([]);
+  });
+});
+
+describe('Censor isJudgedBy (slice 2b)', () => {
+  it('fires Wrath +1 when damager is in censor.targetingRelations.judged', () => {
+    const censor = makeHeroParticipant('censor-1', {
+      className: 'Censor',
+      heroicResources: [{ name: 'wrath', value: 0, floor: 0 }],
+      targetingRelations: { judged: ['goblin-a'], marked: [], nullField: [] },
+    });
+    const goblinA = makeMonsterParticipant('goblin-a');
+    const goblinB = makeMonsterParticipant('goblin-b');
+    const state = stateWith([censor, goblinA, goblinB]);
+    const event: ActionEvent = {
+      kind: 'damage-applied',
+      dealerId: 'goblin-a',
+      targetId: 'censor-1',
+      amount: 5,
+      type: 'fire',
+    };
+    const derived = evaluateCensor(state, event, testCtx);
+    const gain = derived.find((d) => d.type === 'GainResource');
+    expect(gain).toBeDefined();
+    expect(gain!.payload).toMatchObject({
+      participantId: 'censor-1',
+      name: 'wrath',
+      amount: 1,
+    });
+  });
+
+  it('does NOT fire when damager is NOT in censor.targetingRelations.judged (slice 2a over-fire regression)', () => {
+    const censor = makeHeroParticipant('censor-1', {
+      className: 'Censor',
+      heroicResources: [{ name: 'wrath', value: 0, floor: 0 }],
+      targetingRelations: { judged: [], marked: [], nullField: [] },
+    });
+    const goblinB = makeMonsterParticipant('goblin-b');
+    const state = stateWith([censor, goblinB]);
+    const event: ActionEvent = {
+      kind: 'damage-applied',
+      dealerId: 'goblin-b',
+      targetId: 'censor-1',
+      amount: 5,
+      type: 'fire',
+    };
+    const derived = evaluateCensor(state, event, testCtx);
+    expect(derived.filter((d) => d.type === 'GainResource')).toHaveLength(0);
+  });
+
+  it('fires Wrath +1 when censor damages a judged-target', () => {
+    const censor = makeHeroParticipant('censor-1', {
+      className: 'Censor',
+      heroicResources: [{ name: 'wrath', value: 0, floor: 0 }],
+      targetingRelations: { judged: ['goblin-a'], marked: [], nullField: [] },
+    });
+    const goblinA = makeMonsterParticipant('goblin-a');
+    const state = stateWith([censor, goblinA]);
+    const event: ActionEvent = {
+      kind: 'damage-applied',
+      dealerId: 'censor-1',
+      targetId: 'goblin-a',
+      amount: 5,
+      type: 'fire',
+    };
+    const derived = evaluateCensor(state, event, testCtx);
+    const gain = derived.find((d) => d.type === 'GainResource');
+    expect(gain).toBeDefined();
+    expect(gain!.payload).toMatchObject({
+      participantId: 'censor-1',
+      name: 'wrath',
+      amount: 1,
+    });
   });
 });
