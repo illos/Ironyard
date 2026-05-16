@@ -6,6 +6,18 @@ import { useSessionSocket } from '../../ws/useSessionSocket';
 import { DoomsightBecomeDoomedButton } from './DoomsightBecomeDoomedButton';
 import { EssenceBlock, type Maint } from './EssenceBlock';
 
+// TODO(Task 35/37): wire `./StrainedSpendModal` into the Talent ability-card
+// click flow. The modal is implemented and unit-tested but not yet hooked up
+// because the player-facing ability-card click currently routes through
+// DetailPane's dispatchRoll (RollPower), not UseAbility. Wiring requires:
+//   1. Detecting classId === 'talent' at the ability-card level
+//   2. Reading the ability's clarity spend cost (per-ability metadata)
+//   3. Reading participant clarity from heroicResources
+//   4. Computing isPsion via participant.level >= 10
+//   5. Gating dispatchRoll behind modal confirm + dispatching UseAbility with
+//      talentStrainedOptInRider / talentClarityDamageOptOutThisTurn toggles
+// Defer until the player-facing UseAbility dispatch path lands.
+
 type Props = {
   /** The player's own participant in the active encounter. */
   participant: Participant | null;
