@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PerEncounterLatchesSchema } from '../per-encounter-flags';
+import { PerEncounterLatchesSchema, PerRoundFlagsSchema } from '../per-encounter-flags';
 
 // Pass 3 Slice 2a — server-only support intents emitted by class-trigger
 // subscribers (see packages/rules/src/class-triggers). These write small,
@@ -16,6 +16,17 @@ export const SetParticipantPerEncounterLatchPayloadSchema = z
   .strict();
 export type SetParticipantPerEncounterLatchPayload = z.infer<
   typeof SetParticipantPerEncounterLatchPayloadSchema
+>;
+
+export const SetParticipantPerRoundFlagPayloadSchema = z
+  .object({
+    participantId: z.string().min(1),
+    key: PerRoundFlagsSchema.keyof(),
+    value: z.boolean(),
+  })
+  .strict();
+export type SetParticipantPerRoundFlagPayload = z.infer<
+  typeof SetParticipantPerRoundFlagPayloadSchema
 >;
 
 export const SetParticipantPosthumousDramaEligiblePayloadSchema = z

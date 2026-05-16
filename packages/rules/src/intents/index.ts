@@ -40,6 +40,7 @@ export { applyRollResistance } from './roll-resistance';
 export { applySetCondition } from './set-condition';
 export {
   applySetParticipantPerEncounterLatch,
+  applySetParticipantPerRoundFlag,
   applySetParticipantPosthumousDramaEligible,
 } from './set-participant-flag';
 export { applySetResource } from './set-resource';
