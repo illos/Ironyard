@@ -663,6 +663,8 @@ Future post-shipping fixes to Slice 2a layer the same way slice 1's did: append 
    - `hasActiveNullField` (Null) — TODO Slice 2b/2c — active-ability lookup
    - Until these land, the 3 affected triggers over-fire and the canon entries are flagged manual-override.
 
+   **Closed by slice 2b** ([spec](2026-05-15-pass-3-slice-2b-targeting-relations-design.md), canon-flip commit `ea84058`). All three predicates now read from a player-managed `Participant.targetingRelations` tagged-map (auto-set from `UseAbility` for `'censor-judgment-t1'` and `'tactician-mark-t1'`). The over-fire bugs are gone; canon § 5.4 umbrella + § 5.4.1 / § 5.4.5 / § 5.4.7 flipped 🚧 → ✅.
+
 8. **`hasPsionFeature` heuristic.** Task 17 used `participant.level >= 10` as the interim Psion-feature gate (since Q18 class-feature-choice schema isn't shipped). Over-includes 10th-level Talents who choose non-Psion features. Rewire when Q18 lands.
 
 9. **`apps/api/src/lobby-do.ts` SERVER_ONLY_INTENTS hard-code.** Pre-existing tech debt unrelated to slice 2a — lobby-do.ts has its own hardcoded `SERVER_ONLY_INTENTS` set of 4 intents that doesn't consume the engine's `SERVER_ONLY_INTENTS` from `@ironyard/shared`. Task 29 added the engine-level `canDispatch` but the lobby boundary doesn't yet use it. Server-only intents Task 6/10/12/21 added are not enforced at the lobby boundary today. Follow-up task to wire `lobby-do.ts` to consume `canDispatch` + the shared SERVER_ONLY_INTENTS.
