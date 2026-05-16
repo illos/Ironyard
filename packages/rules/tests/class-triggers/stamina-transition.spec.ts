@@ -221,4 +221,118 @@ describe('evaluateStaminaTransitionTriggers', () => {
       evaluateStaminaTransitionTriggers(transition('fury-1', 'winded'), state, badCtx),
     ).toThrow(/ferocityD3 was not supplied/);
   });
+
+  // Cause-filter follow-up (Task 16 review). Damage-caused transitions are the
+  // only ones that grant Fury Ferocity or Troubadour any-hero-winded drama.
+  // Healing a downed Fury back into winded must NOT fire Ferocity (and must
+  // NOT throw on missing ferocityD3 — see apply-heal.spec.ts regression test).
+  describe('cause filter', () => {
+    const noRollsCtx: StaminaTransitionTriggerContext = {
+      actor: { userId: 'test-user', role: 'director' },
+      rolls: {}, // intentionally empty — would throw if a Fury entry matched
+    };
+
+    it('Fury winded does NOT fire when cause is heal (and does not throw)', () => {
+      const fury = makeHeroParticipant('fury-1', { className: 'Fury' });
+      const state = stateWith([fury]);
+      expect(() =>
+        evaluateStaminaTransitionTriggers(
+          transition('fury-1', 'winded', 'dying', 'heal'),
+          state,
+          noRollsCtx,
+        ),
+      ).not.toThrow();
+      const result = evaluateStaminaTransitionTriggers(
+        transition('fury-1', 'winded', 'dying', 'heal'),
+        state,
+        noRollsCtx,
+      );
+      expect(result).toEqual([]);
+    });
+
+    it('Fury dying does NOT fire when cause is override-applied (and does not throw)', () => {
+      const fury = makeHeroParticipant('fury-1', { className: 'Fury' });
+      const state = stateWith([fury]);
+      const result = evaluateStaminaTransitionTriggers(
+        transition('fury-1', 'dying', 'winded', 'override-applied'),
+        state,
+        noRollsCtx,
+      );
+      expect(result).toEqual([]);
+    });
+
+    it('Fury winded DOES fire when cause is damage (sanity)', () => {
+      const fury = makeHeroParticipant('fury-1', {
+        className: 'Fury',
+        heroicResources: [{ name: 'ferocity', value: 0, floor: 0 }],
+      });
+      const state = stateWith([fury]);
+      const result = evaluateStaminaTransitionTriggers(
+        transition('fury-1', 'winded', 'healthy', 'damage'),
+        state,
+        testCtx,
+      );
+      expect(result.some((r) => r.type === 'GainResource')).toBe(true);
+    });
+
+    it('Troubadour any-hero-winded does NOT fire when cause is heal', () => {
+      const trou = makeHeroParticipant('trou-1', {
+        className: 'Troubadour',
+        heroicResources: [{ name: 'drama', value: 0, floor: 0 }],
+      });
+      const victim = makeHeroParticipant('pc-victim', { className: 'Censor' });
+      const state = stateWith([trou, victim]);
+      const result = evaluateStaminaTransitionTriggers(
+        transition('pc-victim', 'winded', 'dying', 'heal'),
+        state,
+        testCtx,
+      );
+      expect(result.filter((r) => r.type === 'GainResource')).toEqual([]);
+      expect(result.filter((r) => r.type === 'SetParticipantPerEncounterLatch')).toEqual([]);
+    });
+
+    it('Troubadour any-hero-winded DOES fire when cause is damage (sanity)', () => {
+      const trou = makeHeroParticipant('trou-1', {
+        className: 'Troubadour',
+        heroicResources: [{ name: 'drama', value: 0, floor: 0 }],
+      });
+      const victim = makeHeroParticipant('pc-victim', { className: 'Censor' });
+      const state = stateWith([trou, victim]);
+      const result = evaluateStaminaTransitionTriggers(
+        transition('pc-victim', 'winded', 'healthy', 'damage'),
+        state,
+        testCtx,
+      );
+      const gain = result.find(
+        (r) =>
+          r.type === 'GainResource' &&
+          (r.payload as { participantId: string }).participantId === 'trou-1',
+      );
+      expect(gain).toBeDefined();
+    });
+
+    it('Troubadour hero-dies remains unfiltered by cause (encounter-end doomed death still grants drama)', () => {
+      // Per spec point 4/5: death should grant drama regardless of cause —
+      // dieAtEncounterEnd on a doomed PC uses `cause: 'encounter-end'` and
+      // must still credit the Troubadour and set posthumousDramaEligible.
+      const trou = makeHeroParticipant('trou-1', {
+        className: 'Troubadour',
+        heroicResources: [{ name: 'drama', value: 5, floor: 0 }],
+      });
+      const victim = makeHeroParticipant('pc-victim', { className: 'Fury' });
+      const state = stateWith([trou, victim]);
+      const result = evaluateStaminaTransitionTriggers(
+        transition('pc-victim', 'dead', 'doomed', 'encounter-end'),
+        state,
+        testCtx,
+      );
+      const gain = result.find(
+        (r) =>
+          r.type === 'GainResource' &&
+          (r.payload as { participantId: string }).participantId === 'trou-1',
+      );
+      expect(gain).toBeDefined();
+      expect((gain!.payload as { amount: number }).amount).toBe(10);
+    });
+  });
 });

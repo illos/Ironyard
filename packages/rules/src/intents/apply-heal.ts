@@ -79,15 +79,14 @@ export function applyApplyHeal(state: CampaignState, intent: StampedIntent): Int
       }]
     : [];
 
-  // Pass 3 Slice 2a — class-δ stamina-transition triggers. Heal mostly drives
-  // upward transitions (dying → winded / healthy); the Troubadour any-hero-
-  // winded entry can legitimately fire when a hero is healed back up to the
-  // winded band on the first time per encounter. The Fury Ferocity entries
-  // also nominally match `to: 'winded' | 'dying'` from the upward direction,
-  // which is rules-questionable (Ferocity is intuitively a "took damage past
-  // half" trigger). ferocityD3 is intentionally undefined here — if the Fury
-  // entries do fire from a heal, the evaluator throws and we'll know.
-  // Direction-filtering on the trigger matchers is out of scope for Task 16.
+  // Pass 3 Slice 2a — class-δ stamina-transition triggers. Heal only ever
+  // produces upward transitions (dying → winded/healthy, unconscious → winded/
+  // healthy). The Fury Ferocity entries and the Troubadour any-hero-winded
+  // entry all filter on `cause === 'damage'`, so passing `cause: 'heal'` here
+  // is sufficient to skip them safely — ferocityD3 stays undefined because no
+  // Fury entry will match. The Troubadour hero-dies and posthumous-drama
+  // entries match on `to: 'dead'` regardless of cause, but heal cannot
+  // produce a dead transition.
   if (transitioned) {
     const postHealState: CampaignState = { ...state, participants: updatedParticipants };
     const triggerDerived = evaluateStaminaTransitionTriggers(

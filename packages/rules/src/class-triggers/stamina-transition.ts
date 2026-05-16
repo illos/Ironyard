@@ -53,8 +53,14 @@ function requireFerocityD3(ctx: StaminaTransitionTriggerContext): number {
 const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
   {
     // Fury Ferocity — first time per encounter winded (+1d3 ferocity).
+    // Per Phase 5 design spec (line 212), Ferocity is "took damage" — the
+    // trigger must NOT fire when the transition came from a heal, override
+    // application, encounter-end, or recoveries-refilled / -exhausted. The
+    // cause-filter also guards `requireFerocityD3` from throwing when callers
+    // (e.g. apply-heal) legitimately have no pre-rolled ferocityD3 to supply.
     match: (event, state) => {
       if (event.to !== 'winded') return false;
+      if (event.cause !== 'damage') return false;
       const p = state.participants.filter(isParticipant).find((x) => x.id === event.participantId);
       if (!p || p.kind !== 'pc') return false;
       if (resolveParticipantClass(state, p) !== 'fury') return false;
@@ -86,8 +92,11 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
   },
   {
     // Fury Ferocity — first time per encounter dying (+1d3 ferocity).
+    // Same damage-only cause filter as the winded entry above — Ferocity is a
+    // "took damage" trigger per spec, and apply-heal cannot supply ferocityD3.
     match: (event, state) => {
       if (event.to !== 'dying') return false;
+      if (event.cause !== 'damage') return false;
       const p = state.participants.filter(isParticipant).find((x) => x.id === event.participantId);
       if (!p || p.kind !== 'pc') return false;
       if (resolveParticipantClass(state, p) !== 'fury') return false;
@@ -120,8 +129,15 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
   {
     // Troubadour Drama — first time per encounter any hero becomes winded (+2 drama,
     // per Troubadour, per encounter).
+    //
+    // Cause filter: only damage-caused transitions qualify. Healing a downed
+    // hero up to winded, or applying an override that yields a winded state,
+    // is not the "becomes winded" threat-pressure event the canon entry
+    // describes. Defensive default — if a future canon clarification asks for
+    // upward-from-dying to count, widen this filter then.
     match: (event, state) => {
       if (event.to !== 'winded') return false;
+      if (event.cause !== 'damage') return false;
       const winded = state.participants
         .filter(isParticipant)
         .find((x) => x.id === event.participantId);

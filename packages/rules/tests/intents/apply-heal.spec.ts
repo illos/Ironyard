@@ -190,9 +190,12 @@ describe('applyApplyHeal — dying hero → healthy/winded', () => {
 });
 
 describe('applyApplyHeal — class-δ stamina-transition trigger wiring (Task 16)', () => {
-  it('Troubadour any-hero-winded fires when a hero heals from dying back into winded', () => {
-    // dying at -3/30 (heals 10 → winded at 7/30) is a `to: 'winded'` event that
-    // the Troubadour any-hero-winded entry matches. Latch on Troubadour unflipped.
+  it('Troubadour any-hero-winded does NOT fire when a hero heals from dying back into winded', () => {
+    // dying at -3/30 (heals 10 → winded at 7/30) emits StaminaTransitioned with
+    // `cause: 'heal'`. The Troubadour any-hero-winded entry filters on
+    // `cause === 'damage'`, so heal-into-winded must not credit drama. Same
+    // filter prevents the Fury Ferocity entries from firing (and throwing on
+    // missing ferocityD3) — see follow-up fix in stamina-transition.ts.
     const victim = makeHeroParticipant(TARGET_ID, {
       maxStamina: 30,
       currentStamina: -3,
@@ -222,10 +225,43 @@ describe('applyApplyHeal — class-δ stamina-transition trigger wiring (Task 16
     // Slice 1 behavior intact — dying bleed cleared, state = winded.
     const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
     expect(updated.staminaState).toBe('winded');
-    // Class trigger fired — +2 drama to Troubadour, causedBy chain set.
-    const gain = result.derived.find((d) => d.type === 'GainResource');
-    expect(gain).toBeDefined();
-    const gainPayload = gain!.payload as { participantId: string; name: string; amount: number };
-    expect(gainPayload).toEqual({ participantId: 'trou-1', name: 'drama', amount: 2 });
+    // Class trigger did NOT fire — only the StaminaTransitioned event itself.
+    expect(result.derived.filter((d) => d.type === 'GainResource')).toEqual([]);
+    expect(result.derived.filter((d) => d.type === 'StaminaTransitioned')).toHaveLength(1);
+  });
+
+  it('does not throw when a downed Fury is healed back to winded (no ferocityD3 supplied)', () => {
+    // Regression guard for the production-reachable crash: ApplyHeal does not
+    // supply ferocityD3, so before the cause filter the Fury winded entry
+    // would match and `requireFerocityD3` would throw, cascading the reducer.
+    // With the damage-only filter the entry skips cleanly.
+    const fury = makeHeroParticipant(TARGET_ID, {
+      maxStamina: 30,
+      currentStamina: -3,
+      staminaState: 'dying',
+      className: 'Fury',
+      heroicResources: [{ name: 'ferocity', value: 0, floor: 0 }],
+      conditions: [
+        {
+          type: 'Bleeding',
+          duration: { kind: 'manual' },
+          source: { kind: 'effect', id: 'dying-state' },
+          removable: false,
+          appliedAtSeq: 0,
+        },
+      ],
+    });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [fury],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    expect(() => applyApplyHeal(s, applyHealIntent({ amount: 10 }))).not.toThrow();
+    const result = applyApplyHeal(s, applyHealIntent({ amount: 10 }));
+    expect(result.errors ?? []).toEqual([]);
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
+    expect(updated.staminaState).toBe('winded');
+    // No Fury Ferocity grant on heal.
+    expect(result.derived.filter((d) => d.type === 'GainResource')).toEqual([]);
   });
 });
