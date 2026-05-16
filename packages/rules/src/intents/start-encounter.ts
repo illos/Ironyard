@@ -158,6 +158,15 @@ export function applyStartEncounter(
       psionFlags: defaultPsionFlags(),
       maintainedAbilities: [],
       targetingRelations: defaultTargetingRelations(),
+      // Phase 2b Group A+B (2b.1, 2b.3, 2b.4, 2b.8): scaffolding snapshot from
+      // CharacterRuntime. Read sites land in later slices; this slice ships
+      // the shape so per-trait overrides can populate the runtime fields.
+      movementMode: null,
+      bloodfireActive: false,
+      conditionImmunities: runtime.conditionImmunities,
+      disengageBonus: runtime.disengageBonus,
+      meleeDistanceBonus: runtime.meleeDistanceBonus,
+      rangedDistanceBonus: runtime.rangedDistanceBonus,
     };
   });
 

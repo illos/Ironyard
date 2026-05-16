@@ -85,6 +85,12 @@ export function makeHeroParticipant(id: string, overrides: Partial<Participant> 
     psionFlags: defaultPsionFlags(),
     maintainedAbilities: [],
     targetingRelations: defaultTargetingRelations(),
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
     ...overrides,
   };
 }
@@ -136,6 +142,12 @@ export function makeMonsterParticipant(
     psionFlags: defaultPsionFlags(),
     maintainedAbilities: [],
     targetingRelations: defaultTargetingRelations(),
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
     ...overrides,
   };
 }

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ActiveAbilityInstanceSchema } from './active-ability';
 import { CharacteristicsSchema } from './characteristic';
-import { ConditionInstanceSchema } from './condition';
+import { ConditionInstanceSchema, ConditionTypeSchema } from './condition';
 import { TypedResistanceSchema } from './damage';
 import { MaintainedAbilitySchema } from './maintained-ability';
 import { PerEncounterFlagsSchema, defaultPerEncounterFlags } from './per-encounter-flags';
@@ -166,5 +166,33 @@ export const ParticipantSchema = z.object({
   // referenced target is removed via RemoveParticipant. Defaults to three
   // empty arrays so pre-slice-2b snapshots load without migration.
   targetingRelations: TargetingRelationsSchema.default(defaultTargetingRelations()),
+  // Phase 2b Group A+B (2b.1) — temporary movement mode primitive used by
+  // Wings (Devil + Dragon Knight) and Polder Shadowmeld. Set by
+  // StartFlying / StartShadowmeld intents in later slices; cleared by
+  // EndFlying or by the round-tick when roundsRemaining hits 0. `null`
+  // means standard ground movement. Nullable + null default keeps older
+  // snapshots parseable.
+  movementMode: z
+    .object({
+      mode: z.enum(['flying', 'shadow']),
+      roundsRemaining: z.number().int().min(0),
+    })
+    .nullable()
+    .default(null),
+  // Phase 2b Group A+B (2b.8.b) — Orc Bloodfire Rush latch. True while the
+  // hero is dying and the Bloodfire bonus damage applies. Set / cleared by
+  // reducer hooks on stamina-state transitions in a later slice.
+  bloodfireActive: z.boolean().default(false),
+  // Phase 2b Group A+B (2b.8) — condition-immunity snapshot stamped from
+  // CharacterRuntime at StartEncounter. Reducer helpers consume this to gate
+  // ApplyCondition + side-effects (Bleeding via dying, etc.). Empty default
+  // keeps pre-2b snapshots parseable.
+  conditionImmunities: z.array(ConditionTypeSchema).default([]),
+  // Phase 2b Group A+B (2b.3 + 2b.4) — kit-side bonus snapshots stamped from
+  // CharacterRuntime at StartEncounter. Consumed by Disengage / range-check
+  // sites in later slices. Defaults keep older snapshots parseable.
+  disengageBonus: z.number().int().nonnegative().default(0),
+  meleeDistanceBonus: z.number().int().nonnegative().default(0),
+  rangedDistanceBonus: z.number().int().nonnegative().default(0),
 });
 export type Participant = z.infer<typeof ParticipantSchema>;

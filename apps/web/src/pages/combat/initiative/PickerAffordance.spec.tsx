@@ -49,6 +49,12 @@ function pc(id: string, ownerId: string | null): Participant {
     psionFlags: defaultPsionFlags(),
     maintainedAbilities: [],
     targetingRelations: defaultTargetingRelations(),
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
     purchasedTraits: [],
     equippedTitleIds: [],
   };

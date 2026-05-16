@@ -1,4 +1,4 @@
-import type { Character, Characteristics } from '@ironyard/shared';
+import type { Character, Characteristics, ConditionType } from '@ironyard/shared';
 import { applyAttachments } from './attachments/apply';
 import { collectAttachments } from './attachments/collect';
 import { requireCanon } from './require-canon';
@@ -27,6 +27,23 @@ export type CharacterRuntime = {
     melee: [number, number, number];
     ranged: [number, number, number];
   };
+  // Phase 2b Group A+B (2b.8): condition-immunity list. Applier appends from
+  // `condition-immunity` AttachmentEffects; deduped before return. Snapshotted
+  // onto Participant.conditionImmunities at StartEncounter.
+  conditionImmunities: ConditionType[];
+  // Phase 2b Group A+B (2b.4): kit-side disengage bonus. Sums from
+  // `disengage-bonus` AttachmentEffects. Snapshotted onto
+  // Participant.disengageBonus at StartEncounter.
+  disengageBonus: number;
+  // Phase 2b Group A+B (2b.3): kit-side weapon distance bonuses. Sum from
+  // `weapon-distance-bonus` AttachmentEffects. Snapshotted onto Participant
+  // at StartEncounter; consumed by range-check sites in a later slice.
+  meleeDistanceBonus: number;
+  rangedDistanceBonus: number;
+  // Phase 2b Group A+B (2b.5): skill GROUP names that grant an edge on rolls
+  // within that group (Wode + High Elf Glamors). Consumed by skill rolls in
+  // a later slice. Deduped before return.
+  skillEdges: string[];
 };
 
 // Canonical order the 5 characteristic scores always map into.
@@ -165,6 +182,14 @@ function deriveBaseRuntime(character: Character, staticData: StaticDataBundle): 
     stability,
     freeStrikeDamage,
     weaponDamageBonus,
+    // Phase 2b Group A+B (2b.3, 2b.4, 2b.5, 2b.8): scaffolding fields. The
+    // applier populates these via the new effect kinds; this slice ships
+    // empty / zero defaults with no read sites yet.
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
+    skillEdges: [],
   };
 }
 

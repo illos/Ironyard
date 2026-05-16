@@ -23,6 +23,14 @@ export const KitSchema = z.object({
   // 2B uses these to gate weapon/armor item bonuses on the attachment fold.
   // Examples: ['heavy-weapon'], ['light-armor', 'shield'].
   keywords: z.array(z.string()).default([]),
+  // Phase 2b Group A+B (2b.3 + 2b.4): kit-side bonuses. The kit collector
+  // emits `weapon-distance-bonus` / `disengage-bonus` attachment effects when
+  // these are non-zero in a later slice; the applier sums into the matching
+  // CharacterRuntime fields and ParticipantSchema snapshots them at
+  // StartEncounter. Defaults keep older fixtures and parse paths green.
+  meleeDistanceBonus: z.number().int().nonnegative().default(0),
+  rangedDistanceBonus: z.number().int().nonnegative().default(0),
+  disengageBonus: z.number().int().nonnegative().default(0),
 });
 export type Kit = z.infer<typeof KitSchema>;
 

@@ -45,6 +45,9 @@ export function applyAttachments(
   out.abilityIds = [...new Set(out.abilityIds)];
   out.skills = [...new Set(out.skills)];
   out.languages = [...new Set(out.languages)];
+  // Phase 2b Group A+B (2b.5, 2b.8): new array-valued runtime fields.
+  out.conditionImmunities = [...new Set(out.conditionImmunities)];
+  out.skillEdges = [...new Set(out.skillEdges)];
 
   return out;
 }
@@ -58,8 +61,16 @@ function evaluateCondition(cond: AttachmentCondition, ctx: ApplyCtx): boolean {
   }
 }
 
-function resolveLevel(value: number | 'level', character: Character): number {
-  return value === 'level' ? character.level : value;
+// Phase 2b Group A+B: extended to handle the `{ kind: 'level-plus', offset }`
+// variant used by Polder Corruption Immunity. Backward-compatible with the
+// existing number-or-'level' shape.
+function resolveLevel(
+  value: number | 'level' | { kind: 'level-plus'; offset: number },
+  character: Character,
+): number {
+  if (typeof value === 'number') return value;
+  if (value === 'level') return character.level;
+  return character.level + value.offset; // level-plus
 }
 
 function applyEffect(out: CharacterRuntime, effect: AttachmentEffect, ctx: ApplyCtx): void {
@@ -68,6 +79,15 @@ function applyEffect(out: CharacterRuntime, effect: AttachmentEffect, ctx: Apply
       (out as unknown as Record<string, number>)[effect.stat] =
         ((out as unknown as Record<string, number>)[effect.stat] ?? 0) + effect.delta;
       return;
+    case 'stat-mod-echelon': {
+      // Phase 2b Group A+B (2b.6): per-echelon stat-mod. Echelon index derived
+      // from character.level per canon: 1-3 → 0, 4-6 → 1, 7-9 → 2, 10+ → 3.
+      const lvl = ctx.character.level;
+      const idx = lvl >= 10 ? 3 : lvl >= 7 ? 2 : lvl >= 4 ? 1 : 0;
+      (out as unknown as Record<string, number>)[effect.stat] =
+        ((out as unknown as Record<string, number>)[effect.stat] ?? 0) + effect.perEchelon[idx];
+      return;
+    }
     case 'stat-replace':
       (out as unknown as Record<string, number | string>)[effect.stat] = effect.value;
       return;
@@ -80,6 +100,11 @@ function applyEffect(out: CharacterRuntime, effect: AttachmentEffect, ctx: Apply
     case 'grant-language':
       out.languages.push(effect.language);
       return;
+    case 'grant-skill-edge':
+      // Phase 2b Group A+B (2b.5): skill group edge for Wode + High Elf Glamors.
+      // Consumed by skill rolls in slice 5 (later).
+      out.skillEdges.push(effect.skillGroup);
+      return;
     case 'immunity':
       out.immunities.push({
         kind: effect.damageKind,
@@ -91,6 +116,10 @@ function applyEffect(out: CharacterRuntime, effect: AttachmentEffect, ctx: Apply
         kind: effect.damageKind,
         value: resolveLevel(effect.value, ctx.character),
       });
+      return;
+    case 'condition-immunity':
+      // Phase 2b Group A+B (2b.8): append; deduped below.
+      out.conditionImmunities.push(effect.condition);
       return;
     case 'free-strike-damage':
       out.freeStrikeDamage += effect.delta;
@@ -108,5 +137,14 @@ function applyEffect(out: CharacterRuntime, effect: AttachmentEffect, ctx: Apply
       ];
       return;
     }
+    case 'weapon-distance-bonus':
+      // Phase 2b Group A+B (2b.3): kit-side weapon distance bonus.
+      if (effect.appliesTo === 'melee') out.meleeDistanceBonus += effect.delta;
+      else out.rangedDistanceBonus += effect.delta;
+      return;
+    case 'disengage-bonus':
+      // Phase 2b Group A+B (2b.4): kit-side disengage bonus.
+      out.disengageBonus += effect.delta;
+      return;
   }
 }

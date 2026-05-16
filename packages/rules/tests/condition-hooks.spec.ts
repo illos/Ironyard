@@ -56,6 +56,12 @@ function pc(over: Partial<Participant> = {}): Participant {
     purchasedTraits: [],
     equippedTitleIds: [],
     targetingRelations: defaultTargetingRelations(),
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
     ...over,
   };
 }
@@ -104,6 +110,12 @@ function monster(over: Partial<Participant> = {}): Participant {
     purchasedTraits: [],
     equippedTitleIds: [],
     targetingRelations: defaultTargetingRelations(),
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
     ...over,
   };
 }

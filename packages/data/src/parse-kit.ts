@@ -137,6 +137,12 @@ export function parseKitMarkdown(md: string): Kit | null {
     rangedDamageBonusPerTier,
     signatureAbilityId,
     keywords,
+    // Phase 2b Group A+B (2b.3 + 2b.4): kit-side bonus extraction lands in
+    // slices 10/11. For now, the parser emits zeros so the new fields satisfy
+    // the schema; the engine adds nothing until the regex extractors arrive.
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
+    disengageBonus: 0,
   };
 }
 

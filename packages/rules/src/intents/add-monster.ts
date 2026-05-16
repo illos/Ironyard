@@ -56,6 +56,16 @@ export function participantFromMonster(
     psionFlags: defaultPsionFlags(),
     maintainedAbilities: [],
     targetingRelations: defaultTargetingRelations(),
+    // Phase 2b Group A+B (2b.1, 2b.3, 2b.4, 2b.8): monsters carry default
+    // scaffolding values. Movement-mode / bloodfire / kit bonuses are PC-only;
+    // condition-immunities for monsters land in a follow-up (monster overrides
+    // out of scope for Group A+B).
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
   };
 }
 

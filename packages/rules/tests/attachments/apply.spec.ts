@@ -21,6 +21,12 @@ function baseRuntime(overrides: Partial<CharacterRuntime> = {}): CharacterRuntim
     stability: 0,
     freeStrikeDamage: 2,
     weaponDamageBonus: { melee: [0, 0, 0], ranged: [0, 0, 0] },
+    // Phase 2b Group A+B scaffolding defaults.
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
+    skillEdges: [],
     ...overrides,
   };
 }

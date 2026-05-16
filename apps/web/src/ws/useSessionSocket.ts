@@ -934,6 +934,14 @@ function participantFromMonsterClient(
     targetingRelations: defaultTargetingRelations(),
     purchasedTraits: [],
     equippedTitleIds: [],
+    // Phase 2b Group A+B (2b.1, 2b.3, 2b.4, 2b.8): scaffolding defaults; this
+    // helper mirrors a monster, so kit bonuses are zero by design.
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
   };
 }
 

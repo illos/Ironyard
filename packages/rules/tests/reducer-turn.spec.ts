@@ -73,6 +73,12 @@ function part(id: string, name = id): Participant {
     purchasedTraits: [],
     equippedTitleIds: [],
     targetingRelations: defaultTargetingRelations(),
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
   };
 }
 

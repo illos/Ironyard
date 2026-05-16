@@ -42,6 +42,12 @@ function makeParticipant(
     surprised: false,
     victories: 0,
     targetingRelations: defaultTargetingRelations(),
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
     className: null,
     // Named required fields + all caller-supplied overrides on top
     ...overrides,
@@ -63,6 +69,12 @@ const goblin = makeParticipant({
   ownerId: null,
   className: null,
   targetingRelations: defaultTargetingRelations(),
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
 });
 
 /** Aldric — Censor. Judges goblin-a. */
@@ -191,6 +203,12 @@ describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
       ownerId: 'user-aldric',
       className: 'Censor',
       targetingRelations: defaultTargetingRelations(),
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
     });
     render(
       <ParticipantRow
@@ -211,6 +229,12 @@ describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
       ownerId: 'user-aldric',
       className: 'Censor',
       targetingRelations: defaultTargetingRelations(),
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
     });
     // director is someone else (user-director), not user-aldric
     render(
@@ -245,6 +269,12 @@ describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
       ownerId: 'user-aldric',
       className: 'Censor',
       targetingRelations: defaultTargetingRelations(),
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
     });
     render(
       <ParticipantRow
@@ -267,6 +297,12 @@ describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
       ownerId: 'user-aldric',
       className: 'Censor',
       targetingRelations: defaultTargetingRelations(),
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
     });
     render(
       <ParticipantRow
@@ -308,6 +344,12 @@ describe('ParticipantRow — targeting relation chips (slice 2b)', () => {
       ownerId: 'user-self',
       className: 'Censor',
       targetingRelations: defaultTargetingRelations(),
+    movementMode: null,
+    bloodfireActive: false,
+    conditionImmunities: [],
+    disengageBonus: 0,
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
     });
     render(
       <ParticipantRow
