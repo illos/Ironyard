@@ -8,7 +8,11 @@ import {
   applyIntent,
   emptyCampaignState,
 } from '../src/index';
-import { HEROIC_RESOURCES, resolveFloor } from '../src/heroic-resources';
+import {
+  HEROIC_RESOURCES,
+  getResourceConfigForParticipant,
+  resolveFloor,
+} from '../src/heroic-resources';
 import { isParticipant } from '../src/types';
 
 const T = 1_700_000_000_000;
@@ -37,12 +41,14 @@ function pcWithResource(opts: {
   startValue: number;
   floor?: number;
   victories?: number;
+  level?: number;
+  className?: string | null;
 }): Participant {
   return {
     id: opts.id,
     name: opts.id,
     kind: 'pc',
-    level: 1,
+    level: opts.level ?? 1,
     currentStamina: 30,
     maxStamina: 30,
     characteristics: { might: 0, agility: 0, reason: 0, intuition: 0, presence: 0 },
@@ -71,7 +77,7 @@ function pcWithResource(opts: {
     freeStrike: null,
     ev: null,
     withCaptain: null,
-    className: null,
+    className: opts.className ?? null,
     staminaState: 'healthy',
     staminaOverride: null,
     bodyIntact: true,
@@ -140,6 +146,86 @@ describe('resolveFloor', () => {
         { reason: 0 },
       ),
     ).toBe(-1);
+  });
+});
+
+describe('getResourceConfigForParticipant — slice 2a additions', () => {
+  function emptyState(participants: Participant[]): CampaignState {
+    return {
+      ...emptyCampaignState(campaignId, 'user-owner'),
+      participants,
+    };
+  }
+
+  it('Talent at level 10 returns d3-plus variant with bonus 2', () => {
+    const talent = pcWithResource({
+      id: 'psion',
+      resourceName: 'clarity',
+      startValue: 0,
+      floor: -1,
+      level: 10,
+      className: 'Talent',
+    });
+    const config = getResourceConfigForParticipant(emptyState([talent]), talent);
+    expect(config).not.toBeNull();
+    expect(config?.baseGain.onTurnStart.kind).toBe('d3-plus');
+    if (config?.baseGain.onTurnStart.kind === 'd3-plus') {
+      expect(config.baseGain.onTurnStart.bonus).toBe(2);
+    }
+    // floor still resolves from the base config — slice-2a only mutates baseGain
+    expect(config?.floor).toEqual({ formula: 'negative_one_plus_reason' });
+  });
+
+  it('Talent below 10th level returns the plain d3 variant', () => {
+    const talent = pcWithResource({
+      id: 'apprentice',
+      resourceName: 'clarity',
+      startValue: 0,
+      floor: -1,
+      level: 9,
+      className: 'Talent',
+    });
+    const config = getResourceConfigForParticipant(emptyState([talent]), talent);
+    expect(config?.baseGain.onTurnStart).toEqual({ kind: 'd3' });
+  });
+
+  it('non-Talent classes are unaffected by the Psion override even at level 10+', () => {
+    const conduit = pcWithResource({
+      id: 'priest',
+      resourceName: 'piety',
+      startValue: 0,
+      level: 10,
+      className: 'Conduit',
+    });
+    const censor = pcWithResource({
+      id: 'censor',
+      resourceName: 'wrath',
+      startValue: 0,
+      level: 10,
+      className: 'Censor',
+    });
+    const state = emptyState([conduit, censor]);
+    expect(getResourceConfigForParticipant(state, conduit)?.baseGain.onTurnStart).toEqual({
+      kind: 'd3',
+    });
+    expect(getResourceConfigForParticipant(state, censor)?.baseGain.onTurnStart).toEqual({
+      kind: 'flat',
+      amount: 2,
+    });
+  });
+
+  it('returns null for a participant with no heroic resource pool', () => {
+    const talent = pcWithResource({
+      id: 'novice',
+      resourceName: 'clarity',
+      startValue: 0,
+      floor: -1,
+      level: 10,
+      className: 'Talent',
+    });
+    const noResourcePc: Participant = { ...talent, heroicResources: [] };
+    const config = getResourceConfigForParticipant(emptyState([noResourcePc]), noResourcePc);
+    expect(config).toBeNull();
   });
 });
 

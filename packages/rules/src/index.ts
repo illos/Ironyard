@@ -38,7 +38,7 @@ export type { ResolvedKit } from './static-data';
 export { deriveCharacterRuntime } from './derive-character-runtime';
 export type { CharacterRuntime } from './derive-character-runtime';
 
-export { HEROIC_RESOURCES } from './heroic-resources';
+export { HEROIC_RESOURCES, getResourceConfigForParticipant } from './heroic-resources';
 export type { HeroicResourceConfig, TurnStartGain } from './heroic-resources';
 
 // Re-export hand-authored override tables that consumers outside `@ironyard/data`
