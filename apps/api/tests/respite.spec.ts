@@ -5,7 +5,7 @@
 import type { CampaignState } from '@ironyard/rules';
 import type { Intent } from '@ironyard/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
+import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 
 // ── Mock DB layer ──────────────────────────────────────────────────────────
 //
@@ -151,6 +151,7 @@ function makePcParticipant(id: string) {
     posthumousDramaEligible: false,
     psionFlags: defaultPsionFlags(),
     maintainedAbilities: [],
+    targetingRelations: defaultTargetingRelations(),
     purchasedTraits: [],
     equippedTitleIds: [],
   };
@@ -282,6 +283,7 @@ describe('handleSideEffect Respite', () => {
           posthumousDramaEligible: false,
           psionFlags: defaultPsionFlags(),
           maintainedAbilities: [],
+          targetingRelations: defaultTargetingRelations(),
           purchasedTraits: [],
           equippedTitleIds: [],
         },
