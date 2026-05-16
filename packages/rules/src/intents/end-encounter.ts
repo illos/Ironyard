@@ -2,6 +2,7 @@ import {
   EndEncounterPayloadSchema,
   IntentTypes,
   defaultPerEncounterLatches,
+  defaultTargetingRelations,
   type Participant,
 } from '@ironyard/shared';
 import { requireCanon } from '../require-canon';
@@ -173,7 +174,11 @@ export function applyEndEncounter(state: CampaignState, intent: StampedIntent): 
   // `perEncounter` latches only.
   const slice2aParticipants: RosterEntry[] = finalParticipants.map((entry) => {
     if (!isParticipant(entry)) return entry;
-    if (entry.kind !== 'pc') return entry;
+    if (entry.kind !== 'pc') {
+      // Slice 2b — monsters/non-PC entries: only targetingRelations need clearing.
+      // (They don't carry perEncounterFlags or maintainedAbilities reset semantics.)
+      return { ...entry, targetingRelations: defaultTargetingRelations() };
+    }
     return {
       ...entry,
       perEncounterFlags: {
@@ -183,6 +188,7 @@ export function applyEndEncounter(state: CampaignState, intent: StampedIntent): 
       posthumousDramaEligible:
         entry.staminaState === 'dead' ? false : entry.posthumousDramaEligible,
       maintainedAbilities: [],
+      targetingRelations: defaultTargetingRelations(),
     };
   });
 
