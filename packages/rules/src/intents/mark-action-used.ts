@@ -69,14 +69,11 @@ export function applyMarkActionUsed(
     ),
   };
 
-  // Pass 3 Slice 2a — action-event class-trigger evaluation.
+  // Pass 3 Slice 2b — action-event class-trigger evaluation.
   // Null's Discipline trigger 2 (canon §5.4.5): when an enemy uses a main
-  // action while standing inside this Null's active Null Field, raise a
-  // RaiseOpenAction(spatial-trigger-null-field) for the Null to claim.
-  // Spatial — the field's footprint and the enemy's position can change
-  // between event and claim, so we don't auto-apply. Only fires for the
-  // 'main' slot on `used: true`; the 'maneuver'/'move' slots and the undo
-  // path (used: false) are out of scope for this trigger.
+  // action while in this Null's active Null Field, auto-apply GainResource
+  // + SetParticipantPerRoundFlag since we now track nullField in targetingRelations.
+  // Only fires for the 'main' slot on `used: true`.
   const derived: DerivedIntent[] = [];
   if (slot === 'main' && used) {
     const triggerDerived = evaluateActionTriggers(
