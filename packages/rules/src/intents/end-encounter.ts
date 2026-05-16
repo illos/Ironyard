@@ -23,21 +23,29 @@ import { isParticipant } from '../types';
 // transition (matches StartEncounter's shape).
 //
 // Auto-apply branches are wrapped in `requireCanon` to preserve the canon-gate
-// idiom; today every cited slug is ✅ so the resets always run. If a slug
-// regresses to 🚧 (e.g. someone edits canon §5.4), the reducer falls back to
-// leaving that pool untouched and logs a `manual_override_required` entry.
+// idiom. The encounter-scoped soft-reset rule ("at end of encounter, remaining
+// resource is lost / any negative resets to 0") is canon-verified independently
+// for both Talent (§ 5.3 line 767) and the other 8 classes (§ 5.4.9 explicitly
+// labels the shared shape `lifecycle: 'encounter_scoped'`). Both PDF and
+// SteelCompendium agree. We gate against `heroic-resources-and-surges.talent-
+// clarity` because that slug stays ✅ when § 5.4 itself flips to 🚧 over the
+// (separate) class-δ trigger over-firing stubs (Censor isJudgedBy, Null
+// hasActiveNullField, Tactician isMarkedBy) and the Fury 1d3-vs-1 bug. Those
+// trigger bugs do NOT contaminate the lifecycle clause — keying the reset off
+// `talent-clarity` keeps the universally-correct lifecycle running while the
+// trigger code is behind manual-override.
 
 // Pure helper. Exported for the unit test — and so a future EndEncounter
 // extension (10th-level epic-secondary `persistent` flag, etc.) can be
 // composed against this without re-implementing the per-participant walk.
 export function resetParticipantForEndOfEncounter(p: Participant): Participant {
-  const resetHeroic = requireCanon('heroic-resources-and-surges.other-classes')
+  const resetHeroic = requireCanon('heroic-resources-and-surges.talent-clarity')
     ? p.heroicResources.map((r) => ({ ...r, value: 0 }))
     : p.heroicResources;
   // Extras have no `persistent` flag today (slice 7); reset all. When the
   // Censor Virtue / Conduit Divine Power 10th-level epic-secondaries land,
   // add a `persistent: true` skip here.
-  const resetExtras = requireCanon('heroic-resources-and-surges.other-classes')
+  const resetExtras = requireCanon('heroic-resources-and-surges.talent-clarity')
     ? p.extras.map((r) => ({ ...r, value: 0 }))
     : p.extras;
   const resetSurges = requireCanon('heroic-resources-and-surges.surges') ? 0 : p.surges;

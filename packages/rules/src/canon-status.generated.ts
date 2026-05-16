@@ -50,7 +50,7 @@ export const canonStatus = {
   'heroic-resources-and-surges.the-nine-resources': 'drafted',
   'heroic-resources-and-surges.engine-model': 'drafted',
   'heroic-resources-and-surges.talent-clarity': 'verified',
-  'heroic-resources-and-surges.other-classes': 'verified',
+  'heroic-resources-and-surges.other-classes': 'drafted',
   'heroic-resources-and-surges.engine-summary': 'drafted',
   'heroic-resources-and-surges.directors-malice': 'verified',
   'heroic-resources-and-surges.surges': 'verified',
