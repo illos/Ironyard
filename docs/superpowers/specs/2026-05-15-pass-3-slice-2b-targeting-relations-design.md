@@ -88,16 +88,20 @@ type AbilityTargetingEffect = {
 };
 
 export const ABILITY_TARGETING_EFFECTS: Record<string, AbilityTargetingEffect> = {
-  'judgment': { relationKind: 'judged', mode: 'replace' },
-  'mark':     { relationKind: 'marked', mode: 'add' },
+  'censor-judgment-t1':  { relationKind: 'judged', mode: 'replace' },
+  'tactician-mark-t1':   { relationKind: 'marked', mode: 'replace' },
 };
 ```
 
-Exact ability-id keys (`'judgment'`, `'mark'`) verified against the ability data pipeline at plan time. A unit test imports the ability data and asserts both ids exist; the test fails loudly if a rename slips through.
+Ability-id keys verified against `apps/web/public/data/abilities.json`: Judgment is `'censor-judgment-t1'`; Mark is `'tactician-mark-t1'`. Canon text in the same file confirms cap-1 semantics for both:
+- **Judgment** (lines 1934+): *"The target is judged by you until the end of the encounter, you use this ability again, you willingly end this effect, or another censor judges the target."*
+- **Mark** (lines after `tactician-mark-t1`): *"The target is marked by you until the end of the encounter, until you are dying, or until you use this ability again... You can initially mark only one creature using this ability, though other tactician abilities allow you to mark additional creatures at the same time."*
+
+Both are `mode: 'replace'` for v1 PHB content. Tactician class features that mark additional creatures simultaneously are not yet in the ability data (Q18 / 2b.7 class-feature pipeline territory); when they land, the registry can grow additional entries with `mode: 'add'` keyed on those feature ids.
+
+A unit test imports the ability data and asserts both ids exist; the test fails loudly if a rename slips through.
 
 When `UseAbility.abilityId` matches a registry entry and `UseAbility.targetParticipantIds` is non-empty, the reducer emits a derived `SetTargetingRelation` per primary target. For `mode: 'replace'`, the reducer first emits `SetTargetingRelation { present: false }` for every existing entry in the relation array, then `present: true` for the new target. For `mode: 'add'`, just `present: true`.
-
-**Cap-1 vs additive plan-time check.** The registry encodes Judgment as cap-1 replace and Mark as additive. Both are flagged for printed-rulebook verification at plan time. If either is wrong, it's a one-line registry fix.
 
 ### Reducer changes
 
@@ -247,8 +251,8 @@ Per slice 2a's `feedback_lobby_do_canDispatch` discipline (commit `d7c315d`), th
   - Permission: non-owner non-director rejected; owner accepted; director accepted.
   - All three `relationKind` values exercised.
 - **`intents/use-ability.spec.ts`** (extension)
-  - `ability.id === 'judgment'` with one target: emits derived `SetTargetingRelation` with `present: true`; if existing `judged` list non-empty, first emits `present: false` for each existing entry (`mode: 'replace'` cap-1).
-  - `ability.id === 'mark'` with one target: emits derived `SetTargetingRelation { present: true }`; existing `marked` list preserved (`mode: 'add'`).
+  - `ability.id === 'censor-judgment-t1'` with one target: emits derived `SetTargetingRelation` with `present: true`; if existing `judged` list non-empty, first emits `present: false` for each existing entry (`mode: 'replace'` cap-1).
+  - `ability.id === 'tactician-mark-t1'` with one target: emits derived `SetTargetingRelation { present: true }`; if existing `marked` list non-empty, first emits `present: false` for each existing entry (`mode: 'replace'`).
   - Unregistered `ability.id`: no derived intent emitted.
   - Empty `targetParticipantIds`: no derived intent emitted.
 - **`intents/end-encounter.spec.ts`** (extension)
@@ -297,7 +301,7 @@ Per slice 2a's `feedback_lobby_do_canDispatch` discipline (commit `d7c315d`), th
   - Aldric uses *Judgment* on Goblin-A → derived intent populates `aldric.targetingRelations.judged = ['goblin-a']`.
   - Goblin-A damages Aldric → Censor Wrath trigger fires (judged-by-self damages-me path) → +1 wrath, latch flips.
   - Goblin-B damages Aldric → Wrath trigger does NOT fire (goblin-b not in judged).
-  - Korva uses *Mark* on Goblin-A → `korva.targetingRelations.marked = ['goblin-a']`.
+  - Korva uses *Mark* on Goblin-A → derived intent populates `korva.targetingRelations.marked = ['goblin-a']`.
   - Eldra damages Goblin-A → Tactician Focus trigger fires (ally damages marked target) → Korva +1 focus.
   - Vex's `nullField` is empty → Goblin-A uses a main action → Discipline trigger does NOT fire.
   - Player playing Vex taps the outbound "Null Field" chip on Goblin-A's row → `SetTargetingRelation { sourceId: vex, relationKind: 'nullField', targetId: 'goblin-a', present: true }`.
@@ -311,7 +315,7 @@ Per slice 2a's `feedback_lobby_do_canDispatch` discipline (commit `d7c315d`), th
 
 ## Constraints and risks
 
-- **Cap-1 vs additive semantics for Judgment + Mark.** Plan must verify against the printed Heroes Book (per memory `user_has_printed_rulebook`) whether Judgment is cap-1 (re-cast replaces) and whether Mark accumulates or replaces. The registry encodes the answer; getting it wrong silently breaks canon math but is a one-line fix once verified. Defaults in this spec: Judgment `mode: 'replace'`, Mark `mode: 'add'`.
+- **Cap-1 vs additive semantics for Judgment + Mark.** Canon-verified against `apps/web/public/data/abilities.json` (sourced from SteelCompendium): both abilities have "until you use this ability again" / "you can initially mark only one creature" clauses. Both ship as `mode: 'replace'`. Tactician class features that mark additional creatures simultaneously are out of slice 2b scope (Q18 / 2b.7); the registry can grow additional entries when those features land.
 - **Ability-id matching is data-pipeline-dependent.** The override map keys on string ids. If the ingest pipeline ever renames Judgment or Mark abilities, the auto-set silently stops working. Manual chip remains as fallback but the player won't notice the regression. Mitigation: `ability-targeting-effects.spec.ts` imports the ability data and asserts both ids exist; the test fails loudly on rename.
 - **Inbound chip visual noise in big encounters.** A heavily-marked goblin could accumulate 3+ inbound chips. Count-badge collapse threshold is `≥ 3` in v1; tunable. If still noisy, alternative is to hide all but the most-recent and surface the rest via tap-to-expand.
 - **The Null predicate rename forces call-site updates.** `hasActiveNullField(source)` → `hasActiveNullFieldOver(target, source)`. Signature changed; one call site in `class-triggers/action-triggers.ts`. Caught at typecheck.
@@ -328,7 +332,7 @@ Slice 2b is done when:
 
 1. **`Participant.targetingRelations` schema lands** with the three-array tagged-map shape; defaults populate cleanly on pre-slice-2b snapshots without D1 migration.
 2. **`SetTargetingRelation` intent reducer** enforces all invariants (unique ids, no self-target, present/absent participants, owner/director trust). `present: true/false` is idempotent on already-present/already-absent state.
-3. **`UseAbility` reducer emits derived `SetTargetingRelation`** for the two registered PHB ability ids: Judgment with `mode: 'replace'` (clears existing judged list before adding); Mark with `mode: 'add'` (additive). Unregistered abilities emit nothing.
+3. **`UseAbility` reducer emits derived `SetTargetingRelation`** for the two registered PHB ability ids: `'censor-judgment-t1'` with `mode: 'replace'` (clears existing judged list before adding); `'tactician-mark-t1'` with `mode: 'replace'` (clears existing marked list before adding). Unregistered abilities emit nothing.
 4. **`EndEncounter` reducer clears** `targetingRelations` to empty arrays for every participant.
 5. **Participant removal strips** the removed id from every other participant's three relation arrays.
 6. **The three predicate stubs collapse** to one-line `.includes()` reads in `class-triggers/per-class/{censor,null,tactician}.ts`. Slice 2a's over-fire bugs are gone — verified by tests that assert empty-relation cases do NOT fire the trigger.
