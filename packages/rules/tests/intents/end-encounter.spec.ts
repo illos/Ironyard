@@ -1,20 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import { IntentTypes } from '@ironyard/shared';
 import { applyEndEncounter } from '../../src/intents/end-encounter';
-import { baseState, makeHeroParticipant, makeRunningEncounterPhase } from './test-utils';
+import { baseState, makeHeroParticipant, makeMonsterParticipant, makeRunningEncounterPhase } from './test-utils';
 import { isParticipant } from '../../src/types';
 
 describe('applyEndEncounter — targetingRelations', () => {
   it('clears targetingRelations on every participant', () => {
     const participants = [
       makeHeroParticipant('censor-1', {
-        targetingRelations: { judged: ['goblin-a', 'goblin-b'], marked: [], nullField: [] },
+        targetingRelations: { judged: ['goblin-1', 'goblin-2'], marked: [], nullField: [] },
       }),
       makeHeroParticipant('tactician-1', {
-        targetingRelations: { judged: [], marked: ['goblin-c'], nullField: [] },
+        targetingRelations: { judged: [], marked: ['goblin-1'], nullField: [] },
       }),
       makeHeroParticipant('null-1', {
-        targetingRelations: { judged: [], marked: [], nullField: ['goblin-a', 'goblin-c'] },
+        targetingRelations: { judged: [], marked: [], nullField: ['censor-1', 'tactician-1'] },
+      }),
+      // Monster participants — the novel branch that previously returned entry unchanged.
+      makeMonsterParticipant('goblin-1', {
+        targetingRelations: { judged: ['censor-1'], marked: [], nullField: [] },
+      }),
+      makeMonsterParticipant('goblin-2', {
+        targetingRelations: { judged: [], marked: ['tactician-1'], nullField: ['null-1'] },
       }),
     ];
 
