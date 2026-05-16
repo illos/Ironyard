@@ -375,3 +375,35 @@ kinds: `talent-strained-spend-confirm`, `psion-strained-opt-in`,
 `UseAbility` payload (`talentStrainedOptInRider`,
 `talentClarityDamageOptOutThisTurn`); the strained-spend confirmation is a
 client-side `StrainedSpendModal`.
+
+### PS 2. Slice 2 split into 2a / 2b / 2c
+
+The umbrella's original Slice 2 entry (above, § "Slice 2 — Class-δ triggers
++ conditional attachments") folded 2b.0.1 (full) + 2b.4 combat-tracker
+subset into one slice. Execution split it into three:
+
+- **Slice 2a — class-δ triggers + Open Action raisers** (shipped 2026-05-15,
+  43 commits). Closed 2b.0.1 modulo three permissive predicate stubs
+  documented in slice-2a PS#7 (`isJudgedBy`, `isMarkedBy`,
+  `hasActiveNullField`).
+- **Slice 2b — targeting relations** (brainstormed 2026-05-15,
+  [spec](2026-05-15-pass-3-slice-2b-targeting-relations-design.md)).
+  Closes the three slice-2a stubs by introducing a player-managed
+  `Participant.targetingRelations` tagged-map (judged / marked / nullField)
+  driven by per-row chip toggles, auto-derived from `UseAbility` for
+  Judgment + Mark via an ability-id registry. Flips canon § 5.4 umbrella +
+  § 5.4.1 / § 5.4.5 / § 5.4.7 from 🚧 → ✅. Pure stub-closure plus a small
+  UI surface; no battlemap / no engine spatial.
+- **Slice 2c — 2b.4 conditional attachments** (yet to be brainstormed).
+  Devil *Wings* (only-while-flying), Color Cloak triggered weakness
+  conversion, Orc *Bloodfire Rush* (round you took damage), Encepter aura,
+  Mortal Coil +1 main action. Carries the architectural lift the umbrella
+  flagged ("2b.4 is the deepest architectural change…may want to split
+  further"): extending `AttachmentCondition` with runtime predicates +
+  introducing a mid-encounter re-evaluation seam in the applier. Also
+  picks up the slice-2a deferrals (Pray-to-the-Gods "instead of standard
+  d3" per slice 2a PS#5; etc.).
+
+The umbrella acceptance criteria (§ "Acceptance") and per-slice index
+references to "Slice 2" should be read as "Slices 2a + 2b + 2c collectively"
+until the umbrella is renumbered in a future sweep.
