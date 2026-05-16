@@ -126,7 +126,6 @@ export function TargetingRelationsCard({
         {pickerOpen && (
           <div
             className="mt-1 border border-line bg-ink-2 flex flex-col"
-            role="listbox"
             aria-label={`Pick a target to ${label.toLowerCase()}`}
           >
             {addableCandidates.length === 0 ? (
@@ -136,8 +135,6 @@ export function TargetingRelationsCard({
                 <button
                   key={c.id}
                   type="button"
-                  role="option"
-                  aria-selected={false}
                   className="w-full text-left px-3 py-2 text-sm text-text hover:bg-ink-3 min-h-11 transition-colors"
                   onClick={() => handleAdd(c.id)}
                 >

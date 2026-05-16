@@ -4,7 +4,12 @@ import { TargetingRelationsCard } from './TargetingRelationsCard';
 
 afterEach(cleanup);
 
-const baseSource = (overrides: any = {}) => ({
+type TestSource = {
+  id: string;
+  name: string;
+  targetingRelations: { judged: string[]; marked: string[]; nullField: string[] };
+};
+const baseSource = (overrides: Partial<TestSource> = {}): TestSource => ({
   id: 'censor-1',
   name: 'Aldric',
   targetingRelations: { judged: [], marked: [], nullField: [] },
