@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import { HeroRecoveriesCell } from './HeroRecoveriesCell';
 import type { Participant } from '@ironyard/shared';
-import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
+import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 
 afterEach(cleanup);
 
@@ -26,6 +26,7 @@ function makePc(recoveries: { current: number; max: number }): Participant {
     posthumousDramaEligible: false,
     psionFlags: defaultPsionFlags(),
     maintainedAbilities: [],
+    targetingRelations: defaultTargetingRelations(),
     purchasedTraits: [],
     equippedTitleIds: [],
   } as Participant;

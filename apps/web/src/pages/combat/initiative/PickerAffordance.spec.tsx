@@ -1,7 +1,7 @@
 import type { Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { derivePickAffordance } from './PickerAffordance';
-import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
+import { defaultPerEncounterFlags, defaultPsionFlags, defaultTargetingRelations } from '@ironyard/shared';
 
 function pc(id: string, ownerId: string | null): Participant {
   return {
@@ -44,6 +44,7 @@ function pc(id: string, ownerId: string | null): Participant {
     posthumousDramaEligible: false,
     psionFlags: defaultPsionFlags(),
     maintainedAbilities: [],
+    targetingRelations: defaultTargetingRelations(),
     purchasedTraits: [],
     equippedTitleIds: [],
   };

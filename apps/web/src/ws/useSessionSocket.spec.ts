@@ -4,6 +4,7 @@ import {
   type Participant,
   defaultPerEncounterFlags,
   defaultPsionFlags,
+  defaultTargetingRelations,
 } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import { type ActiveEncounter, type RosterEntry, reflect } from './useSessionSocket';
@@ -56,6 +57,7 @@ function makePc(id: string, overrides: Partial<Participant> = {}): Participant {
     posthumousDramaEligible: false,
     psionFlags: defaultPsionFlags(),
     maintainedAbilities: [],
+    targetingRelations: defaultTargetingRelations(),
     purchasedTraits: [],
     equippedTitleIds: [],
   };
@@ -326,5 +328,96 @@ describe('reflect — EndRound resets perRound only (Task 25 / Task 3 PS)', () =
     expect(p.posthumousDramaEligible).toBe(true);
     expect(p.psionFlags.clarityDamageOptOutThisTurn).toBe(true);
     expect(p.maintainedAbilities).toHaveLength(1);
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Pass 3 Slice 2b — SetTargetingRelation mirror
+// ────────────────────────────────────────────────────────────────────────────
+
+describe('reflect — Pass 3 Slice 2b SetTargetingRelation', () => {
+  it('adds targetId to source.targetingRelations[kind] when present:true', () => {
+    const prev = makeEncounter([makePc('censor-1'), makePc('goblin-a')]);
+    const next = reflect(prev, IntentTypes.SetTargetingRelation, {
+      sourceId: 'censor-1',
+      relationKind: 'judged',
+      targetId: 'goblin-a',
+      present: true,
+    });
+    const censor = getPc(next, 'censor-1');
+    expect(censor.targetingRelations.judged).toEqual(['goblin-a']);
+    // other relation kinds untouched
+    expect(censor.targetingRelations.marked).toEqual([]);
+    expect(censor.targetingRelations.nullField).toEqual([]);
+  });
+
+  it('removes targetId when present:false', () => {
+    const prev = makeEncounter([
+      makePc('censor-1', {
+        targetingRelations: { judged: ['goblin-a'], marked: [], nullField: [] },
+      }),
+      makePc('goblin-a'),
+    ]);
+    const next = reflect(prev, IntentTypes.SetTargetingRelation, {
+      sourceId: 'censor-1',
+      relationKind: 'judged',
+      targetId: 'goblin-a',
+      present: false,
+    });
+    const censor = getPc(next, 'censor-1');
+    expect(censor.targetingRelations.judged).toEqual([]);
+  });
+
+  it('is idempotent when adding a targetId already present', () => {
+    const prev = makeEncounter([
+      makePc('censor-1', {
+        targetingRelations: { judged: ['goblin-a'], marked: [], nullField: [] },
+      }),
+      makePc('goblin-a'),
+    ]);
+    const next = reflect(prev, IntentTypes.SetTargetingRelation, {
+      sourceId: 'censor-1',
+      relationKind: 'judged',
+      targetId: 'goblin-a',
+      present: true,
+    });
+    const censor = getPc(next, 'censor-1');
+    expect(censor.targetingRelations.judged).toEqual(['goblin-a']);
+  });
+
+  it('is idempotent when removing a targetId not present', () => {
+    const prev = makeEncounter([makePc('censor-1'), makePc('goblin-a')]);
+    const next = reflect(prev, IntentTypes.SetTargetingRelation, {
+      sourceId: 'censor-1',
+      relationKind: 'judged',
+      targetId: 'goblin-a',
+      present: false,
+    });
+    const censor = getPc(next, 'censor-1');
+    expect(censor.targetingRelations.judged).toEqual([]);
+  });
+
+  it('does not touch other participants', () => {
+    const prev = makeEncounter([makePc('censor-1'), makePc('goblin-a')]);
+    const next = reflect(prev, IntentTypes.SetTargetingRelation, {
+      sourceId: 'censor-1',
+      relationKind: 'judged',
+      targetId: 'goblin-a',
+      present: true,
+    });
+    const goblin = getPc(next, 'goblin-a');
+    expect(goblin.targetingRelations.judged).toEqual([]);
+  });
+
+  it('supports marked relationKind', () => {
+    const prev = makeEncounter([makePc('tactician-1'), makePc('goblin-a')]);
+    const next = reflect(prev, IntentTypes.SetTargetingRelation, {
+      sourceId: 'tactician-1',
+      relationKind: 'marked',
+      targetId: 'goblin-a',
+      present: true,
+    });
+    const tactician = getPc(next, 'tactician-1');
+    expect(tactician.targetingRelations.marked).toEqual(['goblin-a']);
   });
 });

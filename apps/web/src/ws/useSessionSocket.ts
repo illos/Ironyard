@@ -8,6 +8,7 @@ import {
   defaultPerEncounterFlags,
   defaultPerRoundFlags,
   defaultPsionFlags,
+  defaultTargetingRelations,
 } from '@ironyard/shared';
 import {
   type AddMonsterPayload,
@@ -58,6 +59,7 @@ import {
   type SpendSurgePayload,
   type StaminaTransitionedPayload,
   type StartEncounterPayload,
+  type SetTargetingRelationPayload,
   type StartMaintenancePayload,
   type StartSessionPayload,
   type StartTurnPayload,
@@ -565,6 +567,39 @@ export function reflect(
     };
   }
 
+  // ---- Pass 3 Slice 2b — targetingRelations ----
+
+  if (type === IntentTypes.SetTargetingRelation) {
+    const { sourceId, relationKind, targetId, present } = payload as SetTargetingRelationPayload;
+    return {
+      ...prev,
+      participants: prev.participants.map((p) => {
+        if (!isParticipantEntry(p) || p.id !== sourceId) return p;
+        const current = p.targetingRelations[relationKind];
+        const has = current.includes(targetId);
+        if (present && !has) {
+          return {
+            ...p,
+            targetingRelations: {
+              ...p.targetingRelations,
+              [relationKind]: [...current, targetId],
+            },
+          };
+        }
+        if (!present && has) {
+          return {
+            ...p,
+            targetingRelations: {
+              ...p.targetingRelations,
+              [relationKind]: current.filter((id) => id !== targetId),
+            },
+          };
+        }
+        return p; // idempotent no-op
+      }),
+    };
+  }
+
   if (type === IntentTypes.TroubadourAutoRevive) {
     const { participantId } = payload as TroubadourAutoRevivePayload;
     return {
@@ -838,6 +873,7 @@ function participantFromMonsterClient(
     posthumousDramaEligible: false,
     psionFlags: defaultPsionFlags(),
     maintainedAbilities: [],
+    targetingRelations: defaultTargetingRelations(),
     purchasedTraits: [],
     equippedTitleIds: [],
   };
