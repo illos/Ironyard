@@ -17,10 +17,12 @@ import {
   type SetConditionPayload,
   type SetResourcePayload,
   type SetStaminaPayload,
+  type SetTargetingRelationPayload,
   type SpendRecoveryPayload,
   type SpendResourcePayload,
   type SpendSurgePayload,
   type StartRoundPayload,
+  type TargetingRelationKind,
   type TierOutcome,
   type UndoPayload,
   ulid,
@@ -473,6 +475,17 @@ export function DirectorCombat() {
     send(IntentTypes.EndEncounter, { encounterId: activeEncounter.encounterId });
   };
 
+  // Pass 3 Slice 2b — targeting-relation dispatch (rows + PlayerSheetPanel card).
+  const dispatchSetTargetingRelation = (
+    sourceId: string,
+    relationKind: TargetingRelationKind,
+    targetId: string,
+    present: boolean,
+  ) => {
+    const payload: SetTargetingRelationPayload = { sourceId, relationKind, targetId, present };
+    send(IntentTypes.SetTargetingRelation, payload);
+  };
+
   // Phase 5 Pass 2b1 — zipper-initiative dispatchers. Plain functions (not
   // useCallback) so they live below the guard returns without violating the
   // Rules of Hooks. They're called once per user interaction; referential
@@ -673,6 +686,8 @@ export function DirectorCombat() {
               viewerId={viewerId}
               isActingAsDirector={isActingAsDirector}
               onPick={handlePickNextActor}
+              allParticipants={participants}
+              onToggleRelation={dispatchSetTargetingRelation}
             />
             <EncounterRail
               foes={liveFoes}
@@ -689,6 +704,8 @@ export function DirectorCombat() {
               viewerId={viewerId}
               isActingAsDirector={isActingAsDirector}
               onPick={handlePickNextActor}
+              allParticipants={participants}
+              onToggleRelation={dispatchSetTargetingRelation}
             />
             {activeEncounter && firstSide === null && (
               <RollInitiativeOverlay

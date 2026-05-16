@@ -1,10 +1,29 @@
-import { IntentTypes, type Participant, type StopMaintenancePayload } from '@ironyard/shared';
+import {
+  IntentTypes,
+  type Participant,
+  type SetTargetingRelationPayload,
+  type StopMaintenancePayload,
+  type TargetingRelationKind,
+} from '@ironyard/shared';
 import { buildIntent } from '../../api/dispatch';
 import { useCharacter, useMe } from '../../api/queries';
 import { useAbilities } from '../../api/static-data';
 import { useSessionSocket } from '../../ws/useSessionSocket';
+import { TargetingRelationsCard } from '../../components/TargetingRelationsCard';
 import { DoomsightBecomeDoomedButton } from './DoomsightBecomeDoomedButton';
 import { EssenceBlock, type Maint } from './EssenceBlock';
+
+// ── Targeting-relation helpers (mirrors ParticipantRow.tsx) ───────────────────
+
+/**
+ * Maps a participant's `className` (lower-cased) to its targeting relation kind.
+ * Censor → Judgment, Tactician → Mark, Null → Null Field.
+ */
+const CLASS_RELATION_KIND: Record<string, TargetingRelationKind | undefined> = {
+  censor: 'judged',
+  tactician: 'marked',
+  null: 'nullField',
+};
 
 // TODO(Task 35/37): wire `./StrainedSpendModal` into the Talent ability-card
 // click flow. The modal is implemented and unit-tested but not yet hooked up
@@ -23,6 +42,11 @@ type Props = {
   participant: Participant | null;
   /** Campaign id — needed to dispatch intents and access the WS socket. */
   campaignId: string;
+  /**
+   * Full roster of participants. Required for the TargetingRelationsCard —
+   * callers that don't have it can omit it; the card simply won't render.
+   */
+  allParticipants?: Participant[];
 };
 
 /**
@@ -36,7 +60,7 @@ type Props = {
  * Returns null when no participant is provided and there is no character
  * data to show.
  */
-export function PlayerSheetPanel({ participant, campaignId }: Props) {
+export function PlayerSheetPanel({ participant, campaignId, allParticipants }: Props) {
   const characterId =
     participant?.kind === 'pc' ? (participant.characterId ?? undefined) : undefined;
   const ch = useCharacter(characterId);
@@ -84,6 +108,37 @@ export function PlayerSheetPanel({ participant, campaignId }: Props) {
     );
   };
 
+  // ── Targeting-relation card (Censor / Tactician / Null only) ───────────────
+  // Determine if the participant's class has a persistent targeting relation.
+  const relationKind = participant?.className
+    ? CLASS_RELATION_KIND[participant.className.toLowerCase()]
+    : undefined;
+
+  // Candidates are opposing-side participants (monsters for PCs). v1: pass
+  // all monsters as candidates regardless of stamina, matching the card's
+  // own filtering for already-removed entries.
+  const candidates = (allParticipants ?? [])
+    .filter((p) => p.kind === 'monster')
+    .map((p) => ({ id: p.id, name: p.name }));
+
+  const handleToggleRelation = (targetId: string, present: boolean) => {
+    if (!participant || !me.data || !relationKind) return;
+    const payload: SetTargetingRelationPayload = {
+      sourceId: participant.id,
+      relationKind,
+      targetId,
+      present,
+    };
+    sock.dispatch(
+      buildIntent({
+        campaignId,
+        type: IntentTypes.SetTargetingRelation,
+        payload,
+        actor: { userId: me.data.user.id, role: 'player' },
+      }),
+    );
+  };
+
   return (
     <div className="space-y-3">
       {isElementalist && (
@@ -92,6 +147,14 @@ export function PlayerSheetPanel({ participant, campaignId }: Props) {
           baseGainPerTurn={ESSENCE_BASE_GAIN}
           maintainedAbilities={maintained}
           onStopMaintain={handleStopMaintain}
+        />
+      )}
+      {relationKind && participant && (
+        <TargetingRelationsCard
+          source={participant}
+          relationKind={relationKind}
+          candidates={candidates}
+          onToggle={handleToggleRelation}
         />
       )}
       <DoomsightBecomeDoomedButton

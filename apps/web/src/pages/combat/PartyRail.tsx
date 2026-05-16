@@ -1,4 +1,4 @@
-import type { Participant } from '@ironyard/shared';
+import type { Participant, TargetingRelationKind } from '@ironyard/shared';
 import { ParticipantRow, Section } from '../../primitives';
 import { ConditionGlyphs } from './ConditionGlyph';
 import { initials, roleReadoutFor } from './rails/rail-utils';
@@ -26,6 +26,19 @@ export interface PartyRailProps {
   viewerId: string | null;
   isActingAsDirector: boolean;
   onPick: (participantId: string) => void;
+  // Pass 3 Slice 2b — targeting-relation chips.
+  /** Full encounter roster (for computing inbound/outbound relation chips). */
+  allParticipants?: Participant[];
+  /**
+   * Called when the viewer toggles a targeting relation chip on a row.
+   * Signature: (sourceId, relationKind, targetId, present)
+   */
+  onToggleRelation?: (
+    sourceId: string,
+    relationKind: TargetingRelationKind,
+    targetId: string,
+    present: boolean,
+  ) => void;
 }
 
 export function PartyRail({
@@ -43,6 +56,8 @@ export function PartyRail({
   viewerId,
   isActingAsDirector,
   onPick,
+  allParticipants,
+  onToggleRelation,
 }: PartyRailProps) {
   const heading = `PARTY · ${heroes.length} HEROES`;
   return (
@@ -81,6 +96,11 @@ export function PartyRail({
               }}
               pickAffordance={pickAffordance ?? undefined}
               onSelect={() => onSelect(h.id)}
+              thisParticipantId={h.id}
+              allParticipants={allParticipants}
+              viewerUserId={viewerId}
+              isActingAsDirector={isActingAsDirector}
+              onToggleRelation={onToggleRelation}
             />
           );
         })}
