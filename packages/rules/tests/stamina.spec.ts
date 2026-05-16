@@ -1,7 +1,7 @@
 import type { Participant } from '@ironyard/shared';
 import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
-import { recomputeStaminaState, wouldHitDead } from '../src/stamina';
+import { applyTransitionSideEffects, recomputeStaminaState, wouldHitDead } from '../src/stamina';
 
 function pc(overrides: Partial<Participant> = {}): Participant {
   return {
@@ -106,9 +106,9 @@ describe('recomputeStaminaState — director creatures', () => {
 });
 
 describe('recomputeStaminaState — overrides', () => {
-  it('inert override holds state at "inert" while currentStamina ≤ 0', () => {
+  it('inert override holds state at "inert" while currentStamina ≤ -windedValue', () => {
     const p = pc({
-      currentStamina: -3,
+      currentStamina: -20, // ≤ -windedValue (-15) — dead threshold
       maxStamina: 30,
       staminaOverride: {
         kind: 'inert',
@@ -116,6 +116,7 @@ describe('recomputeStaminaState — overrides', () => {
         instantDeathDamageTypes: ['fire'],
         regainHours: 12,
         regainAmount: 'recoveryValue',
+        canRegainStamina: false,
       },
     });
     expect(recomputeStaminaState(p).newState).toBe('inert');
@@ -130,6 +131,7 @@ describe('recomputeStaminaState — overrides', () => {
         source: 'hakaan-doomsight',
         regainHours: 12,
         regainAmount: 'recoveryValue',
+        canRegainStamina: false,
       },
     });
     expect(recomputeStaminaState(p).newState).toBe('rubble');
@@ -193,6 +195,101 @@ describe('recomputeStaminaState — overrides', () => {
       },
     });
     expect(recomputeStaminaState(p).newState).toBe('healthy');
+  });
+});
+
+describe('recomputeStaminaState — inert threshold (B1)', () => {
+  // Per canon Revenant.md:91: "when your Stamina reaches the negative of your
+  // winded value, you become inert instead of dying." The inert override
+  // replaces the *dead* transition (stamina ≤ -windedValue), not the dying one.
+  it('inert override releases when stamina is in dying range (above -windedValue)', () => {
+    const p = pc({
+      currentStamina: -5, // dying range, above -windedValue (-15)
+      maxStamina: 30,
+      staminaOverride: {
+        kind: 'inert',
+        source: 'revenant',
+        instantDeathDamageTypes: ['fire'],
+        regainHours: 12,
+        regainAmount: 'recoveryValue',
+        canRegainStamina: false,
+      },
+    });
+    expect(recomputeStaminaState(p).newState).toBe('dying');
+  });
+
+  it('inert override holds at "inert" when stamina ≤ -windedValue', () => {
+    const p = pc({
+      currentStamina: -15, // exactly at -windedValue
+      maxStamina: 30,
+      staminaOverride: {
+        kind: 'inert',
+        source: 'revenant',
+        instantDeathDamageTypes: ['fire'],
+        regainHours: 12,
+        regainAmount: 'recoveryValue',
+        canRegainStamina: false,
+      },
+    });
+    expect(recomputeStaminaState(p).newState).toBe('inert');
+  });
+});
+
+describe('applyTransitionSideEffects', () => {
+  // B2 — Revenant.md:91: "You fall prone and can't stand." Mirror KO path.
+  it('→ inert adds Prone condition', () => {
+    const p = pc({ currentStamina: -15, maxStamina: 30, staminaState: 'healthy' });
+    const result = applyTransitionSideEffects(p, 'healthy', 'inert');
+    expect(result.staminaState).toBe('inert');
+    const prone = result.conditions.find((c) => c.type === 'Prone');
+    expect(prone).toBeDefined();
+    expect(prone?.source).toEqual({ kind: 'effect', id: 'inert-state' });
+  });
+
+  it('→ rubble does NOT add Prone (canon describes unawareness, not prone)', () => {
+    const p = pc({ currentStamina: -20, maxStamina: 30, staminaState: 'dying' });
+    const result = applyTransitionSideEffects(p, 'dying', 'rubble');
+    expect(result.staminaState).toBe('rubble');
+    expect(result.conditions.find((c) => c.type === 'Prone')).toBeUndefined();
+  });
+
+  // B3 — Revenant Bloodless: "can't be made bleeding even while dying."
+  it('→ dying does NOT apply dying-Bleeding to a Revenant with Bloodless', () => {
+    const p = pc({
+      currentStamina: -5,
+      maxStamina: 30,
+      staminaState: 'winded',
+      ancestry: ['revenant'],
+      purchasedTraits: ['bloodless'],
+    });
+    const result = applyTransitionSideEffects(p, 'winded', 'dying');
+    expect(result.staminaState).toBe('dying');
+    expect(result.conditions.find((c) => c.type === 'Bleeding')).toBeUndefined();
+  });
+
+  it('→ dying applies dying-Bleeding to a Revenant without Bloodless', () => {
+    const p = pc({
+      currentStamina: -5,
+      maxStamina: 30,
+      staminaState: 'winded',
+      ancestry: ['revenant'],
+      purchasedTraits: [],
+    });
+    const result = applyTransitionSideEffects(p, 'winded', 'dying');
+    const bleed = result.conditions.find((c) => c.type === 'Bleeding');
+    expect(bleed).toBeDefined();
+    expect(bleed?.source).toEqual({ kind: 'effect', id: 'dying-state' });
+  });
+
+  it('→ dying applies dying-Bleeding to a non-Revenant PC', () => {
+    const p = pc({
+      currentStamina: -5,
+      maxStamina: 30,
+      staminaState: 'winded',
+      ancestry: ['human'],
+    });
+    const result = applyTransitionSideEffects(p, 'winded', 'dying');
+    expect(result.conditions.find((c) => c.type === 'Bleeding')).toBeDefined();
   });
 });
 

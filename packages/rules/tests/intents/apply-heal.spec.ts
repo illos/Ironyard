@@ -189,6 +189,148 @@ describe('applyApplyHeal — dying hero → healthy/winded', () => {
   });
 });
 
+describe('applyApplyHeal — heal-from-unconscious clears KO conditions (slice-1 PS#2)', () => {
+  // Phase 2b 2b.15 — heal that transitions an unconscious participant to
+  // winded/healthy clears the KO-applied Unconscious + Prone conditions.
+  it('heal that crosses out of unconscious clears Unconscious + Prone', () => {
+    const s = stateWithHero({
+      currentStamina: 0,
+      staminaState: 'unconscious',
+      conditions: [
+        {
+          type: 'Unconscious',
+          duration: { kind: 'manual' },
+          source: { kind: 'effect', id: 'ko-interception' },
+          removable: true,
+          appliedAtSeq: 0,
+        },
+        {
+          type: 'Prone',
+          duration: { kind: 'manual' },
+          source: { kind: 'effect', id: 'ko-interception' },
+          removable: true,
+          appliedAtSeq: 0,
+        },
+      ],
+    });
+    const result = applyApplyHeal(s, applyHealIntent({ amount: 10 }));
+    expect(result.errors ?? []).toEqual([]);
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
+    expect(updated.staminaState).toBe('winded');
+    expect(updated.conditions.some((c) => c.type === 'Unconscious')).toBe(false);
+    expect(updated.conditions.some((c) => c.type === 'Prone')).toBe(false);
+  });
+
+  it('keeps non-KO-source Prone (e.g. trip ability) when healed out of unconscious', () => {
+    const s = stateWithHero({
+      currentStamina: 0,
+      staminaState: 'unconscious',
+      conditions: [
+        {
+          type: 'Unconscious',
+          duration: { kind: 'manual' },
+          source: { kind: 'effect', id: 'ko-interception' },
+          removable: true,
+          appliedAtSeq: 0,
+        },
+        {
+          type: 'Prone',
+          duration: { kind: 'manual' },
+          source: { kind: 'effect', id: 'trip' },
+          removable: true,
+          appliedAtSeq: 0,
+        },
+      ],
+    });
+    const result = applyApplyHeal(s, applyHealIntent({ amount: 10 }));
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
+    expect(updated.conditions.some((c) => c.type === 'Unconscious')).toBe(false);
+    // trip-sourced Prone stays.
+    expect(updated.conditions.some((c) => c.type === 'Prone' && c.source.id === 'trip')).toBe(
+      true,
+    );
+  });
+});
+
+describe('applyApplyHeal — canRegainStamina:false overrides (Phase 2b 2b.15 B31)', () => {
+  // Canon: Revenant inert (Revenant.md:91) and Hakaan rubble (Hakaan.md:135)
+  // both say the participant "can't regain Stamina or have this effect undone
+  // in any way." Heals against such participants must be rejected.
+  it('rejects heal when participant is inert (Revenant)', () => {
+    const s = stateWithHero({
+      currentStamina: -20,
+      staminaState: 'inert',
+      staminaOverride: {
+        kind: 'inert',
+        source: 'revenant',
+        instantDeathDamageTypes: ['fire'],
+        regainHours: 12,
+        regainAmount: 'recoveryValue',
+        canRegainStamina: false,
+      },
+    });
+    const result = applyApplyHeal(s, applyHealIntent({ amount: 10 }));
+    expect(result.errors?.[0]?.code).toBe('cannot_regain_stamina');
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
+    expect(updated.currentStamina).toBe(-20);
+    expect(updated.staminaState).toBe('inert');
+  });
+
+  it('rejects heal when participant is rubble (Hakaan)', () => {
+    const s = stateWithHero({
+      currentStamina: -25,
+      staminaState: 'rubble',
+      staminaOverride: {
+        kind: 'rubble',
+        source: 'hakaan-doomsight',
+        regainHours: 12,
+        regainAmount: 'recoveryValue',
+        canRegainStamina: false,
+      },
+    });
+    const result = applyApplyHeal(s, applyHealIntent({ amount: 10 }));
+    expect(result.errors?.[0]?.code).toBe('cannot_regain_stamina');
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
+    expect(updated.currentStamina).toBe(-25);
+  });
+
+  it('rejects heal when participant is Title-Doomed (canRegainStamina:false)', () => {
+    const s = stateWithHero({
+      currentStamina: -5,
+      staminaState: 'doomed',
+      staminaOverride: {
+        kind: 'doomed',
+        source: 'title-doomed',
+        canRegainStamina: false,
+        autoTier3OnPowerRolls: true,
+        staminaDeathThreshold: 'staminaMax',
+        dieAtEncounterEnd: true,
+      },
+    });
+    const result = applyApplyHeal(s, applyHealIntent({ amount: 10 }));
+    expect(result.errors?.[0]?.code).toBe('cannot_regain_stamina');
+  });
+
+  it('allows heal when participant has Hakaan doomed (canRegainStamina:true)', () => {
+    const s = stateWithHero({
+      currentStamina: -5,
+      staminaState: 'doomed',
+      staminaOverride: {
+        kind: 'doomed',
+        source: 'hakaan-doomsight',
+        canRegainStamina: true,
+        autoTier3OnPowerRolls: true,
+        staminaDeathThreshold: 'none',
+        dieAtEncounterEnd: true,
+      },
+    });
+    const result = applyApplyHeal(s, applyHealIntent({ amount: 10 }));
+    expect(result.errors ?? []).toEqual([]);
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
+    expect(updated.currentStamina).toBe(5);
+  });
+});
+
 describe('applyApplyHeal — class-δ stamina-transition trigger wiring (Task 16)', () => {
   it('Troubadour any-hero-winded does NOT fire when a hero heals from dying back into winded', () => {
     // dying at -3/30 (heals 10 → winded at 7/30) emits StaminaTransitioned with

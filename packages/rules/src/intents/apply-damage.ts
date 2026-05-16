@@ -58,12 +58,16 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
   // Apply per-trait override-activation rules at the moment of transition.
   // These run AFTER applyDamageStep so the transition has already been computed.
   // Re-derive state after applying the override so staminaState is consistent.
+  // Revenant inert and Hakaan rubble both intercept the → dead transition per
+  // canon (Revenant.md:91 and Hakaan.md:135 — both at "negative of winded value").
   let updatedTarget = result.newParticipant;
 
-  if (result.transitionedTo === 'dying' && shouldRevenantInterceptDying(target)) {
-    updatedTarget = applyRevenantInert(updatedTarget);
-  } else if (result.transitionedTo === 'dead' && shouldHakaanInterceptDead(target)) {
-    updatedTarget = applyHakaanRubble(updatedTarget);
+  if (result.transitionedTo === 'dead') {
+    if (shouldRevenantInterceptDead(target)) {
+      updatedTarget = applyRevenantInert(updatedTarget);
+    } else if (shouldHakaanInterceptDead(target)) {
+      updatedTarget = applyHakaanRubble(updatedTarget);
+    }
   }
 
   const updatedParticipants = state.participants.map((p) =>
@@ -258,12 +262,14 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
 
 // --- Override activation helpers ---
 
-// Revenant: intercept healthy/winded → dying with inert. Fires only when:
+// Revenant: intercept → dead with inert. Per Revenant.md:91 the inert state
+// fires "when your Stamina reaches the negative of your winded value" — that
+// is the *dead* threshold, not the dying one. Fires only when:
 //   - target is a PC
 //   - ancestry array contains 'revenant' (stamped at StartEncounter)
 //   - no prior override is already active
-//   - transition target is 'dying' (checked by caller)
-function shouldRevenantInterceptDying(p: Participant): boolean {
+//   - transition target is 'dead' (checked by caller)
+function shouldRevenantInterceptDead(p: Participant): boolean {
   return p.kind === 'pc' && p.ancestry.includes('revenant') && p.staminaOverride === null;
 }
 
@@ -276,6 +282,8 @@ function applyRevenantInert(p: Participant): Participant {
       instantDeathDamageTypes: ['fire'],
       regainHours: 12,
       regainAmount: 'recoveryValue',
+      // Phase 2b 2b.15 B31 — Revenant.md:91 "can't regain Stamina ... in any way."
+      canRegainStamina: false,
     },
   };
   // Re-derive state with the override now in place.
@@ -307,6 +315,8 @@ function applyHakaanRubble(p: Participant): Participant {
       source: 'hakaan-doomsight',
       regainHours: 12,
       regainAmount: 'recoveryValue',
+      // Phase 2b 2b.15 B31 — Hakaan.md:135 "can't regain Stamina ... in any way."
+      canRegainStamina: false,
     },
   };
   // Re-derive state with the override now in place.

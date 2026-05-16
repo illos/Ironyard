@@ -156,14 +156,21 @@ describe('sumPartyVictories', () => {
 });
 
 describe('aliveHeroes', () => {
-  it('returns PCs whose currentStamina > -windedValue', () => {
+  it('returns PCs whose staminaState is not "dead" (canon: dying/unconscious/inert all alive)', () => {
     const s = stateWithPCs([2, 2, 2]);
-    // windedValue for a PC is maxStamina / 2 (floor). For maxStamina = 20,
-    // windedValue = 10, so the boundary is currentStamina > -10.
-    (s.participants[0] as Participant).currentStamina = 5; // healthy
-    (s.participants[1] as Participant).currentStamina = 0; // dying but alive
-    (s.participants[2] as Participant).currentStamina = -11; // past -windedValue; dead-ish
+    (s.participants[0] as Participant).staminaState = 'healthy';
+    (s.participants[1] as Participant).staminaState = 'dying';
+    (s.participants[2] as Participant).staminaState = 'dead';
     expect(aliveHeroes(s)).toHaveLength(2);
+  });
+
+  it('counts inert / doomed / unconscious as alive (not dead)', () => {
+    const s = stateWithPCs([1, 1, 1, 1]);
+    (s.participants[0] as Participant).staminaState = 'inert';
+    (s.participants[1] as Participant).staminaState = 'doomed';
+    (s.participants[2] as Participant).staminaState = 'unconscious';
+    (s.participants[3] as Participant).staminaState = 'dead';
+    expect(aliveHeroes(s)).toHaveLength(3);
   });
 
   it('returns empty when no PCs', () => {
@@ -189,7 +196,7 @@ describe('averageVictoriesAlive', () => {
 
   it('excludes "dead" PCs from the average', () => {
     const s = stateWithPCs([5, 5, 1]);
-    (s.participants[2] as Participant).currentStamina = -11; // dead
+    (s.participants[2] as Participant).staminaState = 'dead';
     expect(averageVictoriesAlive(s)).toBe(5); // (5+5)/2 = 5
   });
 });

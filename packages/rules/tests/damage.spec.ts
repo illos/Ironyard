@@ -197,6 +197,7 @@ describe('applyDamageStep — overrides', () => {
         instantDeathDamageTypes: ['fire'],
         regainHours: 12,
         regainAmount: 'recoveryValue',
+        canRegainStamina: false,
       },
     });
     const r = applyDamageStep(start, 1, 'fire');
@@ -215,6 +216,7 @@ describe('applyDamageStep — overrides', () => {
         instantDeathDamageTypes: ['fire'],
         regainHours: 12,
         regainAmount: 'recoveryValue',
+        canRegainStamina: false,
       },
     });
     const r = applyDamageStep(start, 10, 'cold');

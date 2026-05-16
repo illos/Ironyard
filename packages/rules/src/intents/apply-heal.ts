@@ -47,6 +47,37 @@ export function applyApplyHeal(state: CampaignState, intent: StampedIntent): Int
     };
   }
 
+  // Phase 2b 2b.15 B31 — Revenant inert (Revenant.md:91), Hakaan rubble
+  // (Hakaan.md:135), and Title Doomed (Doomed.md:22) all forbid stamina
+  // regen while the override is active. Reject the heal up front so the
+  // override is consulted before any stamina mutation.
+  const override = target.staminaOverride;
+  const canRegainStamina =
+    override === null ||
+    (override.kind === 'inert' && override.canRegainStamina) ||
+    (override.kind === 'rubble' && override.canRegainStamina) ||
+    (override.kind === 'doomed' && override.canRegainStamina) ||
+    override.kind === 'extra-dying-trigger';
+  if (!canRegainStamina) {
+    return {
+      state,
+      derived: [],
+      log: [
+        {
+          kind: 'error',
+          text: `ApplyHeal rejected: ${target.name} can't regain Stamina (${override?.kind} override)`,
+          intentId: intent.id,
+        },
+      ],
+      errors: [
+        {
+          code: 'cannot_regain_stamina',
+          message: `target ${targetId} has a staminaOverride with canRegainStamina:false`,
+        },
+      ],
+    };
+  }
+
   const before = target.currentStamina;
   const after = Math.min(before + amount, target.maxStamina);
   const delivered = after - before;

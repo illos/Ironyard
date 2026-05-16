@@ -76,6 +76,13 @@ export function computeRollContributions(
 
   // ---------- Defender-side contributions ----------------------------------
   for (const d of defenders) {
+    // Phase 2b 2b.15 — Combat.md:677: "Ability rolls against you have a double
+    // edge" while unconscious. State-derived (not a condition rule) so it lives
+    // outside the conditions loop.
+    if (d.staminaState === 'unconscious') {
+      extraEdges += 2;
+      reasons.push(`${d.name} is unconscious (+2 edges to attacker — double edge)`);
+    }
     for (const c of d.conditions) {
       if (c.type === 'Restrained') {
         // canon §3.5.6: abilities used against them gain an edge.
@@ -158,15 +165,27 @@ export function removeTriggerEndedConditions(
 // envelope" keeps this module dependency-free of the intent envelope shape.
 //
 // Pass 3 Slice 1 — canon clarification: "ability roll" and "test" are two
-// subkinds of power roll. The Bleeding hook fires on dying-hero actions
-// (main, triggered) and on either subkind of power roll. The previous
-// 'might_or_agility_roll' was ambiguous; it's renamed to '...test' for
-// tests and 'ability_roll' is new for power-roll-during-ability.
+// subkinds of power roll. Per Classes.md:448 Bleeding fires "whenever they
+// use a main action, use a triggered action, or make a test or ability roll
+// using Might or Agility." Phase 2b 2b.15 B33 narrows `ability_roll` to
+// Might/Agility-characteristic rolls at the RollPower call site.
+//
+// Phase 2b 2b.15 B34 — `main_action`, `triggered_action`, and
+// `might_or_agility_test` discriminants are intentionally not yet wired:
+// - `main_action` / `triggered_action`: adding emits at MarkActionUsed would
+//   double-fire alongside RollPower's `ability_roll` for the typical case
+//   (most main actions are M/A power rolls that already trigger here).
+//   Canon §3.5.1 says Bleeding "only happens once per action," so the
+//   dedupe pattern needs the trigger-cascade substrate from 2b.9 to land
+//   before these call sites can be added safely.
+// - `might_or_agility_test`: blocked on a `RollTest` intent that doesn't
+//   exist yet. Currently under-fires for non-RollPower M/A tests.
+// Both deferrals are P2 under-fires; tracked in the 2b shipped-code audit.
 export type BleedingTrigger =
   | { kind: 'main_action' }
   | { kind: 'triggered_action' }
-  | { kind: 'might_or_agility_test' } // renamed from might_or_agility_roll for canon precision
-  | { kind: 'ability_roll' }; // new: any ability roll regardless of characteristic
+  | { kind: 'might_or_agility_test' }
+  | { kind: 'ability_roll' };
 
 export type BleedingDamageSpec = {
   // The amount to deal. Computed as `bleedingD6 + actor.level` per canon

@@ -9,6 +9,7 @@ describe('ParticipantStateOverrideSchema', () => {
       instantDeathDamageTypes: ['fire'],
       regainHours: 12,
       regainAmount: 'recoveryValue',
+      canRegainStamina: false,
     });
     expect(parsed.kind).toBe('inert');
   });
@@ -19,6 +20,7 @@ describe('ParticipantStateOverrideSchema', () => {
       source: 'hakaan-doomsight',
       regainHours: 12,
       regainAmount: 'recoveryValue',
+      canRegainStamina: false,
     });
     expect(parsed.kind).toBe('rubble');
   });
@@ -78,6 +80,7 @@ describe('ParticipantStateOverrideSchema', () => {
         instantDeathDamageTypes: ['fire'],
         regainHours: 12,
         regainAmount: 'recoveryValue',
+        canRegainStamina: false,
       }),
     ).toThrow();
   });

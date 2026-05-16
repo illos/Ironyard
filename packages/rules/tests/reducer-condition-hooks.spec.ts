@@ -219,6 +219,86 @@ describe('reducer hooks — Bleeding on RollPower', () => {
     expect(bleedingPayload.damageType).toBe('untyped');
   });
 
+  // Phase 2b 2b.15 B33 — Classes.md:448: bleeding fires on test/ability roll
+  // *using Might or Agility*. RollPower with a non-Might/Agility characteristic
+  // must not trigger Bleeding.
+  it('does not emit Bleeding damage when the ability roll uses Reason (canon: only Might/Agility)', () => {
+    const attacker = pc({
+      characteristics: { might: 2, agility: 1, reason: 3, intuition: 0, presence: 0 },
+      conditions: [
+        {
+          type: 'Bleeding',
+          source: { kind: 'effect', id: 'spell_1' },
+          duration: { kind: 'save_ends' },
+          appliedAtSeq: 1,
+          removable: true,
+        },
+      ],
+    });
+    const target = monster();
+    const s = inRoundWithActor([attacker, target], [attacker.id, target.id], attacker.id);
+
+    const r = applyIntent(
+      s,
+      intent('RollPower', {
+        abilityId: 'free_strike',
+        attackerId: attacker.id,
+        targetIds: [target.id],
+        characteristic: 'reason',
+        edges: 0,
+        banes: 0,
+        rolls: { d10: [5, 5] },
+        ladder,
+        bleedingD6: 4,
+      }),
+    );
+    expect(r.errors).toBeUndefined();
+    const bleedingDerived = r.derived.filter(
+      (d) =>
+        d.type === 'ApplyDamage' &&
+        d.payload &&
+        (d.payload as { targetId: string }).targetId === attacker.id,
+    );
+    expect(bleedingDerived).toHaveLength(0);
+  });
+
+  it('emits Bleeding damage when the ability roll uses Agility', () => {
+    const attacker = pc({
+      conditions: [
+        {
+          type: 'Bleeding',
+          source: { kind: 'effect', id: 'spell_1' },
+          duration: { kind: 'save_ends' },
+          appliedAtSeq: 1,
+          removable: true,
+        },
+      ],
+    });
+    const target = monster();
+    const s = inRoundWithActor([attacker, target], [attacker.id, target.id], attacker.id);
+
+    const r = applyIntent(
+      s,
+      intent('RollPower', {
+        abilityId: 'free_strike',
+        attackerId: attacker.id,
+        targetIds: [target.id],
+        characteristic: 'agility',
+        edges: 0,
+        banes: 0,
+        rolls: { d10: [5, 5] },
+        ladder,
+        bleedingD6: 4,
+      }),
+    );
+    const bleedingDerived = r.derived.filter(
+      (d) =>
+        d.type === 'ApplyDamage' &&
+        (d.payload as { targetId: string }).targetId === attacker.id,
+    );
+    expect(bleedingDerived).toHaveLength(1);
+  });
+
   it('does not emit Bleeding damage when the attacker has no Bleeding', () => {
     const attacker = pc();
     const target = monster();

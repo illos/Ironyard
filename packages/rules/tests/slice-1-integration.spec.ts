@@ -64,6 +64,8 @@ function applyDamage(
 
 describe('slice-1 integration — Revenant inert → fire instant death', () => {
   const PC_ID = 'pc:revenant-1';
+  // maxStamina=30 → windedValue=15 → dead threshold ≤ -15. Per Revenant.md:91,
+  // inert intercepts at the dead threshold (not the dying threshold).
 
   function buildState() {
     return withEncounter([
@@ -76,22 +78,32 @@ describe('slice-1 integration — Revenant inert → fire instant death', () => 
     ]);
   }
 
-  it('10 fire damage on 5-stamina Revenant → state inert, override populated', () => {
+  it('10 damage on 5-stamina Revenant → state dying (above dead threshold; inert does not fire)', () => {
     let state = buildState();
     state = applyDamage(state, { targetId: PC_ID, amount: 10, damageType: 'fire' });
+
+    const pc = state.participants.find((p) => p.id === PC_ID)!;
+    expect(pc.staminaState).toBe('dying');
+    expect(pc.staminaOverride).toBeNull();
+  });
+
+  it('25 damage on 5-stamina Revenant → state inert (would-be-dead at -20)', () => {
+    let state = buildState();
+    state = applyDamage(state, { targetId: PC_ID, amount: 25, damageType: 'fire' });
 
     const pc = state.participants.find((p) => p.id === PC_ID)!;
     expect(pc.staminaState).toBe('inert');
     expect(pc.staminaOverride?.kind).toBe('inert');
     expect(pc.staminaOverride?.source).toBe('revenant');
-    // stamina is clamped; inert override means we're below 0
-    expect(pc.currentStamina).toBeLessThan(0);
+    expect(pc.currentStamina).toBeLessThanOrEqual(-15);
+    // B2 — inert state adds Prone.
+    expect(pc.conditions.find((c) => c.type === 'Prone')).toBeDefined();
   });
 
   it('1 fire damage on inert Revenant → state dead, override cleared', () => {
     let state = buildState();
-    // First blow: put into inert
-    state = applyDamage(state, { targetId: PC_ID, amount: 10, damageType: 'fire' });
+    // First blow: cross the dead threshold to trigger inert
+    state = applyDamage(state, { targetId: PC_ID, amount: 25, damageType: 'fire' });
     const inert = state.participants.find((p) => p.id === PC_ID)!;
     expect(inert.staminaState).toBe('inert');
 
@@ -104,7 +116,7 @@ describe('slice-1 integration — Revenant inert → fire instant death', () => 
 
   it('non-fire damage on inert Revenant does NOT instant-kill', () => {
     let state = buildState();
-    state = applyDamage(state, { targetId: PC_ID, amount: 10, damageType: 'fire' });
+    state = applyDamage(state, { targetId: PC_ID, amount: 25, damageType: 'fire' });
     state = applyDamage(state, { targetId: PC_ID, amount: 5, damageType: 'cold' });
 
     const pc = state.participants.find((p) => p.id === PC_ID)!;
@@ -371,7 +383,9 @@ describe('slice-1 integration — Title Doomed via OA, dies at -staminaMax', () 
       ],
     };
 
-    // Step 2: player claims the OA
+    // Step 2: player claims the OA. Phase 2b 2b.15 — claim emits a derived
+    // ApplyParticipantOverride; that derived chain is cascaded by the DO in
+    // production. Below we apply the override explicitly to mirror the cascade.
     const claimResult = applyIntent(
       state,
       stamped({
@@ -384,9 +398,10 @@ describe('slice-1 integration — Title Doomed via OA, dies at -staminaMax', () 
     state = claimResult.state;
     // OA removed from queue
     expect(state.openActions.find((o) => o.id === oaId)).toBeUndefined();
+    // Claim now emits the override as a derived intent (Phase 2b 2b.15).
+    expect(claimResult.derived.find((d) => d.type === 'ApplyParticipantOverride')).toBeDefined();
 
-    // Step 3: ClaimOpenAction doesn't set the override yet (slice 1 design: claim just removes OA).
-    // Director applies the Title Doomed override explicitly.
+    // Step 3: Apply the override (mirrors the DO's derived-cascade).
     const overrideResult = applyIntent(
       state,
       stamped({

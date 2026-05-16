@@ -28,17 +28,19 @@ This document records the synthesized findings and triage recommendation. Bugs a
 
 Numbers are continuous and unique across the prior + this audit. Severity rubric: **P0 HIGH** = visible-in-playtest broken behavior; **P1** = canon mismatch with real in-game consequence; **P2** = latent / edge-case / low-blast-radius; **P3** = framing/UX/cosmetic.
 
-### Cluster 1 — Damage engine cleanup (7 bugs, mostly from prior audit + Agent K)
+### Cluster 1 — Damage engine cleanup (7 bugs, mostly from prior audit + Agent K) ✅ FIXED 2026-05-16
 
-| # | Severity | Where | Bug | Canon |
-|---|---|---|---|---|
-| B1 | P1 | `stamina.ts:53` | Revenant inert override fires at `currentStamina ≤ 0` (dying threshold) | Revenant.md:91 — inert replaces dying *at the dead threshold* `stamina ≤ -windedValue` |
-| B2 | P2 | `stamina.ts` `applyTransitionSideEffects` | Inert state doesn't add `Prone` condition | Canon: *"You fall prone and can't stand."* KO path adds Prone; inert doesn't |
-| B3 | P1 | `stamina.ts` `applyTransitionSideEffects` | Dying-induced Bleeding applied unconditionally to PCs | Revenant Bloodless: *"can't be made bleeding even while dying"* — suppression missing |
-| B30 | P1 | `claim-open-action.ts:87-91` | `title-doomed-opt-in` claim handler is `break;` no-op; claim has zero mechanical effect | Doomed.md:22 — claim should apply the `doomed { source: 'title-doomed' }` override |
-| B31 | P1 | `stamina-override.ts:17-22` (rubble) + Revenant inert | Override schemas lack `canRegainStamina:false` / `canBeUndone:false`; heal restores stamina freely | Hakaan.md:135 / Revenant.md — *"can't regain Stamina or have this effect undone in any way"* |
-| B33 | P1 | `roll-power.ts:181` (Bleeding-d6 emission) | RollPower fires Bleeding-d6 on every ability roll regardless of characteristic | Classes.md:448 — only Might/Agility ability rolls trigger Bleeding |
-| B34 | P2 | `condition-hooks.ts:165-169` | 3 BleedingTrigger discriminants (`main_action`, `triggered_action`, `might_or_agility_test`) have zero call sites | Under-firing: non-roll main actions, free triggered abilities, standalone Might/Agility tests all skip the hook |
+| # | Severity | Where | Bug | Canon | Status |
+|---|---|---|---|---|---|
+| B1 | P1 | `stamina.ts:53` | Revenant inert override fires at `currentStamina ≤ 0` (dying threshold) | Revenant.md:91 — inert replaces dying *at the dead threshold* `stamina ≤ -windedValue` | ✅ fixed |
+| B2 | P2 | `stamina.ts` `applyTransitionSideEffects` | Inert state doesn't add `Prone` condition | Canon: *"You fall prone and can't stand."* KO path adds Prone; inert doesn't | ✅ fixed |
+| B3 | P1 | `stamina.ts` `applyTransitionSideEffects` | Dying-induced Bleeding applied unconditionally to PCs | Revenant Bloodless: *"can't be made bleeding even while dying"* — suppression missing | ✅ fixed |
+| B30 | P1 | `claim-open-action.ts:87-91` | `title-doomed-opt-in` claim handler is `break;` no-op; claim has zero mechanical effect | Doomed.md:22 — claim should apply the `doomed { source: 'title-doomed' }` override | ✅ fixed |
+| B31 | P1 | `stamina-override.ts:17-22` (rubble) + Revenant inert | Override schemas lack `canRegainStamina:false` / `canBeUndone:false`; heal restores stamina freely | Hakaan.md:135 / Revenant.md — *"can't regain Stamina or have this effect undone in any way"* | ✅ fixed |
+| B33 | P1 | `roll-power.ts:181` (Bleeding-d6 emission) | RollPower fires Bleeding-d6 on every ability roll regardless of characteristic | Classes.md:448 — only Might/Agility ability rolls trigger Bleeding | ✅ fixed |
+| B34 | P2 | `condition-hooks.ts:165-169` | 3 BleedingTrigger discriminants (`main_action`, `triggered_action`, `might_or_agility_test`) have zero call sites | Under-firing: non-roll main actions, free triggered abilities, standalone Might/Agility tests all skip the hook | 🟡 deferred to 2b.9 |
+
+**Fix shipped via Phase 2b sub-epic 2b.15** (canon-audit cleanup; TDD): inert threshold lifted to `≤ -windedValue` (B1); apply-damage Revenant intercept moved from `→ dying` to `→ dead` to match (B1); applyTransitionSideEffects adds Prone-on-inert (`source: 'inert-state'`) per Revenant.md:91 (B2); dying-Bleeding suppressed for Revenants with `purchasedTraits: ['bloodless']` (B3); ClaimOpenAction title-doomed-opt-in emits ApplyParticipantOverride { kind: 'doomed', source: 'title-doomed', canRegainStamina: false, autoTier3OnPowerRolls: true, staminaDeathThreshold: 'staminaMax', dieAtEncounterEnd: true } (B30); inert + rubble override schemas gained `canRegainStamina: boolean` (default false) per canon; applyApplyHeal gates on `canRegainStamina === false` for all override kinds (B31); roll-power Bleeding hook gated on `characteristic === 'might' || 'agility'` per Classes.md:448 (B33); B34 documented in condition-hooks.ts as deferred — the main_action/triggered_action discriminants would double-fire with RollPower's ability_roll hook for the typical case (canon §3.5.1 says Bleeding "only happens once per action"), so dedupe needs the trigger-cascade substrate from 2b.9. Also folded: KO wake intent (`WakeFromUnconscious`), double-edge against unconscious target in `computeRollContributions`, alive predicate lifted from `currentStamina > -windedValue` to `staminaState !== 'dead'`, heal-from-unconscious clears KO-applied Unconscious + Prone (slice-1 PS#2). 30+ new tests; repo-wide test count: 1765.
 
 Plus minor: KO-resurrects-corpses edge case (KO on `dead` state target flips to `unconscious`); BecomeDoomed permission allows from any non-dead state vs canon path (b) "while you are dying" (spec acknowledges; acceptable as designed).
 

@@ -144,16 +144,18 @@ describe('applyApplyDamage — hero → dead (no override)', () => {
 });
 
 describe('applyApplyDamage — Revenant PC override', () => {
-  it('intercepts → dying with inert override when ancestry includes revenant', () => {
+  it('intercepts → dead with inert override when ancestry includes revenant', () => {
+    // Per Revenant.md:91, inert intercepts at the *dead* threshold
+    // (currentStamina ≤ -windedValue). 5 stamina − 25 damage = -20 ≤ -15.
     const s = stateWithHero({
       currentStamina: 5,
       ancestry: ['revenant'],
       staminaOverride: null,
     });
-    const result = applyApplyDamage(s, applyDamageIntent({ amount: 10 }));
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 25 }));
     expect(result.errors ?? []).toEqual([]);
     const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
-    // Override applied → inert instead of dying
+    // Override applied → inert instead of dead
     expect(updated.staminaState).toBe('inert');
     expect(updated.staminaOverride?.kind).toBe('inert');
     expect(updated.staminaOverride?.source).toBe('revenant');
@@ -166,10 +168,23 @@ describe('applyApplyDamage — Revenant PC override', () => {
     expect(result.derived.find((d) => d.type === 'RaiseOpenAction')).toBeUndefined();
   });
 
+  it('does NOT intercept dying transition (only intercepts dead)', () => {
+    // 5 − 10 = -5 → dying, but above -windedValue → no inert intercept.
+    const s = stateWithHero({
+      currentStamina: 5,
+      ancestry: ['revenant'],
+      staminaOverride: null,
+    });
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 10 }));
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
+    expect(updated.staminaState).toBe('dying');
+    expect(updated.staminaOverride).toBeNull();
+  });
+
   it('does NOT intercept when override is already set', () => {
     // Already has an override — Revenant intercept only fires when staminaOverride is null
     const s = stateWithHero({
-      currentStamina: -4,
+      currentStamina: -20, // already at -windedValue, inert holds
       ancestry: ['revenant'],
       staminaState: 'inert',
       staminaOverride: {
@@ -178,6 +193,7 @@ describe('applyApplyDamage — Revenant PC override', () => {
         instantDeathDamageTypes: ['fire'],
         regainHours: 12,
         regainAmount: 'recoveryValue',
+        canRegainStamina: false,
       },
     });
     // Cold damage (not fire, won't instant-kill) — stays inert
@@ -315,13 +331,15 @@ describe('applyApplyDamage — Title Doomed OA auto-raise', () => {
   });
 
   it('does NOT emit RaiseOpenAction when Revenant override fires (state=inert, not dying)', () => {
+    // Revenant inert intercepts → dead (not → dying). Use 25 damage to cross
+    // the dead threshold (-20 ≤ -windedValue 15).
     const s = stateWithHero({
       currentStamina: 5,
       ancestry: ['revenant'],
       equippedTitleIds: ['doomed'],
       staminaOverride: null,
     });
-    const result = applyApplyDamage(s, applyDamageIntent({ amount: 10 }));
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 25 }));
     const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
     expect(updated.staminaState).toBe('inert');
     // OA should NOT be raised since state is inert (override trumps)
@@ -397,6 +415,7 @@ describe('applyApplyDamage — inert fire instant-death', () => {
         instantDeathDamageTypes: ['fire'],
         regainHours: 12,
         regainAmount: 'recoveryValue',
+        canRegainStamina: false,
       },
     });
     const result = applyApplyDamage(s, applyDamageIntent({ amount: 1, damageType: 'fire' }));

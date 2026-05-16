@@ -86,6 +86,7 @@ describe('applyClearParticipantOverride — director clears override', () => {
         instantDeathDamageTypes: ['fire'],
         regainHours: 12,
         regainAmount: 'recoveryValue',
+        canRegainStamina: false,
       },
     });
     const result = applyClearParticipantOverride(s, clearIntent());

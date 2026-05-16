@@ -109,6 +109,7 @@ export {
   UpdateSessionAttendancePayloadSchema,
   UseAbilityPayloadSchema,
   UseConsumablePayloadSchema,
+  WakeFromUnconsciousPayloadSchema,
 } from './intents';
 export type {
   AddMonsterPayload,
@@ -188,6 +189,7 @@ export type {
   UpdateSessionAttendancePayload,
   UseAbilityPayload,
   UseConsumablePayload,
+  WakeFromUnconsciousPayload,
 } from './intents';
 
 export {

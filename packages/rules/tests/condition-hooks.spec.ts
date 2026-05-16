@@ -196,6 +196,25 @@ describe('computeRollContributions', () => {
     expect(r.extraBanes).toBe(1);
   });
 
+  // Phase 2b 2b.15 — Combat.md:677: unconscious target grants double edge to
+  // attackers' ability rolls.
+  it('unconscious defender contributes +2 edges (double edge) to attacker', () => {
+    const attacker = pc();
+    const defender = monster({ staminaState: 'unconscious' });
+    const r = computeRollContributions(attacker, [defender]);
+    expect(r.extraEdges).toBe(2);
+  });
+
+  it('unconscious defender + Prone stacks the edges (resolver caps to ±2)', () => {
+    const attacker = pc();
+    const defender = monster({
+      staminaState: 'unconscious',
+      conditions: [cond('Prone', 'ko-interception')],
+    });
+    const r = computeRollContributions(attacker, [defender]);
+    expect(r.extraEdges).toBe(3);
+  });
+
   it('Prone defender contributes +1 edge to attacker', () => {
     const attacker = pc();
     const defender = monster({ conditions: [cond('Prone', 'spell_1')] });

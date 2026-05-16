@@ -44,6 +44,7 @@ const inertOverride: ParticipantStateOverride = {
   instantDeathDamageTypes: ['fire'],
   regainHours: 12,
   regainAmount: 'recoveryValue',
+  canRegainStamina: false,
 };
 
 const rubbleOverride: ParticipantStateOverride = {
@@ -51,6 +52,7 @@ const rubbleOverride: ParticipantStateOverride = {
   source: 'hakaan-doomsight',
   regainHours: 12,
   regainAmount: 'recoveryValue',
+  canRegainStamina: false,
 };
 
 const copOverride: ParticipantStateOverride = {
@@ -69,8 +71,10 @@ describe('applyApplyParticipantOverride — director applies overrides', () => {
     expect(updated.staminaState).toBe('doomed');
   });
 
-  it('applies an inert override and recomputes state (dying hero → inert)', () => {
-    const s = stateWithHero({ currentStamina: -3, maxStamina: 30, staminaState: 'dying' });
+  it('applies an inert override and recomputes state (would-be-dead hero → inert)', () => {
+    // Per Revenant.md:91, inert intercepts at the *dead* threshold (≤ -windedValue).
+    // currentStamina -20 ≤ -windedValue(30/2 = 15) → inert holds.
+    const s = stateWithHero({ currentStamina: -20, maxStamina: 30, staminaState: 'dead' });
     const result = applyApplyParticipantOverride(s, overrideIntent(inertOverride));
     expect(result.errors ?? []).toEqual([]);
     const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;

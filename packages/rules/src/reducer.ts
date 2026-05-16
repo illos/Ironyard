@@ -68,6 +68,7 @@ import {
   applyUpdateSessionAttendance,
   applyUseAbility,
   applyUseConsumable,
+  applyWakeFromUnconscious,
 } from './intents';
 import type { CampaignState, IntentResult, ReducerContext, StampedIntent } from './types';
 
@@ -254,6 +255,8 @@ export function applyIntent(
       return applyUseAbility(state, intent);
     case IntentTypes.UseConsumable:
       return applyUseConsumable(state, intent);
+    case IntentTypes.WakeFromUnconscious:
+      return applyWakeFromUnconscious(state, intent);
     default:
       return {
         state,

@@ -85,8 +85,22 @@ export function applyClaimOpenAction(state: CampaignState, intent: StampedIntent
 
   switch (oa.kind) {
     case 'title-doomed-opt-in': {
-      // No derived effects in slice 2a — the claim simply removes the OA.
-      // Future slices may emit Title-Doomed payoff intents here.
+      // Phase 2b 2b.15 — Doomed.md:22: claim applies the Title Doomed override
+      // so the PC auto-rolls tier 3 on ability rolls, can't regain Stamina,
+      // dies at -staminaMax, and dies at the end of the encounter.
+      derived.push(
+        decorate(IntentTypes.ApplyParticipantOverride, {
+          participantId: oa.participantId,
+          override: {
+            kind: 'doomed',
+            source: 'title-doomed',
+            canRegainStamina: false,
+            autoTier3OnPowerRolls: true,
+            staminaDeathThreshold: 'staminaMax',
+            dieAtEncounterEnd: true,
+          },
+        }),
+      );
       break;
     }
 

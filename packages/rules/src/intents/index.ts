@@ -70,3 +70,4 @@ export { applyUnequipItem } from './unequip-item';
 export { applyUpdateSessionAttendance } from './update-session-attendance';
 export { applyUseAbility } from './use-ability';
 export { applyUseConsumable } from './use-consumable';
+export { applyWakeFromUnconscious } from './wake-from-unconscious';

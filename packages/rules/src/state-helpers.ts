@@ -24,14 +24,15 @@ export function windedValue(p: { maxStamina: number }): number {
 }
 
 /**
- * PCs still in the fight by the permissive 2b.0 alive-check
- * (`currentStamina > -windedValue`). 2b.5 replaces with the formal
- * winded/dying/dead state machine.
+ * PCs still in the fight. Phase 2b 2b.15 lifted this from the permissive 2b.0
+ * predicate (`currentStamina > -windedValue`) to the formal slice-1 state
+ * machine: anything other than `dead` is alive. Inert / rubble / doomed /
+ * dying / unconscious all count as still-in-the-fight per canon.
  */
 export function aliveHeroes(state: CampaignState): Participant[] {
   return state.participants
     .filter((p): p is Participant => isParticipant(p) && p.kind === 'pc')
-    .filter((p) => p.currentStamina > -windedValue(p));
+    .filter((p) => p.staminaState !== 'dead');
 }
 
 /**

@@ -174,6 +174,8 @@ export { UseAbilityPayloadSchema } from './use-ability';
 export type { UseAbilityPayload } from './use-ability';
 export { UseConsumablePayloadSchema } from './use-consumable';
 export type { UseConsumablePayload } from './use-consumable';
+export { WakeFromUnconsciousPayloadSchema } from './wake-from-unconscious';
+export type { WakeFromUnconsciousPayload } from './wake-from-unconscious';
 
 export const IntentTypes = {
   AddMonster: 'AddMonster',
@@ -245,6 +247,7 @@ export const IntentTypes = {
   UpdateSessionAttendance: 'UpdateSessionAttendance',
   UseAbility: 'UseAbility',
   UseConsumable: 'UseConsumable',
+  WakeFromUnconscious: 'WakeFromUnconscious',
 } as const;
 export type KnownIntentType = (typeof IntentTypes)[keyof typeof IntentTypes];
 

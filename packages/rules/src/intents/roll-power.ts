@@ -173,14 +173,15 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
     }
   }
 
-  // Slice 6: Bleeding hook (canon §3.5.1). Fires on every RollPower because
-  // RollPower is the main-action surface today AND because Might/Agility
-  // characteristic also triggers. We classify the trigger for the log only —
-  // damage is identical regardless of which branch fired.
-  // Pass 3 Slice 1: RollPower is always an ability roll, so use 'ability_roll' trigger.
+  // Slice 6: Bleeding hook (canon §3.5.1 / Classes.md:448). Per canon Bleeding
+  // damage fires on "a test or ability roll using Might or Agility" — not on
+  // every characteristic. Phase 2b 2b.15 B33 gates this to Might/Agility ability
+  // rolls (the main-action / triggered-action branches are handled outside
+  // RollPower via separate trigger discriminants — see condition-hooks.ts).
   const bleedingTrigger: BleedingTrigger = { kind: 'ability_roll' };
   const bleedingLog: LogEntry[] = [];
-  if (requireCanon('conditions.the-9-conditions')) {
+  const usesMightOrAgility = characteristic === 'might' || characteristic === 'agility';
+  if (requireCanon('conditions.the-9-conditions') && usesMightOrAgility) {
     const bleed = bleedingDamageHook(attacker, bleedingTrigger, bleedingD6);
     if ('amount' in bleed) {
       derived.push({

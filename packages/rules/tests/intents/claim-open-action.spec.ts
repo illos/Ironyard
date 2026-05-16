@@ -93,6 +93,48 @@ describe('applyClaimOpenAction', () => {
     expect(result.errors?.[0]?.code).toBe('invalid_payload');
   });
 
+  // --- Phase 2b 2b.15 — title-doomed-opt-in claim applies the override ------
+  // Canon Doomed.md:22 — claim should put the PC into the doomed state so it
+  // auto-tier-3s ability rolls and dies at encounter end.
+  it('title-doomed-opt-in claim emits ApplyParticipantOverride { doomed/title-doomed }', () => {
+    const s = stateWithOA({
+      participantId: 'pc-1',
+      ownerId: 'alice',
+      kind: 'title-doomed-opt-in',
+    });
+    const intent = stamped({
+      actor: { userId: 'alice', role: 'player' },
+      type: 'ClaimOpenAction',
+      payload: { openActionId: 'oa-1' },
+    });
+    const result = applyClaimOpenAction(s, intent);
+    expect(result.errors ?? []).toEqual([]);
+    expect(result.state.openActions).toHaveLength(0);
+
+    const apply = result.derived.find((d) => d.type === 'ApplyParticipantOverride');
+    expect(apply).toBeDefined();
+    const payload = apply!.payload as {
+      participantId: string;
+      override: {
+        kind: string;
+        source: string;
+        canRegainStamina: boolean;
+        autoTier3OnPowerRolls: boolean;
+        staminaDeathThreshold: string;
+        dieAtEncounterEnd: boolean;
+      };
+    };
+    expect(payload.participantId).toBe('pc-1');
+    expect(payload.override.kind).toBe('doomed');
+    expect(payload.override.source).toBe('title-doomed');
+    expect(payload.override.canRegainStamina).toBe(false);
+    expect(payload.override.autoTier3OnPowerRolls).toBe(true);
+    expect(payload.override.staminaDeathThreshold).toBe('staminaMax');
+    expect(payload.override.dieAtEncounterEnd).toBe(true);
+    expect(apply!.causedBy).toBe(intent.id);
+    expect(apply!.source).toBe('server');
+  });
+
   // --- Slice 2a: spatial-trigger OAs ----------------------------------------
 
   const spatialCases: Array<{

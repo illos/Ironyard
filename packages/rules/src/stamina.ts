@@ -48,9 +48,13 @@ function deriveStaminaState(p: Participant): StaminaState {
 function deriveOverrideState(p: Participant, override: ParticipantStateOverride): StaminaState {
   switch (override.kind) {
     case 'inert':
-      // Holds at 'inert' while currentStamina ≤ 0. Healed above → override
-      // releases and natural derivation runs.
-      return p.currentStamina <= 0 ? 'inert' : deriveNaturalState({ ...p, staminaOverride: null });
+      // Per Revenant.md:91 — "when your Stamina reaches the negative of your
+      // winded value, you become inert instead of dying." Inert replaces the
+      // *dead* transition (≤ -windedValue), not dying. Above -windedValue the
+      // override is dormant and natural derivation runs (dying/winded/healthy).
+      return p.currentStamina <= -windedValue(p)
+        ? 'inert'
+        : deriveNaturalState({ ...p, staminaOverride: null });
     case 'rubble':
       // Holds at 'rubble' while currentStamina ≤ -windedValue. Above that,
       // the override releases (returns to dying-or-better).
@@ -145,8 +149,10 @@ export function applyTransitionSideEffects(
 ): Participant {
   let result = { ...p, staminaState: to };
 
-  // Hero → dying: apply non-removable Bleeding (canon §2.8).
-  if (to === 'dying' && p.kind === 'pc') {
+  // Hero → dying: apply non-removable Bleeding (canon §2.8). Suppressed for
+  // Revenant Bloodless (Revenant.md:99 — "can't be made bleeding even while
+  // dying").
+  if (to === 'dying' && p.kind === 'pc' && !hasBloodless(p)) {
     const hasDyingBleed = result.conditions.some(
       (c) => c.type === 'Bleeding' && c.source.id === 'dying-state',
     );
@@ -172,6 +178,21 @@ export function applyTransitionSideEffects(
     };
   }
 
+  // Phase 2b 2b.15 (slice-1 PS#2) — heal-from-unconscious clears the KO-applied
+  // Unconscious + Prone conditions. Any upward exit from `unconscious` cleans
+  // these up; the formal WakeFromUnconscious intent path still uses its own
+  // condition filter so this is the safety net for heal-driven transitions.
+  if (from === 'unconscious' && to !== 'unconscious' && to !== 'dead') {
+    result = {
+      ...result,
+      conditions: result.conditions.filter(
+        (c) =>
+          !(c.type === 'Unconscious' && c.source.id === 'ko-interception') &&
+          !(c.type === 'Prone' && c.source.id === 'ko-interception'),
+      ),
+    };
+  }
+
   // → dead: clear all conditions.
   if (to === 'dead') {
     result = { ...result, conditions: [] };
@@ -182,7 +203,24 @@ export function applyTransitionSideEffects(
     result = { ...result, conditions: [] };
   }
 
+  // → inert adds Prone (Revenant.md:91 — "You fall prone and can't stand").
+  // Rubble does not — canon describes the body as rubble without prone.
+  if (to === 'inert') {
+    const proneCond: ConditionInstance = {
+      type: 'Prone',
+      duration: { kind: 'manual' },
+      source: { kind: 'effect', id: 'inert-state' },
+      removable: false,
+      appliedAtSeq: 0,
+    };
+    result = { ...result, conditions: [...result.conditions, proneCond] };
+  }
+
   return result;
+}
+
+function hasBloodless(p: Participant): boolean {
+  return p.kind === 'pc' && p.purchasedTraits.includes('bloodless');
 }
 
 // Type-only re-export so callers can `import { StaminaState } from '../stamina'`

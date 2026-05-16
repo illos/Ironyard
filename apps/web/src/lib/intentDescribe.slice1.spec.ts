@@ -64,6 +64,7 @@ describe('describeIntent — Pass 3 Slice 1 cases', () => {
           instantDeathDamageTypes: [],
           regainHours: 12,
           regainAmount: 'recoveryValue',
+          canRegainStamina: false,
         },
       }),
       participantsBefore: participants,

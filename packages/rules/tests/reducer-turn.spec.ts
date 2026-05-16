@@ -240,9 +240,14 @@ describe('applyStartRound Malice tick', () => {
     const s = readyState(['alice', 'bob', 'cleric']);
     s.encounter!.currentRound = 2;
     s.encounter!.malice.current = 16;
-    // Kill one PC (currentStamina past -windedValue).
+    // Kill one PC. Phase 2b 2b.15 lifted the alive predicate from
+    // `currentStamina > -windedValue` to `staminaState !== 'dead'`, so the
+    // formal state machine is the source of truth.
     const dead = s.participants.find((p) => isParticipant(p) && p.kind === 'pc');
-    if (dead) (dead as Participant).currentStamina = -100;
+    if (dead) {
+      (dead as Participant).currentStamina = -100;
+      (dead as Participant).staminaState = 'dead';
+    }
     const result = applyIntent(s, intent('StartRound', {}));
     // currentRound becomes 3; aliveHeroes = 2 (one is dead); malice += 2 + 3 = 5.
     expect(result.errors).toBeUndefined();
