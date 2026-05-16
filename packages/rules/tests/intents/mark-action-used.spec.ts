@@ -94,8 +94,13 @@ describe('applyMarkActionUsed', () => {
 });
 
 describe('applyMarkActionUsed — class-δ main-action-used trigger wiring (Task 24)', () => {
-  it('director marks main on an enemy monster → Null hero gets a spatial Null Field OA raised with causedBy', () => {
-    const nullPc = makeHeroParticipant('null-1', { className: 'Null' });
+  // Slice 2b: the OA detour is gone. The trigger now auto-applies GainResource
+  // directly when the enemy is in nullPc.targetingRelations.nullField[].
+  it('director marks main on an enemy in nullField → Null hero gains +1 discipline (no OA)', () => {
+    const nullPc = makeHeroParticipant('null-1', {
+      className: 'Null',
+      targetingRelations: { judged: [], marked: [], nullField: ['mon-1'] },
+    });
     const enemy = makeMonsterParticipant('mon-1', { name: 'Goblin' });
     const state = baseState({
       participants: [nullPc, enemy],
@@ -109,17 +114,41 @@ describe('applyMarkActionUsed — class-δ main-action-used trigger wiring (Task
     });
     const result = applyIntent(state, intent);
     expect(result.errors).toBeUndefined();
-    const oa = result.derived.find((d) => d.type === 'RaiseOpenAction');
-    expect(oa).toBeDefined();
-    const oaPayload = oa!.payload as {
-      kind: string;
-      participantId: string;
-      payload: { actorId: string; actorName: string };
-    };
-    expect(oaPayload.kind).toBe('spatial-trigger-null-field');
-    expect(oaPayload.participantId).toBe('null-1');
-    expect(oaPayload.payload.actorId).toBe('mon-1');
-    expect(oa!.causedBy).toBe(intent.id);
+    // No OA detour
+    expect(result.derived.find((d) => d.type === 'RaiseOpenAction')).toBeUndefined();
+    // Auto-applied GainResource with causedBy wired
+    const gain = result.derived.find((d) => d.type === 'GainResource');
+    expect(gain).toBeDefined();
+    expect((gain!.payload as { participantId: string; name: string; amount: number })).toMatchObject({
+      participantId: 'null-1',
+      name: 'discipline',
+      amount: 1,
+    });
+    expect(gain!.causedBy).toBe(intent.id);
+  });
+
+  it('director marks main on enemy NOT in nullField → no discipline gain (regression)', () => {
+    const nullPc = makeHeroParticipant('null-1', {
+      className: 'Null',
+      targetingRelations: { judged: [], marked: [], nullField: [] },
+    });
+    const enemy = makeMonsterParticipant('mon-1', { name: 'Goblin' });
+    const state = baseState({
+      participants: [nullPc, enemy],
+      encounter: makeRunningEncounterPhase('enc-1'),
+      activeDirectorId: ownerActor.userId,
+    });
+    const result = applyIntent(
+      state,
+      stamped({
+        type: IntentTypes.MarkActionUsed,
+        actor: ownerActor,
+        payload: { participantId: 'mon-1', slot: 'main', used: true },
+      }),
+    );
+    expect(result.errors).toBeUndefined();
+    expect(result.derived.find((d) => d.type === 'GainResource')).toBeUndefined();
+    expect(result.derived.find((d) => d.type === 'RaiseOpenAction')).toBeUndefined();
   });
 
   it('main action used on a PC ally (not a monster) → no Null OA emitted', () => {

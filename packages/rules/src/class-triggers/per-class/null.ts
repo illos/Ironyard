@@ -5,6 +5,11 @@ import type { ActionEvent, ActionTriggerContext } from '../action-triggers';
 import { resolveParticipantClass } from '../helpers';
 
 // Pass 3 Slice 2a — Null class-δ action triggers.
+// Pass 3 Slice 2b — hasActiveNullFieldOver closure: reads targetingRelations.nullField
+//   instead of the permissive stub; main-action-used branch now auto-applies
+//   GainResource + latch directly (matching Censor / Tactician pattern), dropping
+//   the OA detour. The `spatial-trigger-null-field` OA kind in the registry is
+//   kept as harmless dead code for back-compat; it is not removed by this slice.
 //
 // Discipline (canon § 5.4.5) covers two distinct triggers off two different
 // event shapes; both are dispatched from a single evaluator that fans out by
@@ -14,30 +19,19 @@ import { resolveParticipantClass } from '../helpers';
 //   When the director spends malice, every Null gains 1 discipline, first
 //   time per round per Null (gated by `perRound.directorSpentMalice`).
 //
-// Trigger 2 — enemy main action inside this Null's Null Field (spatial OA):
-//   When an enemy creature uses a main action while inside this Null's active
-//   Null Field, the Null may gain 1 discipline. Spatial — the field's footprint
-//   and the enemy's position can change between the event and the claim — so
-//   we raise an OpenAction rather than auto-applying. Gated by
-//   `perRound.nullFieldEnemyMainTriggered` per Null.
-//
-// Null-Field-tracking state does not yet exist in the engine (the ability
-// resolution that records an active Null Field on the Null participant lands
-// in a later slice). Until then, `hasActiveNullField` is a permissive stub
-// that returns true unconditionally — generous so that the trigger
-// infrastructure can be validated end-to-end. The Discipline Null-Field canon
-// entry is therefore manual-override in production today (the director can
-// hand-grant discipline); the auto path activates fully once the Null Field
-// ability resolution lands.
-//
-// TODO Slice 2b/2c: replace the `hasActiveNullField` stub with a real query
-// against the Null's recorded Null Field (likely an `activeAbilities` entry
-// with `abilityId: 'null-field'` or similar) and a position check against the
-// event actor's coordinates.
+// Trigger 2 — enemy main action while in this Null's Null Field:
+//   When an enemy creature uses a main action while listed in this Null's
+//   targetingRelations.nullField[], the Null gains 1 discipline automatically.
+//   Gated by `perRound.nullFieldEnemyMainTriggered` per Null.
 
-function hasActiveNullField(_state: CampaignState, _nullPc: Participant): boolean {
-  // Permissive stub — see header comment.
-  return true;
+// Renamed from hasActiveNullField → hasActiveNullFieldOver: semantics changed
+// from "does this Null have any field cast" to "is THIS enemy in the field."
+function hasActiveNullFieldOver(
+  _state: CampaignState,
+  nullPc: Participant,
+  candidateId: string,
+): boolean {
+  return nullPc.targetingRelations.nullField.includes(candidateId);
 }
 
 export function evaluate(
@@ -86,21 +80,25 @@ export function evaluate(
     if (actor.kind !== 'monster') return derived;
     for (const nullPc of nulls) {
       if (nullPc.perEncounterFlags.perRound.nullFieldEnemyMainTriggered) continue;
-      if (!hasActiveNullField(state, nullPc)) continue;
-      derived.push({
-        actor: ctx.actor,
-        source: 'server',
-        type: 'RaiseOpenAction',
-        payload: {
-          kind: 'spatial-trigger-null-field',
-          participantId: nullPc.id,
-          expiresAtRound: null,
+      if (!hasActiveNullFieldOver(state, nullPc, actor.id)) continue;
+      derived.push(
+        {
+          actor: ctx.actor,
+          source: 'server',
+          type: 'GainResource',
+          payload: { participantId: nullPc.id, name: 'discipline', amount: 1 },
+        },
+        {
+          actor: ctx.actor,
+          source: 'server',
+          type: 'SetParticipantPerRoundFlag',
           payload: {
-            actorId: actor.id,
-            actorName: actor.name,
+            participantId: nullPc.id,
+            key: 'nullFieldEnemyMainTriggered',
+            value: true,
           },
         },
-      });
+      );
     }
     return derived;
   }
