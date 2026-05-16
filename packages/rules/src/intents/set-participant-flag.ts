@@ -1,6 +1,7 @@
 import {
   SetParticipantPerEncounterLatchPayloadSchema,
   SetParticipantPerRoundFlagPayloadSchema,
+  SetParticipantPerTurnEntryPayloadSchema,
   SetParticipantPosthumousDramaEligiblePayloadSchema,
 } from '@ironyard/shared';
 import type { CampaignState, IntentResult, StampedIntent } from '../types';
@@ -105,6 +106,67 @@ export function applySetParticipantPerRoundFlag(
       perEncounterFlags: {
         ...p.perEncounterFlags,
         perRound: { ...p.perEncounterFlags.perRound, [key]: value },
+      },
+    };
+  });
+  return {
+    state: { ...state, seq: state.seq + 1, participants },
+    derived: [],
+    log: [],
+  };
+}
+
+export function applySetParticipantPerTurnEntry(
+  state: CampaignState,
+  intent: StampedIntent,
+): IntentResult {
+  const parsed = SetParticipantPerTurnEntryPayloadSchema.safeParse(intent.payload);
+  if (!parsed.success) {
+    return {
+      state,
+      derived: [],
+      log: [
+        {
+          kind: 'error',
+          text: `SetParticipantPerTurnEntry rejected: ${parsed.error.message}`,
+          intentId: intent.id,
+        },
+      ],
+      errors: [{ code: 'invalid_payload', message: parsed.error.message }],
+    };
+  }
+  const { participantId, scopedToTurnOf, key, value } = parsed.data;
+  const target = state.participants.filter(isParticipant).find((p) => p.id === participantId);
+  if (!target || target.kind !== 'pc') {
+    return {
+      state,
+      derived: [],
+      log: [
+        {
+          kind: 'error',
+          text: `SetParticipantPerTurnEntry: participant ${participantId} not a PC`,
+          intentId: intent.id,
+        },
+      ],
+      errors: [{ code: 'target_missing', message: `PC participant ${participantId} not found` }],
+    };
+  }
+  // Dedup on (scopedToTurnOf, key): filter any prior entry sharing both, then
+  // append the fresh entry. The reducer is idempotent w.r.t. (scope, key) —
+  // callers that re-emit the same write produce the same final entry list.
+  const participants = state.participants.map((p) => {
+    if (!isParticipant(p) || p.id !== participantId || p.kind !== 'pc') return p;
+    const filtered = p.perEncounterFlags.perTurn.entries.filter(
+      (e) => !(e.scopedToTurnOf === scopedToTurnOf && e.key === key),
+    );
+    return {
+      ...p,
+      perEncounterFlags: {
+        ...p.perEncounterFlags,
+        perTurn: {
+          ...p.perEncounterFlags.perTurn,
+          entries: [...filtered, { scopedToTurnOf, key, value }],
+        },
       },
     };
   });

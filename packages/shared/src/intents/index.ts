@@ -96,11 +96,13 @@ export type { SetConditionPayload } from './set-condition';
 export {
   SetParticipantPerEncounterLatchPayloadSchema,
   SetParticipantPerRoundFlagPayloadSchema,
+  SetParticipantPerTurnEntryPayloadSchema,
   SetParticipantPosthumousDramaEligiblePayloadSchema,
 } from './set-participant-flag';
 export type {
   SetParticipantPerEncounterLatchPayload,
   SetParticipantPerRoundFlagPayload,
+  SetParticipantPerTurnEntryPayload,
   SetParticipantPosthumousDramaEligiblePayload,
 } from './set-participant-flag';
 export { SetResourcePayloadSchema } from './set-resource';
@@ -212,6 +214,7 @@ export const IntentTypes = {
   SetCondition: 'SetCondition',
   SetParticipantPerEncounterLatch: 'SetParticipantPerEncounterLatch',
   SetParticipantPerRoundFlag: 'SetParticipantPerRoundFlag',
+  SetParticipantPerTurnEntry: 'SetParticipantPerTurnEntry',
   SetParticipantPosthumousDramaEligible: 'SetParticipantPosthumousDramaEligible',
   SetResource: 'SetResource',
   SetStamina: 'SetStamina',
@@ -250,6 +253,7 @@ export const SERVER_ONLY_INTENTS = new Set<string>([
   IntentTypes.RaiseOpenAction,
   IntentTypes.SetParticipantPerEncounterLatch,
   IntentTypes.SetParticipantPerRoundFlag,
+  IntentTypes.SetParticipantPerTurnEntry,
   IntentTypes.SetParticipantPosthumousDramaEligible,
   IntentTypes.StaminaTransitioned,
   IntentTypes.TroubadourAutoRevive,

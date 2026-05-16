@@ -41,6 +41,7 @@ export { applySetCondition } from './set-condition';
 export {
   applySetParticipantPerEncounterLatch,
   applySetParticipantPerRoundFlag,
+  applySetParticipantPerTurnEntry,
   applySetParticipantPosthumousDramaEligible,
 } from './set-participant-flag';
 export { applySetResource } from './set-resource';

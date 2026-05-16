@@ -145,6 +145,38 @@ describe('applyDamageStep — KO interception', () => {
   });
 });
 
+describe('applyDamageStep — bypassDamageReduction (slice 2a)', () => {
+  it('skips immunity AND weakness when bypassDamageReduction: true', () => {
+    // Target has +3 fire weakness and -5 fire immunity. Without bypass:
+    //   delivered = 7 + 3 - 5 = 5
+    // With bypass: delivered = 7 (raw).
+    const target = hero({
+      currentStamina: 30,
+      maxStamina: 30,
+      weaknesses: [{ type: 'fire', value: 3 }],
+      immunities: [{ type: 'fire', value: 5 }],
+    });
+    const r = applyDamageStep(target, 7, 'fire', { intent: 'kill', bypassDamageReduction: true });
+    expect(r.delivered).toBe(7);
+    expect(r.after).toBe(23);
+  });
+
+  it('honors immunity AND weakness when bypassDamageReduction: false (default)', () => {
+    const target = hero({
+      currentStamina: 30,
+      maxStamina: 30,
+      weaknesses: [{ type: 'fire', value: 3 }],
+      immunities: [{ type: 'fire', value: 5 }],
+    });
+    // Default (no opts) — both legacy positional 'kill' and new opts form
+    // must honor weakness/immunity.
+    const rDefault = applyDamageStep(target, 7, 'fire');
+    expect(rDefault.delivered).toBe(5); // 7 + 3 - 5
+    const rOpts = applyDamageStep(target, 7, 'fire', { intent: 'kill', bypassDamageReduction: false });
+    expect(rOpts.delivered).toBe(5);
+  });
+});
+
 describe('applyDamageStep — overrides', () => {
   it('inert + fire damage → instant death', () => {
     const start = hero({

@@ -28,19 +28,37 @@ export type DamageStepResult = {
 // (temp stamina) is not yet implemented — preserved as a TODO for a later slice.
 //
 // `intent` defaults to 'kill' so existing callers compile unchanged.
-// Task 10 will update applyApplyDamage to pass intent through from the payload.
+// Task 10 wired applyApplyDamage to pass intent through from the payload.
+// Pass 3 Slice 2a — `opts.bypassDamageReduction` (default false) toggles the
+// "cannot be reduced" semantics required by Conduit's Pray-on-1 outcome and
+// other future sources: when true, BOTH steps 3 (weakness) and 4 (immunity)
+// are skipped and `amount` flows through unmodified.
+//
+// Accepts either the legacy positional `'kill' | 'knock-out'` form or an opts
+// object. The third arg is interpreted as `intent` when a string is passed.
 export function applyDamageStep(
   target: Participant,
   amount: number,
   damageType: DamageType,
-  intent: 'kill' | 'knock-out' = 'kill',
+  intentOrOpts: 'kill' | 'knock-out' | {
+    intent?: 'kill' | 'knock-out';
+    bypassDamageReduction?: boolean;
+  } = 'kill',
 ): DamageStepResult {
+  const opts = typeof intentOrOpts === 'string'
+    ? { intent: intentOrOpts, bypassDamageReduction: false }
+    : intentOrOpts;
+  const intent = opts.intent ?? 'kill';
+  const bypassDamageReduction = opts.bypassDamageReduction ?? false;
+
   // Step 1-2: base + pre-immunity external modifiers (none in slice 1).
   let delivered = amount;
-  // Step 3: weakness.
-  delivered += sumMatching(target.weaknesses, damageType);
-  // Step 4: immunity.
-  delivered = Math.max(0, delivered - sumMatching(target.immunities, damageType));
+  if (!bypassDamageReduction) {
+    // Step 3: weakness.
+    delivered += sumMatching(target.weaknesses, damageType);
+    // Step 4: immunity.
+    delivered = Math.max(0, delivered - sumMatching(target.immunities, damageType));
+  }
 
   const before = target.currentStamina;
 

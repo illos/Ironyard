@@ -7,7 +7,7 @@ import { applyDamageStep } from '../damage';
 import type { CampaignState, DerivedIntent, IntentResult, StampedIntent } from '../types';
 import { isParticipant } from '../types';
 import { applyTransitionSideEffects, recomputeStaminaState } from '../stamina';
-import { evaluateStaminaTransitionTriggers } from '../class-triggers';
+import { evaluateActionTriggers, evaluateStaminaTransitionTriggers } from '../class-triggers';
 
 export function applyApplyDamage(state: CampaignState, intent: StampedIntent): IntentResult {
   const parsed = ApplyDamagePayloadSchema.safeParse(intent.payload);
@@ -35,7 +35,8 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
     };
   }
 
-  const { targetId, amount, damageType, intent: damageIntent, ferocityD3 } = parsed.data;
+  const { targetId, amount, damageType, intent: damageIntent, ferocityD3, bypassDamageReduction } =
+    parsed.data;
   const participants = state.participants.filter(isParticipant);
   const target = participants.find((p) => p.id === targetId);
   if (!target) {
@@ -47,7 +48,10 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
     };
   }
 
-  const result = applyDamageStep(target, amount, damageType, damageIntent);
+  const result = applyDamageStep(target, amount, damageType, {
+    intent: damageIntent,
+    bypassDamageReduction,
+  });
 
   // Apply per-trait override-activation rules at the moment of transition.
   // These run AFTER applyDamageStep so the transition has already been computed.
@@ -144,6 +148,99 @@ export function applyApplyDamage(state: CampaignState, intent: StampedIntent): I
     for (const d of triggerDerived) {
       derived.push({ ...d, causedBy: intent.id });
     }
+  }
+
+  // Pass 3 Slice 2a — action-event class-trigger evaluation. Distinct from the
+  // stamina-transition path above: fires on every ApplyDamage (transition or
+  // not). Driven by `evaluateActionTriggers(state, { kind: 'damage-applied' }, ctx)`.
+  //
+  // Ordering note: the evaluator reads the INPUT `state` — i.e. before the
+  // slice-2a flag writes below are applied. This is intentional: Fury's
+  // `tookDamage` gate must see the pre-write value so the gain fires the first
+  // time per round. The flag writes the engine emits below + the flag writes
+  // Fury's trigger itself emits both land in `derived[]`; the reducer applies
+  // them sequentially and the writes are idempotent on the same (participant,
+  // key) — so the end state is correct regardless of derived-array order.
+  //
+  // Ferocity requires a pre-rolled 1d3 — same ctx as the stamina-transition
+  // path. ApplyDamagePayloadSchema documents this requirement; if a Fury
+  // first-time-per-round gain fires without a value, the evaluator throws.
+  const actionCtx = {
+    actor: intent.actor,
+    rolls: { ferocityD3 },
+  };
+  const dealerId = state.encounter.activeParticipantId;
+  const actionTriggerDerived = evaluateActionTriggers(
+    state,
+    {
+      kind: 'damage-applied',
+      dealerId,
+      targetId,
+      amount: result.delivered,
+      type: damageType,
+    },
+    actionCtx,
+  );
+  for (const d of actionTriggerDerived) {
+    derived.push({ ...d, causedBy: intent.id });
+  }
+
+  // Pass 3 Slice 2a — flag writes that consumers (Tactician marks, Null
+  // Reactive Slide, Bloodfire reader, etc.) read in later slices. All writes
+  // are gated on the dealer/target being a PC; the active-turn-scoped writes
+  // additionally require an active turn (so out-of-turn damage — e.g.
+  // triggered actions firing between turns — doesn't pollute the next actor's
+  // perTurn list).
+  const activeTurnId = state.encounter.activeParticipantId;
+  if (activeTurnId) {
+    // damageDealtThisTurn on dealer (PC), scoped to active turn
+    const dealer = participants.find((p) => p.id === activeTurnId);
+    if (dealer?.kind === 'pc') {
+      derived.push({
+        actor: intent.actor,
+        source: 'server' as const,
+        type: IntentTypes.SetParticipantPerTurnEntry,
+        causedBy: intent.id,
+        payload: {
+          participantId: dealer.id,
+          scopedToTurnOf: activeTurnId,
+          key: 'damageDealtThisTurn',
+          value: true,
+        },
+      });
+    }
+    // damageTakenThisTurn on target (PC), scoped to active turn
+    if (target.kind === 'pc') {
+      derived.push({
+        actor: intent.actor,
+        source: 'server' as const,
+        type: IntentTypes.SetParticipantPerTurnEntry,
+        causedBy: intent.id,
+        payload: {
+          participantId: targetId,
+          scopedToTurnOf: activeTurnId,
+          key: 'damageTakenThisTurn',
+          value: true,
+        },
+      });
+    }
+  }
+
+  // tookDamage perRound flag on target (PC), only if not already set.
+  // Fury's class-trigger also emits this write; the double-write is harmless
+  // because the reducer is idempotent on (participantId, key).
+  if (target.kind === 'pc' && !target.perEncounterFlags.perRound.tookDamage) {
+    derived.push({
+      actor: intent.actor,
+      source: 'server' as const,
+      type: IntentTypes.SetParticipantPerRoundFlag,
+      causedBy: intent.id,
+      payload: {
+        participantId: targetId,
+        key: 'tookDamage',
+        value: true,
+      },
+    });
   }
 
   return {

@@ -62,22 +62,29 @@ describe('applyApplyDamage — base', () => {
     const updated = result.state.participants.find((p) => p.id === TARGET_ID);
     expect(updated?.currentStamina).toBe(15);
     expect(updated?.staminaState).toBe('winded');
-    // StaminaTransitioned emitted
-    expect(result.derived).toHaveLength(1);
-    expect(result.derived[0]!.type).toBe('StaminaTransitioned');
-    const payload = result.derived[0]!.payload as { from: string; to: string };
+    // StaminaTransitioned emitted, plus the slice-2a tookDamage flag write.
+    const st = result.derived.find((d) => d.type === 'StaminaTransitioned');
+    expect(st).toBeDefined();
+    const payload = st!.payload as { from: string; to: string };
     expect(payload.from).toBe('healthy');
     expect(payload.to).toBe('winded');
   });
 
-  it('no derived intents when no state transition', () => {
-    // 30 → 20; winded threshold = 15; 20 > 15 → still healthy
+  it('no transition still emits slice-2a tookDamage flag write on PC target', () => {
+    // 30 → 20; winded threshold = 15; 20 > 15 → still healthy. No transition,
+    // but slice 2a writes tookDamage perRound flag on any PC target that took
+    // damage and didn't already have it set.
     const s = stateWithHero();
     const result = applyApplyDamage(s, applyDamageIntent({ amount: 10 }));
     expect(result.errors ?? []).toEqual([]);
     const updated = result.state.participants.find((p) => p.id === TARGET_ID);
     expect(updated?.staminaState).toBe('healthy');
-    expect(result.derived).toHaveLength(0);
+    // No StaminaTransitioned (no state change), but the tookDamage flag write fires.
+    expect(result.derived.find((d) => d.type === 'StaminaTransitioned')).toBeUndefined();
+    const flag = result.derived.find((d) => d.type === 'SetParticipantPerRoundFlag');
+    expect(flag).toBeDefined();
+    const flagPayload = flag!.payload as { participantId: string; key: string; value: boolean };
+    expect(flagPayload).toEqual({ participantId: TARGET_ID, key: 'tookDamage', value: true });
   });
 });
 
@@ -479,21 +486,41 @@ describe('applyApplyDamage — class-δ stamina-transition trigger wiring (Task 
     );
   });
 
-  it('does not invoke trigger evaluator when no state transition occurred', () => {
+  it('does not invoke STAMINA-TRANSITION trigger evaluator when no state transition occurred', () => {
+    // 30 → 25 stays healthy. Stamina-transition trigger evaluator must NOT run
+    // (it would throw for missing ferocityD3 if it did). Note: post-Task-21 the
+    // *action* trigger evaluator DOES run on every ApplyDamage — so we still
+    // need to supply ferocityD3 for the Fury per-event Ferocity gain.
     const fury = makeHeroParticipant(TARGET_ID, {
       maxStamina: 30,
       currentStamina: 30,
       className: 'Fury',
+      heroicResources: [{ name: 'ferocity', value: 0, floor: 0 }],
     });
     const s = baseState({
       currentSessionId: 'sess-1',
       participants: [fury],
       encounter: makeRunningEncounterPhase('enc-1'),
     });
-    // 30 → 25 stays healthy. No ferocityD3 → would throw if evaluator ran.
-    const result = applyApplyDamage(s, applyDamageIntent({ amount: 5 }));
+    const intent = stamped({
+      type: 'ApplyDamage',
+      actor: ownerActor,
+      payload: {
+        targetId: TARGET_ID,
+        amount: 5,
+        damageType: 'fire',
+        sourceIntentId: 'src-1',
+        ferocityD3: 2,
+      },
+    });
+    const result = applyApplyDamage(s, intent);
     expect(result.errors ?? []).toEqual([]);
-    expect(result.derived).toHaveLength(0);
+    // No StaminaTransitioned (state didn't change).
+    expect(result.derived.find((d) => d.type === 'StaminaTransitioned')).toBeUndefined();
+    // BUT: Fury per-event Ferocity action trigger fires once per round.
+    const gain = result.derived.find((d) => d.type === 'GainResource');
+    expect(gain).toBeDefined();
+    expect(gain!.payload).toEqual({ participantId: TARGET_ID, name: 'ferocity', amount: 2 });
   });
 
   it('Troubadour any-hero-winded fires when a different hero is damaged into winded', () => {
@@ -546,5 +573,209 @@ describe('applyApplyDamage — monster', () => {
     expect(updated.staminaOverride).toBeNull(); // no override for monsters
     const st = result.derived.find((d) => d.type === 'StaminaTransitioned');
     expect(st).toBeDefined();
+    // Monster target → no PC flag writes
+    expect(result.derived.find((d) => d.type === 'SetParticipantPerRoundFlag')).toBeUndefined();
+    expect(result.derived.find((d) => d.type === 'SetParticipantPerTurnEntry')).toBeUndefined();
+  });
+});
+
+describe('applyApplyDamage — slice 2a bypassDamageReduction', () => {
+  it('skips immunity when bypassDamageReduction: true', () => {
+    const s = stateWithHero({
+      immunities: [{ type: 'fire', value: 10 }],
+    });
+    const result = applyApplyDamage(
+      s,
+      stamped({
+        type: 'ApplyDamage',
+        actor: ownerActor,
+        payload: {
+          targetId: TARGET_ID,
+          amount: 12,
+          damageType: 'fire',
+          sourceIntentId: 'src-1',
+          bypassDamageReduction: true,
+        },
+      }),
+    );
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
+    // 30 - 12 (raw, no -10 immunity subtraction) = 18
+    expect(updated.currentStamina).toBe(18);
+  });
+
+  it('honors immunity when bypassDamageReduction omitted (default false)', () => {
+    const s = stateWithHero({
+      immunities: [{ type: 'fire', value: 10 }],
+    });
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 12 }));
+    const updated = result.state.participants.find((p) => p.id === TARGET_ID)!;
+    // 30 - max(0, 12-10) = 30 - 2 = 28
+    expect(updated.currentStamina).toBe(28);
+  });
+});
+
+describe('applyApplyDamage — slice 2a flag writes', () => {
+  it('writes damageDealtThisTurn on dealer + damageTakenThisTurn on target, scoped to active turn', () => {
+    const dealer = makeHeroParticipant('pc:dealer-1');
+    const target = makeHeroParticipant(TARGET_ID, { maxStamina: 30, currentStamina: 30 });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [dealer, target],
+      encounter: makeRunningEncounterPhase('enc-1', { activeParticipantId: 'pc:dealer-1' }),
+    });
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 10 }));
+    const entries = result.derived.filter((d) => d.type === 'SetParticipantPerTurnEntry');
+    expect(entries).toHaveLength(2);
+    const dealt = entries.find(
+      (d) => (d.payload as { key: string }).key === 'damageDealtThisTurn',
+    );
+    expect(dealt).toBeDefined();
+    expect(dealt!.payload).toEqual({
+      participantId: 'pc:dealer-1',
+      scopedToTurnOf: 'pc:dealer-1',
+      key: 'damageDealtThisTurn',
+      value: true,
+    });
+    const taken = entries.find(
+      (d) => (d.payload as { key: string }).key === 'damageTakenThisTurn',
+    );
+    expect(taken).toBeDefined();
+    expect(taken!.payload).toEqual({
+      participantId: TARGET_ID,
+      scopedToTurnOf: 'pc:dealer-1',
+      key: 'damageTakenThisTurn',
+      value: true,
+    });
+  });
+
+  it('writes tookDamage perRound flag on target (PC) when not already set', () => {
+    const s = stateWithHero();
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 10 }));
+    const flag = result.derived.find((d) => d.type === 'SetParticipantPerRoundFlag');
+    expect(flag).toBeDefined();
+    expect(flag!.payload).toEqual({
+      participantId: TARGET_ID,
+      key: 'tookDamage',
+      value: true,
+    });
+  });
+
+  it('does NOT write tookDamage perRound flag when already set on target', () => {
+    const hero = makeHeroParticipant(TARGET_ID, {
+      maxStamina: 30,
+      currentStamina: 30,
+      perEncounterFlags: {
+        perTurn: { entries: [] },
+        perRound: {
+          tookDamage: true,
+          judgedTargetDamagedMe: false,
+          damagedJudgedTarget: false,
+          markedTargetDamagedByAnyone: false,
+          dealtSurgeDamage: false,
+          directorSpentMalice: false,
+          creatureForceMoved: false,
+          allyHeroicWithin10Triggered: false,
+          nullFieldEnemyMainTriggered: false,
+          elementalistDamageWithin10Triggered: false,
+        },
+        perEncounter: {
+          firstTimeWindedTriggered: false,
+          firstTimeDyingTriggered: false,
+          troubadourThreeHeroesTriggered: false,
+          troubadourAnyHeroWindedTriggered: false,
+          troubadourReviveOARaised: false,
+        },
+      },
+    });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [hero],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 10 }));
+    expect(result.derived.find((d) => d.type === 'SetParticipantPerRoundFlag')).toBeUndefined();
+  });
+
+  it('does NOT emit perTurn entries when no active turn', () => {
+    const s = stateWithHero(); // encounter.activeParticipantId = null
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 10 }));
+    expect(result.derived.find((d) => d.type === 'SetParticipantPerTurnEntry')).toBeUndefined();
+    // tookDamage perRound flag still fires (not turn-scoped).
+    expect(result.derived.find((d) => d.type === 'SetParticipantPerRoundFlag')).toBeDefined();
+  });
+
+  it('does NOT write damageDealtThisTurn when active turn is a monster (non-PC)', () => {
+    const monsterDealer = makeMonsterParticipant('mon:goblin-1');
+    const target = makeHeroParticipant(TARGET_ID, { maxStamina: 30, currentStamina: 30 });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [monsterDealer, target],
+      encounter: makeRunningEncounterPhase('enc-1', { activeParticipantId: 'mon:goblin-1' }),
+    });
+    const result = applyApplyDamage(s, applyDamageIntent({ amount: 10 }));
+    const entries = result.derived.filter((d) => d.type === 'SetParticipantPerTurnEntry');
+    // Only damageTakenThisTurn on PC target — no damageDealtThisTurn (dealer is monster).
+    expect(entries).toHaveLength(1);
+    expect((entries[0]!.payload as { key: string }).key).toBe('damageTakenThisTurn');
+  });
+
+  it('does NOT write damageTakenThisTurn when target is a monster', () => {
+    const dealer = makeHeroParticipant('pc:dealer-1');
+    const monsterTarget = makeMonsterParticipant('mon:goblin-1', {
+      maxStamina: 20,
+      currentStamina: 20,
+    });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [dealer, monsterTarget],
+      encounter: makeRunningEncounterPhase('enc-1', { activeParticipantId: 'pc:dealer-1' }),
+    });
+    const result = applyApplyDamage(
+      s,
+      applyDamageIntent({ targetId: 'mon:goblin-1', amount: 10 }),
+    );
+    const entries = result.derived.filter((d) => d.type === 'SetParticipantPerTurnEntry');
+    // Only damageDealtThisTurn on PC dealer.
+    expect(entries).toHaveLength(1);
+    expect((entries[0]!.payload as { key: string }).key).toBe('damageDealtThisTurn');
+    // No tookDamage perRound write either (monster target).
+    expect(result.derived.find((d) => d.type === 'SetParticipantPerRoundFlag')).toBeUndefined();
+  });
+});
+
+describe('applyApplyDamage — slice 2a action-trigger evaluator wiring', () => {
+  it('Fury per-event Ferocity action trigger fires on damage-applied (no transition)', () => {
+    // Fury at full stamina takes 5 damage → stays healthy → no stamina-transition trigger.
+    // But the action-trigger evaluator fires Fury's per-event Ferocity (1d3 once per round).
+    const fury = makeHeroParticipant(TARGET_ID, {
+      maxStamina: 30,
+      currentStamina: 30,
+      className: 'Fury',
+      heroicResources: [{ name: 'ferocity', value: 0, floor: 0 }],
+    });
+    const s = baseState({
+      currentSessionId: 'sess-1',
+      participants: [fury],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+    const intent = stamped({
+      type: 'ApplyDamage',
+      actor: ownerActor,
+      payload: {
+        targetId: TARGET_ID,
+        amount: 5,
+        damageType: 'fire',
+        sourceIntentId: 'src-1',
+        ferocityD3: 2,
+      },
+    });
+    const result = applyApplyDamage(s, intent);
+    expect(result.errors ?? []).toEqual([]);
+    const gain = result.derived.find((d) => d.type === 'GainResource');
+    expect(gain).toBeDefined();
+    expect(gain!.payload).toEqual({ participantId: TARGET_ID, name: 'ferocity', amount: 2 });
+    // The action-trigger evaluator runs against the pre-write state, so its
+    // emitted causedBy must point to the originating ApplyDamage intent.
+    expect(gain!.causedBy).toBe(intent.id);
   });
 });
