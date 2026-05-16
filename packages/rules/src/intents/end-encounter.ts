@@ -1,4 +1,9 @@
-import { EndEncounterPayloadSchema, IntentTypes, type Participant } from '@ironyard/shared';
+import {
+  EndEncounterPayloadSchema,
+  IntentTypes,
+  defaultPerEncounterLatches,
+  type Participant,
+} from '@ironyard/shared';
 import { requireCanon } from '../require-canon';
 import type {
   CampaignState,
@@ -143,11 +148,41 @@ export function applyEndEncounter(state: CampaignState, intent: StampedIntent): 
     return entry;
   });
 
+  // Pass 3 Slice 2a — per-PC cleanup (canon § 5.4 encounter-scoped soft-reset):
+  //   1. Reset `perEncounterFlags.perEncounter` latches to defaults so the next
+  //      encounter starts with a clean Fury winded/dying ledger, Troubadour
+  //      drama gates, etc.
+  //   2. Clear `posthumousDramaEligible` on any PC still at `staminaState ===
+  //      'dead'` after the dieAtEncounterEnd pass — locks in canon's "no future
+  //      encounters" path; an alive (e.g. auto-revived) PC keeps their flag
+  //      state (it's already false by Troubadour reducers in that case).
+  //   3. Drop every PC's `maintainedAbilities` to []. Maintenance is
+  //      encounter-scoped per canon § 5.4; new encounters start with no
+  //      maintained loops.
+  // perTurn entries and perRound flags are NOT touched here — StartTurn (slice
+  // 2a Task 25) clears perTurn entries scoped to the starting participant and
+  // EndRound clears the perRound record. EndEncounter is the catch-all for the
+  // `perEncounter` latches only.
+  const slice2aParticipants: RosterEntry[] = finalParticipants.map((entry) => {
+    if (!isParticipant(entry)) return entry;
+    if (entry.kind !== 'pc') return entry;
+    return {
+      ...entry,
+      perEncounterFlags: {
+        ...entry.perEncounterFlags,
+        perEncounter: defaultPerEncounterLatches(),
+      },
+      posthumousDramaEligible:
+        entry.staminaState === 'dead' ? false : entry.posthumousDramaEligible,
+      maintainedAbilities: [],
+    };
+  });
+
   return {
     state: {
       ...state,
       seq: state.seq + 1,
-      participants: finalParticipants,
+      participants: slice2aParticipants,
       encounter: null,
       openActions: [],
     },

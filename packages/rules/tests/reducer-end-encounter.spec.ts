@@ -1,4 +1,8 @@
-import { defaultPerEncounterFlags, defaultPsionFlags } from '@ironyard/shared';
+import {
+  defaultPerEncounterFlags,
+  defaultPerEncounterLatches,
+  defaultPsionFlags,
+} from '@ironyard/shared';
 import type { Intent, Participant } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
 import {
@@ -764,6 +768,137 @@ describe('applyIntent — EndEncounter', () => {
         expect(payload.to).toBe('dead');
         expect(payload.cause).toBe('encounter-end');
       }
+    });
+  });
+
+  // Pass 3 Slice 2a — Task 26: per-encounter latch reset, posthumousDrama
+  // cleanup for still-dead PCs, maintainedAbilities drop. Mirrors the spec's
+  // canon § 5.4 "encounter-scoped soft reset" path. perTurn / perRound are NOT
+  // touched here — StartTurn / EndRound own those.
+  describe('applyEndEncounter — slice 2a additions', () => {
+    it('resets perEncounterFlags.perEncounter for every PC participant', () => {
+      const dirtyLatches = {
+        firstTimeWindedTriggered: true,
+        firstTimeDyingTriggered: true,
+        troubadourThreeHeroesTriggered: true,
+        troubadourAnyHeroWindedTriggered: true,
+        troubadourReviveOARaised: true,
+      };
+      const fury = pc({
+        id: 'pc_fury',
+        perEncounterFlags: {
+          ...defaultPerEncounterFlags(),
+          perEncounter: { ...dirtyLatches },
+        },
+      });
+      const troubadour = pc({
+        id: 'pc_troubadour',
+        perEncounterFlags: {
+          ...defaultPerEncounterFlags(),
+          perEncounter: { ...dirtyLatches },
+        },
+      });
+      // Monsters don't carry meaningful per-encounter latches, but ensure the
+      // reducer doesn't blow up when they're present in the roster.
+      const goblin = monster({ id: 'm_goblin' });
+
+      const s: CampaignState = {
+        ...emptyCampaignState(campaignId, 'user-owner'),
+        participants: [fury, troubadour, goblin],
+        encounter: {
+          id: 'enc_test',
+          currentRound: 1,
+          activeParticipantId: null,
+          turnState: {},
+          malice: { current: 0, lastMaliciousStrikeRound: null },
+          firstSide: null,
+          currentPickingSide: null,
+          actedThisRound: [],
+          pendingTriggers: null,
+          perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        },
+      };
+
+      const r = endEncounter(s);
+      expect(r.errors).toBeUndefined();
+
+      const after_fury = findParticipant(r.state, 'pc_fury');
+      const after_trou = findParticipant(r.state, 'pc_troubadour');
+      expect(after_fury.perEncounterFlags.perEncounter).toEqual(defaultPerEncounterLatches());
+      expect(after_trou.perEncounterFlags.perEncounter).toEqual(defaultPerEncounterLatches());
+    });
+
+    it('clears posthumousDramaEligible for participants still at staminaState=dead', () => {
+      const stillDead = pc({
+        id: 'pc_still_dead',
+        currentStamina: -50,
+        staminaState: 'dead',
+        posthumousDramaEligible: true,
+      });
+      const alive = pc({
+        id: 'pc_alive',
+        // posthumousDramaEligible should not be true on a live PC in practice,
+        // but the reducer must not touch it for non-dead participants.
+        posthumousDramaEligible: true,
+      });
+
+      const s: CampaignState = {
+        ...emptyCampaignState(campaignId, 'user-owner'),
+        participants: [stillDead, alive],
+        encounter: {
+          id: 'enc_test',
+          currentRound: 1,
+          activeParticipantId: null,
+          turnState: {},
+          malice: { current: 0, lastMaliciousStrikeRound: null },
+          firstSide: null,
+          currentPickingSide: null,
+          actedThisRound: [],
+          pendingTriggers: null,
+          perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        },
+      };
+
+      const r = endEncounter(s);
+      expect(r.errors).toBeUndefined();
+      expect(findParticipant(r.state, 'pc_still_dead').posthumousDramaEligible).toBe(false);
+      expect(findParticipant(r.state, 'pc_alive').posthumousDramaEligible).toBe(true);
+    });
+
+    it('clears maintainedAbilities to [] for every PC participant', () => {
+      const elementalist = pc({
+        id: 'pc_elementalist',
+        maintainedAbilities: [
+          { abilityId: 'flame-wall', costPerTurn: 1, startedAtRound: 1 },
+          { abilityId: 'storm-call', costPerTurn: 2, startedAtRound: 2 },
+        ],
+      });
+      const other = pc({
+        id: 'pc_other',
+        maintainedAbilities: [{ abilityId: 'foo', costPerTurn: 1, startedAtRound: 3 }],
+      });
+
+      const s: CampaignState = {
+        ...emptyCampaignState(campaignId, 'user-owner'),
+        participants: [elementalist, other],
+        encounter: {
+          id: 'enc_test',
+          currentRound: 1,
+          activeParticipantId: null,
+          turnState: {},
+          malice: { current: 0, lastMaliciousStrikeRound: null },
+          firstSide: null,
+          currentPickingSide: null,
+          actedThisRound: [],
+          pendingTriggers: null,
+          perEncounterFlags: { perTurn: { heroesActedThisTurn: [] } },
+        },
+      };
+
+      const r = endEncounter(s);
+      expect(r.errors).toBeUndefined();
+      expect(findParticipant(r.state, 'pc_elementalist').maintainedAbilities).toEqual([]);
+      expect(findParticipant(r.state, 'pc_other').maintainedAbilities).toEqual([]);
     });
   });
 });
