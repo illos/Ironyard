@@ -170,6 +170,25 @@ The decomposition below is sequenced for shipping; each gets its own spec → pl
 - **2b.10 rides alongside every sub-epic** — each delivers a piece of canon ✅ that updates the doc.
 - **2b.11 is unblocked.** Pass 5 Layer 1 Pass 2b1 (zipper initiative + side-aware picker) shipped 2026-05-14; the squad-pick UX can land any time the schema-shape work in 2b.1 / 2b.4 isn't actively churning the participant fields.
 
+### Proposed shipping grouping (post slice-2b refresh, 2026-05-16)
+
+The 9 remaining open sub-epics fold into **5 shipping groups + 1 ride-alongside audit**, reducing the brainstorm-and-ship cycle count without losing bisect-friendliness. Order shown is recommended ship order.
+
+| Group | Sub-epics | Why grouped (or not) | Effort |
+|---|---|---|---|
+| **A. Slice 2c — Conditional / triggered attachments** | 2b.4 | Deepest architectural lift (runtime-eval seam, mid-encounter applier re-eval). Already promised in slice 2b's umbrella PS#2. Architecture decisions here shape what groups B / D can lean on. **Ship first to surface unknowns early.** | Big — own brainstorm + spec + plan |
+| **B. Schema completeness batch** | 2b.1 + 2b.2 + 2b.3 + 2b.8 | All four extend `AttachmentEffect` / `AttachmentCondition` variants + override files + parser. Share the same fixture sweep, the same `§ 10.16` doc cleanup, and the same applier touchpoints. Sequential shipping = 4× ceremony for redundant testing. Batch them under one spec; ship as ~4 logical commits inside one PR. Closes Phase 2b acceptance #2 + most of #5 | Medium — one spec covering four, four-commit PR |
+| **C. Damage-engine completion** | 2b.5 audit + 2b.6 | 2b.5 is 🟡 partial (slice 1 shipped the state machine; death-save + KO surface still open). 2b.6 is one Revenant trait riding directly on 2b.5's hooks. Best done together. Closes Phase 2b acceptance #3 + unblocks 2b.6 | Medium — one spec covering both |
+| **D. Class-feature choice pipeline** | 2b.7 | Genuinely novel: new parser for inline class-chapter blocks, schema slot for choice ids, override map. No useful overlap with B (different data path). Independent of A | Medium — standalone slice |
+| **E. Minion squads** | 2b.11 | New `SquadParticipant` entity (or `participant.squadId`), encounter-builder grouping UI, consecutive-act zipper semantics. Heavy UI. Mostly independent — can run in parallel with D per `feedback_parallel_agents_for_disjoint_slices` | Medium — standalone slice, UI-heavy |
+| **F. Trigger ordering audit** | 2b.9 | Already 🟡 partial via slice 1's `ResolveTriggerOrder`. Audit to confirm full § 4.10 coverage; add cases as discovered. Ride alongside any other slice; can also be a small standalone | Small — audit slice |
+
+**Cycle count:** 5 brainstorm-and-ship cycles instead of 9. Batching concentrated where shared surface actually exists.
+
+**Why not "do A first, batch all the rest"?** C adds new intents and gates 2b.6; D touches the parser (different blast radius); E is mostly UI. Batching disparate concerns into one mega-PR loses bisect-friendliness without a real shared-surface payoff. B is the only group where batching genuinely earns its keep.
+
+**2b.10 housekeeping** rides alongside every group's PR as it has since the umbrella was written.
+
 ### Acceptance
 
 Phase 2b is done when:
