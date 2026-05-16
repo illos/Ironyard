@@ -111,7 +111,7 @@ function makeCampaignState(overrides: Partial<CampaignState> = {}): CampaignStat
   };
 }
 
-function makePcParticipant(id: string) {
+function makePcParticipant(id: string, victories = 0) {
   return {
     id,
     name: `Hero ${id}`,
@@ -135,7 +135,7 @@ function makePcParticipant(id: string) {
       ranged: [0, 0, 0] as [number, number, number],
     },
     activeAbilities: [],
-    victories: 0,
+    victories,
     turnActionUsage: { main: false, maneuver: false, move: false },
     surprised: false,
     role: null as string | null,
@@ -172,18 +172,23 @@ describe('handleSideEffect Respite', () => {
     capturedUpdates.length = 0;
   });
 
-  it('increments xp for each PC character by partyVictories (3 PCs, 2 victories)', async () => {
-    // stateBefore: 3 PCs, partyVictories = 2
+  // Phase 2b cleanup 2b.12 — canon §8.1: each PC's XP increment equals THEIR
+  // OWN pre-respite victories, not the legacy party-wide `partyVictories`
+  // tracker. See docs/superpowers/notes/2026-05-16-phase-2b-shipped-code-audit.md.
+  it("increments xp for each PC by THAT PC's own pre-respite victories", async () => {
     const stateBefore = makeCampaignState({
-      partyVictories: 2,
+      attendingCharacterIds: ['char-1', 'char-2', 'char-3'],
       participants: [
-        makePcParticipant('pc:char-1'),
-        makePcParticipant('pc:char-2'),
-        makePcParticipant('pc:char-3'),
+        makePcParticipant('pc:char-1', /* victories */ 3),
+        makePcParticipant('pc:char-2', /* victories */ 1),
+        makePcParticipant('pc:char-3', /* victories */ 0),
       ],
     });
 
-    // Queue D1 rows for each PC (current xp = 0 → should become 2)
+    // char-1 and char-2 each have pre-respite victories AND fresh-default
+    // D1 state, so a single write each: data.xp += own victories. char-3 has
+    // 0 victories and fresh-default state, so no write at all (the side-effect
+    // skips no-op rewrites — clean canon §8.1 behavior).
     mockGetResults.push(
       { data: JSON.stringify({ xp: 0 }) },
       { data: JSON.stringify({ xp: 5 }) }, // char-2 already has some XP
@@ -194,55 +199,78 @@ describe('handleSideEffect Respite', () => {
     const intent = makeIntent('Respite', {});
     await handleSideEffect(intent, 'campaign-123', mockEnv, stateBefore);
 
-    // Should have written 3 updates
-    expect(capturedUpdates).toHaveLength(3);
+    // 2 writes: char-1 (xp += 3) and char-2 (xp += 1). char-3 has no XP
+    // delta and no stamina/recoveries to reset, so no write.
+    expect(capturedUpdates).toHaveLength(2);
 
     const xp1 = (JSON.parse(capturedUpdates[0]?.data ?? '{}') as { xp?: number }).xp;
     const xp2 = (JSON.parse(capturedUpdates[1]?.data ?? '{}') as { xp?: number }).xp;
-    const xp3 = (JSON.parse(capturedUpdates[2]?.data ?? '{}') as { xp?: number }).xp;
-
-    expect(xp1).toBe(2); // 0 + 2
-    expect(xp2).toBe(7); // 5 + 2
-    expect(xp3).toBe(2); // 0 + 2
+    expect(xp1).toBe(3); // 0 + 3 (char-1's own victories)
+    expect(xp2).toBe(6); // 5 + 1 (char-2's own victories)
   });
 
-  it('does not write to D1 when partyVictories === 0', async () => {
+  it("resets each PC's data.victories to 0 in D1 after respite", async () => {
     const stateBefore = makeCampaignState({
-      partyVictories: 0,
-      participants: [makePcParticipant('pc:char-1')],
+      attendingCharacterIds: ['char-1', 'char-2'],
+      participants: [
+        makePcParticipant('pc:char-1', /* victories */ 4),
+        makePcParticipant('pc:char-2', /* victories */ 2),
+      ],
     });
 
+    mockGetResults.push(
+      { data: JSON.stringify({ xp: 0, victories: 4 }) },
+      { data: JSON.stringify({ xp: 0, victories: 2 }) },
+    );
     capturedUpdates.length = 0;
 
     const intent = makeIntent('Respite', {});
     await handleSideEffect(intent, 'campaign-123', mockEnv, stateBefore);
 
-    // Zero victories → no D1 writes
+    expect(capturedUpdates).toHaveLength(2);
+    const v1 = (JSON.parse(capturedUpdates[0]?.data ?? '{}') as { victories?: number }).victories;
+    const v2 = (JSON.parse(capturedUpdates[1]?.data ?? '{}') as { victories?: number }).victories;
+    expect(v1).toBe(0);
+    expect(v2).toBe(0);
+  });
+
+  it('does not write to D1 when every PC has 0 victories AND no other respite work', async () => {
+    // No victories anywhere → skip writes. Note: a PC with non-zero recovery
+    // state would still trigger a write to reset stamina/recoveries fields,
+    // but at the default makePcParticipant state (currentStamina=20, max=20),
+    // recoveriesUsed=0 etc., there's nothing to update either.
+    const stateBefore = makeCampaignState({
+      participants: [makePcParticipant('pc:char-1', /* victories */ 0)],
+    });
+
+    mockGetResults.push({ data: JSON.stringify({ xp: 0, victories: 0 }) });
+    capturedUpdates.length = 0;
+
+    const intent = makeIntent('Respite', {});
+    await handleSideEffect(intent, 'campaign-123', mockEnv, stateBefore);
+
     expect(capturedUpdates).toHaveLength(0);
   });
 
   it('skips missing character rows gracefully', async () => {
     const stateBefore = makeCampaignState({
-      partyVictories: 3,
-      participants: [makePcParticipant('pc:char-missing')],
+      participants: [makePcParticipant('pc:char-missing', /* victories */ 3)],
     });
 
-    // D1 returns null for this character
     mockGetResults.push(null);
     capturedUpdates.length = 0;
 
     const intent = makeIntent('Respite', {});
     await handleSideEffect(intent, 'campaign-123', mockEnv, stateBefore);
 
-    // No update for a missing row
     expect(capturedUpdates).toHaveLength(0);
   });
 
   it('does not touch monster participants — only PCs are written', async () => {
     const stateBefore = makeCampaignState({
-      partyVictories: 1,
+      attendingCharacterIds: ['char-1'],
       participants: [
-        makePcParticipant('pc:char-1'),
+        makePcParticipant('pc:char-1', /* victories */ 1),
         // Monster — must NOT generate a D1 write
         {
           id: 'monster:goblin-1',
@@ -316,8 +344,8 @@ describe('handleSideEffect Respite', () => {
 
   it('uses Participant.characterId (not Participant.id) to address the D1 row', async () => {
     const stateBefore = makeCampaignState({
-      partyVictories: 1,
-      participants: [makePcParticipant('pc:char-alpha')],
+      attendingCharacterIds: ['char-alpha'],
+      participants: [makePcParticipant('pc:char-alpha', /* victories */ 1)],
     });
 
     mockGetResults.push({ data: JSON.stringify({ xp: 10 }) });
@@ -328,7 +356,7 @@ describe('handleSideEffect Respite', () => {
 
     expect(capturedUpdates).toHaveLength(1);
     const parsed = JSON.parse(capturedUpdates[0]?.data ?? '{}') as { xp?: number };
-    expect(parsed.xp).toBe(11); // 10 + 1
+    expect(parsed.xp).toBe(11); // 10 + 1 (char-alpha's own victories)
   });
 
   // Slice 4 (Epic 2C): Wyrmplate damage-type pick is applied to Dragon Knight

@@ -168,6 +168,13 @@ export function applyEndEncounter(state: CampaignState, intent: StampedIntent): 
   //   3. Drop every PC's `maintainedAbilities` to []. Maintenance is
   //      encounter-scoped per canon § 5.4; new encounters start with no
   //      maintained loops.
+  //   4. Phase 2b cleanup 2b.12 — canon §8.1 / Combat.md:722: grant +1 victory
+  //      to each surviving PC. Survival is checked AFTER the dieAtEncounterEnd
+  //      flip above, so doomed-PC-who-dies-at-encounter-end gets no victory.
+  //      Engine simplification: the rulebook conditions victories on "the
+  //      party's objectives are achieved", which the engine doesn't model; we
+  //      grant unconditionally on survival and let the director adjust via
+  //      manual override if objectives failed.
   // perTurn entries and perRound flags are NOT touched here — StartTurn (slice
   // 2a Task 25) clears perTurn entries scoped to the starting participant and
   // EndRound clears the perRound record. EndEncounter is the catch-all for the
@@ -179,6 +186,7 @@ export function applyEndEncounter(state: CampaignState, intent: StampedIntent): 
       // (They don't carry perEncounterFlags or maintainedAbilities reset semantics.)
       return { ...entry, targetingRelations: defaultTargetingRelations() };
     }
+    const survivedEncounter = entry.staminaState !== 'dead';
     return {
       ...entry,
       perEncounterFlags: {
@@ -189,6 +197,7 @@ export function applyEndEncounter(state: CampaignState, intent: StampedIntent): 
         entry.staminaState === 'dead' ? false : entry.posthumousDramaEligible,
       maintainedAbilities: [],
       targetingRelations: defaultTargetingRelations(),
+      victories: survivedEncounter ? entry.victories + 1 : entry.victories,
     };
   });
 

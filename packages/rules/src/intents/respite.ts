@@ -36,8 +36,14 @@ export function applyRespite(state: CampaignState, intent: StampedIntent): Inten
     };
   }
 
-  // Capture pre-respite victory count for the log message.
-  const xpAwarded = state.partyVictories;
+  // Phase 2b cleanup 2b.12 — canon §8.1 (heroes-flat:1417-1419, 1443-1445):
+  // *"Whenever you finish a respite, your Victories are converted into
+  // Experience ... Each time you finish a respite, you gain XP equal to your
+  // Victories, then your Victories reset to 0."* Per-character, not party-wide.
+  // Capture each attending PC's pre-respite victories so the log + downstream
+  // side-effect handler can write per-PC XP and reset per-PC victories.
+  const attending = new Set(state.attendingCharacterIds);
+  const xpAwardsByName: { name: string; xp: number }[] = [];
 
   // For every PC participant:
   //   - refill recoveries.current to recoveries.max (canon § 11.1)
@@ -46,18 +52,23 @@ export function applyRespite(state: CampaignState, intent: StampedIntent): Inten
   //     floor reset — the per-encounter clarity floor is `-(1+Reason)`,
   //     so a hero who finished an encounter with negative clarity has
   //     it cleared on respite).
-  //   - increment victories by 1 if the PC is attending (canon § 8.1)
+  //   - reset victories to 0 if the PC is attending (canon § 8.1: respite
+  //     converts victories to XP and resets). Non-attending PCs keep their
+  //     victories (they didn't respite this session).
   //   - Pass 3 Slice 1: if a CoP extra-dying-trigger override is held and
   //     recoveries.current > 0 after the refill, clear the override and
   //     re-derive staminaState via recomputeStaminaState.
   // Monsters and any other roster entries are untouched.
-  const attending = new Set(state.attendingCharacterIds);
   const derived: DerivedIntent[] = [];
   const newParticipants = state.participants.map((entry) => {
     if (!isParticipant(entry) || entry.kind !== 'pc') return entry;
     const fixedResources = entry.heroicResources.map((r) => (r.value < 0 ? { ...r, value: 0 } : r));
     const isAttending = entry.characterId !== null && attending.has(entry.characterId);
-    const victoriesNext = isAttending ? (entry.victories ?? 0) + 1 : (entry.victories ?? 0);
+    const preRespiteVictories = entry.victories ?? 0;
+    if (isAttending && preRespiteVictories > 0) {
+      xpAwardsByName.push({ name: entry.name, xp: preRespiteVictories });
+    }
+    const victoriesNext = isAttending ? 0 : preRespiteVictories;
 
     // Base participant after standard respite fields are applied.
     let updated = {
@@ -122,6 +133,15 @@ export function applyRespite(state: CampaignState, intent: StampedIntent): Inten
     }),
   );
 
+  // Phase 2b 2b.12 — per-PC XP log line. Format:
+  //   "Respite: refilled recoveries for N heroes; XP awarded: Aldric +3, Korva +2."
+  // If no attending PC earned XP, omit the XP clause entirely.
+  const xpClause =
+    xpAwardsByName.length > 0
+      ? `; XP awarded: ${xpAwardsByName.map(({ name, xp }) => `${name} +${xp}`).join(', ')}`
+      : '';
+  const heroLabel = `hero${heroCount !== 1 ? 'es' : ''}`;
+
   return {
     state: {
       ...state,
@@ -133,7 +153,7 @@ export function applyRespite(state: CampaignState, intent: StampedIntent): Inten
     log: [
       {
         kind: 'info',
-        text: `Respite: refilled recoveries for ${heroCount} hero${heroCount !== 1 ? 'es' : ''}; ${xpAwarded} XP each; +1 victory for each attending hero.`,
+        text: `Respite: refilled recoveries for ${heroCount} ${heroLabel}${xpClause}.`,
         intentId: intent.id,
       },
       ...warningLogs,

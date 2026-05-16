@@ -55,7 +55,10 @@ EndTurn         → unchanged
 EndRound        → existing teardown + auto-expire OAs whose expiresAtRound === currentRound
 EndEncounter    → existing teardown + clear all OAs + zero every PC's heroicResources + zero every PC's surges
 
-Respite         → each attending PC's character.victories increments per canon § 8.1
+Respite         → each attending PC's character.victories converts to XP and resets to 0 per canon § 8.1
+                  EndEncounter is where the +1 victory grant happens for surviving PCs
+                  (corrected 2026-05-16 — see docs/superpowers/notes/2026-05-16-phase-2b-shipped-code-audit.md;
+                  original wording said "increments" which was D&D-flavored and contradicted Draw Steel canon).
 ```
 
 ### Intent surfaces

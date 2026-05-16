@@ -516,8 +516,15 @@ async function sideEffectRespite(
   const parsed = RespitePayloadSchema.safeParse(intent.payload);
   if (!parsed.success) return;
 
-  const xpAwarded = stateBefore.partyVictories;
   const wyrmplateChoices = parsed.data.wyrmplateChoices;
+
+  // Phase 2b cleanup 2b.12 — per-PC victories→XP conversion (canon §8.1).
+  // Pre-respite victories live on each PC's `participant.victories`; the
+  // reducer resets them to 0 (in-memory) and the side-effect persists the
+  // delta to D1: data.xp += that PC's pre-respite victories; data.victories
+  // = 0. Non-attending PCs in the lobby are NOT touched (consistent with the
+  // reducer). The legacy `stateBefore.partyVictories` field is ignored.
+  const attendingCharIdSet = new Set(stateBefore.attendingCharacterIds);
 
   const pcCharIds = stateBefore.participants
     .filter(
@@ -526,15 +533,29 @@ async function sideEffectRespite(
     .map((p) => p.characterId);
   const pcCharIdSet = new Set(pcCharIds);
 
-  // Union of (a) characters in the lobby that gain XP and (b)
-  // characters with a Wyrmplate damage-type pick. The pick can target a
-  // character that isn't in the lobby roster (it's a respite-time
+  // Pre-respite per-PC victories, keyed by characterId (only attending PCs).
+  const preRespiteVictoriesByCharId = new Map<string, number>();
+  for (const p of stateBefore.participants) {
+    if (p.kind !== 'pc' || p.characterId === null) continue;
+    if (!attendingCharIdSet.has(p.characterId)) continue;
+    preRespiteVictoriesByCharId.set(p.characterId, p.victories ?? 0);
+  }
+
+  // Whether any attending PC has non-zero victories — quick exit if not.
+  const totalXp = Array.from(preRespiteVictoriesByCharId.values()).reduce((a, b) => a + b, 0);
+
+  // Union of (a) characters in the lobby (potential XP/reset writes) and
+  // (b) characters with a Wyrmplate damage-type pick (which can target a
+  // character that isn't in the lobby roster — it's a respite-time
   // bookkeeping change, not an encounter action).
   const affectedCharIds = [...new Set<string>([...pcCharIds, ...Object.keys(wyrmplateChoices)])];
 
   if (affectedCharIds.length === 0) return;
-  // Skip entirely when there's nothing to write — no XP and no picks.
-  if (xpAwarded === 0 && Object.keys(wyrmplateChoices).length === 0) return;
+  // Skip entirely when there's nothing to write — no XP, no Wyrmplate picks,
+  // and the per-PC stamina/recoveries reset will be a no-op for PCs that
+  // already have null currentStamina and 0 recoveriesUsed (handled per-PC
+  // inside the loop via the mutated flag).
+  if (totalXp === 0 && Object.keys(wyrmplateChoices).length === 0 && pcCharIds.length === 0) return;
 
   const conn = db(env.DB);
 
@@ -562,15 +583,25 @@ async function sideEffectRespite(
       let mutated = false;
       const inLobby = pcCharIdSet.has(charId);
 
-      // XP increment — only for PCs that were in the lobby roster.
-      if (xpAwarded > 0 && inLobby) {
-        data.xp = (data.xp ?? 0) + xpAwarded;
+      // Phase 2b 2b.12 — per-PC XP increment + victories reset (attending only).
+      const preRespiteVictories = preRespiteVictoriesByCharId.get(charId);
+      if (preRespiteVictories !== undefined && preRespiteVictories > 0) {
+        data.xp = (data.xp ?? 0) + preRespiteVictories;
+        mutated = true;
+      }
+      // Reset data.victories to 0 for every attending PC, even if they had 0
+      // victories pre-respite (no-op write if data.victories was already 0,
+      // but the per-character side of canon §8.1 is "reset on every respite").
+      if (preRespiteVictoriesByCharId.has(charId) && (data.victories ?? 0) !== 0) {
+        data.victories = 0;
         mutated = true;
       }
 
       // Respite resets stamina and recoveries to default (null → re-derived at
-      // next StartEncounter; 0 recoveries used → full pool restored).
-      if (inLobby) {
+      // next StartEncounter; 0 recoveries used → full pool restored). Only
+      // mutate when the values are not already at default — keeps the "no
+      // writes when nothing changed" guarantee.
+      if (inLobby && (data.currentStamina !== null || data.recoveriesUsed !== 0)) {
         data.currentStamina = null;
         data.recoveriesUsed = 0;
         mutated = true;

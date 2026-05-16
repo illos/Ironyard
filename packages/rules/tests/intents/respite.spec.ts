@@ -194,13 +194,21 @@ describe('applyRespite', () => {
 
   it('emits an info log entry describing the respite', () => {
     const state = baseState({
-      partyVictories: 2,
-      participants: [makeHeroParticipant('pc:char-1')],
+      attendingCharacterIds: ['char-1'],
+      participants: [
+        makeHeroParticipant('pc:char-1', {
+          name: 'Aria',
+          characterId: 'char-1',
+          victories: 2,
+        }),
+      ],
     });
     const result = applyRespite(state, RESPITE_INTENT);
     const infoLogs = result.log.filter((l) => l.kind === 'info');
     expect(infoLogs.length).toBeGreaterThanOrEqual(1);
-    expect(infoLogs[0]?.text).toMatch(/2 XP/);
+    // Phase 2b 2b.12: XP is per-PC, derived from each PC's victories
+    expect(infoLogs[0]?.text).toMatch(/Aria/);
+    expect(infoLogs[0]?.text).toMatch(/\+?2/);
   });
 
   it('handles empty participant roster gracefully', () => {
@@ -211,29 +219,85 @@ describe('applyRespite', () => {
     expect(result.state.participants).toHaveLength(0);
   });
 
-  it("increments each attending PC's victories by 1", () => {
-    const state = baseState({
-      attendingCharacterIds: ['char-a', 'char-b'],
-      participants: [
-        makeHeroParticipant('pc:char-a', { characterId: 'char-a', victories: 2 }),
-        makeHeroParticipant('pc:char-b', { characterId: 'char-b', victories: 2 }),
-        makeHeroParticipant('pc:char-c', { characterId: 'char-c', victories: 2 }),
-      ],
+  // Phase 2b cleanup 2b.12 — canon §8.1 / heroes-flat:1417-1419 + 1443-1445:
+  // Respite converts each hero's Victories to XP and resets Victories to 0.
+  // Per-character (not party-wide). Non-attending PCs are untouched.
+  describe('Phase 2b 2b.12 — Victories→XP conversion (canon §8.1)', () => {
+    it("resets each attending PC's victories to 0 after respite", () => {
+      const state = baseState({
+        attendingCharacterIds: ['char-a', 'char-b'],
+        participants: [
+          makeHeroParticipant('pc:char-a', { characterId: 'char-a', victories: 3 }),
+          makeHeroParticipant('pc:char-b', { characterId: 'char-b', victories: 1 }),
+        ],
+      });
+      const result = applyRespite(state, RESPITE_INTENT);
+      expect(result.errors).toBeUndefined();
+      const charA = result.state.participants.find(
+        (p) => isParticipant(p) && p.characterId === 'char-a',
+      );
+      const charB = result.state.participants.find(
+        (p) => isParticipant(p) && p.characterId === 'char-b',
+      );
+      expect(charA && isParticipant(charA) ? charA.victories : 'MISSING').toBe(0);
+      expect(charB && isParticipant(charB) ? charB.victories : 'MISSING').toBe(0);
     });
-    const result = applyRespite(state, RESPITE_INTENT);
-    expect(result.errors).toBeUndefined();
-    const charA = result.state.participants.find(
-      (p) => isParticipant(p) && p.characterId === 'char-a',
-    );
-    const charB = result.state.participants.find(
-      (p) => isParticipant(p) && p.characterId === 'char-b',
-    );
-    const charC = result.state.participants.find(
-      (p) => isParticipant(p) && p.characterId === 'char-c',
-    );
-    expect(charA?.victories).toBe(3);
-    expect(charB?.victories).toBe(3);
-    expect(charC?.victories).toBe(2); // not attending
+
+    it("does NOT touch non-attending PCs' victories", () => {
+      const state = baseState({
+        attendingCharacterIds: ['char-a'],
+        participants: [
+          makeHeroParticipant('pc:char-a', { characterId: 'char-a', victories: 3 }),
+          makeHeroParticipant('pc:char-b', { characterId: 'char-b', victories: 5 }),
+        ],
+      });
+      const result = applyRespite(state, RESPITE_INTENT);
+      expect(result.errors).toBeUndefined();
+      const charB = result.state.participants.find(
+        (p) => isParticipant(p) && p.characterId === 'char-b',
+      );
+      expect(charB && isParticipant(charB) ? charB.victories : 'MISSING').toBe(5);
+    });
+
+    it('log message reports per-PC XP amounts derived from each PC pre-respite victories', () => {
+      const state = baseState({
+        attendingCharacterIds: ['char-a', 'char-b'],
+        participants: [
+          makeHeroParticipant('pc:char-a', {
+            name: 'Aldric',
+            characterId: 'char-a',
+            victories: 3,
+          }),
+          makeHeroParticipant('pc:char-b', { name: 'Korva', characterId: 'char-b', victories: 2 }),
+        ],
+      });
+      const result = applyRespite(state, RESPITE_INTENT);
+      expect(result.errors).toBeUndefined();
+      const infoLogs = result.log.filter((l) => l.kind === 'info');
+      const summary = infoLogs[0]?.text ?? '';
+      // Each PC's XP appears with their name and amount.
+      expect(summary).toMatch(/Aldric/);
+      expect(summary).toMatch(/\+?3/);
+      expect(summary).toMatch(/Korva/);
+      expect(summary).toMatch(/\+?2/);
+      // Old behavior — single "X XP each" line — must NOT appear.
+      expect(summary).not.toMatch(/XP each/);
+    });
+
+    it('log message omits XP awards when all attending PCs have 0 victories', () => {
+      const state = baseState({
+        attendingCharacterIds: ['char-a'],
+        participants: [
+          makeHeroParticipant('pc:char-a', { characterId: 'char-a', victories: 0 }),
+        ],
+      });
+      const result = applyRespite(state, RESPITE_INTENT);
+      expect(result.errors).toBeUndefined();
+      const infoLogs = result.log.filter((l) => l.kind === 'info');
+      const summary = infoLogs[0]?.text ?? '';
+      expect(summary).toMatch(/refilled recoveries/);
+      expect(summary).not.toMatch(/XP/);
+    });
   });
 
   // Pass 3 Slice 1 — Task 15c: CoP override clears when recoveries refill
