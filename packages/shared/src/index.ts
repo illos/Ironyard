@@ -310,6 +310,13 @@ export { ParticipantSchema } from './participant';
 export type { Participant } from './participant';
 
 export {
+  TargetingRelationKindSchema,
+  TargetingRelationsSchema,
+  defaultTargetingRelations,
+} from './targeting-relations';
+export type { TargetingRelationKind, TargetingRelations } from './targeting-relations';
+
+export {
   EncounterTemplateDataSchema,
   EncounterTemplateEntrySchema,
   EncounterTemplateSchema,
