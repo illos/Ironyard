@@ -53,6 +53,7 @@ export { applySpendSurge } from './spend-surge';
 export { applyStartEncounter } from './start-encounter';
 export { applyStartMaintenance } from './start-maintenance';
 export { applyStartSession } from './start-session';
+export { applyStopMaintenance } from './stop-maintenance';
 export { applySubmitCharacter } from './submit-character';
 export { applySwapKit } from './swap-kit';
 export {

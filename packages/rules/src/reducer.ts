@@ -57,6 +57,7 @@ import {
   applyStartRound,
   applyStartSession,
   applyStartTurn,
+  applyStopMaintenance,
   applySubmitCharacter,
   applySwapKit,
   applyUndo,
@@ -205,6 +206,8 @@ export function applyIntent(
       return applyStartSession(state, intent);
     case IntentTypes.StartTurn:
       return applyStartTurn(state, intent);
+    case IntentTypes.StopMaintenance:
+      return applyStopMaintenance(state, intent);
     case IntentTypes.StaminaTransitioned: {
       // Pass 3 Slice 1 — server-only event substrate. No state mutation; the
       // emit-site reducer (apply-damage, apply-heal, etc.) already mutated state.
