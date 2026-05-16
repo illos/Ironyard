@@ -252,6 +252,13 @@ export function applyUseAbility(state: CampaignState, intent: StampedIntent): In
   // Auto-set targeting relations for the two registered PHB abilities
   // (Judgment, Mark). Both ship with mode: 'replace' — clear existing
   // entries before adding the new target. Skipped when targetIds is empty.
+  //
+  // Phase 2b cleanup 2b.14 — cross-PC sweep. For mode: 'replace', also clear
+  // the new target from every OTHER participant's same-kind relation array.
+  // Canon Censor.md: Judgment ends "until another censor judges the target."
+  // Canon Tactician.md: "if another tactician marks a creature, your mark on
+  // that creature ends." Without this sweep, two heroes can simultaneously
+  // hold the same Judgment/Mark — both fire their gain triggers off it.
   const targetingEffect = ABILITY_TARGETING_EFFECTS[abilityId];
   if (
     targetingEffect &&
@@ -262,6 +269,7 @@ export function applyUseAbility(state: CampaignState, intent: StampedIntent): In
     const { relationKind, mode } = targetingEffect;
     const existing = target.targetingRelations[relationKind];
     if (mode === 'replace') {
+      // (a) Clear the actor's own existing entries (slice 2b).
       for (const exId of existing) {
         derived.push({
           actor: intent.actor,
@@ -275,6 +283,30 @@ export function applyUseAbility(state: CampaignState, intent: StampedIntent): In
           },
           causedBy: intent.id,
         });
+      }
+      // (b) Phase 2b 2b.14 — cross-PC sweep: for each new target, scan every
+      // OTHER participant's same-kind list and clear the target there too.
+      for (const newId of parsed.data.targetIds) {
+        for (const other of state.participants) {
+          if (!('id' in other) || other.id === target.id) continue;
+          // Only Participant entries carry targetingRelations; skip other roster kinds.
+          if (!('targetingRelations' in other)) continue;
+          const arr = (other as { targetingRelations: Record<string, string[]> })
+            .targetingRelations[relationKind];
+          if (!arr || !arr.includes(newId)) continue;
+          derived.push({
+            actor: intent.actor,
+            source: 'server' as const,
+            type: IntentTypes.SetTargetingRelation,
+            payload: {
+              sourceId: other.id,
+              relationKind,
+              targetId: newId,
+              present: false,
+            },
+            causedBy: intent.id,
+          });
+        }
       }
     }
     for (const newId of parsed.data.targetIds) {

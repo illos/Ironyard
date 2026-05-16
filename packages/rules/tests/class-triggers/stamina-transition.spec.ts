@@ -347,4 +347,100 @@ describe('evaluateStaminaTransitionTriggers', () => {
       expect((gain!.payload as { amount: number }).amount).toBe(10);
     });
   });
+
+  // Phase 2b cleanup 2b.14 — canon end-clauses that fire on dying state.
+  // Tactician Mark (Tactician.md:229): "until the end of the encounter,
+  // until you are dying, or until you use this ability again."
+  // Null Field (Null.md:116): "It ends only if you are dying or if you
+  // willingly end it (no action required)."
+  // Both must emit SetTargetingRelation {present:false} for every entry in
+  // the source's relation array when the source enters 'dying'.
+  describe('Phase 2b 2b.14 — dying-state clears Tactician marks / Null Field', () => {
+    it('Tactician → dying emits SetTargetingRelation(present:false) for each marked target', () => {
+      const tactician = makeHeroParticipant('tac-1', {
+        className: 'Tactician',
+        targetingRelations: { judged: [], marked: ['goblin-a', 'goblin-b'], nullField: [] },
+      });
+      const goblinA = makeHeroParticipant('goblin-a');
+      const goblinB = makeHeroParticipant('goblin-b');
+      const state = stateWith([tactician, goblinA, goblinB]);
+      const result = evaluateStaminaTransitionTriggers(
+        transition('tac-1', 'dying'),
+        state,
+        testCtx,
+      );
+      const clears = result.filter(
+        (r) =>
+          r.type === 'SetTargetingRelation' &&
+          (r.payload as { sourceId: string; present: boolean }).sourceId === 'tac-1' &&
+          (r.payload as { present: boolean }).present === false,
+      );
+      expect(clears).toHaveLength(2);
+      const targetIds = clears
+        .map((c) => (c.payload as { targetId: string }).targetId)
+        .sort();
+      expect(targetIds).toEqual(['goblin-a', 'goblin-b']);
+      // All clears specify relationKind 'marked'
+      for (const c of clears) {
+        expect((c.payload as { relationKind: string }).relationKind).toBe('marked');
+      }
+    });
+
+    it('Null → dying emits SetTargetingRelation(present:false) for each nullField target', () => {
+      const nullPc = makeHeroParticipant('null-1', {
+        className: 'Null',
+        targetingRelations: { judged: [], marked: [], nullField: ['goblin-a', 'goblin-c'] },
+      });
+      const goblinA = makeHeroParticipant('goblin-a');
+      const goblinC = makeHeroParticipant('goblin-c');
+      const state = stateWith([nullPc, goblinA, goblinC]);
+      const result = evaluateStaminaTransitionTriggers(
+        transition('null-1', 'dying'),
+        state,
+        testCtx,
+      );
+      const clears = result.filter(
+        (r) =>
+          r.type === 'SetTargetingRelation' &&
+          (r.payload as { sourceId: string }).sourceId === 'null-1',
+      );
+      expect(clears).toHaveLength(2);
+      for (const c of clears) {
+        expect((c.payload as { relationKind: string }).relationKind).toBe('nullField');
+        expect((c.payload as { present: boolean }).present).toBe(false);
+      }
+    });
+
+    it('Censor → dying does NOT clear judged list (canon Judgment lacks a dying end-clause)', () => {
+      const censor = makeHeroParticipant('censor-1', {
+        className: 'Censor',
+        targetingRelations: { judged: ['goblin-a'], marked: [], nullField: [] },
+      });
+      const goblinA = makeHeroParticipant('goblin-a');
+      const state = stateWith([censor, goblinA]);
+      const result = evaluateStaminaTransitionTriggers(
+        transition('censor-1', 'dying'),
+        state,
+        testCtx,
+      );
+      const clears = result.filter((r) => r.type === 'SetTargetingRelation');
+      expect(clears).toHaveLength(0);
+    });
+
+    it('Tactician → winded does NOT clear marked list (only dying triggers)', () => {
+      const tactician = makeHeroParticipant('tac-1', {
+        className: 'Tactician',
+        targetingRelations: { judged: [], marked: ['goblin-a'], nullField: [] },
+      });
+      const goblinA = makeHeroParticipant('goblin-a');
+      const state = stateWith([tactician, goblinA]);
+      const result = evaluateStaminaTransitionTriggers(
+        transition('tac-1', 'winded'),
+        state,
+        testCtx,
+      );
+      const clears = result.filter((r) => r.type === 'SetTargetingRelation');
+      expect(clears).toHaveLength(0);
+    });
+  });
 });

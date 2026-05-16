@@ -617,4 +617,137 @@ describe('applyUseAbility — ABILITY_TARGETING_EFFECTS derivation', () => {
       present: true,
     });
   });
+
+  // Phase 2b cleanup 2b.14 — cross-PC sweep for Judgment / Mark.
+  // Canon Censor.md: Judgment ends "until another censor judges the target."
+  // Canon Tactician.md: "if another tactician marks a creature, your mark on
+  // that creature ends." When Censor B judges (or Tactician B marks) a
+  // target that's currently in Censor A's (Tactician A's) relation array,
+  // the UseAbility cascade must also emit SetTargetingRelation{present:false}
+  // for A's array to honor the canon end-clause.
+  it('cross-Censor: Censor B judges goblin-a → emits clear for Censor A who already had it', () => {
+    const state = makeUseAbilityState([
+      makeHeroParticipant('censor-A', {
+        className: 'censor',
+        ownerId: 'u-aldric',
+        targetingRelations: { judged: ['goblin-a'], marked: [], nullField: [] },
+      }),
+      makeHeroParticipant('censor-B', {
+        className: 'censor',
+        ownerId: 'u-bren',
+        targetingRelations: { judged: [], marked: [], nullField: [] },
+      }),
+      makeMonsterParticipant('goblin-a'),
+    ]);
+    const res = applyUseAbility(
+      state,
+      stamped({
+        id: 'i-1',
+        actor: { userId: 'u-bren', role: 'player' },
+        type: IntentTypes.UseAbility,
+        payload: {
+          participantId: 'censor-B',
+          abilityId: 'censor-judgment-t1',
+          source: 'class',
+          duration: { kind: 'end_of_encounter' },
+          targetIds: ['goblin-a'],
+        },
+      }),
+    );
+    const setRel = res.derived.filter((d) => d.type === IntentTypes.SetTargetingRelation);
+    // Expect: clear from censor-A (cross-PC sweep), then add for censor-B
+    const censorAClear = setRel.find(
+      (d) =>
+        (d.payload as { sourceId: string; targetId: string; present: boolean }).sourceId ===
+          'censor-A' &&
+        (d.payload as { targetId: string }).targetId === 'goblin-a' &&
+        (d.payload as { present: boolean }).present === false,
+    );
+    expect(censorAClear).toBeDefined();
+    const censorBAdd = setRel.find(
+      (d) =>
+        (d.payload as { sourceId: string }).sourceId === 'censor-B' &&
+        (d.payload as { present: boolean }).present === true,
+    );
+    expect(censorBAdd).toBeDefined();
+  });
+
+  it('cross-Tactician: Tactician B marks goblin-a → emits clear for Tactician A who already had it', () => {
+    const state = makeUseAbilityState([
+      makeHeroParticipant('tac-A', {
+        className: 'tactician',
+        ownerId: 'u-korva',
+        targetingRelations: { judged: [], marked: ['goblin-a'], nullField: [] },
+      }),
+      makeHeroParticipant('tac-B', {
+        className: 'tactician',
+        ownerId: 'u-bren',
+        targetingRelations: { judged: [], marked: [], nullField: [] },
+      }),
+      makeMonsterParticipant('goblin-a'),
+    ]);
+    const res = applyUseAbility(
+      state,
+      stamped({
+        id: 'i-1',
+        actor: { userId: 'u-bren', role: 'player' },
+        type: IntentTypes.UseAbility,
+        payload: {
+          participantId: 'tac-B',
+          abilityId: 'tactician-mark-t1',
+          source: 'class',
+          duration: { kind: 'end_of_encounter' },
+          targetIds: ['goblin-a'],
+        },
+      }),
+    );
+    const setRel = res.derived.filter((d) => d.type === IntentTypes.SetTargetingRelation);
+    const tacAClear = setRel.find(
+      (d) =>
+        (d.payload as { sourceId: string }).sourceId === 'tac-A' &&
+        (d.payload as { targetId: string }).targetId === 'goblin-a' &&
+        (d.payload as { present: boolean }).present === false,
+    );
+    expect(tacAClear).toBeDefined();
+  });
+
+  it('does NOT emit cross-PC clear when no other PC has the target in their same-kind list', () => {
+    const state = makeUseAbilityState([
+      makeHeroParticipant('censor-A', {
+        className: 'censor',
+        ownerId: 'u-aldric',
+        targetingRelations: { judged: ['goblin-b'], marked: [], nullField: [] },
+      }),
+      makeHeroParticipant('censor-B', {
+        className: 'censor',
+        ownerId: 'u-bren',
+        targetingRelations: { judged: [], marked: [], nullField: [] },
+      }),
+      makeMonsterParticipant('goblin-a'),
+      makeMonsterParticipant('goblin-b'),
+    ]);
+    const res = applyUseAbility(
+      state,
+      stamped({
+        id: 'i-1',
+        actor: { userId: 'u-bren', role: 'player' },
+        type: IntentTypes.UseAbility,
+        payload: {
+          participantId: 'censor-B',
+          abilityId: 'censor-judgment-t1',
+          source: 'class',
+          duration: { kind: 'end_of_encounter' },
+          targetIds: ['goblin-a'],
+        },
+      }),
+    );
+    const setRel = res.derived.filter((d) => d.type === IntentTypes.SetTargetingRelation);
+    // Only censor-B's add; no cross-PC clear (goblin-a isn't in any other list)
+    expect(setRel).toHaveLength(1);
+    expect(setRel[0]!.payload).toMatchObject({
+      sourceId: 'censor-B',
+      targetId: 'goblin-a',
+      present: true,
+    });
+  });
 });

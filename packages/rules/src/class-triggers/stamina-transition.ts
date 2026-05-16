@@ -1,3 +1,4 @@
+import { IntentTypes } from '@ironyard/shared';
 import type { Actor, StaminaTransitionedPayload } from '@ironyard/shared';
 import type { CampaignState, DerivedIntent } from '../types';
 import { isParticipant } from '../types';
@@ -224,6 +225,64 @@ const STAMINA_TRANSITION_TRIGGERS: StaminaTransitionTrigger[] = [
         payload: { participantId: event.participantId, value: true },
       },
     ],
+  },
+  {
+    // Phase 2b cleanup 2b.14 — Tactician → dying clears the source's `marked`
+    // list. Canon Tactician.md:229: Mark ends "until the end of the encounter,
+    // until you are dying, or until you use this ability again." The
+    // end-of-encounter clear is handled by `applyEndEncounter`; the
+    // use-again-clear by the `mode: 'replace'` cascade in `applyUseAbility`;
+    // this entry covers the dying-clear case.
+    match: (event, state) => {
+      if (event.to !== 'dying') return false;
+      const p = state.participants.filter(isParticipant).find((x) => x.id === event.participantId);
+      if (!p || p.kind !== 'pc') return false;
+      if (resolveParticipantClass(state, p) !== 'tactician') return false;
+      return p.targetingRelations.marked.length > 0;
+    },
+    fire: (event, state, ctx) => {
+      const p = state.participants.filter(isParticipant).find((x) => x.id === event.participantId);
+      if (!p) return [];
+      return p.targetingRelations.marked.map((targetId) => ({
+        actor: ctx.actor,
+        source: 'server' as const,
+        type: IntentTypes.SetTargetingRelation,
+        payload: {
+          sourceId: p.id,
+          relationKind: 'marked',
+          targetId,
+          present: false,
+        },
+      }));
+    },
+  },
+  {
+    // Phase 2b cleanup 2b.14 — Null → dying clears the source's `nullField`
+    // list. Canon Null.md:116: Null Field "ends only if you are dying or if
+    // you willingly end it (no action required)." Willing end is the
+    // per-row chip; this entry covers the dying-end case.
+    match: (event, state) => {
+      if (event.to !== 'dying') return false;
+      const p = state.participants.filter(isParticipant).find((x) => x.id === event.participantId);
+      if (!p || p.kind !== 'pc') return false;
+      if (resolveParticipantClass(state, p) !== 'null') return false;
+      return p.targetingRelations.nullField.length > 0;
+    },
+    fire: (event, state, ctx) => {
+      const p = state.participants.filter(isParticipant).find((x) => x.id === event.participantId);
+      if (!p) return [];
+      return p.targetingRelations.nullField.map((targetId) => ({
+        actor: ctx.actor,
+        source: 'server' as const,
+        type: IntentTypes.SetTargetingRelation,
+        payload: {
+          sourceId: p.id,
+          relationKind: 'nullField',
+          targetId,
+          present: false,
+        },
+      }));
+    },
   },
 ];
 

@@ -74,20 +74,16 @@ Plus minor: KO-resurrects-corpses edge case (KO on `dead` state target flips to 
 
 **Already framed under 2b.9 / Group E in [phases.md] post the prior audit.** Plus the canon-mismatch on the CrossSideTriggerModal default ordering (`apps/web/src/pages/combat/triggers/CrossSideTriggerModal.tsx:22-26` defaults foes-first; Combat.md:125 reads heroes-first). Spec Q5 of slice 1 design chose foes-first explicitly — could be intentional house-rule or spec error. Worth a one-line clarification in the cleanup work.
 
-### Cluster 5 — Targeting relations end-clauses (4 bugs, 2 root causes)
+### Cluster 5 — Targeting relations end-clauses (4 bugs, 2 root causes) ✅ FIXED 2026-05-16
 
-| # | Severity | Where | Bug | Canon |
-|---|---|---|---|---|
-| B16 | P1 | `null.ts`, `tactician.ts`, `set-targeting-relation.ts` (no dying hook) | Null Field + Tactician Mark do not clear when the source enters dying state | Null.md:116 *"It ends only if you are dying"*; Tactician.md:229 *"until you are dying"* |
-| B24 | P2 | `use-ability.ts:264-279` (cross-PC sweep missing) | "Another tactician marks creature → your mark ends" — `mode: 'replace'` only clears acting tactician's own list | Tactician.md:229 *"if another tactician marks a creature, your mark on that creature ends"* |
-| B27 | P1 | same as B16, Tactician side | Tactician Mark "until you are dying" specifically | (subset of B16; called out separately because cited canon text is on a different page from Null Field) |
-| B28 | P1 | same as B24, Censor side | "Another censor judges target → your judgment ends" | Censor.md:118 *"another censor judges the target"* |
+| # | Severity | Where | Bug | Canon | Status |
+|---|---|---|---|---|---|
+| B16 | P1 | `null.ts`, `tactician.ts`, `set-targeting-relation.ts` (no dying hook) | Null Field + Tactician Mark do not clear when the source enters dying state | Null.md:116 *"It ends only if you are dying"*; Tactician.md:229 *"until you are dying"* | ✅ fixed |
+| B24 | P2 | `use-ability.ts:264-279` (cross-PC sweep missing) | "Another tactician marks creature → your mark ends" — `mode: 'replace'` only clears acting tactician's own list | Tactician.md:229 *"if another tactician marks a creature, your mark on that creature ends"* | ✅ fixed |
+| B27 | P1 | same as B16, Tactician side | Tactician Mark "until you are dying" specifically | (subset of B16; called out separately because cited canon text is on a different page from Null Field) | ✅ fixed |
+| B28 | P1 | same as B24, Censor side | "Another censor judges target → your judgment ends" | Censor.md:118 *"another censor judges the target"* | ✅ fixed |
 
-**Two root causes, four bugs:**
-- B16/B27 → `StaminaTransitioned → dying` hook that clears the source's own `targetingRelations` arrays (or specifically `marked` + `nullField`).
-- B24/B28 → `use-ability.ts` cascade emitter sweep: when emitting `mode: 'replace'` with `relationKind: 'judged' | 'marked'`, also emit `SetTargetingRelation { present: false }` against every *other* participant whose same-kind array contains the new target.
-
-One spec covering both shapes.
+**Fix shipped via Phase 2b sub-epic 2b.14** (canon-audit cleanup; TDD): (a) new `StaminaTransitioned → dying` triggers for Tactician + Null in `stamina-transition.ts` emit per-target `SetTargetingRelation { present: false }` for the source's `marked` / `nullField` arrays (Censor `judged` deliberately excluded — canon Judgment has no dying end-clause); (b) cross-PC sweep added to `use-ability.ts` ABILITY_TARGETING_EFFECTS cascade — for `mode: 'replace'`, every other participant's same-kind array gets the new target stripped. Required a small permission bypass: `SetTargetingRelation` reducer now also accepts `intent.source === 'server'` (clients can't forge this; server-source intents come from validated cascades whose actor may not be the source owner). 9 new tests across stamina-transition (5), use-ability (3), set-targeting-relation (1). Repo-wide test count: 1736 (+8).
 
 ### Cluster 6 — Other class-trigger bugs (13 mixed items)
 

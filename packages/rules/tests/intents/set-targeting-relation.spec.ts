@@ -121,12 +121,13 @@ function intent(
     userId: 'user-aldric',
     role: 'player',
   },
+  source: 'manual' | 'server' = 'manual',
 ): StampedIntent {
   return {
     id: 'i-1',
     campaignId: 'c1',
     actor,
-    source: 'manual',
+    source,
     type: IntentTypes.SetTargetingRelation,
     payload,
     timestamp: 0,
@@ -234,5 +235,28 @@ describe('applySetTargetingRelation', () => {
     expect(res.errors).toBeUndefined();
     const updated = res.state.participants.find((p: any) => p.id === 'censor-1') as any;
     expect(updated.targetingRelations.nullField).toEqual(['goblin-a']);
+  });
+
+  // Phase 2b cleanup 2b.14 — server-source derived intents bypass the
+  // owner/director gate. The engine emits these during validated cascades
+  // (e.g. stamina-transition → dying clears Tactician marks). The cascade's
+  // actor is whoever caused the upstream event (a damaging player or
+  // director), which is typically NOT the source's owner — so the gate
+  // would incorrectly reject the derived clear. Server-source intents are
+  // safe to bypass: clients can't forge source:'server' (set by the engine
+  // during cascade dispatch).
+  it("accepts server-source intent regardless of actor identity (cascade bypass)", () => {
+    const state = fixtureState();
+    const res = applySetTargetingRelation(
+      state,
+      intent(
+        { sourceId: 'censor-1', relationKind: 'marked', targetId: 'goblin-a', present: true },
+        { userId: 'unrelated-player', role: 'player' },
+        'server',
+      ),
+    );
+    expect(res.errors).toBeUndefined();
+    const updated = res.state.participants.find((p: any) => p.id === 'censor-1') as any;
+    expect(updated.targetingRelations.marked).toEqual(['goblin-a']);
   });
 });

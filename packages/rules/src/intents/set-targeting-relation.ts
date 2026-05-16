@@ -77,10 +77,13 @@ export function applySetTargetingRelation(
     };
   }
 
-  // Trust: source owner OR active director.
+  // Trust: source owner OR active director OR server-source (engine cascade,
+  // see Phase 2b 2b.14 — dying-state hook in stamina-transition.ts emits this
+  // shape with an upstream actor that may not be the source owner).
   const isOwner = intent.actor.userId === source.ownerId;
   const isActiveDirector = intent.actor.userId === state.activeDirectorId;
-  if (!isOwner && !isActiveDirector) {
+  const isServerCascade = intent.source === 'server';
+  if (!isOwner && !isActiveDirector && !isServerCascade) {
     return {
       state,
       derived: [],
