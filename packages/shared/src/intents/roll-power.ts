@@ -54,5 +54,13 @@ export const RollPowerPayloadSchema = z.object({
   // Phase 5 Pass 2a — human-readable ability name for toast attribution.
   // Optional for back-compat: legacy payloads fall back to abilityId.
   abilityName: z.string().optional(),
+  // Pass 3 Slice 2a — number of surges the actor spent to fuel this power roll
+  // (canon § 5.6). Dispatchers pass a non-zero value when the actor opted to
+  // spend surges as part of the ability resolution (Strained ability fueling,
+  // optional surge-boost on a regular ability, etc.). The reducer uses this to
+  // emit the `surge-spent-with-damage` action-trigger event so Shadow's
+  // Insight gain (canon § 5.4.6) can fire. Default 0 keeps legacy payloads
+  // valid (no surges spent ⇒ no Shadow trigger).
+  surgesSpent: z.number().int().min(0).default(0),
 });
 export type RollPowerPayload = z.infer<typeof RollPowerPayloadSchema>;

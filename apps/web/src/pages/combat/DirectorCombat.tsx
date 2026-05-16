@@ -401,6 +401,11 @@ export function DirectorCombat() {
       abilityKeywords: args.ability.keywords ?? [],
       abilityType: args.ability.type,
       abilityName: args.ability.name,
+      // Pass 3 Slice 2a — surges spent to fuel this roll (canon §5.6). UI
+      // doesn't yet surface a surge-spend toggle (StrainedSpendModal in Task 31)
+      // so default to 0; the reducer skips Shadow's surge-spent-with-damage
+      // trigger when this is 0.
+      surgesSpent: 0,
     };
     const intent: Intent = buildIntent({
       campaignId,

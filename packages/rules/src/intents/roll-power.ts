@@ -1,4 +1,5 @@
 import { IntentTypes, RollPowerPayloadSchema } from '@ironyard/shared';
+import { evaluateActionTriggers } from '../class-triggers/action-triggers';
 import {
   type BleedingTrigger,
   bleedingDamageHook,
@@ -252,6 +253,57 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
       payload: { participantId: attackerId },
       causedBy: intent.id,
     });
+  }
+
+  // Pass 3 Slice 2a — action-event class-trigger evaluation. Two distinct
+  // events fire from RollPower:
+  //
+  //   1. `surge-spent-with-damage` — when the actor spent surges to fuel the
+  //      ability AND damage was dealt this tier. Shadow's Insight latch
+  //      (canon § 5.4.6) reads this. Skipped when `surgesSpent === 0` or the
+  //      tier's damage rolled to 0 (e.g. immune target on a future ApplyDamage
+  //      branch — here we gate on `finalDamage > 0` so a 0-damage tier doesn't
+  //      mark dealtSurgeDamage). The Shadow trigger gates further on the actor
+  //      being a Shadow with the per-round latch unflipped; if the actor is
+  //      anyone else the evaluator returns [].
+  //   2. `roll-power-outcome` — always fires. Carries the natural sum so
+  //      Troubadour's spatial Line-of-Effect OA raiser (canon § 5.4.8) can
+  //      check for 19/20 and raise an OA for every eligible Troubadour. No
+  //      latch — every qualifying roll raises a fresh OA.
+  //
+  // Ordering: these fire AFTER the existing derived intents (damage,
+  // conditions, MarkActionUsed, GrantExtraMainAction) so any flag writes the
+  // trigger emits land after the action's own writes in the derived stream.
+  // ctx carries the originating actor for attribution; no random rolls are
+  // needed for these two event kinds.
+  const triggerCtx = { actor: intent.actor, rolls: {} };
+  if (parsed.data.surgesSpent > 0 && finalDamage > 0) {
+    const surgeDerived = evaluateActionTriggers(
+      state,
+      {
+        kind: 'surge-spent-with-damage',
+        actorId: attackerId,
+        surgesSpent: parsed.data.surgesSpent,
+        damageType: tierEffect.damageType,
+      },
+      triggerCtx,
+    );
+    for (const d of surgeDerived) {
+      derived.push({ ...d, causedBy: intent.id });
+    }
+  }
+  const outcomeDerived = evaluateActionTriggers(
+    state,
+    {
+      kind: 'roll-power-outcome',
+      actorId: attackerId,
+      abilityId,
+      naturalValues: [natural],
+    },
+    triggerCtx,
+  );
+  for (const d of outcomeDerived) {
+    derived.push({ ...d, causedBy: intent.id });
   }
 
   return {
