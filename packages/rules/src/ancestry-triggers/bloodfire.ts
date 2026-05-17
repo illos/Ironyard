@@ -23,6 +23,7 @@ import type { AncestryTriggerContext } from './index';
 const BLOODFIRE_ANCESTRIES = new Set(['orc']);
 
 export function hasBloodfireRush(p: Participant): boolean {
+  if (p.kind !== 'pc') return false;
   return (
     p.purchasedTraits.includes('bloodfire-rush') &&
     p.ancestry.some((a) => BLOODFIRE_ANCESTRIES.has(a))

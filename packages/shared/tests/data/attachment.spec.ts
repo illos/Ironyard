@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AttachmentEffectSchema } from './attachment';
+import { AttachmentEffectSchema } from '../../src/data/attachment';
 
 describe('Phase 2b Group A+B — new AttachmentEffect kinds', () => {
   it('stat-mod-echelon parses', () => {

@@ -101,9 +101,11 @@ export const AttachmentEffectSchema = z.discriminatedUnion('kind', [
     value: z.union([z.number().int().nonnegative(), z.literal('level')]),
   }),
   // Phase 2b Group A+B (2b.8): condition-immunity — Bloodless, Great Fortitude,
-  // Polder Fearless, Orc Nonstop, Memonek Nonstop, High Elf Unstoppable Mind,
-  // Memonek Unphased. Applier appends to runtime.conditionImmunities; reducer
-  // helpers in a later slice gate ApplyCondition + side-effects.
+  // Polder Fearless, Orc Nonstop, Memonek Nonstop, High Elf Unstoppable Mind.
+  // (Memonek Unphased is the surprised-flag, not a ConditionType, so it gates
+  // at MarkSurprised + RollInitiative via purchasedTraits, not here.) Applier
+  // appends to runtime.conditionImmunities; SetCondition reducer + stamina
+  // side-effects consume via isImmuneToCondition (effective.ts).
   z.object({ kind: z.literal('condition-immunity'), condition: ConditionTypeSchema }),
   z.object({ kind: z.literal('free-strike-damage'), delta: z.number().int() }),
   // Slice 6 / Epic 2C § 10.8: per-tier weapon damage bonus. Emitted by the kit

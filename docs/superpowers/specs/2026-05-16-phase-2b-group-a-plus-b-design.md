@@ -331,3 +331,21 @@ Plus an infrastructure gap surfaced by the slice 5 dispatch attempt: **signature
 The `grant-skill-edge` AttachmentEffect schema variant from slice 1 stays in place — unused for now, available when a future slice (likely in Phase 2b.9 + signature-trait-emission groundwork) revisits both Glamors plus the other signature-trait gaps.
 
 **Acceptance criteria update:** Slice 5 dropped from Group A+B acceptance. Group acceptance becomes "10 sub-slices ✅-or-deferred" instead of 11. The two affected `docs/phases.md` rows (2b.1, 2b.8) still flip to ✅ because Group A+B closes the *modelable-today* surface; the Glamors + other signature-trait-emission work moves to a new follow-up sub-epic to be created when revisited.
+
+### PS#3 — Carry-overs to follow-up work (2026-05-16, post-shipping)
+
+Surfaced during final code review of the branch (commit `328088f`). Each item ships as part of a future slice when supporting infrastructure exists. None block merge of Group A+B.
+
+| # | Carry-over | Origin | When to revisit |
+|---|---|---|---|
+| 1 | **Glamors signature-trait emission (slice 5)** — Wode Elf + High Elf Glamors need (a) skill-name granularity on `grant-skill-edge`, (b) contextual bane-on-others trigger (needs trigger-cascade substrate), (c) signature-trait emission wiring through `ancestries.ts` | PS#2 above | New sub-epic bundling all signature-trait-emission gaps after Phase 2b.9 (trigger-cascade substrate) lands |
+| 2 | **Shadowmeld toggle-off path** — activating Shadowmeld dispatches `StartFlying { mode: 'shadow' }` via `UseAbility` (commit `78c79eb`), but no `EndActiveAbility` intent exists; director clears via `SetMovementMode { movementMode: null }` until a proper toggle-off ships | `packages/rules/src/intents/use-ability.ts:266-276` | Together with the active-abilities expiry / toggle-off generalization (separate slice) |
+| 3 | **OpenAction claim UI for Orc Relentless** (`orc-relentless-free-strike`) — raise emits + claim handler is a no-op acknowledgement; the actual free strike + optional Recovery spend are player-dispatched manually via existing intents | `packages/rules/src/ancestry-triggers/relentless.ts:11-13` + `packages/rules/src/intents/claim-open-action.ts:296-304` | When the OA UI grows to render player-affordance prompts with their own targeting flow |
+| 4 | **Force-move resolution consumer for Memonek Lightweight** — `getSizeForForcedMove` helper is structurally present + tested; no `applyForceMove` reducer exists today | `packages/rules/src/effective.ts:42-67` + `packages/rules/tests/ancestry-triggers/lightweight.spec.ts:9-11` | When forced-movement infrastructure ships (no current Phase 2b row) |
+| 5 | **`getEffectiveSpeed` consumer site** — helper adds +2 when `bloodfireActive`; no UI / engine consumer reads it today (engine doesn't track movement distances per `project_no_movement_tracking` memory) | `packages/rules/src/effective.ts:73-78` | When a speed-display UI surface needs the live runtime value rather than the snapshot |
+| 6 | **`docs/rules-canon.md` Gate 1+2 entries** for the Phase 2b Group A+B mechanics — per memory `feedback_rules_canon_workflow`, every shipped engine mechanic needs a canon-doc entry passing source check (Gate 1, can be authored from commit messages which all cite canon) + manual user review with the printed Heroes Book (Gate 2) | Outstanding from post-shipping task (didn't ship in commit `328088f`) | User-driven follow-up; spec + per-commit messages have canon citations to make Gate 1 quick |
+
+Additional minor polish surfaced by the final code review (already addressed in the post-review cleanup commit):
+- Moved `packages/rules/src/effective.test.ts` → `packages/rules/tests/effective.spec.ts`
+- Moved `packages/shared/src/data/attachment.test.ts` → `packages/shared/tests/data/attachment.spec.ts`
+- Added `if (p.kind !== 'pc') return false;` guard to `hasBloodfireRush` (mirror of `wings.ts hasWings` + `relentless.ts` pattern)

@@ -1,6 +1,6 @@
 import { ParticipantSchema } from '@ironyard/shared';
 import { describe, expect, it } from 'vitest';
-import { getEffectiveWeaknesses, isImmuneToCondition } from './effective';
+import { getEffectiveWeaknesses, isImmuneToCondition } from '../src/effective';
 
 // Phase 2b Group A+B (slice 2) — read-site helper tests.
 // Uses ParticipantSchema.parse so all required defaults fill in;

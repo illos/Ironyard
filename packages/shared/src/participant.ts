@@ -167,11 +167,13 @@ export const ParticipantSchema = z.object({
   // empty arrays so pre-slice-2b snapshots load without migration.
   targetingRelations: TargetingRelationsSchema.default(defaultTargetingRelations()),
   // Phase 2b Group A+B (2b.1) — temporary movement mode primitive used by
-  // Wings (Devil + Dragon Knight) and Polder Shadowmeld. Set by
-  // StartFlying / StartShadowmeld intents in later slices; cleared by
-  // EndFlying or by the round-tick when roundsRemaining hits 0. `null`
-  // means standard ground movement. Nullable + null default keeps older
-  // snapshots parseable.
+  // Wings (Devil + Dragon Knight) and Polder Shadowmeld. Set by StartFlying
+  // (with mode 'flying' for Wings, mode 'shadow' for Shadowmeld dispatched
+  // via UseAbility on polder.shadowmeld). Cleared by EndFlying (voluntary,
+  // fall, or duration-expired) or by SetMovementMode { null } (director
+  // override / cleanup). The wings.ts ancestry-trigger decrements
+  // roundsRemaining on EndRound for flying mode only; shadow mode has no
+  // canon countdown (sentinel roundsRemaining: 0). `null` = ground movement.
   movementMode: z
     .object({
       mode: z.enum(['flying', 'shadow']),
@@ -179,14 +181,16 @@ export const ParticipantSchema = z.object({
     })
     .nullable()
     .default(null),
-  // Phase 2b Group A+B (2b.8.b) — Orc Bloodfire Rush latch. True while the
-  // hero is dying and the Bloodfire bonus damage applies. Set / cleared by
-  // reducer hooks on stamina-state transitions in a later slice.
+  // Phase 2b Group A+B (2b.4) — Orc Bloodfire Rush latch. Set true on the
+  // first delivered damage of the round (bloodfire.ts onDamageApplied) and
+  // cleared at EndRound (bloodfire.ts onEndRound sweep). While true,
+  // getEffectiveSpeed adds +2 to base speed.
   bloodfireActive: z.boolean().default(false),
   // Phase 2b Group A+B (2b.8) — condition-immunity snapshot stamped from
-  // CharacterRuntime at StartEncounter. Reducer helpers consume this to gate
-  // ApplyCondition + side-effects (Bleeding via dying, etc.). Empty default
-  // keeps pre-2b snapshots parseable.
+  // CharacterRuntime at StartEncounter. Reducer helpers consume this via
+  // isImmuneToCondition (effective.ts) to gate SetCondition + engine-applied
+  // side-effects (Bleeding via dying, etc.). Empty default keeps pre-2b
+  // snapshots parseable.
   conditionImmunities: z.array(ConditionTypeSchema).default([]),
   // Phase 2b Group A+B (2b.3 + 2b.4) — kit-side bonus snapshots stamped from
   // CharacterRuntime at StartEncounter. Consumed by Disengage / range-check
