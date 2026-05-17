@@ -180,7 +180,16 @@ export function TurnFlowTab({
       <TurnFlowSection
         index={3}
         label="Move"
-        subtitle="speed varies"
+        // Phase 2b Group A+B slice 11 — surface kit Disengage bonus in the
+        // subtitle when the participant carries one (13 of 22 v1 kits = +1).
+        // Player flags Disengage intent verbally at the table; engine doesn't
+        // track movement / OA suppression (per project_no_movement_tracking
+        // memory + spec Q4). Falls back to "speed varies" otherwise.
+        subtitle={
+          focused.disengageBonus > 0
+            ? `speed varies · Disengage: shift ${1 + focused.disengageBonus} (no OA)`
+            : 'speed varies'
+        }
         state={stateFor('move')}
         doneSummary={usage.move ? 'done moving' : undefined}
         skipLabel="Done moving"

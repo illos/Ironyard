@@ -432,6 +432,22 @@ function EquipmentSection({
         {kit.stabilityBonus !== undefined && kit.stabilityBonus !== 0 && (
           <KeyValue label="Stability bonus" value={`+${kit.stabilityBonus}`} />
         )}
+        {/* Phase 2b Group A+B slice 10/11 — kit distance + disengage bonuses
+            surface on the sheet. Distance bonuses are always-on flat numbers;
+            disengage bonus surfaces as the resulting shift value (1 + bonus)
+            for player table-adjudication. */}
+        {kit.meleeDistanceBonus !== undefined && kit.meleeDistanceBonus !== 0 && (
+          <KeyValue label="Melee distance bonus" value={`+${kit.meleeDistanceBonus}`} />
+        )}
+        {kit.rangedDistanceBonus !== undefined && kit.rangedDistanceBonus !== 0 && (
+          <KeyValue label="Ranged distance bonus" value={`+${kit.rangedDistanceBonus}`} />
+        )}
+        {kit.disengageBonus !== undefined && kit.disengageBonus !== 0 && (
+          <KeyValue
+            label="Disengage"
+            value={`shift ${1 + kit.disengageBonus} (no OA)`}
+          />
+        )}
       </dl>
       {kit.signatureAbilityId && (
         <p className="text-xs text-text-mute mt-2">
