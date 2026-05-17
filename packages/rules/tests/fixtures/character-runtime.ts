@@ -140,6 +140,10 @@ export function buildBundleWithFury(): StaticDataBundle {
     stabilityBonus: 0,
     meleeDamageBonusPerTier: [1, 1, 1],
     rangedDamageBonusPerTier: [0, 0, 0],
+    // Slice 10 / Phase 2b Group A+B (2b.3) — distance + disengage defaults.
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
+    disengageBonus: 0,
     keywords: [],
   } satisfies ResolvedKit);
 

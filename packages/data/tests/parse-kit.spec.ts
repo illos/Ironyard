@@ -43,3 +43,50 @@ describe('parseKitMarkdown', () => {
     expect(k).toBeNull();
   });
 });
+
+// Slice 10 / Phase 2b Group A+B (2b.3): distance + disengage bonus extraction.
+// Source format in Kits.md is "**Melee Distance Bonus:** +1" /
+// "**Ranged Distance Bonus:** +10" / "**Disengage Bonus:** +1". Always-on flat
+// (not per-tier). 13 of 22 v1 kits carry +1 disengage; 10 carry a distance
+// bonus on exactly one of melee or ranged. AoE sizes (burst/cube/wall) are
+// NOT affected — canon-explicit (Kits.md:135).
+describe('parseKitMarkdown — distance + disengage bonuses', () => {
+  it('Arcane Archer extracts rangedDistanceBonus: 10 + disengageBonus: 1', () => {
+    const k = parseKitMarkdown(read('Arcane Archer.md'));
+    expect(k).not.toBeNull();
+    expect(k!.rangedDistanceBonus).toBe(10);
+    expect(k!.meleeDistanceBonus).toBe(0);
+    expect(k!.disengageBonus).toBe(1);
+  });
+
+  it('Guisarmier extracts meleeDistanceBonus: 1, no ranged, no disengage', () => {
+    const k = parseKitMarkdown(read('Guisarmier.md'));
+    expect(k).not.toBeNull();
+    expect(k!.meleeDistanceBonus).toBe(1);
+    expect(k!.rangedDistanceBonus).toBe(0);
+    expect(k!.disengageBonus).toBe(0);
+  });
+
+  it('Cloak and Dagger extracts rangedDistanceBonus: 5 + disengageBonus: 1', () => {
+    const k = parseKitMarkdown(read('Cloak and Dagger.md'));
+    expect(k).not.toBeNull();
+    expect(k!.rangedDistanceBonus).toBe(5);
+    expect(k!.disengageBonus).toBe(1);
+  });
+
+  it('Whirlwind extracts meleeDistanceBonus: 1 + disengageBonus: 1', () => {
+    const k = parseKitMarkdown(read('Whirlwind.md'));
+    expect(k).not.toBeNull();
+    expect(k!.meleeDistanceBonus).toBe(1);
+    expect(k!.rangedDistanceBonus).toBe(0);
+    expect(k!.disengageBonus).toBe(1);
+  });
+
+  it('Mountain has no distance + no disengage bonus (defaults to 0)', () => {
+    const k = parseKitMarkdown(read('Mountain.md'));
+    expect(k).not.toBeNull();
+    expect(k!.meleeDistanceBonus).toBe(0);
+    expect(k!.rangedDistanceBonus).toBe(0);
+    expect(k!.disengageBonus).toBe(0);
+  });
+});

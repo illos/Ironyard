@@ -47,6 +47,40 @@ export function collectFromKit(
       effect: { kind: 'weapon-damage-bonus', appliesTo: 'ranged', perTier: ranged },
     });
   }
+  // Slice 10 / Phase 2b Group A+B (2b.3): always-on flat distance + disengage
+  // bonuses. Applier folds these into runtime.{melee,ranged}DistanceBonus and
+  // runtime.disengageBonus; StartEncounter snapshots to the participant.
+  // AoE sizes (burst/cube/wall) are NOT adjusted per canon (Kits.md:135) —
+  // the read sites (RollPower / UI) gate on the ability's distance kind.
+  // Engine doesn't currently ship a Disengage intent (per spec Q4 +
+  // project_no_movement_tracking); the disengage bonus flows through to the
+  // UI for player adjudication.
+  if (kit.meleeDistanceBonus > 0) {
+    out.push({
+      source: { kind: 'kit', id: `${kit.id}.melee-distance-bonus` },
+      effect: {
+        kind: 'weapon-distance-bonus',
+        appliesTo: 'melee',
+        delta: kit.meleeDistanceBonus,
+      },
+    });
+  }
+  if (kit.rangedDistanceBonus > 0) {
+    out.push({
+      source: { kind: 'kit', id: `${kit.id}.ranged-distance-bonus` },
+      effect: {
+        kind: 'weapon-distance-bonus',
+        appliesTo: 'ranged',
+        delta: kit.rangedDistanceBonus,
+      },
+    });
+  }
+  if (kit.disengageBonus > 0) {
+    out.push({
+      source: { kind: 'kit', id: `${kit.id}.disengage-bonus` },
+      effect: { kind: 'disengage-bonus', delta: kit.disengageBonus },
+    });
+  }
   if (kit.speedBonus) {
     out.push({
       source: { kind: 'kit', id: `${kit.id}.speed-bonus` },

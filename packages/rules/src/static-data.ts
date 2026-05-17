@@ -26,6 +26,15 @@ export const ResolvedKitSchema = z.object({
   rangedDamageBonusPerTier: z
     .tuple([z.number().int(), z.number().int(), z.number().int()])
     .default([0, 0, 0]),
+  // Slice 10 / Phase 2b Group A+B (2b.3): always-on flat distance + disengage
+  // bonuses. Parsed from kit MD ("**Melee/Ranged Distance Bonus:** +N",
+  // "**Disengage Bonus:** +N"); collector emits weapon-distance-bonus /
+  // disengage-bonus attachments when non-zero. AoE sizes (burst/cube/wall) NOT
+  // adjusted — canon-explicit (Kits.md:135). Nonnegative — canon never authors
+  // a negative.
+  meleeDistanceBonus: z.number().int().nonnegative().default(0),
+  rangedDistanceBonus: z.number().int().nonnegative().default(0),
+  disengageBonus: z.number().int().nonnegative().default(0),
   signatureAbilityId: z.string().optional(),
   keywords: z.array(z.string()).default([]),
 });

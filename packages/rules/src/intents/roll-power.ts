@@ -6,6 +6,7 @@ import {
   computeRollContributions,
   gateActionForDazed,
 } from '../condition-hooks';
+import { getEffectiveWeaknesses } from '../effective';
 import { resolvePowerRoll } from '../power-roll';
 import { requireCanon } from '../require-canon';
 import type { CampaignState, DerivedIntent, IntentResult, LogEntry, StampedIntent } from '../types';
@@ -292,8 +293,16 @@ export function applyRollPower(state: CampaignState, intent: StampedIntent): Int
     for (const r of list) if (r.type === type) total += r.value;
     return total;
   };
+  // Slice 10 / Phase 2b Group A+B (slice-6 carry-over): the predelivery check
+  // must read through `getEffectiveWeaknesses` so per-encounter conditional
+  // weaknesses (e.g. flying Devil/Dragon-Knight with Wings → fire weakness 5
+  // at echelon 1) are counted when the trigger predicts delivered damage.
+  // Reading `d.weaknesses` directly missed those layered values, causing
+  // Shadow Insight to under-fire when the only delivered damage came from
+  // the conditional fire weakness.
   const anyDelivered = defenders.some((d) => {
-    const weakness = sumTyped(d.weaknesses, tierEffect.damageType);
+    const effectiveWeaknesses = getEffectiveWeaknesses(d, d.level);
+    const weakness = sumTyped(effectiveWeaknesses, tierEffect.damageType);
     const immunity = sumTyped(d.immunities, tierEffect.damageType);
     return Math.max(0, finalDamage + weakness - immunity) > 0;
   });

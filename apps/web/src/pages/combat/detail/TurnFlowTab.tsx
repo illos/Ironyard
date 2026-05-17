@@ -152,6 +152,7 @@ export function TurnFlowTab({
             disabled={rollDisabled}
             targetMissing={targetMissing}
             onRoll={(ab, args) => handleRoll(ab, args)}
+            participant={focused}
           />
         ))}
       </TurnFlowSection>
@@ -171,6 +172,7 @@ export function TurnFlowTab({
             ability={a}
             disabled={rollDisabled}
             onRoll={(ab, args) => handleRoll(ab, args)}
+            participant={focused}
           />
         ))}
       </TurnFlowSection>

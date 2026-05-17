@@ -220,6 +220,7 @@ export function FullSheetTab({
               readOnly={!canRoll}
               targetMissing={ab.type === 'action' && !target && candidates.length > 0}
               onRoll={(ability, args) => onRoll(ability, args)}
+              participant={focused}
             />
           ))}
         </div>

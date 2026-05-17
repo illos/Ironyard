@@ -1,4 +1,5 @@
-import type { Ability, TierOutcome } from '@ironyard/shared';
+import type { Ability, Participant, TierOutcome } from '@ironyard/shared';
+import { formatAbilityDistance } from '../../lib/format-ability-distance';
 import { TIER_RIGGED_ROLLS, roll2d10 } from '../../lib/rollDice';
 import { RollOverflowPopover } from './RollOverflowPopover';
 
@@ -29,6 +30,14 @@ type Props = {
   onRoll: (ability: Ability, args: RollArgs) => void;
   /** Pass-2b2a — when true, render the SET A TARGET prompt + force Roll disabled. */
   targetMissing?: boolean;
+  /**
+   * Slice 10 / Phase 2b Group A+B (2b.3) — optional acting participant so the
+   * card can fold kit melee/ranged distance bonuses into the displayed range
+   * for non-signature, non-AoE weapon abilities. When omitted, distance falls
+   * back to the raw `ability.distance` string. AoE shapes and signatures are
+   * passed through unchanged inside `formatAbilityDistance`.
+   */
+  participant?: Participant | null;
 };
 
 export function AbilityCard({
@@ -37,6 +46,7 @@ export function AbilityCard({
   readOnly = false,
   onRoll,
   targetMissing = false,
+  participant = null,
 }: Props) {
   if (!ability.powerRoll) return null;
   const pr = ability.powerRoll;
@@ -60,7 +70,9 @@ export function AbilityCard({
       <header className="flex items-baseline justify-between gap-2">
         <h3 className="text-sm font-semibold">{ability.name}</h3>
         {ability.distance && (
-          <span className="font-mono text-[11px] text-text-mute">{ability.distance}</span>
+          <span className="font-mono text-[11px] text-text-mute">
+            {formatAbilityDistance(ability, participant)}
+          </span>
         )}
       </header>
 

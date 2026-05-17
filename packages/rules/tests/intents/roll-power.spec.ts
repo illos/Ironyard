@@ -369,3 +369,165 @@ describe('applyRollPower — Pass 3 Slice 2a action-trigger evaluation', () => {
     expect(oa).toBeUndefined();
   });
 });
+
+// Slice 10 / Phase 2b Group A+B (2b.3.a) — verify the ranged-damage branch
+// of the kit weapon-damage-bonus fold is symmetric with melee. The existing
+// tier-and-keyword coverage in tests/attachments/weapon-damage-bonus.spec.ts
+// already exercises both slots; this test asserts the regression guarantee
+// at the RollPower spec level so future refactors that reintroduce a
+// melee-only hardcode fail loudly here. No engine code change was needed —
+// the slot is selected as `isMelee ? 'melee' : 'ranged'` from the lowercased
+// ability keywords.
+describe('applyRollPower — ranged weapon damage bonus reaches roll output (2b.3.a)', () => {
+  it('Arcane-Archer-shaped ranged attacker: ranged tier bonus folds into damage', () => {
+    // weaponDamageBonus.ranged = [2,2,2]; ladder t1=2, t2=5, t3=9.
+    // d10 [5,4] → nat 9 + 2 might → 11 → tier 1 → 2 fire damage; +2 ranged
+    // bonus = 4 delivered.
+    const archer = makeHeroParticipant(PC_ID, {
+      ownerId: OWNER_ID,
+      weaponDamageBonus: { melee: [9, 9, 9], ranged: [2, 2, 2] },
+    });
+    const goblin = makeMonsterParticipant(MONSTER_ID);
+    const s = baseState({
+      participants: [archer, goblin],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+
+    const intent = stamped({
+      type: 'RollPower',
+      actor: ownerActor,
+      payload: {
+        abilityId: 'arcane-archer-shot',
+        attackerId: PC_ID,
+        targetIds: [MONSTER_ID],
+        characteristic: 'might',
+        edges: 0,
+        banes: 0,
+        rolls: { d10: [5, 4] },
+        ladder: LADDER,
+        abilityKeywords: ['Ranged', 'Weapon'],
+      },
+    });
+    const r = applyIntent(s, intent);
+
+    expect(r.errors).toBeUndefined();
+    const apply = r.derived.find((d) => d.type === 'ApplyDamage');
+    expect(apply).toBeDefined();
+    // Base t1 damage 2 + ranged bonus tier-0 entry 2 = 4 — and NOT the melee
+    // slot value 9 (the regression guard).
+    expect((apply?.payload as { amount: number }).amount).toBe(4);
+  });
+});
+
+// Slice 10 / Phase 2b Group A+B — slice-6 carry-over: the Shadow Insight
+// predelivery check must consult `getEffectiveWeaknesses` rather than
+// reading `participant.weaknesses` directly. A flying Devil/Dragon-Knight
+// with Wings at echelon 1 (level ≤ 3) gains a conditional +5 fire weakness
+// that only lives in the effective helper. Without this fix, a fire-immune
+// flying-Wings defender misses the insight even when the conditional
+// weakness pushes delivered damage > 0.
+describe('applyRollPower — Shadow Insight predelivery uses getEffectiveWeaknesses (slice-6 carry)', () => {
+  it('Shadow vs flying Devil with Wings + fire-immunity 2: delivered fire damage from Wings weakness fires the insight gain', () => {
+    // Ladder: t1 = 2 fire damage. Target has fire immunity 2 → without the
+    // conditional Wings weakness, delivered = max(0, 2 + 0 - 2) = 0 and the
+    // Shadow Insight predelivery gate suppresses the GainResource.
+    // With the fix, getEffectiveWeaknesses(d, 1) returns [{type:'fire', value:5}]
+    // → delivered = max(0, 2 + 5 - 2) = 5 → insight fires.
+    const shadow = makeHeroParticipant(PC_ID, {
+      ownerId: OWNER_ID,
+      className: 'Shadow',
+      heroicResources: [{ name: 'insight', value: 0, floor: 0 }],
+    });
+    const flyingDevil = makeHeroParticipant('pc:devil-1', {
+      ownerId: OWNER_ID,
+      ancestry: ['devil'],
+      purchasedTraits: ['wings'],
+      movementMode: { mode: 'flying', roundsRemaining: 3 },
+      level: 1,
+      immunities: [{ type: 'fire', value: 2 }],
+      // Stamina cannot drop to 0 from this test; we only care about the
+      // predelivery check flipping.
+      currentStamina: 30,
+      maxStamina: 30,
+    });
+    const s = baseState({
+      participants: [shadow, flyingDevil],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+
+    // d10 [5, 4] → nat 9, +2 might → total 11 → tier 1 → 2 fire damage.
+    const intent = stamped({
+      type: 'RollPower',
+      actor: ownerActor,
+      payload: {
+        abilityId: 'slam',
+        attackerId: PC_ID,
+        targetIds: ['pc:devil-1'],
+        characteristic: 'might',
+        edges: 0,
+        banes: 0,
+        rolls: { d10: [5, 4] },
+        ladder: LADDER, // already fire-typed at top of file
+        surgesSpent: 1,
+      },
+    });
+    const r = applyIntent(s, intent);
+
+    expect(r.errors).toBeUndefined();
+    const insightGain = r.derived.find(
+      (d) =>
+        d.type === 'GainResource' &&
+        (d.payload as { name: string; participantId: string }).name === 'insight' &&
+        (d.payload as { name: string; participantId: string }).participantId === PC_ID,
+    );
+    expect(insightGain).toBeDefined();
+  });
+
+  it('Shadow vs grounded Devil with Wings + fire-immunity 2: no insight (Wings weakness only applies when flying)', () => {
+    // Same fixture but movementMode null → Wings conditional weakness does
+    // not apply → delivered = max(0, 2 + 0 - 2) = 0 → no insight.
+    // Regression guard: the helper must remain gated by movementMode.
+    const shadow = makeHeroParticipant(PC_ID, {
+      ownerId: OWNER_ID,
+      className: 'Shadow',
+      heroicResources: [{ name: 'insight', value: 0, floor: 0 }],
+    });
+    const groundedDevil = makeHeroParticipant('pc:devil-1', {
+      ownerId: OWNER_ID,
+      ancestry: ['devil'],
+      purchasedTraits: ['wings'],
+      movementMode: null,
+      level: 1,
+      immunities: [{ type: 'fire', value: 2 }],
+      currentStamina: 30,
+      maxStamina: 30,
+    });
+    const s = baseState({
+      participants: [shadow, groundedDevil],
+      encounter: makeRunningEncounterPhase('enc-1'),
+    });
+
+    const intent = stamped({
+      type: 'RollPower',
+      actor: ownerActor,
+      payload: {
+        abilityId: 'slam',
+        attackerId: PC_ID,
+        targetIds: ['pc:devil-1'],
+        characteristic: 'might',
+        edges: 0,
+        banes: 0,
+        rolls: { d10: [5, 4] },
+        ladder: LADDER,
+        surgesSpent: 1,
+      },
+    });
+    const r = applyIntent(s, intent);
+
+    expect(r.errors).toBeUndefined();
+    const insightGain = r.derived.find(
+      (d) => d.type === 'GainResource' && (d.payload as { name: string }).name === 'insight',
+    );
+    expect(insightGain).toBeUndefined();
+  });
+});

@@ -121,6 +121,23 @@ export function parseKitMarkdown(md: string): Kit | null {
   const meleeDamageBonusPerTier = parseTierTuple(meleeBonusRegex.exec(bonusesText));
   const rangedDamageBonusPerTier = parseTierTuple(rangedBonusRegex.exec(bonusesText));
 
+  // Slice 10 / Phase 2b Group A+B (2b.3): always-on flat distance + disengage
+  // bonuses. Source format "**Melee Distance Bonus:** +1" / "**Ranged Distance
+  // Bonus:** +10" / "**Disengage Bonus:** +1". Canon (Kits.md:135) is explicit
+  // that AoE sizes (burst/cube/wall) are NOT affected by distance bonuses.
+  // Signature abilities that already bake the kit bonus in do NOT double-add
+  // (canon caveat Kits.md:142-146) — handled at the UI / RollPower read site,
+  // not here. nonnegative — canon never authors a negative bonus.
+  const meleeDistanceBonus = parseIntSafe(
+    /\*\*Melee Distance Bonus:\*\*\s*\+?(\d+)/.exec(bonusesText)?.[1],
+  );
+  const rangedDistanceBonus = parseIntSafe(
+    /\*\*Ranged Distance Bonus:\*\*\s*\+?(\d+)/.exec(bonusesText)?.[1],
+  );
+  const disengageBonus = parseIntSafe(
+    /\*\*Disengage Bonus:\*\*\s*\+?(\d+)/.exec(bonusesText)?.[1],
+  );
+
   // Signature Ability section — extract the H6 heading right after.
   const sigMatch = content.match(/#####\s+Signature Ability[\s\S]*?######\s+([^\n]+)/);
   const signatureAbilityId = sigMatch?.[1] ? slugifyAbility(id, sigMatch[1].trim()) : null;
@@ -137,12 +154,12 @@ export function parseKitMarkdown(md: string): Kit | null {
     rangedDamageBonusPerTier,
     signatureAbilityId,
     keywords,
-    // Phase 2b Group A+B (2b.3 + 2b.4): kit-side bonus extraction lands in
-    // slices 10/11. For now, the parser emits zeros so the new fields satisfy
-    // the schema; the engine adds nothing until the regex extractors arrive.
-    meleeDistanceBonus: 0,
-    rangedDistanceBonus: 0,
-    disengageBonus: 0,
+    // Phase 2b Group A+B (2b.3): always-on flat distance + disengage bonuses.
+    // Extracted above; collector emits the corresponding effect kinds when
+    // values are non-zero. AoE sizes (burst/cube/wall) NOT affected per canon.
+    meleeDistanceBonus,
+    rangedDistanceBonus,
+    disengageBonus,
   };
 }
 

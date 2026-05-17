@@ -61,6 +61,11 @@ function makeKit(overrides: Partial<ResolvedKit> = {}): ResolvedKit {
     stabilityBonus: 0,
     meleeDamageBonusPerTier: [0, 0, 0],
     rangedDamageBonusPerTier: [0, 0, 0],
+    // Slice 10 / Phase 2b Group A+B (2b.3) — distance + disengage bonus
+    // defaults so this fixture continues to satisfy ResolvedKitSchema.
+    meleeDistanceBonus: 0,
+    rangedDistanceBonus: 0,
+    disengageBonus: 0,
     keywords: [],
     ...overrides,
   };
